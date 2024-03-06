@@ -1,0 +1,5 @@
+roscore
+rosparam set /use_sim_time true
+rosbag play table_tf.bag --clock
+
+rosbag record /tf /tf_static /hsrb/head_rgbd_sensor/rgb/image_rect_color /hsrb/head_rgbd_sensor/depth_registered/rectified_points /hsrb/head_rgbd_sensor/depth_registered/camera_info /hsrb/head_rgbd_sensor/depth_registered/image_rect_raw

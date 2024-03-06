@@ -1,0 +1,70 @@
+task : getp
+[2.5619, -0.0344, 1.5821]
+task : _side_table
+invalid command
+task : getp
+[3.7381, 0.6181, 2.3207]
+task : _sofa
+invalid command
+task : getp
+[3.7726, 0.7358, 1.0435]
+task : _lamp         
+invalid command
+task : getp
+[1.7504, 1.1196, 3.0387]
+task : getp
+[1.6211, 1.1404, 3.047]
+task : _book_shelf
+invalid command
+task : getp    
+[1.7771, -1.0172, -1.6089]
+task : _tv_stand
+invalid command
+task : getp
+[3.5983, -1.0546, -0.0079]
+task : _storage_rack
+invalid command
+task : getp
+[1.6335, -4.7401, -0.0524]
+task : _desk
+invalid command
+task : getp
+[2.0199, -5.1707, -2.2595]
+task : _coatrack
+invalid command
+task : getp
+[4.0185, -4.9778, 0.0594]
+task : _cabinet
+invalid command
+task : getp
+[9.0631, -0.1084, -1.5204]
+task : _dishwasher
+invalid command
+task : getp
+[8.0004, -0.4103, 1.4126]
+task : getp
+[8.0613, -0.3389, 1.3989]
+task : getp
+[8.0663, -0.327, 1.5792]
+task : _kitchen_table
+invalid command
+task : getp
+[6.2943, -1.3015, 3.065]
+task : _sink
+invalid command
+task : getp
+[7.142, -2.1261, 3.0864]
+task : _refreightor
+invalid command
+task : getp
+[8.344, -4.7478, -0.0446]
+task : _bedside_table
+invalid command
+task : getp
+[7.7814, -4.4426, -1.0038]
+task : _bed
+invalid command
+task : getp                       
+[5.8276, -5.2125, -1.5813]
+task : _shelf
+

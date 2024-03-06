@@ -1,0 +1,8 @@
+pyaml
+rospkg
+numpy
+opencv-contrib-python
+open3d
+sounddevice
+playsound
+mediapipe

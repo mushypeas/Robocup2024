@@ -1,0 +1,30 @@
+#!/bin/bash
+set timeout 30
+spawn ssh administrator@hsrb.local
+
+expect -nocase "password"
+
+send "tidy83.\r"
+
+expect "administrator@hsrb:"
+
+send "sudo su - hsr-hmi\r"
+
+expect -nocase "password"
+
+send "tidy83.\r"
+
+expect "@hsrb"
+send "export DISPLAY=:0\r"
+expect "@hsrb"
+send "xhost +\r"
+expect "@hsrb"
+send "logout\r"
+expect "administrator@hsrb:"
+send "export DISPLAY=:0\r"
+expect "administrator@hsrb:"
+send "python3 hsr_mic.py &\r"
+send "cd hsr_head_display\r"
+send "python3 hsr_head_monitor.py\r"
+interact
+#exit 0

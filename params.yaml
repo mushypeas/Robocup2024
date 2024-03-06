@@ -1,0 +1,53 @@
+# Parameters loaded last
+/omni_path_follower/base_max_linear_velocity: 0.8
+/omni_path_follower/base_max_linear_acceleration: 0.8
+/omni_path_follower/base_max_angular_velocity: 0.8
+/omni_path_follower/base_linear_deceleration_near_goal : 0.3
+/omni_path_follower/goal_stop_error_angle: 0.02
+/tmc_map_merger/inputs/head_rgbd_sensor/obstacle_circle/forbid_radius: 0.05
+/tmc_map_merger/inputs/head_rgbd_sensor/obstacle_circle/obstacle_occupancy: 80
+/tmc_map_merger/inputs/head_rgbd_sensor/obstacle_circle/obstacle_radius: 0.3
+/tmc_map_merger/inputs/head_rgbd_sensor/enable: false
+/tmc_map_merger/inputs/base_scan/obstacle_circle/forbid_radius: 0.05
+/tmc_map_merger/inputs/base_scan/obstacle_circle/obstacle_radius: 0.3
+/tmc_map_merger/inputs/base_scan/obstacle_circle/obstacle_occupancy: 80
+/tmc_map_merger/inputs/base_scan/keep_time: 0.2
+#/hsrb/hw_config/motor_settings/arm_lift_joint/max_velocity: 10.0
+/trajectory_filter/joint_limits/arm_lift_joint/max_velocity: 0.6
+/trajectory_filter/joint_limits/arm_lift_joint/max_acceleration: 0.3
+/trajectory_filter/joint_limits/arm_roll_joint/max_acceleration: 2.0
+/trajectory_filter/joint_limits/arm_roll_joint/max_velocity: 2.0
+/trajectory_filter/joint_limits/arm_flex_joint/max_acceleration: 0.6
+/trajectory_filter/joint_limits/arm_flex_joint/max_velocity: 0.6
+/trajectory_filter/joint_limits/wrist_flex_joint/max_acceleration : 2.0
+/trajectory_filter/joint_limits/wrist_flex_joint/max_velocity : 2.0
+/trajectory_filter/joint_limits/wrist_roll_joint/max_acceleration : 2.0
+/trajectory_filter/joint_limits/wrist_roll_joint/max_velocity: 2.0
+
+
+## minimize the pointcloud filter
+/tmc_map_merger/inputs/custom_point_cloud/enable: false
+/tmc_map_merger/inputs/custom_point_cloud/topic_name: "/snu/head_rgbd_sensor/pointcloud"
+/tmc_map_merger/inputs/custom_point_cloud/type: "sensor_msgs/PointCloud2"
+/tmc_map_merger/inputs/custom_point_cloud/rate: 5.0
+/tmc_map_merger/inputs/custom_point_cloud/merger: simple_memory
+/tmc_map_merger/inputs/custom_point_cloud/width: 7.0
+/tmc_map_merger/inputs/custom_point_cloud/height: 7.0
+/tmc_map_merger/inputs/custom_point_cloud/resolution: 0.05
+/tmc_map_merger/inputs/custom_point_cloud/keep_time: 12.0
+/tmc_map_merger/inputs/custom_point_cloud/default_data: -1
+/tmc_map_merger/inputs/custom_point_cloud/point_cloud_filters:
+ - type: "voxel_grid"
+   leaf_size: 0.05
+ - type: "transform"
+ - type: "trimming"
+   field_name: "z"
+   min: 0.15
+   max: 1.5
+ - type: "noise"
+   radius: 0.1
+   min_neighbors: 1
+/tmc_map_merger/inputs/custom_point_cloud/obstacle_circle/forbid_radius: 0.10
+/tmc_map_merger/inputs/custom_point_cloud/obstacle_circle/obstacle_radius: 0.35
+/tmc_map_merger/inputs/custom_point_cloud/obstacle_circle/obstacle_occupancy: 80
+

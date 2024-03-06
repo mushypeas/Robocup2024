@@ -1,0 +1,214 @@
+Drinks:
+    - chocolate milk:
+        - chocolate milk
+    - sparkling water:
+        - sparkling water
+        - sparkling
+    - lemonade:
+        - lemonade
+        - lemonate
+        - laminate
+    - juice:
+        - juice
+        - just
+    - coke:
+        - coke
+        - cook
+        - cool
+    - beer:
+        - beer
+        - bear
+    - water:
+        - water
+        - war
+    - milk:
+        - milk
+        - mill
+    - sprite:
+        - sprite
+        - spike
+        - bright
+---
+Fruits:
+    - apple:
+        - apple
+        - airport
+    - lemon:
+        - lemon
+        - leamon
+        - de mon
+        - leon
+    - orange:
+        - orange
+    - kiwi:
+        - kiwi
+        - tv
+        - qe
+        - qt
+    - pear:
+        - pear
+        - pare
+        - pair
+        - hear
+        - hair
+        - ten mor
+    - paprika:
+        - paprika
+        - trka
+        - taprica
+        - paprica
+    - tomato:
+        - tomato
+    - grapes:
+        - grapes
+        - grape
+        - crust
+        - grave
+        - grace
+        - gray
+        - great
+    - mango:
+        - mango
+        - mengo
+    - banana:
+        - banana
+        - bana
+    - strawberry:
+        - strawberry
+        - strawberries
+    - plum:
+        - plum
+        - plom
+        - pal
+        - palm
+---
+Foods:
+    - carrot:
+        - carrot
+        - hello
+        - kara
+        - carro
+    - corn:
+        - corn
+        - porn
+    - onion:
+        - onion
+        - hernia
+    - cereal:
+        - cereal
+        - serial
+        - syria
+    - noodles:
+        - noodles
+        - noodle
+    - sausages:
+        - sausages
+        - sausage
+---
+Snack:
+    - potato chip:
+        - potato chip
+        - potato chips
+---
+Cleaning stuff:
+    - trash bag:
+        - trash bags
+        - trash bag
+    - trash bin:
+        - trash bin
+        - trashbin
+    - dishwasher:
+        - dishwasher
+        - dish washer
+    - sponge:
+        - sponge
+        - spongy
+---
+Plate:
+    - dish:
+        - dish
+    - bowl:
+        - bowl
+    - plate:
+        - plate
+        - play
+    - cup:
+        - cup
+        - called
+        - call
+    - tray:
+        - tray
+        - trey
+    - basket:
+        - basket
+        - best kid
+    - bag:
+        - bag
+        - back
+        - bad
+---
+Utensil:
+    - knife:
+        - knife
+        - night
+    - fork:
+        - fork
+        - pork
+        - hulk
+        - for
+    - spoon:
+        - spoon
+---
+Furniture:
+    - arm chair:
+        - arm chair
+        - armchair
+    - trash bin:
+        - trash bin
+        - trashbin
+    - entrance:
+        - entrance
+    - bed:
+        - bed
+        - bad
+        - period
+    - table:
+        - table
+    - desk:
+        - desk
+        - dash
+    - exit:
+        - exit
+        - he said
+        - exist
+    - couch:
+        - couch
+        - coach
+    - bookcase:
+        - bookcase
+        - book case
+        - bouquet
+        - suitcase
+    - sink:
+        - sink
+        - think
+    - counter:
+        - counter
+    - dishwasher:
+        - dishwasher
+        - dish washer
+    - cabinet:
+        - cabinet
+    - tv:
+        - tv
+    - chair:
+        - chair
+        - tear
+    - hanger:
+        - hanger
+        - coat hanger
+        - anger
+    - sofa:
+          - sofa
+          - so far
+
