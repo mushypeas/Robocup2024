@@ -1,7 +1,7 @@
 import rospy
 import tf
 import tf.transformations
-import actionlib
+from utils.simple_action_client import SimpleActionClient
 import numpy as np
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
@@ -9,8 +9,10 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 class MoveBase:
     def __init__(self, ABS_POSITION):
         self.abs_position = ABS_POSITION
-        self.base_action_client = actionlib.SimpleActionClient('/move_base/move', MoveBaseAction)
-        self.base_action_client.wait_for_server()
+        self.base_action_client = SimpleActionClient('/move_base/move', MoveBaseAction, "base_action_client")
+
+        self.base_action_client.wait_for_server(timeout=2)
+        
         self.listener = tf.TransformListener()
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
@@ -35,7 +37,7 @@ class MoveBase:
     def move_abs_test(self, goal_x, goal_y, goal_yaw=None, wait=True):
 
         if goal_yaw is None: goal_yaw = 0.
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(timeout=2)
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
@@ -63,13 +65,13 @@ class MoveBase:
         # goal_x, goal_y, goal_yaw = self.abs_position[position]
         print('position:', position)
         self.move_abs_coordinate(self.abs_position[position], wait)
-        # self.base_action_client.wait_for_server()
+        # self.base_action_client.wait_for_server(timeout=2)
 
 
     # added by shlim
     def move_abs_coordinate(self, coordinate, wait=True):
         goal_x, goal_y, goal_yaw = coordinate
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -95,7 +97,7 @@ class MoveBase:
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
         goal_x, goal_y, goal_yaw = position
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -120,7 +122,7 @@ class MoveBase:
                 return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
