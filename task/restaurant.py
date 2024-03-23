@@ -2,7 +2,7 @@ import os
 import rospy
 import roslaunch
 import numpy as np
-import actionlib
+from utils.simple_action_client import SimpleActionClient
 import tf
 import time
 import math
@@ -19,8 +19,8 @@ from std_srvs.srv import Trigger
 
 class MoveBaseStandalone:
     def __init__(self):
-        self.base_action_client = actionlib.SimpleActionClient('/move_base', MoveBaseAction)
-        self.base_action_client.wait_for_server()
+        self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
+        self.base_action_client.wait_for_server(timeout=2)
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # reset map

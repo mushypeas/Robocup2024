@@ -1,5 +1,5 @@
 import rospy
-import actionlib
+from utils.simple_action_client import SimpleActionClient
 from control_msgs.msg import FollowJointTrajectoryGoal
 from control_msgs.msg import FollowJointTrajectoryAction
 from trajectory_msgs.msg import JointTrajectoryPoint
@@ -9,13 +9,15 @@ from tmc_control_msgs.msg import GripperApplyEffortGoal
 
 class Gripper:
     def __init__(self):
-        self._follow_joint_trajectory_client = actionlib.SimpleActionClient(
+        self._follow_joint_trajectory_client = SimpleActionClient(
             "/hsrb/gripper_controller/follow_joint_trajectory",
-            FollowJointTrajectoryAction
+            FollowJointTrajectoryAction,
+            "_follow_joint_trajectory_client"
         )
-        self._grasp_client = actionlib.SimpleActionClient(
+        self._grasp_client = SimpleActionClient(
             "/hsrb/gripper_controller/grasp",
-            GripperApplyEffortAction
+            GripperApplyEffortAction,
+            "_follow_joint_trajectory_client"
         )
 
     def grasp(self, force=1, wait=True):

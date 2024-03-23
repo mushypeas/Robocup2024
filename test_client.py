@@ -217,11 +217,11 @@ if __name__ == '__main__':
         elif command == 'w':
             agent.move_rel(.3, 0, wait=True)
         elif command == 's':
-            agent.move_rel(-0.3, 0)
+            agent.move_rel(-0.3, 0, wait=True)
         elif command == 'a':
-            agent.move_rel(0, 0.3)
+            agent.move_rel(0, 0.3, wait=True)
         elif command == 'd':
-            agent.move_rel(0, -0.3)
+            agent.move_rel(0, -0.3, wait=True)
         elif command == 'z':
             agent.move_rel(0, 0, yaw=1.57)
         elif command == 'c':

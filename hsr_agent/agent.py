@@ -24,11 +24,11 @@ from open3d import geometry
 
 # stt
 # from module.stt.stt_client import stt_client
-from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+# from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
-import actionlib
+from utils.simple_action_client import SimpleActionClient
 import control_msgs.msg
 import controller_manager_msgs.srv
 import rospy
@@ -39,6 +39,8 @@ from utils.axis_transform import Axis_transform
 from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
+
+
 class Agent:
     def __init__(self):
 
@@ -61,14 +63,17 @@ class Agent:
         self.cur_pose_sub = rospy.Subscriber('/hsrb/omni_base_controller/state',
                                              JointTrajectoryControllerState, self._cur_pose_callback)
         self.cur_vel_sub = rospy.Subscriber('/base_velocity', Twist, self._cur_vel_callback)
-        self.joint_trajectory_client = actionlib.SimpleActionClient(
+        self.joint_trajectory_client = SimpleActionClient(
             '/hsrb/head_trajectory_controller/follow_joint_trajectory',
-            control_msgs.msg.FollowJointTrajectoryAction)
-        self.joint_trajectory_client.wait_for_server()
+            control_msgs.msg.FollowJointTrajectoryAction,
+            'joint_trajectory_client')
+        self.joint_trajectory_client.wait_for_server(2)
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
+
         # make sure the controller is running
         # This doesn't work sometimes...
-        rospy.wait_for_service('/hsrb/controller_manager/list_controllers')
+        rospy.wait_for_service('/hsrb/controller_manager/list_controllers', timeout=5.0)
+        
         list_controllers = rospy.ServiceProxy(
             '/hsrb/controller_manager/list_controllers',
             controller_manager_msgs.srv.ListControllers)
@@ -76,6 +81,7 @@ class Agent:
         while running is False:
             rospy.sleep(0.1)
             for c in list_controllers().controller:
+                rospy.loginfo(f"{c.name} is {c.state}")
                 if c.name == 'head_trajectory_controller' and c.state == 'running':
                     running = True
 
@@ -99,7 +105,8 @@ class Agent:
             static_topic_name = '/static_obstacle_ros_map'
         else:
             static_topic_name = '/static_obstacle_map_ref'
-        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid)
+
+        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=3.0)
         # map meta-info
         self.static_res = grid.info.resolution
         self.static_w = grid.info.width
@@ -124,7 +131,7 @@ class Agent:
         # return if the point is in arena
         self.arena_check = InArena(ARENA_EDGES)
         # for carry my luggage (todo)
-        print('[info] init ready')
+        rospy.loginfo('HSR agent is ready.')
 
     def _rgb_callback(self, data):
         # rospy.loginfo('image_sub node started')
