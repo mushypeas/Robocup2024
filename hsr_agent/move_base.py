@@ -35,8 +35,10 @@ class MoveBase:
         return
 
     def move_abs_test(self, goal_x, goal_y, goal_yaw=None, wait=True):
-
+        
         if goal_yaw is None: goal_yaw = 0.
+        rospy.loginfo(f"Moving to {goal_x, goal_y, goal_yaw}")
+        
         self.base_action_client.wait_for_server(timeout=2)
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -57,11 +59,12 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.loginfo("Navigation FAILED!!!!")
+                rospy.logerr("Navigation FAILED!!!!")
                 return False
 
     # add wait argument by yspark and shlim
     def move_abs(self, position, wait=True):
+        rospy.loginfo(f"Moving to {position}")
         # goal_x, goal_y, goal_yaw = self.abs_position[position]
         print('position:', position)
         self.move_abs_coordinate(self.abs_position[position], wait)
@@ -70,6 +73,7 @@ class MoveBase:
 
     # added by shlim
     def move_abs_coordinate(self, coordinate, wait=True):
+        rospy.loginfo(f"Moving to {coordinate}")
         goal_x, goal_y, goal_yaw = coordinate
         self.base_action_client.wait_for_server(timeout=2)
 
@@ -92,12 +96,13 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.loginfo("Navigation FAILED!!!!")
+                rospy.logerr("Navigation FAILED!!!!")
                 return False
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
         goal_x, goal_y, goal_yaw = position
         self.base_action_client.wait_for_server(timeout=2)
+        rospy.loginfo(f"Moving to {position}")
 
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -118,11 +123,12 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.loginfo("Navigation FAILED!!!!")
+                rospy.logerr("Navigation FAILED!!!!")
                 return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
         self.base_action_client.wait_for_server(timeout=2)
+        rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
 
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -144,7 +150,7 @@ class MoveBase:
                 rospy.loginfo("Navigation Succeeded.")
                 return True
             else:
-                rospy.loginfo("Navigation FAILED!!!!")
+                rospy.logerr("Navigation FAILED!!!!")
                 self.base_action_client.cancel_all_goals()
                 return False
 

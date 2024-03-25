@@ -248,15 +248,12 @@ class Agent:
 
 
     def initial_pose(self, position):
-        rospy.loginfo(f"Moving to {position}")
         self.move_base.initial_pose(position)
 
     def move_abs(self, position, wait=True):
-        rospy.loginfo(f"Moving to {position}")
         self.move_base.move_abs(position, wait)
 
     def move_abs_coordinate(self, coordinate, wait=True):
-        rospy.loginfo(f"Moving to {coordinate}")
         self.move_base.move_abs_coordinate(coordinate, wait)
 
 
@@ -438,10 +435,8 @@ class Agent:
     def door_open(self, thres=1.5):
         while self.dist <= thres:
             rospy.sleep(1.0)
-            print('open closed')
+            print('door closed')
         self.say('door open'); rospy.sleep(1)
-        # self.say('five');  rospy.sleep(1)
-        # self.say('four');  rospy.sleep(1)
         self.say('three'); rospy.sleep(1)
         self.say('two');   rospy.sleep(1)
         self.say('one');   rospy.sleep(1)
