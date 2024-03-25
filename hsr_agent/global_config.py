@@ -7,10 +7,10 @@ DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 
-FRANCE = True
+AIIS = True
 
-if FRANCE:
-    print('[GLOBAL CONFIG] France mode')
+if AIIS:
+    print('[GLOBAL CONFIG] AIIS mode')
     # real robot
     ABS_POSITION = {
         'insp_target': [3.7515, -3.6771, -1.5818],
@@ -26,8 +26,8 @@ if FRANCE:
 
 
         # storing grocery
-        'grocery_table': [7.2365, 1.0234, -3.0764],
-        'shelf_front': [6.7433, 1.2517, 1.5273],
+        'grocery_table': [1.7478, -1.2796, 0.0], #bjkim
+        'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
         'breakfast_bypass': [5.4484, 0.2049, 0.0673],
@@ -118,12 +118,12 @@ if FRANCE:
         # width, depth, height
         'kitchen_table': [0.8, 0.8, 0.72],
         'breakfast_table': [0.855, 0.455, 0.825],
-        'grocery_table': [0.495, 0.495, 0.395],
+        'grocery_table': [0.550, 0.75, 0.730],
 
-        'grocery_table_pose': [0.495, 0.495, 0.45],
+        'grocery_table_pose': [0.550, 0.75, 0.765], # +055
 
-        'grocery_table_pose1': [0.495, 0.495, 0.46],
-        'grocery_table_pose2': [0.495, 0.495, 0.425],
+        'grocery_table_pose1': [0.550, 0.75, 0.775], # +065
+        'grocery_table_pose2': [0.550, 0.75, 0.725], # +030
         'door_handle': [0, 0, 0.96],
         # width, depth, height
         'desk': [1.505, 0.705, 0.8],
@@ -132,11 +132,11 @@ if FRANCE:
         'sink': [0.515, 0.455, 0.945],
         'dishwasher': [0.6, 0.6, 0.84],
         'cabinet': [0.9, 0.46, 0.66],
-        'shelf': [0.26, 0.36, 0.445],
-        'shelf_1f': [0.26, 0.36, 0.45],
-        'shelf_2f': [0.26, 0.36, 0.74],
-        'shelf_3f': [0.26, 0.36, 1.06],
-        'shelf_4f': [0.26, 0.36, 1.4],
+        'shelf': [0.765, 0.357, 0.805],
+        'shelf_1f': [0.765, 0.357, 0.805],
+        'shelf_2f': [0.765, 0.357, 1.15],
+        'shelf_3f': [0.765, 0.357, 1.4],
+        'shelf_4f': [0.765, 0.357, 1.4],
         'storage_rack': [0.445, 0.9, 0.42],
         'storage_rack_1f': [0.445, 0.9, 0.42],
         'storage_rack_2f': [0.445, 0.9, 0.88],

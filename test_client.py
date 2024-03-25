@@ -29,8 +29,6 @@ if __name__ == '__main__':
             agent.move_abs('table_side')
         elif command == 'shelf_front':
             agent.move_abs('shelf_front')
-        elif command == 'shelf_front':
-            agent.move_abs('shelf_front')
         elif command == 'bin' :
             agent.move_abs('bin')
         elif command == 'sofa_view':
@@ -39,6 +37,8 @@ if __name__ == '__main__':
             agent.move_abs('door_handle')
         elif command == 'door_bypass':
             agent.move_abs('door_bypass')
+        elif command == 'grocery_table':
+            agent.move_abs('grocery_table')
         elif command == 'cloth_scan':
             agent.move_abs_safe('cloth_scan')
         elif command == 'dishwasher':

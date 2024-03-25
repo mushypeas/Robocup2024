@@ -248,12 +248,15 @@ class Agent:
 
 
     def initial_pose(self, position):
+        rospy.loginfo(f"Moving to {position}")
         self.move_base.initial_pose(position)
 
     def move_abs(self, position, wait=True):
+        rospy.loginfo(f"Moving to {position}")
         self.move_base.move_abs(position, wait)
 
     def move_abs_coordinate(self, coordinate, wait=True):
+        rospy.loginfo(f"Moving to {coordinate}")
         self.move_base.move_abs_coordinate(coordinate, wait)
 
 
@@ -327,7 +330,7 @@ class Agent:
 
     def move_abs_coordinate_safe(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
         goal_x, goal_y, goal_yaw = coordinate
-        self.move_base.base_action_client.wait_for_server()
+        self.move_base.base_action_client.wait_for_server(2)
         pose = PoseStamped()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
@@ -395,7 +398,7 @@ class Agent:
         # goal_x, goal_y, goal_yaw = self.move_base.abs_position[position]
         print('position:', position)
         self.move_abs_coordinate_safe(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
-        # self.move_base.base_action_client.wait_for_server()
+        # self.move_base.base_action_client.wait_for_server(2)
 
     def move_abs_by_point(self, position):
         self.move_base.move_abs_by_point(position)
