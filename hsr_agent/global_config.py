@@ -118,12 +118,10 @@ if AIIS:
         # width, depth, height
         'kitchen_table': [0.8, 0.8, 0.72],
         'breakfast_table': [0.855, 0.455, 0.825],
-        'grocery_table': [0.550, 0.75, 0.730],
-
-        'grocery_table_pose': [0.550, 0.75, 0.765], # +055
-
-        'grocery_table_pose1': [0.550, 0.75, 0.775], # +065
-        'grocery_table_pose2': [0.550, 0.75, 0.725], # +030
+        'grocery_table': [0.55, 0.75, 0.730],
+        'grocery_table_pose': [0.55, 0.75, 0.785], # +055
+        'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
+        'grocery_table_pose2': [0.55, 0.75, 0.70], # +030
         'door_handle': [0, 0, 0.96],
         # width, depth, height
         'desk': [1.505, 0.705, 0.8],
@@ -133,10 +131,10 @@ if AIIS:
         'dishwasher': [0.6, 0.6, 0.84],
         'cabinet': [0.9, 0.46, 0.66],
         'shelf': [0.765, 0.357, 0.805],
-        'shelf_1f': [0.765, 0.357, 0.805],
-        'shelf_2f': [0.765, 0.357, 1.15],
-        'shelf_3f': [0.765, 0.357, 1.4],
-        'shelf_4f': [0.765, 0.357, 1.4],
+        'shelf_1f': [0.765, 0.357, 0.855 + 0.025],
+        'shelf_2f': [0.765, 0.357, 1.15 + 0.025],
+        'shelf_3f': [0.765, 0.357, 1.4 + 0.025],
+        'shelf_4f': [0.765, 0.357, 1.4 + 0.025],
         'storage_rack': [0.445, 0.9, 0.42],
         'storage_rack_1f': [0.445, 0.9, 0.42],
         'storage_rack_2f': [0.445, 0.9, 0.88],

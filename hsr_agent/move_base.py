@@ -66,7 +66,6 @@ class MoveBase:
     def move_abs(self, position, wait=True):
         rospy.loginfo(f"Moving to {position}")
         # goal_x, goal_y, goal_yaw = self.abs_position[position]
-        print('position:', position)
         self.move_abs_coordinate(self.abs_position[position], wait)
         # self.base_action_client.wait_for_server(timeout=2)
 
