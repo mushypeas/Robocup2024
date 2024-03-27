@@ -764,7 +764,7 @@ def carry_my_luggage(agent):
     try_bag_picking = False
     try_bytetrack = False
     map_mode = False
-    stt_option = False
+    stt_option = True
     tilt_angle = 20
     
 
