@@ -196,44 +196,8 @@ class HumanFollowing:
                 self.last_say = time.time()
                 rospy.sleep(1)
             return False
-        
-    def barrier_check(self):
-        _depth = self.agent.depth_image[:150, 10:630]
-        _lidar_dist = self.agent.dist
-        return _depth, _lidar_dist
 
     def follow_human(self, start_time=time.time(), pose_save_time_period=10):
-
-        ##########24.3.26
-        _num_rotate = 0
-        self.agent.say('Testing....', show_display=True)
-        print("Testing...")
-        
-        thres = 0.4
-        _depth, _lidar_dist = self.barrier_check()
-        while True:
-            rospy.loginfo(f"Min depth: {np.mean(self.agent.depth_image[:150, 10:630])}")
-            rospy.sleep(1)
-        if(np.any(_depth) / 1000 < thres) or (np.any(_lidar_dist) < thres):
-            rospy.loginfo(f"rect depth : {np.mean(_depth)}, lidar_dist: {np.mean(_lidar_dist)}")
-            _num_rotate = _num_rotate + 1
-            self.agent.say('Barrier checking....', show_display=True)
-            print("Barrier checking....")
-            rospy.sleep(5)
-            while (self.barrier_check):
-                _num_rotate = _num_rotate + 1
-                self.agent.say('Barrier verified.', show_display=True)
-                print("Barreir verified")
-                self.agent.move_rel(0,0,self.stop_rotate_velocity)
-                rospy.sleep(1)
-            
-            self.agent.move_rel(1,0,0)
-            rospy.sleep(1)
-            self.agent.move_rel(0,0,_num_rotate * -self.stop_rotate_velocity)
-
-            rospy.sleep(1)
-
-
         if self.human_box_list[0] is None: # no human detected
             if self.stt_destination(self.stt_option):
                 return True
@@ -260,7 +224,6 @@ class HumanFollowing:
                 self.last_say = time.time()
 
 
-            #########
             # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
             if twist.linear.x == 0 and twist.angular.z == 0:
                 # change angular.z
@@ -407,7 +370,7 @@ class BagInspection:
             pc_np = np.array(_pc.tolist())[:, :, :3]
             bag_yolo_data = self.bag_yolo_data
 
-            # self.agent.head_display_image_pubish(self.yolo_img)
+            self.agent.head_display_image_pubish(self.yolo_img)
             for idx in range(len(bag_yolo_data) // 6):
                 item = bag_yolo_data[6 * idx: 6 * (idx + 1)]
                 cent_x, cent_y, width, height, class_id, conf_percent = item
@@ -716,7 +679,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2
-    try_bag_picking = False
+    try_bag_picking = True
     try_bytetrack = False
     map_mode = False
     stt_option = False
@@ -860,6 +823,7 @@ def carry_my_luggage(agent):
 if __name__ == '__main__':
     rospy.init_node('carry_my_luggage_test')
     agent = Agent()
+    bag_inspection = BagInspection(agent)
 
     # for _ in range(10):
     #     print(np.asarray(bag_inspection.d2pc.depth))
