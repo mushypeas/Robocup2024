@@ -64,5 +64,6 @@ if __name__ == '__main__':
     rospy.init_node('stt_server_mic', anonymous=False, disable_signals=True)
 
     while not rospy.is_shutdown():
-        result = stt_client_mic()
+        # result = stt_client_mic()
+        result = stt_client_hsr_mic()
         print(result)

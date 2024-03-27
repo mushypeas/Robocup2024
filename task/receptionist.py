@@ -13,29 +13,30 @@ from playsound import playsound
 #3. sofa scan->turn around-> stand behind me+ name
 
 
-def door_handle_detection(agent):
-    depth_img = agent.depth_for_pc
-    # print(depth_img[290])
+# open door X
+# def door_handle_detection(agent):
+#     depth_img = agent.depth_for_pc
+#     # print(depth_img[290])
 
-    depth_img[np.where(depth_img == 0)] = 1500
-    door_min = np.min(depth_img[250:330, 200:500])
-    print(door_min)
-    print(np.max(depth_img[250:330, 200:500]))
+#     depth_img[np.where(depth_img == 0)] = 1500
+#     door_min = np.min(depth_img[250:330, 200:500])
+#     print(door_min)
+#     print(np.max(depth_img[250:330, 200:500]))
 
-    handle = []
-    for y in range(220, 350):
-        for x in range(200, 500):
-            if depth_img[y][x] < door_min + 20:
-                handle.append([x, y])
-    print(len(handle))
-    # for idx in handle:
-    #     cv2.circle(rgb_img, idx, 1, (255, 255, 0))
+#     handle = []
+#     for y in range(220, 350):
+#         for x in range(200, 500):
+#             if depth_img[y][x] < door_min + 20:
+#                 handle.append([x, y])
+#     print(len(handle))
+#     # for idx in handle:
+#     #     cv2.circle(rgb_img, idx, 1, (255, 255, 0))
 
-    most_left = np.argmin(handle, axis=0)[0]
-    most_right = np.argmax(handle, axis=0)[0]
-    center = [(most_left)]
+#     most_left = np.argmin(handle, axis=0)[0]
+#     most_right = np.argmax(handle, axis=0)[0]
+#     center = [(most_left)]
 
-    return handle
+#     return handle
 
 
 def receptionist(agent):
@@ -102,28 +103,29 @@ def receptionist(agent):
     agent.say('start receptionist')
 
 
-    if open_door_mode:
-        # 1. go to door position
-        agent.grasp()
-        agent.pose.move_pose()
-        # agent.move_abs_safe(door_bypass_position)
-        agent.move_abs_safe(door_position)
-        agent.pose.head_tilt(10)
+    # open door X
+    # if open_door_mode:
+    #     # 1. go to door position
+    #     agent.grasp()
+    #     agent.pose.move_pose()
+    #     # agent.move_abs_safe(door_bypass_position)
+    #     agent.move_abs_safe(door_position)
+    #     agent.pose.head_tilt(10)
 
-        # 2. open the door
-        # handle_xyz = door_handle_detection(agent)
-        rospy.sleep(1)
-        agent.open_gripper()
-        agent.pose.door_open_pose()
-        # agent.move_abs_safe(pick_position)
-        agent.grasp()
-        agent.pose.door_handle_down_pose() # 10cm position add
-        agent.move_rel(-0.5, 0, wait=True)
-        rospy.sleep(1)
-        agent.open_gripper()
-        agent.pose.move_pose()
-        agent.grasp()
-        # # agent.open_gripper()
+    #     # 2. open the door
+    #     # handle_xyz = door_handle_detection(agent)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.door_open_pose()
+    #     # agent.move_abs_safe(pick_position)
+    #     agent.grasp()
+    #     agent.pose.door_handle_down_pose() # 10cm position add
+    #     agent.move_rel(-0.5, 0, wait=True)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.move_pose()
+    #     agent.grasp()
+    #     # # agent.open_gripper()
 
     # 3. meet the first guest
 
@@ -154,55 +156,56 @@ def receptionist(agent):
     agent.pose.head_tilt(10)
 
     # First guest STT
-    qr_check = True
+    # qr_check = True
+    qr_check = False
     agent.say('I will ask your \nname and drink.', show_display=True)
     rospy.sleep(2.5)
-    # if not calibration_mode:
-    #     name1, drink1 = '_', '_'
-    #     for j in range(2):
-    #         agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-    #         rospy.sleep(4)
-    #
-    #         if name1.lower() not in name_list:
-    #             agent.say('What is your name?\n Say only name word.', show_display=True)
-    #             rospy.sleep(3)
-    #             first_raw_name = agent.stt(3)
-    #             name1, _ = first_raw_name
-    #             if name1 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 continue
-    #             print(name1)
-    #
-    #         if drink1.lower() not in drink_list:
-    #             agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
-    #             rospy.sleep(3.5)
-    #             first_raw_drink = agent.stt(3)
-    #             drink1, _ = first_raw_drink
-    #             if drink1 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.2)
-    #                 continue
-    #             print(drink1)
-    #
-    #         agent.say(f'Is this correct?\n ({name1}, {drink1}) \nsay yes or no', show_display=True)
-    #         rospy.sleep(4.5)
-    #
-    #         answer, _ = agent.stt(3)
-    #         if 'yes' in answer:
-    #             qr_check = False
-    #             break
-    #         elif 'no' in answer:
-    #             continue
-    #         else:
-    #             agent.say('Answer only by \nyes or no', show_display=True)
-    #             rospy.sleep(2.5)
-    #             answer, _ = agent.stt(3)
-    #             if 'yes' in answer:
-    #                 qr_check = False
-    #                 break
-    #             elif 'no' in answer:
-    #                 continue
+    if not calibration_mode:
+        name1, drink1 = '_', '_'
+        for j in range(2):
+            agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+            rospy.sleep(4)
+
+            if name1.lower() not in name_list:
+                agent.say('What is your name?\n Say only name word.', show_display=True)
+                rospy.sleep(3)
+                first_raw_name = agent.stt(3)
+                name1, _ = first_raw_name
+                if name1 == '':
+                    agent.say('Sorry, voice not recognized.', show_display=True)
+                    rospy.sleep(1.5)
+                    continue
+                print(name1)
+    
+            if drink1.lower() not in drink_list:
+                agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
+                rospy.sleep(3.5)
+                first_raw_drink = agent.stt(3)
+                drink1, _ = first_raw_drink
+                if drink1 == '':
+                    agent.say('Sorry, voice not recognized.', show_display=True)
+                    rospy.sleep(1.2)
+                    continue
+                print(drink1)
+    
+            agent.say(f'Is this correct?\n ({name1}, {drink1}) \nsay yes or no', show_display=True)
+            rospy.sleep(4.5)
+    
+            answer, _ = agent.stt(3)
+            if 'yes' in answer:
+                qr_check = False
+                break
+            elif 'no' in answer:
+                continue
+            else:
+                agent.say('Answer only by \nyes or no', show_display=True)
+                rospy.sleep(2.5)
+                answer, _ = agent.stt(3)
+                if 'yes' in answer:
+                    qr_check = False
+                    break
+                elif 'no' in answer:
+                    continue
 
     if qr_check:
         agent.say('Sorry.\nShow me the QR code', show_display=True)
@@ -285,59 +288,60 @@ def receptionist(agent):
     rospy.sleep(0.8)
 
     # Second guest STT
-    qr_check = True
-    # agent.say('I will ask your \nname and drink.', show_display=True)
-    # rospy.sleep(2.5)
-    # if not calibration_mode:
-    #     name2, drink2 = '_', '_'
-    #     for j in range(2):
-    #         agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-    #         rospy.sleep(4)
-    #
-    #         if name2.lower() not in name_list:
-    #             agent.say('What is your name?\n Say only drink word.', show_display=True)
-    #             rospy.sleep(3)
-    #             second_raw_name = agent.stt(3)
-    #             name2, _ = second_raw_name
-    #             if name2 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 continue
-    #             print(name2)
-    #
-    #         if drink2.lower() not in drink_list:
-    #             agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
-    #             rospy.sleep(3.5)
-    #             second_raw_drink = agent.stt(3)
-    #             drink2, _ = second_raw_drink
-    #             if drink2 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.2)
-    #                 continue
-    #             print(drink2)
-    #
-    #         agent.say(f'Is this correct?\n ({name2}, {drink2}) \nsay yes or no', show_display=True)
-    #         rospy.sleep(4.5)
-    #
-    #         answer, _ = agent.stt(3)
-    #         if 'yes' in answer:
-    #             qr_check = False
-    #             break
-    #         elif 'no' in answer:
-    #             continue
-    #         else:
-    #             agent.say('Answer only by \nyes or no', show_display=True)
-    #             rospy.sleep(2.5)
-    #             answer, _ = agent.stt(3)
-    #             if 'yes' in answer:
-    #                 qr_check = False
-    #                 break
-    #             elif 'no' in answer:
-    #                 continue
+    # qr_check = True
+    qr_check = False
+    agent.say('I will ask your \nname and drink.', show_display=True)
+    rospy.sleep(2.5)
+    if not calibration_mode:
+        name2, drink2 = '_', '_'
+        for j in range(2):
+            agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+            rospy.sleep(4)
+    
+            if name2.lower() not in name_list:
+                agent.say('What is your name?\n Say only drink word.', show_display=True)
+                rospy.sleep(3)
+                second_raw_name = agent.stt(3)
+                name2, _ = second_raw_name
+                if name2 == '':
+                    agent.say('Sorry, voice not recognized.', show_display=True)
+                    rospy.sleep(1.5)
+                    continue
+                print(name2)
+    
+            if drink2.lower() not in drink_list:
+                agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
+                rospy.sleep(3.5)
+                second_raw_drink = agent.stt(3)
+                drink2, _ = second_raw_drink
+                if drink2 == '':
+                    agent.say('Sorry, voice not recognized.', show_display=True)
+                    rospy.sleep(1.2)
+                    continue
+                print(drink2)
+    
+            agent.say(f'Is this correct?\n ({name2}, {drink2}) \nsay yes or no', show_display=True)
+            rospy.sleep(4.5)
+    
+            answer, _ = agent.stt(3)
+            if 'yes' in answer:
+                qr_check = False
+                break
+            elif 'no' in answer:
+                continue
+            else:
+                agent.say('Answer only by \nyes or no', show_display=True)
+                rospy.sleep(2.5)
+                answer, _ = agent.stt(3)
+                if 'yes' in answer:
+                    qr_check = False
+                    break
+                elif 'no' in answer:
+                    continue
 
     if qr_check:
         rospy.sleep(1)
-        agent.say('Sorry.\nShow me the QR code', show_display=True)
+        agent.say('Show me the QR code', show_display=True)
         rospy.sleep(1.2)
         # read qrcode
         qr_str = decoder_loop(agent)
