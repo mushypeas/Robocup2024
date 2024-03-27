@@ -130,6 +130,75 @@ class HumanFollowing:
             return True # stop
 
         return False # pass
+    
+    def barrier_check(self):
+        # _depth = self.agent.depth_image[:150, 10:630]
+        _depth = self.agent.depth_image
+        return _depth
+    
+
+    def escape_barrier(self):
+        cur_pose = self.agent.get_pose(print_option=False)
+        thres = 0.7
+        _num_rotate=0
+        _depth = self.barrier_check()
+        escape_radius = 0.2
+        rot_dir_left = 1
+        if (np.mean(_depth[200:280, 280:360]) / 1000 < thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
+            rospy.loginfo(f"rect depth : {np.mean(_depth[200:280, 280:360])}")
+            _num_rotate = _num_rotate + 1
+            rospy.sleep(1)
+            self.agent.say('Barrier checking....', show_display=True)
+            print("Barrier checking....")
+            rospy.sleep(5)
+
+            _depth = self.barrier_check()
+            rospy.loginfo(f"rect depth : {np.mean(_depth[200:280, 280:360])}")
+
+            while (np.mean(_depth[200:280, 280:360]) / 1000 < thres):
+                _num_rotate = _num_rotate + 1
+                rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
+
+                self.agent.say('Barrier verified.', show_display=True)
+                print("Barreir verified")
+                self.agent.move_rel(0,0,self.stop_rotate_velocity)
+                rospy.sleep(1)
+                _depth = self.barrier_check()
+                if (np.mean(_depth[200:280, 280:360]) / 1000 > (thres+0.4)):
+                    print("it's safe now!")
+                    self.agent.say("It's safe now!")
+                    break
+                elif (_num_rotate > 5):
+                    _num_rotate = 0
+                    self.agent.say("spin opposite direction.")
+                    rot_dir_left = 1
+                    rospy.sleep(4)
+                    _depth = self.barrier_check()
+                    while (np.mean(_depth[200:280, 280:360]) / 1000 < thres):
+                        _num_rotate = _num_rotate + 1
+                        self.agent.say('Barrier verified.', show_display=True)
+                        print("Barreir verified")
+                        rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
+                        self.agent.move_rel(0,0,-self.stop_rotate_velocity)
+                        rospy.sleep(1)
+                        _depth = self.barrier_check()
+                        if (np.mean(_depth[200:280, 280:360]) / 1000 > (thres+0.4)):
+                            break
+
+
+            rospy.sleep(2)
+            self.agent.say("stop rotating.")
+            rospy.sleep(4)
+            self.agent.move_rel(0.3,0,0)
+            rospy.sleep(3)
+            self.agent.move_rel(0.3,0,0)
+
+            if (rot_dir_left==1):
+                self.agent.move_rel(0,0,-self.stop_rotate_velocity/2)
+            else :
+                self.agent.move_rel(0,0,self.stop_rotate_velocity/2)
+            rospy.sleep(3)
 
     def stt_destination(self, stt_option):
         cur_pose = self.agent.get_pose(print_option=False)
@@ -190,6 +259,8 @@ class HumanFollowing:
             #     self.last_say = time.time()
             #     rospy.sleep(1)
             #     print("seven seconds")
+            self.escape_barrier()
+
             if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
                 self.agent.say('Please come closer to me', show_display=True)
                 print("Please come closer to me")
@@ -197,44 +268,18 @@ class HumanFollowing:
                 rospy.sleep(1)
             return False
         
-    def barrier_check(self):
-        _depth = self.agent.depth_image[:150, 10:630]
-        _lidar_dist = self.agent.dist
-        return _depth, _lidar_dist
 
     def follow_human(self, start_time=time.time(), pose_save_time_period=10):
 
         ##########24.3.26
         _num_rotate = 0
-        self.agent.say('Testing....', show_display=True)
-        print("Testing...")
-        
-        thres = 0.4
-        _depth, _lidar_dist = self.barrier_check()
-        while True:
-            rospy.loginfo(f"Min depth: {np.mean(self.agent.depth_image[:150, 10:630])}")
-            rospy.sleep(1)
-        if(np.any(_depth) / 1000 < thres) or (np.any(_lidar_dist) < thres):
-            rospy.loginfo(f"rect depth : {np.mean(_depth)}, lidar_dist: {np.mean(_lidar_dist)}")
-            _num_rotate = _num_rotate + 1
-            self.agent.say('Barrier checking....', show_display=True)
-            print("Barrier checking....")
-            rospy.sleep(5)
-            while (self.barrier_check):
-                _num_rotate = _num_rotate + 1
-                self.agent.say('Barrier verified.', show_display=True)
-                print("Barreir verified")
-                self.agent.move_rel(0,0,self.stop_rotate_velocity)
-                rospy.sleep(1)
-            
-            self.agent.move_rel(1,0,0)
-            rospy.sleep(1)
-            self.agent.move_rel(0,0,_num_rotate * -self.stop_rotate_velocity)
 
-            rospy.sleep(1)
+        self.escape_barrier()
+
 
 
         if self.human_box_list[0] is None: # no human detected
+            rospy.loginfo("no human")
             if self.stt_destination(self.stt_option):
                 return True
             return False
