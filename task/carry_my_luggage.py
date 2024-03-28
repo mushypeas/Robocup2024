@@ -57,7 +57,7 @@ class HumanFollowing:
 
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
-        # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+        self.agent.pose.head_pan_tilt(0, -self.tilt_angle*0.5)
         rospy.sleep(1)
         head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor",
                                                                  config_callback=self.head_map_cb)
@@ -159,7 +159,7 @@ class HumanFollowing:
             _depth = self.barrier_check()
             rospy.loginfo(f"rect depth : {np.mean(_depth)}")
 
-            while (np.mean(_depth])< thres):
+            while (np.mean(_depth)< thres):
                 _num_rotate = _num_rotate + 1
                 rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
 
@@ -188,7 +188,7 @@ class HumanFollowing:
                         rospy.sleep(1)
                         _depth = self.barrier_check()
                         if (np.mean(_depth) > (thres+0.4)):
-                            self.agent.move_rel(0,0,self.-stop_rotate_velocity*0.6)
+                            self.agent.move_rel(0,0,-self.stop_rotate_velocity*0.6)
                             print("it's safe now!")
                             self.agent.say("It's safe now!")
                             break
@@ -212,7 +212,7 @@ class HumanFollowing:
                 self.agent.move_rel(0,0,self.stop_rotate_velocity)
             rospy.sleep(2)
 
-    def stt_destination(self, stt_option):
+    def stt_destination(self, stt_option, calc_z=100):
         cur_pose = self.agent.get_pose(print_option=False)
         # print("in area", [cur_pose[0], cur_pose[1]], "last moved time", time.time() - self.agent.last_moved_time)
         if (time.time() - self.agent.last_moved_time > 11.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
@@ -271,7 +271,7 @@ class HumanFollowing:
             #     self.last_say = time.time()
             #     rospy.sleep(1)
             #     print("seven seconds")
-            self.escape_barrier()
+            self.escape_barrier(calc_z)
 
             if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
                 self.agent.say('Please come closer to me', show_display=True)
@@ -286,10 +286,14 @@ class HumanFollowing:
         ##########24.3.26
         _num_rotate = 0
 
-        self.escape_barrier()
+        # self.escape_barrier(calc_z)
+        # if self.human_box_list[0] is None: # no human detected
 
+        # human_info_ary = copy.deepcopy(self.human_box_list)
 
-
+        # depth = np.asarray(self.d2pc.depth)
+        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+        # self.escape_barrier(calc_z)
         if self.human_box_list[0] is None: # no human detected
             rospy.loginfo("no human")
             if self.stt_destination(self.stt_option):
@@ -303,7 +307,7 @@ class HumanFollowing:
                 self.agent.say('Please, go to center!')
                 self.last_say = time.time()
             rospy.sleep(2)
-            if self.stt_destination(self.stt_option):
+            if self.stt_destination(self.stt_option, calc_z):
                 return True
             return False
         else:
@@ -333,7 +337,7 @@ class HumanFollowing:
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
 
-                if self.stt_destination(self.stt_option):
+                if self.stt_destination(self.stt_option, calc_z):
                     return True
 
                 return False
@@ -343,7 +347,6 @@ class HumanFollowing:
             # 2.4 move to human
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             rospy.sleep(.5)
-            self.last_human_pos =
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
                 if self.save_one_time:
@@ -354,7 +357,7 @@ class HumanFollowing:
                 self.save_one_time = True
 
             # check arrive at destination zone
-            if self.stt_destination(self.stt_option):
+            if self.stt_destination(self.stt_option, calc_z):
                 return True
 
         return False
