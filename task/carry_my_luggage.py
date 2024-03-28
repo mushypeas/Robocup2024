@@ -48,6 +48,7 @@ class HumanFollowing:
         self.tilt_angle = tilt_angle
         self.stt_option = stt_option
         self.save_one_time = False
+        self.last_human_pos = start_location
         bytetrack_topic = '/snu/bytetrack_img'
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
@@ -56,7 +57,7 @@ class HumanFollowing:
 
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
-        self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+        # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
         rospy.sleep(1)
         head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor",
                                                                  config_callback=self.head_map_cb)
@@ -133,30 +134,32 @@ class HumanFollowing:
     
     def barrier_check(self):
         # _depth = self.agent.depth_image[:150, 10:630]
-        _depth = self.agent.depth_image
+        _depth = self.agent.depth_image[200:280, 280:360] / 1000
         return _depth
     
 
-    def escape_barrier(self):
+    def escape_barrier(self, calc_z):
         cur_pose = self.agent.get_pose(print_option=False)
         thres = 0.7
         _num_rotate=0
         _depth = self.barrier_check()
         escape_radius = 0.2
         rot_dir_left = 1
-        if (np.mean(_depth[200:280, 280:360]) / 1000 < thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (np.mean(_depth) < thres and np.mean(_depth) < (calc_z-0.1) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
-            rospy.loginfo(f"rect depth : {np.mean(_depth[200:280, 280:360])}")
+            rospy.loginfo(f"rect depth : {np.mean(_depth)}")
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
             self.agent.say('Barrier checking....', show_display=True)
             print("Barrier checking....")
-            rospy.sleep(5)
+            self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+
+            rospy.sleep(3)
 
             _depth = self.barrier_check()
-            rospy.loginfo(f"rect depth : {np.mean(_depth[200:280, 280:360])}")
+            rospy.loginfo(f"rect depth : {np.mean(_depth)}")
 
-            while (np.mean(_depth[200:280, 280:360]) / 1000 < thres):
+            while (np.mean(_depth])< thres):
                 _num_rotate = _num_rotate + 1
                 rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
 
@@ -165,7 +168,8 @@ class HumanFollowing:
                 self.agent.move_rel(0,0,self.stop_rotate_velocity)
                 rospy.sleep(1)
                 _depth = self.barrier_check()
-                if (np.mean(_depth[200:280, 280:360]) / 1000 > (thres+0.4)):
+                if (np.mean(_depth) > (thres+0.4)):
+                    self.agent.move_rel(0,0,self.stop_rotate_velocity*0.6)
                     print("it's safe now!")
                     self.agent.say("It's safe now!")
                     break
@@ -175,7 +179,7 @@ class HumanFollowing:
                     rot_dir_left = 1
                     rospy.sleep(4)
                     _depth = self.barrier_check()
-                    while (np.mean(_depth[200:280, 280:360]) / 1000 < thres):
+                    while (np.mean(_depth) < thres):
                         _num_rotate = _num_rotate + 1
                         self.agent.say('Barrier verified.', show_display=True)
                         print("Barreir verified")
@@ -183,22 +187,30 @@ class HumanFollowing:
                         self.agent.move_rel(0,0,-self.stop_rotate_velocity)
                         rospy.sleep(1)
                         _depth = self.barrier_check()
-                        if (np.mean(_depth[200:280, 280:360]) / 1000 > (thres+0.4)):
+                        if (np.mean(_depth) > (thres+0.4)):
+                            self.agent.move_rel(0,0,self.-stop_rotate_velocity*0.6)
+                            print("it's safe now!")
+                            self.agent.say("It's safe now!")
                             break
 
 
-            rospy.sleep(2)
+            rospy.sleep(1)
             self.agent.say("stop rotating.")
-            rospy.sleep(4)
-            self.agent.move_rel(0.3,0,0)
+            self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
             rospy.sleep(3)
+            self.agent.move_rel(0.3,0,0)
+            rospy.sleep(.5)
+            self.agent.move_rel(0.3,0,0)
+            rospy.sleep(.5)
+            self.agent.move_rel(0.3,0,0)
+            rospy.sleep(.5)
             self.agent.move_rel(0.3,0,0)
 
             if (rot_dir_left==1):
-                self.agent.move_rel(0,0,-self.stop_rotate_velocity/2)
+                self.agent.move_rel(0,0,-self.stop_rotate_velocity)
             else :
-                self.agent.move_rel(0,0,self.stop_rotate_velocity/2)
-            rospy.sleep(3)
+                self.agent.move_rel(0,0,self.stop_rotate_velocity)
+            rospy.sleep(2)
 
     def stt_destination(self, stt_option):
         cur_pose = self.agent.get_pose(print_option=False)
@@ -331,6 +343,7 @@ class HumanFollowing:
             # 2.4 move to human
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             rospy.sleep(.5)
+            self.last_human_pos =
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
                 if self.save_one_time:
