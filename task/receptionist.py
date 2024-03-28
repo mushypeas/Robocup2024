@@ -48,6 +48,7 @@ def receptionist(agent):
     scan_position = 'seat_scan'
     scan_bypass_position = 'seat_scan_bypass'
     start_position = 'start'
+    # start_position = 'start_receptionist' # AIIS
 
     open_door_mode = False
     calibration_mode = False
@@ -97,11 +98,13 @@ def receptionist(agent):
     attr = Attribute(cloth_threshold, calibration_mode)
     cs = CheckSeat(face_threshold, face_threshold2, sofa_range,door_range, head_pan_angle, sofa_point_angle, calibration_mode)
     face_attr = FaceAttribute()
+
+
     ### main scenario ########################
     agent.pose.move_pose()
     agent.move_abs_safe(start_position)
     agent.say('start receptionist')
-
+    input('#################### Debug 1 ####################')
 
     # open door X
     # if open_door_mode:
@@ -144,16 +147,17 @@ def receptionist(agent):
     except:
         gender = ['male']
         age = '20-29'
-    print(gender)
-    print(age)
+    print('receptionist gender,age: ', gender, age)
     rospy.sleep(1)
+    input('#################### Debug 2 ####################')
 
     agent.pose.head_tilt(-7.5)
     if calibration_mode:
         attr.cloth_extract_calibration_mode(agent)
     clothes, hair_color = attr.scan_human(agent)
-    print(clothes)
+    print('receptionist clothes: ', clothes)
     agent.pose.head_tilt(10)
+    input('#################### Debug 3 ####################')
 
     # First guest STT
     # qr_check = True
@@ -162,36 +166,40 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name1, drink1 = '_', '_'
-        for j in range(2):
+        for _ in range(10):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
+            name1, drink1 = '_', '_'
+            
             if name1.lower() not in name_list:
                 agent.say('What is your name?\n Say only name word.', show_display=True)
                 rospy.sleep(3)
-                first_raw_name = agent.stt(3)
+                first_raw_name = agent.stt(3, mode='name')
+                # first_raw_name = agent.stt(7, mode=None)
                 name1, _ = first_raw_name
+                print('receptionist name1: ', name1)
                 if name1 == '':
                     agent.say('Sorry, voice not recognized.', show_display=True)
                     rospy.sleep(1.5)
                     continue
-                print(name1)
     
             if drink1.lower() not in drink_list:
                 agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
                 rospy.sleep(3.5)
-                first_raw_drink = agent.stt(3)
+                first_raw_drink = agent.stt(3, mode='drink')
+                # first_raw_drink = agent.stt(7, mode=None)
                 drink1, _ = first_raw_drink
+                print('receptionist drink1: ', drink1)
                 if drink1 == '':
                     agent.say('Sorry, voice not recognized.', show_display=True)
                     rospy.sleep(1.2)
                     continue
-                print(drink1)
-    
+
             agent.say(f'Is this correct?\n ({name1}, {drink1}) \nsay yes or no', show_display=True)
             rospy.sleep(4.5)
     
-            answer, _ = agent.stt(3)
+            answer, _ = agent.stt(3, mode='yesno')
             if 'yes' in answer:
                 qr_check = False
                 break
@@ -200,7 +208,7 @@ def receptionist(agent):
             else:
                 agent.say('Answer only by \nyes or no', show_display=True)
                 rospy.sleep(2.5)
-                answer, _ = agent.stt(3)
+                answer, _ = agent.stt(3, mode='yesno')
                 if 'yes' in answer:
                     qr_check = False
                     break
@@ -214,6 +222,8 @@ def receptionist(agent):
         qr_str = decoder_loop(agent)
         data = qr_str.split(',')
         name1, drink1 = data[0], data[1]
+
+    input('#################### Debug 4 ####################')
 
     # 4. offer the seat
     # agent.pose.move_pose()

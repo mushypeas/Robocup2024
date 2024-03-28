@@ -411,8 +411,8 @@ class Agent:
             self.head_show_text(sentence)
 
     # stt
-    def stt(self, sec=5.):
-        return stt_client_hsr_mic(sec=sec)
+    def stt(self, sec=5., mode=None):
+        return stt_client_hsr_mic(sec=sec, mode=mode)
         # return stt_client(sec=sec)
         pass
 
