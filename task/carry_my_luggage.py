@@ -151,14 +151,18 @@ class HumanFollowing:
         _depth = self.barrier_check()
         escape_radius = 0.2
         rot_dir_left = 1
+<<<<<<< HEAD
         _depth_value_except_0 = _depth[_depth != 0]
         rospy.loginfo(f"rect depth mean : {np.mean(_depth)}")
         rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {np.mean(_depth)}")
 
+=======
+        rospy.loginfo(f"rect depth : {np.mean(_depth)}")
+        rospy.loginfo(f"calc_z : {calc_z}") # mm
+>>>>>>> c61f550020e21f8a1a9000af16d52f8f3f9111e0
         if (np.mean(_depth) < thres and np.mean(_depth) < (calc_z-100) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
-            rospy.loginfo(f"rect depth : {np.mean(_depth)}")
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
             self.agent.say('Barrier checking....', show_display=True)
@@ -176,8 +180,14 @@ class HumanFollowing:
 
                 self.agent.say('Barrier verified.', show_display=True)
                 print("Barreir verified")
+<<<<<<< HEAD
                 self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=True)
                 rospy.sleep(1)
+=======
+                _depth_except_0 = _depth[_depth!=0]
+                print("min_depth except 0 : ",np.min(_depth_except_0) )
+                self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=True)
+>>>>>>> c61f550020e21f8a1a9000af16d52f8f3f9111e0
                 _depth = self.barrier_check()
                 if (np.mean(_depth) > (thres+0.4)):
                     self.agent.move_rel(0,0,self.stop_rotate_velocity*0.6, wait=True)
@@ -209,6 +219,7 @@ class HumanFollowing:
             self.agent.say("stop rotating.")
             # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
             rospy.sleep(3)
+<<<<<<< HEAD
             self.agent.move_rel(0.3,0,0, wait=True)
             rospy.sleep(.5)
             self.agent.move_rel(0.3,0,0, wait=True)
@@ -216,6 +227,15 @@ class HumanFollowing:
             self.agent.move_rel(0.3,0,0, wait=True)
             rospy.sleep(.5)
             self.agent.move_rel(0.3,0,0, wait=True)
+=======
+            self.agent.move_rel(0.5,0,0)
+            rospy.sleep(.5)
+            self.agent.move_rel(0.5,0,0)
+            rospy.sleep(.5)
+            self.agent.move_rel(0.5,0,0)
+            rospy.sleep(.5)
+            self.agent.move_rel(0.5,0,0)
+>>>>>>> c61f550020e21f8a1a9000af16d52f8f3f9111e0
 
             if (rot_dir_left==1):
                 self.agent.move_rel(0,0,-(_num_rotate-1) * self.stop_rotate_velocity)
@@ -223,7 +243,11 @@ class HumanFollowing:
                 self.agent.move_rel(0,0,(_num_rotate-1) * self.stop_rotate_velocity)
             rospy.sleep(2)
 
+<<<<<<< HEAD
     def stt_destination(self, stt_option, calc_z=10000):
+=======
+    def stt_destination(self, stt_option, calc_z=100000):
+>>>>>>> c61f550020e21f8a1a9000af16d52f8f3f9111e0
         cur_pose = self.agent.get_pose(print_option=False)
         # print("in area", [cur_pose[0], cur_pose[1]], "last moved time", time.time() - self.agent.last_moved_time)
         if (time.time() - self.agent.last_moved_time > 11.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
