@@ -1,7 +1,7 @@
 import os
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
-# data topic name
+# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
