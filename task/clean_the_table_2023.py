@@ -5,8 +5,10 @@ def clean_the_table(agent):
 
     ### task params #################
     pick_table = 'kitchen_table'
+    place_table = 'dishwasher'
     pick_position = 'clean_table_front'
     place_position = 'dishwasher_rack'
+    dishwaher_door_position = 'dishwasher_rack'
     tab_name = 'dishwasher_tablet'
     item_list = ['mug', 'bowl', 'plate', 'fork', 'spoon', 'knife']
     plate_radius = 0.10
@@ -31,46 +33,48 @@ def clean_the_table(agent):
 
     stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
     stop_client.call(EmptyRequest())
-    agent.grasp()
     agent.pose.move_pose()
 
-
-    # agent.door_open()
-    # agent.move_rel(2.0, 0, wait=True)
+    agent.door_open()
     agent.say('start clean the table', show_display=True)
+    agent.move_rel(2.0, 0, wait=True)
     agent.move_abs('breakfast_bypass')
 
-    # import pdb; pdb.set_trace()
+
     while True:
         # 1. go to pick table
         if safe_flag == 0:
             rospy.sleep(0.5)
             agent.move_abs(pick_position)
+            agent.move_abs(pick_position)
             agent.pose.table_search_pose()
+            # dist_initial_forward = distancing(agent.yolo_module.pc, pick_table)
+            # agent.move_rel(dist_initial_forward, 0, wait=True)
+
 
         # 2. search
         agent.pose.table_search_pose()
         rospy.sleep(1)
-        table_item_list = agent.yolo_module.detect_3d(pick_table) # eg. [0.8,0.0,0.7,20] (20 means knife) ()
-        table_item_id_list = [table_item[3] for table_item in table_item_list] # eg. [20] (=knife)
+        table_item_list = agent.yolo_module.detect_3d(pick_table)
+        table_item_id_list = [table_item[3] for table_item in table_item_list]
 
         print("2. table_item_list", table_item_list)
         print('table_item_id_list', table_item_id_list)
 
         # 2.1 select target_object_pc
         is_detected = False
-        for item in item_list: # Item list is set already
+        for item in item_list:
             name, item_id, itemtype, grasping_type = agent.yolo_module.find_object_info_by_name(item)
             for table_item in table_item_list:
                 if item_id == table_item[3]:
-                    table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, name) # [0.8,0.0,0.7]
+                    table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, name)
                     is_detected = True
-                    pick_item_id = item_id # 20 (knife)
+                    pick_item_id = item_id
                     break
             if is_detected:
                 break
 
-        if not is_detected: # If nothing detected, go back! if something was, go next line.
+        if not is_detected:
             continue
 
         print('2.2 table_base_to_object_xyz', table_base_to_object_xyz)
@@ -209,20 +213,20 @@ def clean_the_table(agent):
         #     agent.open_gripper()
         #     # agent.move_rel(0, plate_xyz[1], wait=True)
         #     # agent.move_rel(plate_xyz[0] + 0.18, 0, wait=True)
-        
-        #     agent.move_rel(base_xyz[0] + 0.18, base_xyz[1], wait=True)
-        
+        #
+        #     agent.move_rel(plate_xyz[0] + 0.18, plate_xyz[1], wait=True)
+        #
         #     agent.pose.arm_lift_top_table_down(height=-0.025, table=pick_table)
-        
-        #     agent.move_rel(-base_xyz[0]-0.06, 0, wait=True)
+        #
+        #     agent.move_rel(-dist_plate_x-0.06, 0, wait=True)
         #     agent.pose.arm_lift_top_table_down(height=0.05, table=pick_table)
-        
+        #
         #     agent.move_rel(-0.18, 0, wait=True)
         #     agent.pose.pick_plate_pose_fold(table=pick_table)
-        
+        #
         #     agent.move_rel(0.04, 0, wait=True)  # slightly move forward
         #     agent.grasp()
-        
+        #
         #     is_picked = agent.pose.check_grasp()
         #     print(f"2.4 grasp value of item '{item}': {is_picked}")
 

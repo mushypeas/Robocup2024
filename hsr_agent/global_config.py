@@ -33,9 +33,9 @@ if AIIS:
         'breakfast_bypass': [1.6, -1.2796, 0.0], #bjkim2
 
         # clean the table
-        'dishwasher': [1.6, -1.2796, 1.7], #bjkim2
-        'dishwasher_rack': [1.6, -1.2796, 1.7], #bjkim2
-        'opened_dishwasher': [1.6, -1.2796, 1.7], #bjkim2
+        'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
+        'dishwasher_rack': [2.0148, 0.8449, 1.6256], #bjkim2
+        'opened_dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
         'clean_table_front' : [1.6, -1.2796, 0.0], #bjkim2
 
         # receptionist
@@ -147,7 +147,7 @@ if AIIS:
         'bedside_table': [0.5, 0.45, 0.58],
 
         # clean the table
-        'dishwasher_handle': [0.60, 0.60, 0.84],
+        'dishwasher_handle': [0.60, 0.60, 0.84], #bjkim, but not modified, still France version
 
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
