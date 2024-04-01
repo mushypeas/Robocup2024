@@ -100,128 +100,128 @@ def receptionist(agent):
     face_attr = FaceAttribute()
 
 
-    ### main scenario ########################
-    agent.pose.move_pose()
-    agent.move_abs_safe(start_position)
-    agent.say('start receptionist')
-    input('#################### Debug 1 ####################')
+    # ### main scenario ########################
+    # agent.pose.move_pose()
+    # agent.move_abs_safe(start_position)
+    # agent.say('start receptionist')
+    # input('#################### Debug 1 ####################')
 
-    # open door X
-    # if open_door_mode:
-    #     # 1. go to door position
-    #     agent.grasp()
-    #     agent.pose.move_pose()
-    #     # agent.move_abs_safe(door_bypass_position)
-    #     agent.move_abs_safe(door_position)
-    #     agent.pose.head_tilt(10)
+    # # open door X
+    # # if open_door_mode:
+    # #     # 1. go to door position
+    # #     agent.grasp()
+    # #     agent.pose.move_pose()
+    # #     # agent.move_abs_safe(door_bypass_position)
+    # #     agent.move_abs_safe(door_position)
+    # #     agent.pose.head_tilt(10)
 
-    #     # 2. open the door
-    #     # handle_xyz = door_handle_detection(agent)
-    #     rospy.sleep(1)
-    #     agent.open_gripper()
-    #     agent.pose.door_open_pose()
-    #     # agent.move_abs_safe(pick_position)
-    #     agent.grasp()
-    #     agent.pose.door_handle_down_pose() # 10cm position add
-    #     agent.move_rel(-0.5, 0, wait=True)
-    #     rospy.sleep(1)
-    #     agent.open_gripper()
-    #     agent.pose.move_pose()
-    #     agent.grasp()
-    #     # # agent.open_gripper()
+    # #     # 2. open the door
+    # #     # handle_xyz = door_handle_detection(agent)
+    # #     rospy.sleep(1)
+    # #     agent.open_gripper()
+    # #     agent.pose.door_open_pose()
+    # #     # agent.move_abs_safe(pick_position)
+    # #     agent.grasp()
+    # #     agent.pose.door_handle_down_pose() # 10cm position add
+    # #     agent.move_rel(-0.5, 0, wait=True)
+    # #     rospy.sleep(1)
+    # #     agent.open_gripper()
+    # #     agent.pose.move_pose()
+    # #     agent.grasp()
+    # #     # # agent.open_gripper()
 
-    # 3. meet the first guest
+    # # 3. meet the first guest
 
-    # 3-1. Get first guest information
-    agent.pose.move_pose()
-    agent.move_abs_safe(cloth_position)
-    rospy.sleep(8)
+    # # 3-1. Get first guest information
+    # agent.pose.move_pose()
+    # agent.move_abs_safe(cloth_position)
+    # rospy.sleep(8)
 
-    agent.pose.head_tilt(10)
-    # agent.say('Hello, I am tidy boy.\n Please stand to the guideline', show_display=True)
-    agent.say('Hello, I am tidy boy.\n Please look at my face and\n stand to the guideline', show_display=True)
-    rospy.sleep(3.5)
+    # agent.pose.head_tilt(10)
+    # # agent.say('Hello, I am tidy boy.\n Please stand to the guideline', show_display=True)
+    # agent.say('Hello, I am tidy boy.\n Please look at my face and\n stand to the guideline', show_display=True)
+    # rospy.sleep(3.5)
 
-    try:
-        gender, age = face_attr.face_attribute(agent)
-    except:
-        gender = ['male']
-        age = '20-29'
-    print('receptionist gender,age: ', gender, age)
-    rospy.sleep(1)
-    input('#################### Debug 2 ####################')
+    # try:
+    #     gender, age = face_attr.face_attribute(agent)
+    # except:
+    #     gender = ['male']
+    #     age = '20-29'
+    # print('receptionist gender,age: ', gender, age)
+    # rospy.sleep(1)
+    # input('#################### Debug 2 ####################')
 
-    agent.pose.head_tilt(-7.5)
-    if calibration_mode:
-        attr.cloth_extract_calibration_mode(agent)
-    clothes, hair_color = attr.scan_human(agent)
-    print('receptionist clothes: ', clothes)
-    agent.pose.head_tilt(10)
-    input('#################### Debug 3 ####################')
+    # agent.pose.head_tilt(-7.5)
+    # if calibration_mode:
+    #     attr.cloth_extract_calibration_mode(agent)
+    # clothes, hair_color = attr.scan_human(agent)
+    # print('receptionist clothes: ', clothes)
+    # agent.pose.head_tilt(10)
+    # input('#################### Debug 3 ####################')
 
-    # First guest STT
-    # qr_check = True
-    qr_check = False
-    agent.say('I will ask your \nname and drink.', show_display=True)
-    rospy.sleep(2.5)
-    if not calibration_mode:
-        name1, drink1 = '_', '_'
-        for _ in range(10):
-            agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-            rospy.sleep(4)
+    # # First guest STT
+    # # qr_check = True
+    # qr_check = False
+    # agent.say('I will ask your \nname and drink.', show_display=True)
+    # rospy.sleep(2.5)
+    # if not calibration_mode:
+    #     name1, drink1 = '_', '_'
+    #     for _ in range(10):
+    #         agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+    #         rospy.sleep(4)
 
-            name1, drink1 = '_', '_'
+    #         name1, drink1 = '_', '_'
             
-            if name1.lower() not in name_list:
-                agent.say('What is your name?\n Say only name word.', show_display=True)
-                rospy.sleep(3)
-                first_raw_name = agent.stt(3, mode='name')
-                # first_raw_name = agent.stt(7, mode=None)
-                name1, _ = first_raw_name
-                print('receptionist name1: ', name1)
-                if name1 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.5)
-                    continue
+    #         if name1.lower() not in name_list:
+    #             agent.say('What is your name?\n Say only name word.', show_display=True)
+    #             rospy.sleep(3)
+    #             first_raw_name = agent.stt(3, mode='name')
+    #             # first_raw_name = agent.stt(7, mode=None)
+    #             name1, _ = first_raw_name
+    #             print('receptionist name1: ', name1)
+    #             if name1 == '':
+    #                 agent.say('Sorry, voice not recognized.', show_display=True)
+    #                 rospy.sleep(1.5)
+    #                 continue
     
-            if drink1.lower() not in drink_list:
-                agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
-                rospy.sleep(3.5)
-                first_raw_drink = agent.stt(3, mode='drink')
-                # first_raw_drink = agent.stt(7, mode=None)
-                drink1, _ = first_raw_drink
-                print('receptionist drink1: ', drink1)
-                if drink1 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.2)
-                    continue
+    #         if drink1.lower() not in drink_list:
+    #             agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
+    #             rospy.sleep(3.5)
+    #             first_raw_drink = agent.stt(3, mode='drink')
+    #             # first_raw_drink = agent.stt(7, mode=None)
+    #             drink1, _ = first_raw_drink
+    #             print('receptionist drink1: ', drink1)
+    #             if drink1 == '':
+    #                 agent.say('Sorry, voice not recognized.', show_display=True)
+    #                 rospy.sleep(1.2)
+    #                 continue
 
-            agent.say(f'Is this correct?\n ({name1}, {drink1}) \nsay yes or no', show_display=True)
-            rospy.sleep(4.5)
+    #         agent.say(f'Is this correct?\n ({name1}, {drink1}) \nsay yes or no', show_display=True)
+    #         rospy.sleep(4.5)
     
-            answer, _ = agent.stt(3, mode='yesno')
-            if 'yes' in answer:
-                qr_check = False
-                break
-            elif 'no' in answer:
-                continue
-            else:
-                agent.say('Answer only by \nyes or no', show_display=True)
-                rospy.sleep(2.5)
-                answer, _ = agent.stt(3, mode='yesno')
-                if 'yes' in answer:
-                    qr_check = False
-                    break
-                elif 'no' in answer:
-                    continue
+    #         answer, _ = agent.stt(3, mode='yesno')
+    #         if 'yes' in answer:
+    #             qr_check = False
+    #             break
+    #         elif 'no' in answer:
+    #             continue
+    #         else:
+    #             agent.say('Answer only by \nyes or no', show_display=True)
+    #             rospy.sleep(2.5)
+    #             answer, _ = agent.stt(3, mode='yesno')
+    #             if 'yes' in answer:
+    #                 qr_check = False
+    #                 break
+    #             elif 'no' in answer:
+    #                 continue
 
-    if qr_check:
-        agent.say('Sorry.\nShow me the QR code', show_display=True)
-        rospy.sleep(1.2)
-        # read qrcode
-        qr_str = decoder_loop(agent)
-        data = qr_str.split(',')
-        name1, drink1 = data[0], data[1]
+    # if qr_check:
+    #     agent.say('Sorry.\nShow me the QR code', show_display=True)
+    #     rospy.sleep(1.2)
+    #     # read qrcode
+    #     qr_str = decoder_loop(agent)
+    #     data = qr_str.split(',')
+    #     name1, drink1 = data[0], data[1]
 
     input('#################### Debug 4 ####################')
 
@@ -231,21 +231,36 @@ def receptionist(agent):
     agent.pose.head_tilt(10)
 
     # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    name1 = 'paris'
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
+
+    input('#################### Debug 5 ####################')
 
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
 
+    input('#################### Debug 6-1 ####################')
+
     agent.say('Searching empty seat.')
     first_seat_info = cs.check_empty_seat(agent)
+
+    input('#################### Debug 6-2 ####################')
+
     first_2b_seated = cs.seat_available(first_seat_info)
+
+    input('#################### Debug 6-3 ####################')
+
     host_seated = cs.host_seat(first_seat_info)
     print('First Seat info:', first_seat_info, 'First guest Seat:', first_2b_seated, 'Host Seat:', host_seated)
+
+    input('#################### Debug 7 ####################')
 
     cs.point_seat(agent, first_2b_seated)
     agent.say(name1+'. Please sit down there', show_display=True)
     rospy.sleep(1)
+
+    input('#################### Debug 8 ####################')
 
     # 5. Introduce each other
     agent.pose.move_pose()
