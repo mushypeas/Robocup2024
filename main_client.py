@@ -44,8 +44,9 @@ if __name__ == '__main__':
         from task.receptionist import receptionist
         receptionist(agent)
     elif task_id == '3':
-        from task.storing_groceries import storing_groceries
-        storing_groceries(agent)
+        from task.storing_groceries import StoringGroceries
+        task = StoringGroceries(agent)
+        task.run()
     elif task_id == '4':
         from task.serve_breakfast import serve_breakfast
         serve_breakfast(agent)

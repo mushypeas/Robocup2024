@@ -4,6 +4,7 @@ import tf
 from hsr_agent.global_config import TABLE_DIMENSION
 
 def distancing(pointcloud, table, dist=0.6, timeout=3., raw=False):
+    rospy.loginfo(f'Distancing from {table} by {dist}')
     table_height = TABLE_DIMENSION[table][2]
     # Transform from depth camera to base_link
     listener = tf.TransformListener()

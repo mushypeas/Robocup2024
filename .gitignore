@@ -9,3 +9,6 @@ test/image
 *.weights
 *.jpg
 *.ckpt
+venv/
+.venv/
+Tools/BoundingBox_Tool/Images/

@@ -256,9 +256,6 @@ class Agent:
     def move_abs_coordinate(self, coordinate, wait=True):
         self.move_base.move_abs_coordinate(coordinate, wait)
 
-
-
-
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)
     
@@ -326,8 +323,9 @@ class Agent:
             return np.any(insp_area > 200)
 
     def move_abs_coordinate_safe(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
+        rospy.loginfo(f"Moving to {coordinate}")
         goal_x, goal_y, goal_yaw = coordinate
-        self.move_base.base_action_client.wait_for_server()
+        self.move_base.base_action_client.wait_for_server(2)
         pose = PoseStamped()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
@@ -392,10 +390,10 @@ class Agent:
         return True
 
     def move_abs_safe(self, position, thresh=0.01, timeout=3.0, giveup_timeout=50.0, angle=30):
+        rospy.loginfo(f'Moving to {position}')
         # goal_x, goal_y, goal_yaw = self.move_base.abs_position[position]
-        print('position:', position)
         self.move_abs_coordinate_safe(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
-        # self.move_base.base_action_client.wait_for_server()
+        # self.move_base.base_action_client.wait_for_server(2)
 
     def move_abs_by_point(self, position):
         self.move_base.move_abs_by_point(position)
@@ -420,9 +418,11 @@ class Agent:
 
     # gripper
     def open_gripper(self):
+        rospy.loginfo("Gripper opened")
         self.gripper.gripper_command(1.0)
 
     def grasp(self, force=1.0, weak=False):
+        rospy.loginfo("Gripper closed")
         if weak:
             # self.gripper.grasp(0.1)
             self.gripper.grasp(0.05)
@@ -435,10 +435,8 @@ class Agent:
     def door_open(self, thres=1.5):
         while self.dist <= thres:
             rospy.sleep(1.0)
-            print('open closed')
+            print('door closed')
         self.say('door open'); rospy.sleep(1)
-        # self.say('five');  rospy.sleep(1)
-        # self.say('four');  rospy.sleep(1)
         self.say('three'); rospy.sleep(1)
         self.say('two');   rospy.sleep(1)
         self.say('one');   rospy.sleep(1)

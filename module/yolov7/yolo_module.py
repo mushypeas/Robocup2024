@@ -111,32 +111,21 @@ class YoloModule:
         # [side: 0, top: 1, bowl: 2, plate: 3, shelf: 4, bag:5]
         if grasping_type == 0:  # side [ex. milk, cereal]
             camera_to_base_offset = [-0.65, -0.1, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 1:  # top [ex. spoon]
             camera_to_base_offset = [-0.5, -0.07, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 2:  # bowl
             camera_to_base_offset = [-0.5, -0.1, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 3:  # dish
             camera_to_base_offset = [-0.5, -0.1, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 4:  # shelf
             camera_to_base_offset = [-0.38, -0.1, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 5:  # bag
             camera_to_base_offset = [-0.44, -0.04, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
         elif grasping_type == 6:  # inclined pick
             camera_to_base_offset = [-0.43, -0.1, 0]
-            dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
-            return dist_to_pick
+            
+        dist_to_pick = [i + j for i, j in zip(base_to_object_xyz, camera_to_base_offset)]
+        return dist_to_pick
 
     def make_point_marker(self, idx):
         marker = Marker()
