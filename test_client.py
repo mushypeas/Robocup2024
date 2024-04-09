@@ -352,6 +352,11 @@ if __name__ == '__main__':
             agent.pose.restaurant_give_pose()
         elif command == "getj":
             print(agent.pose.joint_value)
+
+        elif command == 'move_rel':
+            rel = input('x, y, rot: ')
+            rel = rel.split(' ')
+            agent.move_rel(float(rel[0]), float(rel[1]), float(rel[2]), wait = True)
         elif command == 'move_abs':
             position = input("position: ")
             agent.move_abs(position, wait=False)
