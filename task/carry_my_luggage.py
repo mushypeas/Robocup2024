@@ -345,7 +345,7 @@ class BagInspection:
         self.bridge = CvBridge()
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
         #Subscribe to take a bag
-        self.yolo_bag_list = [43]
+        self.yolo_bag_list = [6, 7, 8]
         self.d2pc = Depth2PC()
 
         yolo_topic = '/snu/yolo_img'
@@ -381,12 +381,12 @@ class BagInspection:
                 '''
                 BAG PICKING 0706
                 '''
-                if class_id == 42:
-                    bag_height = 0.115
-                elif class_id == 43:
-                    bag_height = 0.225
+                if class_id == 6:
+                    bag_height = 0.39
+                elif class_id == 7:
+                    bag_height = 0.33
                 else:
-                    bag_height = 0.37
+                    bag_height = 0.285
 
                 '''
                 '''
