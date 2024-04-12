@@ -401,12 +401,13 @@ class NoLittering:
         self.agent.say("Please throw\nthe garbage\ninto the bin",
                        show_display=True)
 
-        confirm_start_time = time.time()
-        while len(self.agent.yolo_module.yolo_bbox) == 0:
-            if time.time() - confirm_start_time > 10:
-                break
-            if time.time() - confirm_start_time > 5:
-                self.agent.say("Please trash\n the garbage")
+        # confirm_start_time = time.time()
+        # while len(self.agent.yolo_module.yolo_bbox) == 0:
+        #     if time.time() - confirm_start_time > 10:
+        #         break
+        #     elif time.time() - confirm_start_time > 5:
+        #         self.agent.say("Please trash\n the garbage")
+        #         rospy.sleep(2)
         self.agent.pose.head_pan_tilt(90, 20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(3.5)
@@ -606,14 +607,19 @@ def stickler_for_the_rules(agent):
 
     # while True:
     for search_location in search_location_list:
-        pan_degree_list = [-60, -30, 0, 30, 60]  # default for kitchen
+        # pan_degree_list = [-60, -30, 0, 30, 60]  # default for kitchen
+        pan_degree_list = [-30, 0, 30]
         # pan_degree_list = [0]
-        if search_location == "living_room_search":
-            pan_degree_list = [60, 0, -60, -120, -180, -220]
-        elif search_location == "study_search":
-            pan_degree_list = [-60, -30, 30, 60]
+        # if search_location == "living_room_search":
+        #     pan_degree_list = [60, 0, -60, -120, -180, -220]
+        # elif search_location == "study_search":
+        #     pan_degree_list = [-60, -30, 30, 60]
         # move to the search location
 
+
+        agent.say(f"I'm moving to\n{search_location}.", show_display=True)
+        rospy.sleep(2)
+        
         agent.pose.head_tilt(0)
         agent.move_abs_safe(search_location)
         agent.say('I am checking \n the rules', show_display=True)
@@ -649,7 +655,7 @@ def stickler_for_the_rules(agent):
                         if forbidden_room.detect_forbidden_room(): # TODO : check knee outside the bedroom
                             agent.say('Oh my god. \n You are still here',
                                         show_display=True)
-                            rospy.sleep(1.5)
+                            rospy.sleep(3.5)
                             agent.say('Lets leave with me')
                             break
 

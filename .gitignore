@@ -13,3 +13,4 @@ venv/
 .venv/
 Tools/BoundingBox_Tool/Images/
 Tools/xtioncam_capture/image/
+Tools/yolov7fortraining
