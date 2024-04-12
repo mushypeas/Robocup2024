@@ -21,7 +21,7 @@ def clean_the_table(agent):
                            'knife': cutlery_box_position, 'spoon': cutlery_box_position, tab_name: [0.05, 0.0]}
     is_using_check_grasp_dict = {'mug': True, 'bowl': True, 'plate': True,
                                  'fork': False, 'knife': False, 'spoon': False, tab_name: True}     # do not use check_grasp for motions that scrapes the table
-    id_item_dict = {46: tab_name, 22: 'spoon', 21: 'fork', 19: 'plate', 17: 'bowl', 18: 'mug', 20: 'knife', 46: 'tab'}
+    id_item_dict = {46: tab_name, 2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 46: 'tab'}
     miss_count = 0
     is_picked = False
     double_check_item_list = ['plate', 'bowl']  # items that have ambiguous values when using check_grasp
@@ -40,7 +40,7 @@ def clean_the_table(agent):
     agent.say('start clean the table', show_display=True)
     agent.move_abs('breakfast_bypass')
 
-    # import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     while True:
         # 1. go to pick table
         if safe_flag == 0:
@@ -147,24 +147,24 @@ def clean_the_table(agent):
             # agent.pose.pick_up_bowl_pose(table=pick_table)
             agent.move_rel(-0.17, 0)
 
-        elif item == tab_name:                               # modify
-            agent.pose.pick_top_pose(table=pick_table)
-            agent.open_gripper()
+        # elif item == tab_name:                               # modify
+        #     agent.pose.pick_top_pose(table=pick_table)
+        #     agent.open_gripper()
 
-            # agent.move_rel(0, base_xyz[1]+0.02, wait=True)
-            # agent.move_rel(base_xyz[0] + 0.35, 0, wait=True)
+        #     # agent.move_rel(0, base_xyz[1]+0.02, wait=True)
+        #     # agent.move_rel(base_xyz[0] + 0.35, 0, wait=True)
 
-            agent.move_rel(base_xyz[0] + 0.35, base_xyz[1] + 0.02, wait=True) # modify
+        #     agent.move_rel(base_xyz[0] + 0.35, base_xyz[1] + 0.02, wait=True) # modify
 
-            agent.pose.arm_lift_top_table_down(height=-0.005, table=pick_table) # modify
-            agent.grasp()
+        #     agent.pose.arm_lift_top_table_down(height=-0.005, table=pick_table) # modify
+        #     agent.grasp()
 
-            is_picked = agent.pose.check_grasp(threshold=-1.45)     # modify this for tab
-            print(f"2.4 grasp value of item '{item}': {is_picked}")
+        #     is_picked = agent.pose.check_grasp(threshold=-1.45)     # modify this for tab
+        #     print(f"2.4 grasp value of item '{item}': {is_picked}")
 
-            agent.pose.arm_flex(-60)
-            # agent.pose.pick_up_bowl_pose(table=pick_table)
-            agent.move_rel(-0.17, 0)
+        #     agent.pose.arm_flex(-60)
+        #     # agent.pose.pick_up_bowl_pose(table=pick_table)
+        #     agent.move_rel(-0.17, 0)
         elif item == 'plate':
             hand_over_mode = True
             if hand_over_mode:
@@ -228,154 +228,154 @@ def clean_the_table(agent):
 
         # 3. return pose
         agent.pose.table_search_pose()
+        # FROMHERE
+        # if is_using_check_grasp:        # when it detects miss with check_grasp
+        #     if is_picked:
+        #         agent.say(f'I picked the {item}', show_display=True)
+        #     else:
+        #         if item in double_check_item_list:
+        #             rospy.sleep(0.5)
+        #             agent.move_abs(pick_position)
+        #             rospy.sleep(1)
+        #             current_table_item_list = agent.yolo_module.detect_3d(pick_table)
+        #             current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
 
-        if is_using_check_grasp:        # when it detects miss with check_grasp
-            if is_picked:
-                agent.say(f'I picked the {item}', show_display=True)
-            else:
-                if item in double_check_item_list:
-                    rospy.sleep(0.5)
-                    agent.move_abs(pick_position)
-                    rospy.sleep(1)
-                    current_table_item_list = agent.yolo_module.detect_3d(pick_table)
-                    current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
+        #             table_item_id_list.sort()
+        #             current_table_item_id_list.sort()
+        #             if table_item_id_list == current_table_item_id_list:
+        #                 miss_count += 1
 
-                    table_item_id_list.sort()
-                    current_table_item_id_list.sort()
-                    if table_item_id_list == current_table_item_id_list:
-                        miss_count += 1
+        #                 if miss_count > 1:
+        #                     agent.say(f'please hand me the {item}')
+        #                     agent.open_gripper()
 
-                        if miss_count > 1:
-                            agent.say(f'please hand me the {item}')
-                            agent.open_gripper()
+        #                     rospy.sleep(1)
+        #                     agent.say('five');
+        #                     rospy.sleep(1)
+        #                     agent.say('four');
+        #                     rospy.sleep(1)
+        #                     agent.say('three');
+        #                     rospy.sleep(1)
+        #                     agent.say('two');
+        #                     rospy.sleep(1)
+        #                     agent.say('one');
+        #                     rospy.sleep(1)
 
-                            rospy.sleep(1)
-                            agent.say('five');
-                            rospy.sleep(1)
-                            agent.say('four');
-                            rospy.sleep(1)
-                            agent.say('three');
-                            rospy.sleep(1)
-                            agent.say('two');
-                            rospy.sleep(1)
-                            agent.say('one');
-                            rospy.sleep(1)
+        #                     agent.grasp()
+        #                 else:
+        #                     print(f"3.3 you didn't pick the current item! (item: {item})")
+        #                     continue
+        #             elif len(table_item_id_list) > len(current_table_item_id_list):
+        #                 for i in range(len(current_table_item_id_list)):
+        #                     table_item_id = table_item_id_list[i]
+        #                     current_table_item_id = current_table_item_id_list[i]
 
-                            agent.grasp()
-                        else:
-                            print(f"3.3 you didn't pick the current item! (item: {item})")
-                            continue
-                    elif len(table_item_id_list) > len(current_table_item_id_list):
-                        for i in range(len(current_table_item_id_list)):
-                            table_item_id = table_item_id_list[i]
-                            current_table_item_id = current_table_item_id_list[i]
+        #                     if table_item_id != current_table_item_id:
+        #                         item = id_item_dict[table_item_id]
+        #                         print(f'target: {id_item_dict[pick_item_id]}')
+        #                         print(f'picked: {item}')
+        #                         agent.say(f'I picked the {item}', show_display=True)
+        #                         break
+        #         else:
+        #             miss_count += 1
+        #             if miss_count > 1:
+        #                 agent.say(f'please hand me the {item}')
+        #                 agent.open_gripper()
 
-                            if table_item_id != current_table_item_id:
-                                item = id_item_dict[table_item_id]
-                                print(f'target: {id_item_dict[pick_item_id]}')
-                                print(f'picked: {item}')
-                                agent.say(f'I picked the {item}', show_display=True)
-                                break
-                else:
-                    miss_count += 1
-                    if miss_count > 1:
-                        agent.say(f'please hand me the {item}')
-                        agent.open_gripper()
+        #                 rospy.sleep(1)
+        #                 agent.say('five');
+        #                 rospy.sleep(1)
+        #                 agent.say('four');
+        #                 rospy.sleep(1)
+        #                 agent.say('three');
+        #                 rospy.sleep(1)
+        #                 agent.say('two');
+        #                 rospy.sleep(1)
+        #                 agent.say('one');
+        #                 rospy.sleep(1)
 
-                        rospy.sleep(1)
-                        agent.say('five');
-                        rospy.sleep(1)
-                        agent.say('four');
-                        rospy.sleep(1)
-                        agent.say('three');
-                        rospy.sleep(1)
-                        agent.say('two');
-                        rospy.sleep(1)
-                        agent.say('one');
-                        rospy.sleep(1)
+        #                 agent.grasp()
+        #             else:
+        #                 print(f"3.1 you didn't pick the current item! (item: {item})")
+        #                 continue
+        # else:       # when it detects miss with yolo vision
+        #     rospy.sleep(0.5)
+        #     agent.move_abs(pick_position)
+        #     rospy.sleep(1)
+        #     current_table_item_list = agent.yolo_module.detect_3d(pick_table)
+        #     current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
 
-                        agent.grasp()
-                    else:
-                        print(f"3.1 you didn't pick the current item! (item: {item})")
-                        continue
-        else:       # when it detects miss with yolo vision
-            rospy.sleep(0.5)
-            agent.move_abs(pick_position)
-            rospy.sleep(1)
-            current_table_item_list = agent.yolo_module.detect_3d(pick_table)
-            current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
+        #     table_item_id_list.sort()
+        #     current_table_item_id_list.sort()
 
-            table_item_id_list.sort()
-            current_table_item_id_list.sort()
+        #     print('3.2 table_item_id_list', table_item_id_list)
+        #     print('3.2 current_table_item_id_list', current_table_item_id_list)
 
-            print('3.2 table_item_id_list', table_item_id_list)
-            print('3.2 current_table_item_id_list', current_table_item_id_list)
+        #     # if pick_item_id in current_table_item_id_list:
+        #     if table_item_id_list == current_table_item_id_list:
+        #         miss_count += 1
 
-            # if pick_item_id in current_table_item_id_list:
-            if table_item_id_list == current_table_item_id_list:
-                miss_count += 1
+        #         if miss_count > 1:
+        #             agent.say(f'please hand me the {item}')
+        #             agent.open_gripper()
 
-                if miss_count > 1:
-                    agent.say(f'please hand me the {item}')
-                    agent.open_gripper()
+        #             rospy.sleep(1)
+        #             agent.say('five');
+        #             rospy.sleep(1)
+        #             agent.say('four');
+        #             rospy.sleep(1)
+        #             agent.say('three');
+        #             rospy.sleep(1)
+        #             agent.say('two');
+        #             rospy.sleep(1)
+        #             agent.say('one');
+        #             rospy.sleep(1)
 
-                    rospy.sleep(1)
-                    agent.say('five');
-                    rospy.sleep(1)
-                    agent.say('four');
-                    rospy.sleep(1)
-                    agent.say('three');
-                    rospy.sleep(1)
-                    agent.say('two');
-                    rospy.sleep(1)
-                    agent.say('one');
-                    rospy.sleep(1)
+        #             agent.grasp()
+        #         else:
+        #             print(f"3.3 you didn't pick the current item! (item: {item})")
+        #             continue
+        #     elif len(table_item_id_list) > len(current_table_item_id_list):
+        #         for i in range(len(current_table_item_id_list)):
+        #             table_item_id = table_item_id_list[i]
+        #             current_table_item_id = current_table_item_id_list[i]
 
-                    agent.grasp()
-                else:
-                    print(f"3.3 you didn't pick the current item! (item: {item})")
-                    continue
-            elif len(table_item_id_list) > len(current_table_item_id_list):
-                for i in range(len(current_table_item_id_list)):
-                    table_item_id = table_item_id_list[i]
-                    current_table_item_id = current_table_item_id_list[i]
+        #             if table_item_id != current_table_item_id:
+        #                 item = id_item_dict[table_item_id]
+        #                 print(f'target: {id_item_dict[pick_item_id]}')
+        #                 print(f'picked: {item}')
+        #                 agent.say(f'I picked the {item}', show_display=True)
+        #                 break
 
-                    if table_item_id != current_table_item_id:
-                        item = id_item_dict[table_item_id]
-                        print(f'target: {id_item_dict[pick_item_id]}')
-                        print(f'picked: {item}')
-                        agent.say(f'I picked the {item}', show_display=True)
-                        break
+        # miss_count = 0
 
-        miss_count = 0
+        # # 4. go place pos
+        # rospy.sleep(0.5)
 
-        # 4. go place pos
-        rospy.sleep(0.5)
+        # agent.move_abs(place_position)
+        # rospy.sleep(short_move)
 
-        agent.move_abs(place_position)
-        rospy.sleep(short_move)
+        # dishwasher_table = 'dishwasher_handle'
+        # dishwasher_x = distancing(agent.yolo_module.pc, dishwasher_table, dist=1.0)
+        # # dishwasher_y = distancing_horizontal(agent.yolo_module.pc, dishwasher_table)
+        # agent.move_rel(dishwasher_x, 0) # modify
 
-        dishwasher_table = 'dishwasher_handle'
-        dishwasher_x = distancing(agent.yolo_module.pc, dishwasher_table, dist=1.0)
-        # dishwasher_y = distancing_horizontal(agent.yolo_module.pc, dishwasher_table)
-        agent.move_rel(dishwasher_x, 0) # modify
-
-        # if item == 'fork' or item == 'spoon' or item == 'knife':
-        #     agent.pose.place_cutlery_pose(table=place_table)
-        # # elif item == 'plate':
-        # else: # 'plate' or 'bowl'
-        rospy.sleep(0.5)
-        agent.pose.plate_dishwasher_pose()
-        # else:
-        #     agent.pose.pick_up_bowl_pose(table=place_table)
+        # # if item == 'fork' or item == 'spoon' or item == 'knife':
+        # #     agent.pose.place_cutlery_pose(table=place_table)
+        # # # elif item == 'plate':
+        # # else: # 'plate' or 'bowl'
+        # rospy.sleep(0.5)
+        # agent.pose.plate_dishwasher_pose()
+        # # else:
+        # #     agent.pose.pick_up_bowl_pose(table=place_table)
 
 
-        agent.move_rel(0, place_position_dict[item][1], wait=True)
-        agent.move_rel(place_position_dict[item][0], 0, wait=True)
-        # agent.move_rel(0.27 + place_position_dict[item][0], place_position_dict[item][1], wait=True)
+        # agent.move_rel(0, place_position_dict[item][1], wait=True)
+        # agent.move_rel(place_position_dict[item][0], 0, wait=True)
+        # # agent.move_rel(0.27 + place_position_dict[item][0], place_position_dict[item][1], wait=True)
 
-        agent.pose.place_object_pose(table='dishwasher', item=item) # fixed?? !!!
-
+        # agent.pose.place_object_pose(table='dishwasher', item=item) # fixed?? !!!
+        # TOHERE
         agent.open_gripper()
 
         # agent.pose.pick_up_bowl_pose(table=place_table)
