@@ -20,10 +20,9 @@ parser.add_argument('--dir', type=str, default=DEFAULT_PATH,
                     help='saved directory path')
 args = parser.parse_args()
 
-if args.dir is DEFAULT_PATH:
-    if not os.path.exists(DEFAULT_PATH):
-        print(f"Directory '{DEFAULT_PATH}' not found. creating...")
-        os.makedirs(DEFAULT_PATH)
+if not os.path.exists(DEFAULT_PATH):
+    print(f"Directory '{DEFAULT_PATH}' not found. creating...")
+    os.makedirs(DEFAULT_PATH)
 
 class VisionController(object):
     def __init__(self, start_idx):
