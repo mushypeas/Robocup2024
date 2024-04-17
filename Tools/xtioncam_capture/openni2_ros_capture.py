@@ -2,6 +2,7 @@
 # roslaunch openni2_launch openni2.launch
 import argparse
 import cv2
+import os
 from playsound import playsound
 import threading
 import rospy
@@ -9,13 +10,20 @@ from cv_bridge import CvBridge
 import numpy as np
 from sensor_msgs.msg import Image, PointCloud2
 
+DEFAULT_PATH = 'image/'
+
 def play_ding() :
     playsound("./ding.mp3")
 
 parser = argparse.ArgumentParser(description='tidyboy capture')
-parser.add_argument('--dir', type=str, default='image/',
+parser.add_argument('--dir', type=str, default=DEFAULT_PATH,
                     help='saved directory path')
 args = parser.parse_args()
+
+if args.dir is DEFAULT_PATH:
+    if not os.path.exists(DEFAULT_PATH):
+        print(f"Directory '{DEFAULT_PATH}' not found. creating...")
+        os.makedirs(DEFAULT_PATH)
 
 class VisionController(object):
     def __init__(self, start_idx):
