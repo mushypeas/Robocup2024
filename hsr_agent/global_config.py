@@ -30,6 +30,8 @@ if AIIS:
         'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
+        'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
+        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'breakfast_bypass': [1.6, -1.2796, 0.0], #bjkim2
 
         # clean the table
@@ -72,7 +74,7 @@ if AIIS:
 
 
         # gpsr
-        'kitchen_table': [6.6449, 0.3005, 0.0422],
+        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
         'gpsr_start': [2, 0, 0],
         'side_table': [2.5619, -0.0344, 1.5821],

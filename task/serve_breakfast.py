@@ -3,15 +3,15 @@ from utils.distancing import distancing
 from std_srvs.srv import Empty, EmptyRequest
 def serve_breakfast(agent):
     ### task params #################
-    milk_height = 0.14  # [m]
-    cereal_height = 0.13  # [m]
+    milk_height = 0.13  # [m]
+    cereal_height = 0.24  # [m]
     pick_table = 'breakfast_table'
     place_table = 'kitchen_table'
 
     pick_position = 'breakfast_table'
     pick_position_bypass = 'kitchen_entrance'
-    place_position = 'table_front'
-    item_list = ['bowl', 'cracker', 'cereal_red', 'milk', 'scrub', 'spoon', 'fork', 'knife']  # 'bowl', 'cereal', 'milk', 'spoon'
+    place_position = 'kitchen_table'
+    item_list = ['bowl', 'cracker', 'cereal_red', 'cereal_black', 'milk', 'scrub', 'spoon', 'fork', 'knife']  # 'bowl', 'cereal', 'milk', 'spoon'
 
     bowl_to_cereal_spill_xy = [-0.2, 0.15]  # bowl to cereal
     bowl_to_milk_spill_xy = [-0.1, 0.05]  # bowl to milk
@@ -31,7 +31,7 @@ def serve_breakfast(agent):
     stop_client.call(EmptyRequest())
 
     ### task start ##
-    agent.door_open()
+    # agent.door_open()
     agent.say('start serve breakfast')
     agent.move_rel(2.0, 0, wait=False)
     agent.move_abs('breakfast_bypass')
@@ -49,6 +49,7 @@ def serve_breakfast(agent):
         # 2. search
         agent.pose.table_search_pose_breakfast()
         rospy.sleep(2)
+
         # 2.1 detect all objects in pick_table
         table_item_list = agent.yolo_module.detect_3d(pick_table)
 
@@ -57,7 +58,8 @@ def serve_breakfast(agent):
             print('item', item)
             name, item_id, itemtype, grasping_type = agent.yolo_module.find_object_info_by_name(item)
             for table_item in table_item_list:
-                if item_id == table_item[3]:
+                if item_id == table_item[0]:
+
                     # 2.2 select target_object_pc
                     table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, name)
                     is_detected = True
@@ -69,7 +71,8 @@ def serve_breakfast(agent):
             continue
 
 
-        print('table_base_to_object_xyz', table_base_to_object_xyz)
+        # print('table_base_to_object_xyz', table_base_to_object_xyz)
+
         # 2.3 calculate dist with offset
         try:
             base_xyz = agent.yolo_module.calculate_dist_to_pick(table_base_to_object_xyz, grasping_type)
@@ -96,8 +99,8 @@ def serve_breakfast(agent):
             agent.grasp()
             rospy.sleep(0.5)
             agent.pose.arm_lift_up(0.69)
-        else:   # milk, cereal
-            if item == 'cereal_red' or item == 'cracker':
+        else:   # milk, cereal (cracker, pringles)
+            if item == 'cereal_red' or item == 'cracker' or item == 'pringles':
                 object_height = cereal_height / 2
             else: # milk
                 object_height = milk_height / 2
@@ -105,7 +108,7 @@ def serve_breakfast(agent):
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1]-0.01, wait=True)
             agent.move_rel(base_xyz[0] + 0.15, 0, wait=True) # + 0.15
-            if item == 'cereal_red' or item == 'cracker':
+            if item == 'cereal_red' or item == 'cracker' or item == 'pringles':
                 agent.grasp()
             else: # milk
                 agent.grasp(weak=True)
