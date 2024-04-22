@@ -47,7 +47,7 @@ def serve_breakfast(agent):
         agent.move_rel(dist_to_table, 0)
 
         # 2. search
-        agent.pose.table_search_pose_breakfast()
+        agent.pose.table_search_pose()  #table_search_pose_breakfast였음 (팔 너무 많이 보여서 변경)
         rospy.sleep(2)
 
         # 2.1 detect all objects in pick_table
