@@ -676,7 +676,7 @@ class JointPose:
         if bag_orientation_rad is None:
             bag_orientation_rad = -1.57
         rospy.loginfo("bag orientation : {0}".format(bag_orientation_rad * 180 / math.pi))
-        robot_default_height = 0.05
+        robot_default_height = 0.07
         arm_lift_joint = bag_height - robot_default_height
 
         self.set_pose(['arm_lift_joint',

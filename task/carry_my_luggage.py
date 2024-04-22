@@ -737,10 +737,12 @@ class BagInspection:
             mov_x, mov_y = hand_dist_xyz[0], hand_dist_xyz[1]
             mov_x += 0.05
             print("1.7 go to the direction", (mov_x, mov_y))
+            print("current position: ", self.agent.get_pose())
             self.marker_maker.pub_marker([mov_x, mov_y, 1], 'base_link')
             self.agent.move_rel(mov_x, mov_y, wait=True)
+            print("moved position: ", self.agent.get_pose())
 
-            if object_size[0] >= object_size[1]:  # x > y
+            if object_size[1] >= object_size[2]:  # y >= z
                 bag_orientation = -1.57
             else:
                 bag_orientation = 0
@@ -798,7 +800,7 @@ class BagInspection:
         #0도일때
         for tilt_idx in range(2):
             if tilt_idx == 0:
-                self.agent.pose.head_pan_tilt(0, -45)
+                self.agent.pose.head_pan_tilt(0, -40)
             else:    
                 self.agent.pose.head_pan_tilt(0, -30)
             print("Searching")
