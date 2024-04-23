@@ -30,21 +30,26 @@ if AIIS:
         'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
-        'breakfast_bypass': [5.4484, 0.2049, 0.0673],
+        'breakfast_bypass': [1.6, -1.2796, 0.0], #bjkim2
 
         # clean the table
-        'dishwasher': [8.2973, -1.0189, 0.0549],
-        'dishwasher_rack': [7.6658, -1.0189, -0.059],
-        'opened_dishwasher': [7.3082, 3.9192, 0.1136],
-        'clean_table_front' : [7.0104, -0.4341, 0.662],
+        'dishwasher': [1.6, -1.2796, 1.7], #bjkim2
+        'dishwasher_rack': [1.6, -1.2796, 1.7], #bjkim2
+        'opened_dishwasher': [1.6, -1.2796, 1.7], #bjkim2
+        'clean_table_front' : [1.6, -1.2796, 0.0], #bjkim2
 
         # receptionist
         'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
+        # 'cloth_scan' : [1.0330, -2.2140, -1.4835], # AIIS
         'handle_front': [1.5502, 0.0104, -3.1301],
         'door_bypass': [2.507, 0.1598, 1.535],
-        'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
+        # 'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
+        'seat_scan': [1.3810, 2.2950, 0.0445], # AIIS
         'seat_scan_bypass': [1.8008, 0.0949, -2.2551],  # [7.4416, 4.5881, -1.5132] far bypass
-        'start': [2.0208, -1.3355, 2.3405],
+        # 'start': [2.0208, -1.3355, 2.3405],
+        'start': [1.7869, 0.0919, -3.1073], # AIIS-safe-cloth
+        # 'start': [-1.7020, -1.3990, -3.0880], # AIIS
+        # 'start_receptionist': [-1.7020, -1.3990, -3.0880], # AIIS
 
         # stickler
         'stickler_search': [5.7458, 1.4637, 1.5781],
@@ -57,18 +62,19 @@ if AIIS:
         'no_littering_search3': [7.4141, 3.0249, 1.666],
 
         #0707 1957 global config for stickler - lsh
+        #0411 stickler config-1
 
-        'bedroom_search': [6.9591, -3.3772, -1.4738],
-        'kitchen_search': [5.9926, -0.1351, 0.0096],
-        'living_room_search': [3.1224, -0.2803, 1.5814],
-        'study_search': [3.0034, -3.1502, -1.6083],
+        'bedroom_search': [-2.5427, 0.216, 1.2345],
+        'kitchen_search': [0.6884, -1.0065, -0.7347],
+        'living_room_search': [0.6534, -0.6374, 0.9569],
+        'study_search': [0.027, 0.3138, -2.1569],
 
-        'shoe_warning': [1.1576, -0.9449, 1.5397],
-        'bin_littering': [8.7471, -2.2436, -0.8298],
-        'bar_drink': [4.4979, -3.6124, -2.106],
-        'bedroom_doublecheck' : [5.7844, -4.1101, 0.0552],
-        'study_search_reverse': [3.0034, -3.1502, 1.6083],
-        'bedroom_search_reverse': [6.9591, -3.3772, 1.4738],
+        'shoe_warning': [1.0093, -2.4509, -1.5534],
+        'bin_littering': [1.846, -2.4151, -1.5907],
+        'bar_drink': [0.945, -1.2866, -0.0441],
+        'bedroom_doublecheck' : [-2.5427, 0.216, 1.2345],
+        'study_search_reverse': [-0.0189, 0.2843, 0.0333],
+        'bedroom_search_reverse': [-2.5306, 0.1937, -0.3405],
 
 
         # gpsr
@@ -116,7 +122,7 @@ if AIIS:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.8, 0.8, 0.72],
+        'kitchen_table': [0.55, 0.75, 0.730],
         'breakfast_table': [0.855, 0.455, 0.825],
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055

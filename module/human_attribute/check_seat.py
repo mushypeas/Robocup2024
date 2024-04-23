@@ -40,6 +40,7 @@ class CheckSeat():
         # sofa range
 
         # left view
+        print("########## check_empty_seat left view ##########")
         agent.pose.head_pan(self.head_pan_angle[0])
         rospy.sleep(1)
 
@@ -57,6 +58,7 @@ class CheckSeat():
                     seat_info[1][0] = 1
 
         # sofa view
+        print("########## check_empty_seat sofa view ##########")
         agent.pose.head_pan(0)
         rospy.sleep(1)
 
@@ -85,6 +87,7 @@ class CheckSeat():
                 #     seat_info[6][0] = 1
 
         # right view
+        print("########## check_empty_seat right view ##########")
         agent.pose.head_pan(self.head_pan_angle[-1])
         rospy.sleep(1)
 
@@ -110,7 +113,7 @@ class CheckSeat():
             host_idx = self.face_id.check_host(self.host_face_data, user_face_data_list)
         else:
             host_idx = 0
-        print(host_idx)
+        print('check_seat check_empty_seat host_idx: ', host_idx)
 
         user_searched_idx = 0
         for seat in seat_info:
@@ -120,7 +123,7 @@ class CheckSeat():
                 else:
                     seat[1] = 1
                 user_searched_idx += 1
-
+        print('check_seat check_empty_seat seat_info: ', seat_info)
         return seat_info
 
     def check(self, agent, face_threshold, view_range):
@@ -128,6 +131,10 @@ class CheckSeat():
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
         faces, locations = self.fc.get_faces_locations(imgRGB, remove_background=False)  ##facebox_rectangle in get_face_debug
+
+        print("check_seat check len(faces): ", len(faces))
+        print("check_seat check len(locations): ", len(locations))
+
         guest_faces, guest_locations = [], []
 
         face_candidate, locations_candidate = [], []
@@ -140,6 +147,8 @@ class CheckSeat():
                 face_candidate.append(temp_faces)
                 locations_candidate.append(temp_locations)
                 rospy.sleep(0.4)
+            print("check_seat check person detected len(face_candidate): ", len(face_candidate))
+            print("check_seat check len(locations_candidate): ", len(locations_candidate))
             for i in range(6):
                 if len(face_candidate[5 - i]) != 0:
                     faces = face_candidate[5 - i]
@@ -155,15 +164,15 @@ class CheckSeat():
                                 (round((face_box.xmin + face_box.width) * img.shape[1]), round((face_box.ymin + face_box.height) * img.shape[0]))]
                     guest_locations.append([int((box_info[0][0] + box_info[1][0]) / 2), int((box_info[0][1] + box_info[1][1]) / 2)])
 
-                    cv2.imwrite(f"/home/tidy/robocup2024/module/human_attribute/face_detection/face_img_debug/{self.face_save_idx}.png", cv2.cvtColor(f, cv2.COLOR_RGB2BGR))
+                    cv2.imwrite(f"/home/tidy/Robocup2024/module/human_attribute/face_detection/face_img_debug/{self.face_save_idx}.png", cv2.cvtColor(f, cv2.COLOR_RGB2BGR))
                     self.face_save_idx += 1
 
             try:
-                print(guest_locations)
+                print('check_seat check guest_locations(1): ', guest_locations)
                 guest_locations = np.array(guest_locations)
                 idx_sorted = guest_locations.argsort(axis=0)[:, 0]
                 guest_locations = guest_locations[idx_sorted]
-                print(guest_locations)
+                print('check_seat check guest_locations(2): ', guest_locations)
 
                 return list(guest_locations), [Image.fromarray(guest_faces[idx]) for idx in idx_sorted]
             except:
@@ -179,7 +188,7 @@ class CheckSeat():
         for i in range(2, 4):
             if seat_info[i][0] == 1:
                 sofa_seat_count += 1
-
+        print('check_seat seat_available sofa_seat_count: ', sofa_seat_count)
         if sofa_seat_count == 2:
             return 5
         elif sofa_seat_count == 1:
