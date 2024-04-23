@@ -21,36 +21,35 @@ sys.path.append('.')
 SHOES_CONFIG = CLIPDetectorConfig(
     name="shoes",
     labels=["negative", "positive"],
-    # positive_texts=[
-    #     "a photo of a person wearing socks",
-    #     "a photo of a person barefoot",
-    # ],
-    # negative_texts=[
-    #     "a photo of a person wearing shoes",
-    #     "a photo of a person wearing sandals",
-    # ],
     positive_texts=[
-        "a photo of a person wearing socks or being barefoot, without shoes or sandals",
+        "a person not wearing shoes",
+        "a person not wearing sandals",
+        "a person not wearing sneakers",
+        "a person barefoot",
     ],
     negative_texts=[
-        "a photo of a person wearing shoes or sandals",
+        "a person wearing shoes",
+        "a person wearing sandals",
+        "a person wearing sneakers",
+    ],
+    neutral_texts=[
+        "a background with no people in it",
     ],
     threshold=0
 )
 
 # Stickler for the rules DRINK CLIP detection config
-DRINK_CONFIG = CLIPDetectorConfig(
+SHOES_CONFIG = CLIPDetectorConfig(
     name="drink",
     labels=["negative", "positive"],
     positive_texts=[
-        "a photo of a person standing with a cup in their hand",
-        "a photo of a person standing with a bottle in their hand",
-        "a photo of a person standing with a soda can in their hand",
-        "a photo of a person standing with a beverage in their hand",
+        "an image of a person with a drink in their hand",
     ],
     negative_texts=[
-        "a photo of a person standing without any objects in their hand",
-        "a photo of a person standing without any objects in their hand with a drink in the background",
+        "an image of a person without any drink in their hand",
+    ],
+    neutral_texts=[
+        "an image of a background with no people in it",
     ],
     threshold=0
 )
@@ -78,8 +77,17 @@ class ShoeDetection:
 
 
     def find_shoes(self):
-        image = self.agent.rgb_img
-        return self.detector.detect(images=image)
+
+        count = 0
+        while count < 7:
+            image = self.agent.rgb_img
+            pos, neg, ntr = self.detector.detect(images=image)
+            if ntr > 0.15:
+                return None
+            if pos > 0.15:
+                return True
+            count += 1
+        return False
 
 
     def detect(self):
@@ -855,6 +863,7 @@ def move_human_infront(agent, axis_transform, y, x, coord=False):
 
 if __name__ == '__main__':
     from hsr_agent.agent import Agent
+    sys.path.append('../../../robocup2024')
 
     rospy.init_node('stickler_rule_test')
     agent = Agent()
@@ -866,11 +875,25 @@ if __name__ == '__main__':
     #                                forbidden_room_min_points,
     #                                forbidden_room_max_points)
 
-    shoe_detection = ShoeDetection(agent)
+    shoe_detection = ShoeDetection(agent, axis_transform)
 
     hand_drink_pixel_dist_threshold = 50
     # drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    agent.pose.head_tilt(-20)
+    agent.pose.head_tilt(10)
     agent.pose.head_pan(0)
-    shoe_detection.find_shoes()
+    while True:
+        agent.say('Looking for drink')
+        rospy.sleep(1)
+        is_shoe_detected = shoe_detection.find_shoes()
+        if is_shoe_detected is None:
+            agent.say('No one in sight')
+            rospy.sleep(2)
+        else:
+            if is_shoe_detected:
+                agent.say('Drink Detected')
+                rospy.sleep(2)
+            else:
+                agent.say('Drink not detected')
+                rospy.sleep(2)
+            

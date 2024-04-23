@@ -9,9 +9,10 @@ from transformers import CLIPProcessor, CLIPModel, CLIPConfig
 
 # Available Config modes: shoes, drink
 class CLIPDetectorConfig:
-    def __init__(self, name: str, labels: list, positive_texts: list, negative_texts: list, threshold: float):
-        self.text_index = len(positive_texts)
-        self.texts = positive_texts + negative_texts
+    def __init__(self, name: str, labels: list, positive_texts: list, negative_texts: list, neutral_texts: list, threshold: float):
+        self.positive_index = len(positive_texts)
+        self.negative_index = len(positive_texts + negative_texts)
+        self.texts = positive_texts + negative_texts + neutral_texts
         self.threshold = threshold
         # Used for local mode only
         self.name = name
@@ -19,17 +20,20 @@ class CLIPDetectorConfig:
 
 
 class CLIPDetector:
-    def __init__(self, config: CLIPDetectorConfig, mode="local"|"HSR",):
+    def __init__(self, config: CLIPDetectorConfig, mode,):
         self.mode = mode
         self.set_config(config)
-        self.pretrained_model = "openai/clip-vit-base-patch32"
+        self.pretrained_model = "openai/clip-vit-large-patch14"
+        # self.pretrained_model = "openai/clip-vit-base-patch32"
+        
         self.model = CLIPModel.from_pretrained(self.pretrained_model)
         self.processor = CLIPProcessor.from_pretrained(self.pretrained_model)
 
     def set_config(self, config: CLIPDetectorConfig):
         self.name = config.name
         self.labels = config.labels
-        self.text_index = config.text_index
+        self.positive_index = config.positive_index
+        self.negative_index = config.negative_index
         self.texts = config.texts
         self.threshold = config.threshold
 
@@ -48,19 +52,21 @@ class CLIPDetector:
 
         # For testing on the HSR
         if self.mode == "HSR":
-            positive_prob = np.sum(prob[:self.text_index])
-            negative_prob = np.sum(prob[self.text_index:])
-            is_positive = positive_prob > negative_prob
-            print(f'PROBS: {prob} \n    {"Positive" if is_positive else "Negative"}')
-            return is_positive
+            prob = probs[0].round(3)
+            positive_prob = np.sum(prob[:self.positive_index], dtype=np.float64).round(3) 
+            negative_prob = np.sum(prob[self.positive_index:self.negative_index], dtype=np.float64).round(3) 
+            neutral_prob = np.sum(prob[self.negative_index:], dtype=np.float64).round(3)
+            print(f'PROBS: {prob} \n    {"Positive" if (positive_prob + neutral_prob) > negative_prob else "Negative"}')
+            print(f'Positive prob: {positive_prob.round(3)}    Negative prob: {negative_prob.round(3)}    Neutral prob: {neutral_prob.round(3)}')
+            return positive_prob, negative_prob, neutral_prob
         
         # For testing on the local dataset to calculate the accuracy
         elif self.mode == "local":
             correct = 0
             for image_name, label, prob in list(zip(image_names, labels, probs)):
                 print(f"Image: {image_name}, Label: {label}\n")
-                positive_prob = np.sum(prob[:self.text_index])
-                negative_prob = np.sum(prob[self.text_index:])
+                positive_prob = np.sum(prob[:self.positive_index])
+                negative_prob = np.sum(prob[self.positive_index:])
                 if label == "positive":
                     if positive_prob > negative_prob:
                         print(f'PROBS: {prob} \nCorrect:   True Positive')
@@ -90,10 +96,10 @@ class CLIPDetector:
     #     plt.show()
 
     # Return True if target object is detected.
-    def detect(self):
+    def detect(self, images):
         # CLIP detection for the HSR during the actual task operation
         if self.mode == "HSR":
-            return self.evaluate(images=[image])
+            return self.evaluate(images)
 
         # CLIP detection for local datasets
         if self.mode == "local":
@@ -130,10 +136,14 @@ if __name__ == "__main__":
         #     "a photo of a person wearing sandals",
         # ],
         positive_texts=[
-            "a photo of a person wearing socks or being barefoot, without shoes or sandals",
+            "a photo of a person wearing socks or being barefoot",
         ],
         negative_texts=[
             "a photo of a person wearing shoes or sandals",
+            "a photo of a person wearing shoes or sandals with socks",
+        ],
+        neutral_texts=[
+            "a photo of a background with no people in it",
         ],
         threshold=0
     )
