@@ -1,7 +1,9 @@
 import rospy
 from std_srvs.srv import Empty, EmptyRequest
 from utils.distancing import distancing, distancing_horizontal
-def clean_the_table(agent):
+from hsr_agent.agent import Agent
+
+def clean_the_table(agent: Agent):
 
     ### task params #################
     pick_table = 'kitchen_table'

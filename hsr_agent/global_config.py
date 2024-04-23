@@ -147,7 +147,7 @@ if AIIS:
         'bedside_table': [0.5, 0.45, 0.58],
 
         # clean the table
-        'dishwasher_handle': [0.60, 0.60, 0.84], #bjkim, but not modified, still France version
+        'dishwasher_handle': [0.65, 0.75, 0.60], #bjkim, but not modified, still France version
 
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
