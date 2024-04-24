@@ -117,7 +117,7 @@ if AIIS:
     TABLE_DIMENSION = {
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.730],
-        'breakfast_table': [0.855, 0.455, 0.825],
+        'breakfast_table': [0.55, 0.75, 0.73],
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
         'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
