@@ -34,12 +34,13 @@ SHOES_CONFIG = CLIPDetectorConfig(
     ],
     neutral_texts=[
         "a background with no people in it",
+        # "a photo of a person whose feet are not visible",
     ],
     threshold=0
 )
 
 # Stickler for the rules DRINK CLIP detection config
-SHOES_CONFIG = CLIPDetectorConfig(
+DRINK_CONFIG = CLIPDetectorConfig(
     name="drink",
     labels=["negative", "positive"],
     positive_texts=[
@@ -82,9 +83,13 @@ class ShoeDetection:
         while count < 7:
             image = self.agent.rgb_img
             pos, neg, ntr = self.detector.detect(images=image)
-            if ntr > 0.15:
-                return None
-            if pos > 0.15:
+            # if ntr > 0.15:
+            #     return None
+            # if pos > 0.15:
+            #     return True
+            # if ntr > 0.2:
+            #     return None
+            if pos > 0.65:
                 return True
             count += 1
         return False
@@ -97,10 +102,10 @@ class ShoeDetection:
         for tilt in head_tilt_list:
             self.agent.pose.head_tilt(tilt)
             if self.find_shoes():
-                return True
+                return False
             rospy.sleep(1)
 
-        return False
+        return True
 
 
     def clarify_violated_rule(self):
@@ -413,6 +418,7 @@ class DrinkDetection:
         self.drink_list = [0, 1, 2, 3, 4, 5]
         self.marker_maker = MarkerMaker('/snu/human_location')
         self.no_drink_human_coord = None
+        self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
 
     def _openpose_cb(self, data):
         data_list = data.data
@@ -431,6 +437,30 @@ class DrinkDetection:
         cv2.imshow('img', img)
         cv2.waitKey(1)
 
+    def find_drink(self):
+
+        count = 0
+        while count < 7:
+            image = self.agent.rgb_img
+            pos, neg, ntr = self.detector.detect(images=image)
+            if ntr > 0.15:
+                return None
+            if pos > 0.15:
+                return True
+            count += 1
+        return False
+    
+    def detect(self):
+        self.agent.pose.head_tilt(0)
+        rospy.sleep(0.5)
+
+        if self.find_drink():
+            return True
+        rospy.sleep(1)
+
+        return False
+
+    
     def detect_no_drink_hand(self):
         self.agent.pose.head_tilt(0)
         rospy.sleep(0.5)
@@ -880,20 +910,24 @@ if __name__ == '__main__':
     hand_drink_pixel_dist_threshold = 50
     # drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    agent.pose.head_tilt(10)
+    # agent.pose.head_tilt(10)
     agent.pose.head_pan(0)
+    agent.pose.head_tilt(-40)
     while True:
-        agent.say('Looking for drink')
+        # agent.say('Looking for drink')
+        agent.say('Looking for shoes')
         rospy.sleep(1)
         is_shoe_detected = shoe_detection.find_shoes()
         if is_shoe_detected is None:
             agent.say('No one in sight')
             rospy.sleep(2)
         else:
-            if is_shoe_detected:
-                agent.say('Drink Detected')
+            if not is_shoe_detected:
+                # agent.say('Drink Detected')
+                agent.say('Shoe Detected')
                 rospy.sleep(2)
             else:
-                agent.say('Drink not detected')
+                # agent.say('Drink not detected')
+                agent.say('Shoe not detected')
                 rospy.sleep(2)
             
