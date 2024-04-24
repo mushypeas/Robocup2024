@@ -6,7 +6,7 @@ from hsr_agent.agent import Agent
 def clean_the_table(agent: Agent):
 
     ### task params #################
-    pick_table = 'kitchen_table'
+    pick_table = 'breakfast_table'
     pick_position = 'clean_table_front'
     place_position = 'dishwasher_rack'
     tab_name = 'dishwasher_tablet'
@@ -40,24 +40,25 @@ def clean_the_table(agent: Agent):
     # agent.door_open()
     # agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
-    agent.move_abs('breakfast_bypass')
 
     # import pdb; pdb.set_trace()
     while True:
         # 1. go to pick table
         if safe_flag == 0:
             rospy.sleep(0.5)
+            print('1. go to pick table')
             agent.move_abs(pick_position)
             agent.pose.table_search_pose()
+            
 
-        # 2. search
+        # 2.0 search
         agent.pose.table_search_pose()
         rospy.sleep(1)
         table_item_list = agent.yolo_module.detect_3d(pick_table) # eg. [0.8,0.0,0.7,20] (20 means knife) ()
         table_item_id_list = [table_item[3] for table_item in table_item_list] # eg. [20] (=knife)
 
-        print("2. table_item_list", table_item_list)
-        print('table_item_id_list', table_item_id_list)
+        print("2.0 table_item_list:", table_item_list)
+        print('    table_item_id_list:', table_item_id_list)
 
         # 2.1 select target_object_pc
         is_detected = False
@@ -75,9 +76,12 @@ def clean_the_table(agent: Agent):
         if not is_detected: # If nothing detected, go back! if something was, go next line.
             continue
 
-        print('2.2 table_base_to_object_xyz', table_base_to_object_xyz)
+        ########################################
+        # Keep going only if detected
+        ########################################
 
         # 2.2 calculate x, y and go.
+        print('2.2 table_base_to_object_xyz', table_base_to_object_xyz)
         base_xyz = agent.yolo_module.calculate_dist_to_pick(table_base_to_object_xyz, grasping_type)
         if item == 'plate':
             if no_distancing_mode:
@@ -92,10 +96,13 @@ def clean_the_table(agent: Agent):
 
         print('2.3. current_item:', item)
 
-        if safe_flag == 0:
+        # Move Y direction
+        if safe_flag == 0: # If safe_flag is 0, move y direction, and start from the beginning. 
             agent.move_rel(0, base_xyz[1], wait=True)
             safe_flag += 1
             continue
+
+        #####################################################
 
         safe_flag = 0
         is_using_check_grasp = is_using_check_grasp_dict[item]      # choose miss detection between check_grasp and yolo
@@ -108,7 +115,7 @@ def clean_the_table(agent: Agent):
 
             agent.move_rel(base_xyz[0] + 0.15, base_xyz[1] + 0.04, wait=True)
 
-            agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1)
+            agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.13) # modified from -0.1 to -0.13
             agent.grasp()
             rospy.sleep(0.5)
 
@@ -371,6 +378,7 @@ def clean_the_table(agent: Agent):
         # else:
         #     agent.pose.pick_up_bowl_pose(table=place_table)
 
+        agent.pose.arm_lift_up(0.49)
 
         agent.move_rel(0, place_position_dict[item][1], wait=True)
         agent.move_rel(place_position_dict[item][0], 0, wait=True)

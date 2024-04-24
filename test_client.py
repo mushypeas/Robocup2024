@@ -17,6 +17,8 @@ if __name__ == '__main__':
         command = input('task : ')
         if command == 'start_1':
             agent.move_abs('start_1')
+        elif command == 'p1':
+            agent.pose.p1()
         elif command == 'zero':
             agent.move_abs('zero')
         elif command == 'dev_front':
@@ -149,13 +151,13 @@ if __name__ == '__main__':
             angle = input("Give the head pan angle in degrees(-90 ~ 30) : ")
             agent.pose.head_pan(angle)
         elif command == 'wrist_flex':
-            angle = input("Give the wrist flex angle in degrees : ")
+            angle = input("Give the wrist flex angle in degrees(-110 ~ 70) : ")
             agent.pose.wrist_flex(angle)
         elif command == 'arm_flex':
-            angle = input("Give the arm flex angle in degrees : ")
+            angle = input("Give the arm flex angle in degrees  (-120 ~ 0): ")
             agent.pose.arm_flex(angle)
         elif command == 'arm_roll':
-            angle = input("Give the arm roll angle in degrees : ")
+            angle = input("Give the arm roll angle in degrees (-110 ~ 210) : ")
             agent.pose.arm_roll(angle)
         elif command == 'arm_lift_object_table_down_cereal':
             cereal_height = 0.32  # [m] 

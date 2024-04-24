@@ -117,7 +117,14 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, 0, -1.57, 0])
-
+        
+    def dish_washer_ready_pose2(self, vertical=False, table='dishwasher'):
+        self.set_pose(['arm_lift_joint',
+                'arm_flex_joint',
+                'arm_roll_joint',
+                'wrist_flex_joint',
+                'wrist_roll_joint'],
+                [0, 0, 0, -1.57, wrist_roll_joint])
     def neutral_pose(self, vertical=False):
         wrist_roll_joint = 0
         if vertical:
