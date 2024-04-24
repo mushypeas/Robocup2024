@@ -53,6 +53,10 @@ if __name__ == '__main__':
             agent.move_abs_safe('table_side')
         elif command == 'breakfast_table':
             agent.move_abs('breakfast_table')
+
+        ### Pose commands
+        elif command == 'place_cutlery_pose':
+            agent.pose.place_cutlery_pose()
         elif command == 'move_pose':
             agent.pose.move_pose()
         elif command == 'move_pose_vertical':

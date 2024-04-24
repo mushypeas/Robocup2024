@@ -462,20 +462,35 @@ class JointPose:
                       [arm_lift_joint, 0, -1.57, -0.785, 1.57])
 
 
-    def place_cutlery_pose(self, table='dishwasher'):
+    # def place_cutlery_pose(self, table='dishwasher'):
+    #     target_table_height = self.table_dimension[table][2]
+    #     hand_down_length = 0.15  # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree
+    #     robot_default_height = 0.3
+    #     object_offset = 0.03
+    #     arm_lift_joint = target_table_height + object_offset + hand_down_length - robot_default_height
+
+    #     self.set_pose(['arm_lift_joint',
+    #                    'arm_roll_joint',
+    #                    'arm_flex_joint',
+    #                    'wrist_flex_joint',
+    #                    'wrist_roll_joint'],
+    #                   [arm_lift_joint, 0, -1.57, -1.57, 0])
+
+    def place_cutlery_pose(self, table='dishwasher', offset = 0.10): ## by bjkim 24th April    
         target_table_height = self.table_dimension[table][2]
-        hand_down_length = 0.15  # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree
         robot_default_height = 0.3
-        object_offset = 0.03
-        arm_lift_joint = target_table_height + object_offset + hand_down_length - robot_default_height
+        arm_lift_joint = target_table_height + offset - robot_default_height
 
         self.set_pose(['arm_lift_joint',
                        'arm_roll_joint',
                        'arm_flex_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, 0, -1.57, -1.57, 0])
-
+                      [arm_lift_joint, 0, -1.57, 0, 0])
+        
+        return arm_lift_joint
+        
+        
 
     def place_object_pose(self, table='dishwasher', item='bowl'):
         tab_name = 'peach'

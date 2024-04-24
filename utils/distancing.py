@@ -22,9 +22,11 @@ def distancing(pointcloud, table, dist=0.6, timeout=3., raw=False):
             PC = PC[np.logical_not(np.isnan(PC).sum(axis=-1))]
             basePC = np.matmul(PC, R.T)
             filteredPC = basePC[np.abs(basePC[:, 2] - table_height) < 0.01]
-            medianx = np.min(filteredPC[:, 0])
-            filteredPC = filteredPC[np.abs(filteredPC[:, 0] - medianx) < 0.05]
+            minx = np.min(filteredPC[:, 0])
+            # print('minx', minx) #bjkim
+            filteredPC = filteredPC[np.abs(filteredPC[:, 0] - minx) < 0.01]
             corr = np.mean(filteredPC[:, 0])
+            # corr = np.min(filteredPC[:, 0])
             if raw:
                 return corr
             return corr - dist
