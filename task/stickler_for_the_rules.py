@@ -26,6 +26,7 @@ SHOES_CONFIG = CLIPDetectorConfig(
         "a person not wearing sandals",
         "a person not wearing sneakers",
         "a person barefoot",
+        "a person wearing socks",
     ],
     negative_texts=[
         "a person wearing shoes",
@@ -34,7 +35,7 @@ SHOES_CONFIG = CLIPDetectorConfig(
     ],
     neutral_texts=[
         "a background with no people in it",
-        # "a photo of a person whose feet are not visible",
+        "a person whose feets are not visible",
     ],
     threshold=0
 )
@@ -45,12 +46,39 @@ DRINK_CONFIG = CLIPDetectorConfig(
     labels=["negative", "positive"],
     positive_texts=[
         "an image of a person with a drink in their hand",
+        "a photo of a person holding a drink in their hand",
+        "a person holding a drink in their hand",
+        "a person holding a cup in their hand",
+        "a person holding a bottle in their hand",
+        "a person holding a soda can in their hand",
+        "a person holding a glass in their hand",
+        "a person holding a mug in their hand",
+        "a person holding a beverage in their hand",
+        "a person holding a juice in their hand",
+        "a person holding a water in their hand",
+        "a person holding a milk in their hand",
     ],
     negative_texts=[
         "an image of a person without any drink in their hand",
+        "a photo of a person not holding any drink in their hand",
+        "a person not holding a drink in their hand",
+        "a person not holding a cup in their hand",
+        "a person not holding a bottle in their hand",
+        "a person not holding a soda can in their hand",
+        "a person not holding a glass in their hand",
+        "a person not holding a mug in their hand",
+        "a person not holding a beverage in their hand",
+        "a person not holding a juice in their hand",
+        "a person not holding a water in their hand",
+        "a person not holding a milk in their hand",
+        "a person with empty hands",
     ],
     neutral_texts=[
         "an image of a background with no people in it",
+        "a photo without any person in it",
+        "an image of a person whose hands are not visible",
+        "a photo of a person whose hands are not visible",
+        "a person whose hands are not visible",
     ],
     threshold=0
 )
@@ -443,9 +471,13 @@ class DrinkDetection:
         while count < 7:
             image = self.agent.rgb_img
             pos, neg, ntr = self.detector.detect(images=image)
-            if ntr > 0.15:
+            # if ntr > 0.15:
+            #     return None
+            # if pos > 0.15:
+            #     return True
+            if ntr > 0.8:
                 return None
-            if pos > 0.15:
+            if pos > 0.1:
                 return True
             count += 1
         return False
@@ -905,29 +937,48 @@ if __name__ == '__main__':
     #                                forbidden_room_min_points,
     #                                forbidden_room_max_points)
 
-    shoe_detection = ShoeDetection(agent, axis_transform)
+    # SHOE
+    # shoe_detection = ShoeDetection(agent, axis_transform)
 
+    # agent.pose.head_pan(0)
+    # agent.pose.head_tilt(-40)
+    # while True:
+    #     # agent.say('Looking for drink')
+    #     agent.say('Looking for shoes')
+    #     rospy.sleep(1)
+    #     is_shoe_detected = shoe_detection.find_shoes()
+    #     # is_drink_detected = drink_detection.detect()
+    #     if is_shoe_detected is None:
+    #         agent.say('No one in sight')
+    #         rospy.sleep(2)
+    #     else:
+    #         if not is_shoe_detected:
+    #             # agent.say('Drink Detected')
+    #             agent.say('Shoe Detected')
+    #             rospy.sleep(2)
+    #         else:
+    #             # agent.say('Drink not detected')
+    #             agent.say('Shoe not detected')
+    #             rospy.sleep(2)
+    
+    # DRINK
     hand_drink_pixel_dist_threshold = 50
-    # drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
+    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    # agent.pose.head_tilt(10)
+    agent.pose.head_tilt(10)
     agent.pose.head_pan(0)
-    agent.pose.head_tilt(-40)
     while True:
-        # agent.say('Looking for drink')
-        agent.say('Looking for shoes')
+        agent.say('Looking for drink')
         rospy.sleep(1)
-        is_shoe_detected = shoe_detection.find_shoes()
-        if is_shoe_detected is None:
+        is_drink_detected = drink_detection.find_drink()
+        if is_drink_detected is None:
             agent.say('No one in sight')
             rospy.sleep(2)
         else:
-            if not is_shoe_detected:
-                # agent.say('Drink Detected')
-                agent.say('Shoe Detected')
+            if not is_drink_detected:
+                agent.say('Drink not detected')
                 rospy.sleep(2)
             else:
-                # agent.say('Drink not detected')
-                agent.say('Shoe not detected')
+                agent.say('Drink detected')
                 rospy.sleep(2)
             

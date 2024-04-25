@@ -49,7 +49,7 @@ class CLIPDetector:
         
         # GPU
         transform = transforms.Compose([transforms.ToTensor()])
-        images = transform(images).to(self.device)
+        images = transform(images).unsqueeze(0).to(self.device)
 
         inputs = self.processor(
             text=self.texts,
@@ -66,9 +66,10 @@ class CLIPDetector:
         outputs = self.model(**inputs)
 
         logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
-        # CPU   
-        logits_per_image = logits_per_image.cpu()
-        probs = logits_per_image.softmax(dim=1).detach().numpy()  # we can take the softmax to get the label probabilities
+        # probs = logits_per_image.softmax(dim=1).detach().numpy()  # we can take the softmax to get the label probabilities
+
+        # GPU
+        probs = logits_per_image.softmax(dim=1).detach().cpu().numpy()
 
         # For testing on the HSR
         if self.mode == "HSR":
