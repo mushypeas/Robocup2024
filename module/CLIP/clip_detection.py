@@ -6,6 +6,8 @@ from PIL import Image
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 from transformers import CLIPProcessor, CLIPModel, CLIPConfig
+import torch
+from torchvision import transforms
 
 # Available Config modes: shoes, drink
 class CLIPDetectorConfig:
@@ -29,6 +31,11 @@ class CLIPDetector:
         self.model = CLIPModel.from_pretrained(self.pretrained_model)
         self.processor = CLIPProcessor.from_pretrained(self.pretrained_model)
 
+        # GPU
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        print('Device: ', self.device)
+        self.model.to(self.device)
+
     def set_config(self, config: CLIPDetectorConfig):
         self.name = config.name
         self.labels = config.labels
@@ -39,15 +46,28 @@ class CLIPDetector:
 
 
     def evaluate(self, images, image_names=None, labels=None):
+        
+        # GPU
+        transform = transforms.Compose([transforms.ToTensor()])
+        images = transform(images).to(self.device)
+
         inputs = self.processor(
             text=self.texts,
             images=images,
             return_tensors="pt",
             padding=True
         )
+
+        # GPU
+        inputs['input_ids'] = inputs['input_ids'].to(self.device)
+        inputs['attention_mask'] = inputs['attention_mask'].to(self.device)
+        inputs['pixel_values'] = inputs['pixel_values'].to(self.device)
+
         outputs = self.model(**inputs)
 
         logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+        # CPU   
+        logits_per_image = logits_per_image.cpu()
         probs = logits_per_image.softmax(dim=1).detach().numpy()  # we can take the softmax to get the label probabilities
 
         # For testing on the HSR
