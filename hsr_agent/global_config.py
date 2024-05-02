@@ -64,18 +64,19 @@ if AIIS:
         'no_littering_search3': [7.4141, 3.0249, 1.666],
 
         #0707 1957 global config for stickler - lsh
+        #0411 stickler config-1
 
-        'bedroom_search': [6.9591, -3.3772, -1.4738],
-        'kitchen_search': [5.9926, -0.1351, 0.0096],
-        'living_room_search': [3.1224, -0.2803, 1.5814],
-        'study_search': [3.0034, -3.1502, -1.6083],
+        'bedroom_search': [-2.5427, 0.216, 1.2345],
+        'kitchen_search': [0.6884, -1.0065, -0.7347],
+        'living_room_search': [0.6534, -0.6374, 0.9569],
+        'study_search': [0.027, 0.3138, -2.1569],
 
-        'shoe_warning': [1.1576, -0.9449, 1.5397],
-        'bin_littering': [8.7471, -2.2436, -0.8298],
-        'bar_drink': [4.4979, -3.6124, -2.106],
-        'bedroom_doublecheck' : [5.7844, -4.1101, 0.0552],
-        'study_search_reverse': [3.0034, -3.1502, 1.6083],
-        'bedroom_search_reverse': [6.9591, -3.3772, 1.4738],
+        'shoe_warning': [1.0093, -2.4509, -1.5534],
+        'bin_littering': [1.846, -2.4151, -1.5907],
+        'bar_drink': [0.945, -1.2866, -0.0441],
+        'bedroom_doublecheck' : [-2.5427, 0.216, 1.2345],
+        'study_search_reverse': [-0.0189, 0.2843, 0.0333],
+        'bedroom_search_reverse': [-2.5306, 0.1937, -0.3405],
 
 
         # gpsr

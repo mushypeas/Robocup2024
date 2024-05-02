@@ -308,8 +308,10 @@ if __name__ == '__main__':
             agent.pose.hand_me_bag()
         elif command == 'movego':
             agent.pose.move_to_go()
+        elif command == 'armtd':
+            agent.pose.arm_lift_top_down(.33)
         elif command == 'pickbag':
-            agent.pose.pick_up_bag(.25)
+            agent.pose.pick_up_bag(.33)
         elif command == 'head_pan_tilt':
             joints = input('head_pan_joint, head_tilt_joint: ')
             joints = joints.split(' ')
@@ -352,6 +354,11 @@ if __name__ == '__main__':
             agent.pose.restaurant_give_pose()
         elif command == "getj":
             print(agent.pose.joint_value)
+
+        elif command == 'move_rel':
+            rel = input('x, y, rot: ')
+            rel = rel.split(' ')
+            agent.move_rel(float(rel[0]), float(rel[1]), float(rel[2]), wait = True)
         elif command == 'move_abs':
             position = input("position: ")
             agent.move_abs(position, wait=False)
