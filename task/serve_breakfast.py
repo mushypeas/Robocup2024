@@ -5,12 +5,12 @@ def serve_breakfast(agent):
     ### task params #################
     milk_height = 0.13  # [m]
     cereal_height = 0.24  # [m]
-    pick_table = 'breakfast_table'
-    place_table = 'kitchen_table'
+    pick_table = 'kitchen_table'
+    place_table = 'breakfast_table'
 
-    pick_position = 'breakfast_table'
+    pick_position = 'kithchen_table_ready'
     pick_position_bypass = 'kitchen_entrance'
-    place_position = 'kitchen_table'
+    place_position = 'breakfast_table'
     item_list = ['bowl', 'cracker', 'cereal_red', 'cereal_black', 'milk', 'scrub', 'spoon', 'fork', 'knife']  # 'bowl', 'cereal', 'milk', 'spoon'
 
     bowl_to_cereal_spill_xy = [-0.2, 0.15]  # bowl to cereal
@@ -18,7 +18,7 @@ def serve_breakfast(agent):
     bowl_to_spoon_place_xy = [0, -0.13]  # bowl to spoon
 
     # try except params
-    default_base_xyz = [0.376, -0.1, 0.823]
+    # default_base_xyz = [1.5916, -2.7794, 0.0313]
     # bonus params
     milk_bonus = True
     cereal_bonus = True
@@ -31,15 +31,16 @@ def serve_breakfast(agent):
     stop_client.call(EmptyRequest())
 
     ### task start ##
+
     # agent.door_open()
     agent.say('start serve breakfast')
-    agent.move_rel(2.0, 0, wait=False)
-    agent.move_abs('breakfast_bypass')
+    agent.move_rel(2.0, 0, wait=False)  # kitchen table [1.5916, -2.7794, 0.0313] // 기존 [2.0, 0, wait=False]
+    agent.move_abs('kithchen_table_ready', any=False)
 
 
     ###########################
     while True:
-        # 1. go to breakfast table
+        # 1. go to kitchen table
         agent.pose.move_pose()
         rospy.sleep(0.5)
         agent.move_abs(pick_position)

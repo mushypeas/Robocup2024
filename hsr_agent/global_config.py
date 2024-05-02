@@ -31,8 +31,8 @@ if AIIS:
 
         # serve breakfast
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
-        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
-        'breakfast_bypass': [1.6, -1.2796, 0.0], #bjkim2
+        'kitchen_table_front' : [1.5916, -2.7794, 0.0313], #mjgu
+        'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
         'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
@@ -251,7 +251,8 @@ elif is_sim: # sim mode
         'dishwasher_gpsr': [6.531, 0.946, 1.57],
         'side_table': [3.291, 0.7065, 1.57],
         'grocery_table': [3.291, 0.7065, 1.57],  # dist = 0.9
-        'kitchen_table': [7.431, 0.651, -1.57],
+        'kitchen_table': [1.5916, -2.7794, 0.0313], # dist = 0.6 /mjgu
+        'kitchen_table_ready' : [1.0016, -2.7794, 0.0313], # dist = 2.0 /mjgu
         'pantry': [7.245, 1.051, 0],  # dist = 0.9
         'desk': [2.52, -3.815, -1.57],  # dist = 0.9
         'gpsr_start': [1.3372, 1.1288, 0.5792],
