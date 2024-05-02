@@ -27,6 +27,8 @@ class CLIPDetector:
         self.set_config(config)
         self.pretrained_model = "openai/clip-vit-large-patch14"
         # self.pretrained_model = "openai/clip-vit-base-patch32"
+        # self.pretrained_model = "laion/CLIP-ViT-L-14-laion2B-s32B-b82K"
+        # self.pretrained_model = "laion/CLIP-ViT-B-32-laion2B-s34B-b79K"
         
         self.model = CLIPModel.from_pretrained(self.pretrained_model)
         self.processor = CLIPProcessor.from_pretrained(self.pretrained_model)

@@ -46,39 +46,39 @@ DRINK_CONFIG = CLIPDetectorConfig(
     labels=["negative", "positive"],
     positive_texts=[
         "an image of a person with a drink in their hand",
-        "a photo of a person holding a drink in their hand",
-        "a person holding a drink in their hand",
-        "a person holding a cup in their hand",
-        "a person holding a bottle in their hand",
-        "a person holding a soda can in their hand",
-        "a person holding a glass in their hand",
-        "a person holding a mug in their hand",
-        "a person holding a beverage in their hand",
-        "a person holding a juice in their hand",
-        "a person holding a water in their hand",
-        "a person holding a milk in their hand",
+        # "a photo of a person holding a drink in their hand",
+        # "a person holding a drink in their hand",
+        # "a person holding a cup in their hand",
+        # "a person holding a bottle in their hand",
+        # "a person holding a soda can in their hand",
+        # "a person holding a glass in their hand",
+        # "a person holding a mug in their hand",
+        # "a person holding a beverage in their hand",
+        # "a person holding a juice in their hand",
+        # "a person holding a water in their hand",
+        # "a person holding a milk in their hand",
     ],
     negative_texts=[
         "an image of a person without any drink in their hand",
-        "a photo of a person not holding any drink in their hand",
-        "a person not holding a drink in their hand",
-        "a person not holding a cup in their hand",
-        "a person not holding a bottle in their hand",
-        "a person not holding a soda can in their hand",
-        "a person not holding a glass in their hand",
-        "a person not holding a mug in their hand",
-        "a person not holding a beverage in their hand",
-        "a person not holding a juice in their hand",
-        "a person not holding a water in their hand",
-        "a person not holding a milk in their hand",
-        "a person with empty hands",
+        # "a photo of a person not holding any drink in their hand",
+        # "a person not holding a drink in their hand",
+        # "a person not holding a cup in their hand",
+        # "a person not holding a bottle in their hand",
+        # "a person not holding a soda can in their hand",
+        # "a person not holding a glass in their hand",
+        # "a person not holding a mug in their hand",
+        # "a person not holding a beverage in their hand",
+        # "a person not holding a juice in their hand",
+        # "a person not holding a water in their hand",
+        # "a person not holding a milk in their hand",
+        # "a person with empty hands",
     ],
     neutral_texts=[
         "an image of a background with no people in it",
-        "a photo without any person in it",
-        "an image of a person whose hands are not visible",
-        "a photo of a person whose hands are not visible",
-        "a person whose hands are not visible",
+        # "a photo without any person in it",
+        # "an image of a person whose hands are not visible",
+        # "a photo of a person whose hands are not visible",
+        # "a person whose hands are not visible",
     ],
     threshold=0
 )
@@ -471,14 +471,14 @@ class DrinkDetection:
         while count < 7:
             image = self.agent.rgb_img
             pos, neg, ntr = self.detector.detect(images=image)
-            # if ntr > 0.15:
-            #     return None
-            # if pos > 0.15:
-            #     return True
-            if ntr > 0.8:
+            if ntr > 0.15:
                 return None
-            if pos > 0.1:
+            if pos > 0.15:
                 return True
+            # if ntr > 0.8:
+            #     return None
+            # if pos > 0.1:
+            #     return True
             count += 1
         return False
     
