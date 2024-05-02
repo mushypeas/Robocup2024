@@ -508,26 +508,44 @@ class BagInspection:
         self.conf_threshold = 75 # write in percent
 
     def _bag_yolo_cb(self, data):
-        self.bag_yolo_data = data.data
+        self.bag_yolo_data = self.get_bag_by_x(data.data)
+    
+    def get_bag_by_x(self, arr):
+        if arr is None:
+            return None
+        
+        grouped_data = [arr[i:i+6] for i in range(0, len(arr), 6)]
+
+        filtered_data = [group for group in grouped_data if (group[5] >= .75 and group[4] in self.yolo_bag_list)]
+
+        sorted_data = sorted(filtered_data, key = lambda x: x[0])
+
+        sorted_arr = [item for sublist in sorted_data for item in sublist]
+        return sorted_arr
 
 
-    def detect_bag_3d(self, bag_height, timeout=5.0):
+    def detect_bag_3d(self, bag_height, timeout=5.0, pointing_dir = 0):
         start_time = time.time()
         while time.time() - start_time <= timeout:
             _pc = self.agent.pc.reshape(480, 640)
             pc_np = np.array(_pc.tolist())[:, :, :3]
             bag_yolo_data = self.bag_yolo_data
 
+
             # self.agent.head_display_image_pubish(self.yolo_img)
             for idx in range(len(bag_yolo_data) // 6):
+                
                 item = bag_yolo_data[6 * idx: 6 * (idx + 1)]
                 cent_x, cent_y, width, height, class_id, conf_percent = item
                 
                 # if class_id is not paper_bag
-                if class_id not in self.yolo_bag_list and conf_percent < .65:
+                #if class_id not in self.yolo_bag_list and conf_percent < .75:
+                #    continue
+                if idx == 0 and pointing_dir == -1:
                     continue
+
                 '''
-                BAG PICKING 0706
+                BAG PICKING 0410
                 '''
                 if class_id == 6:
                     bag_height = 0.39
@@ -692,6 +710,8 @@ class BagInspection:
     def run_bag_inspection(self, pointing_dir, bag_height):
         before_pick_pose = self.agent.get_pose(print_option=False)
         target_base_xyz, object_size, bag_height = self.rotate_to_find_bag(pointing_dir, bag_height)
+        print("object size: " + str(object_size))
+        print("bag height: " + str(bag_height))
         if target_base_xyz is None:
             print("1.4 We cannot find a bag. Please hand me a bag!")
             self.agent.say("We cannot find a bag.", show_display=True)
@@ -715,14 +735,17 @@ class BagInspection:
 
             hand_dist_xyz = self.agent.yolo_module.calculate_dist_to_pick(target_base_xyz, 5)
             mov_x, mov_y = hand_dist_xyz[0], hand_dist_xyz[1]
+            mov_x += 0.05
             print("1.7 go to the direction", (mov_x, mov_y))
+            print("current position: ", self.agent.get_pose())
             self.marker_maker.pub_marker([mov_x, mov_y, 1], 'base_link')
             self.agent.move_rel(mov_x, mov_y, wait=True)
+            print("moved position: ", self.agent.get_pose())
 
-            if object_size[0] >= object_size[1]:  # x > y
-                bag_orientation = 0
-            else:
+            if object_size[1] >= object_size[2]:  # y >= z
                 bag_orientation = -1.57
+            else:
+                bag_orientation = 0
 
             isSuccc = False
             isSecond = False
@@ -772,17 +795,17 @@ class BagInspection:
             direction = 1
         else:               #'right'
             direction = -1
-        target_base_xyz, object_size, bag_height = self.detect_bag_3d(bag_height, timeout=1)
+        #target_base_xyz, object_size, bag_height = self.detect_bag_3d(bag_height, timeout=1)
 
         #0도일때
         for tilt_idx in range(2):
             if tilt_idx == 0:
-                self.agent.pose.head_pan_tilt(0, -45)
+                self.agent.pose.head_pan_tilt(0, -40)
             else:    
                 self.agent.pose.head_pan_tilt(0, -30)
             print("Searching")
             rospy.sleep(2)
-            target_base_xyz, object_size, bag_height = self.detect_bag_3d(bag_height, timeout=1)
+            target_base_xyz, object_size, bag_height = self.detect_bag_3d(bag_height, timeout=1, pointing_dir=direction)
             if target_base_xyz is not None:
                 print("We find bag!")
                 return target_base_xyz, object_size, bag_height
@@ -827,7 +850,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2
-    try_bag_picking = False
+    try_bag_picking = True
     try_bytetrack = False
     map_mode = False
     stt_option = True
