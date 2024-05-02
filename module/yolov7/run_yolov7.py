@@ -178,6 +178,6 @@ if __name__ == '__main__':
             # pc_np = np.array(_pc.tolist())[:, :, :3]
             yolov7_controller.yolo_publish(bbox_list)
             yolov7_controller.yolo_with_conf_publish(bag_bbox_list)
-            # print(img)
+            # print(img)    
             yolov7_controller.yolo_img_publish(img)
             r.sleep()

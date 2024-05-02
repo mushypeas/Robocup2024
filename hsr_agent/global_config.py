@@ -125,7 +125,7 @@ if AIIS:
     TABLE_DIMENSION = {
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.730],
-        'breakfast_table': [0.855, 0.455, 0.825],
+        'breakfast_table': [0.55, 0.75, 0.73],
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
         'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
@@ -136,7 +136,8 @@ if AIIS:
         'side_table': [0.495, 0.495, 0.395],
         'side-tables': [0.495, 0.495, 0.395],
         'sink': [0.515, 0.455, 0.945],
-        'dishwasher': [0.6, 0.6, 0.84],
+        'dishwasher': [0.65, 0.75, 0.595],
+        'dishwasher_table': [0.65, 0.75, 0.42],
         'cabinet': [0.9, 0.46, 0.66],
         'shelf': [0.765, 0.357, 0.805],
         'shelf_1f': [0.765, 0.357, 0.855 + 0.025],
@@ -155,7 +156,7 @@ if AIIS:
         'bedside_table': [0.5, 0.45, 0.58],
 
         # clean the table
-        'dishwasher_handle': [0.60, 0.60, 0.84], #bjkim, but not modified, still France version
+        'dishwasher_handle': [0.65, 0.75, 0.60], #bjkim, but not modified, still France version
 
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
