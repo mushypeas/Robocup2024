@@ -603,6 +603,9 @@ class FaceCropper:
         face_location = []
 
         detected_faces = self.face_detector.process(image).detections
+
+        # print("face_cropper get_faces_location detected_faces", detected_faces) ####################
+
         if detected_faces is None: return face_images, face_location
 
         for face in detected_faces:
@@ -611,6 +614,8 @@ class FaceCropper:
                 inflation_factor = _get_bounding_box_inflation_factor(face.location_data.relative_keypoints[:2])
                 inflated_face_image = _get_inflated_face_image(image, face.location_data.relative_bounding_box, inflation_factor)
                 detected_landmarks = self.landmark_detector.process(inflated_face_image).multi_face_landmarks
+
+                # print("face_cropper get_faces_location detected_landmarks", detected_landmarks) ####################
 
                 if detected_landmarks is not None:
                     face_landmarks = detected_landmarks[0].landmark
@@ -634,6 +639,8 @@ class FaceCropper:
                     )
 
                     face_location.append(face.location_data.relative_bounding_box)
+
+        print("face_cropper get_faces_location face_location: ", face_location) ####################
 
         return face_images, face_location
 

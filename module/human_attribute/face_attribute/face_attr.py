@@ -81,6 +81,7 @@ class FaceAttribute():
         cv2.imwrite(self.img_path, guest_img)
         faces, dets, image = self.align.detect_and_align_faces(self.img_path, (112, 112))
         if faces is None:
+            print('face_attr.face_attribute align.detect_and_align_faces: faces is None !!!')
             return None
 
         pfaces = self.preprocess(faces.permute(0, 3, 1, 2)).to(self.device)
@@ -88,7 +89,10 @@ class FaceAttribute():
         with torch.inference_mode():
             preds = self.model(pfaces).detach().cpu()
         races, genders, ages = self.postprocess(preds)
-        print(races, genders, ages)
+        print('face_attr.face_attribute rages,genders,ages: ', races, genders, ages)
 
-        # image = self.visualize(image[0], dets[0], races, genders, ages)
+        image = self.visualize(image[0], dets[0], races, genders, ages)
+        # cv2.imshow("visualize_image", image) #################### Debug 2 ####################
+        # cv2.waitKey(0)
+        # cv2.destroyAllWindows()
         return genders, ages
