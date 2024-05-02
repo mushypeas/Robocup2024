@@ -183,7 +183,10 @@ class HumanFollowing:
         cur_pose = self.agent.get_pose(print_option=False)
         thres = 0.7
         human_box_thres = 0.5
-        human_box_size = self.human_box_list[0][1][2] * self.human_box_list[0][1][3] # TODO: human box size 맞는지 체크
+        if self.human_box_list[0] is not None:
+            human_box_size = self.human_box_list[0][1][2] * self.human_box_list[0][1][3] # TODO: human box size 맞는지 체크
+        else:
+            human_box_size = 0
         print(f"human box size thres : {self.image_size * human_box_size}")
         print(f"real human box size : {human_box_size}")
         _num_rotate=0
@@ -194,8 +197,9 @@ class HumanFollowing:
         rospy.loginfo(f"rect depth mean : {np.mean(_depth)}")
         rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {np.mean(_depth)}")
-        #np.mean(_depth)< (calc_z-100)
-        if (np.mean(_depth) < thres and self.image_size * human_box_thres > human_box_size and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        #and np.mean(_depth)< (calc_z-100)
+        #and self.image_size * human_box_thres > human_box_size
+        if (np.mean(_depth) < thres and np.mean(_depth)< (calc_z-50) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
@@ -212,7 +216,7 @@ class HumanFollowing:
                 _num_rotate = _num_rotate + 1
                 rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
 
-                self.agent.say('Barrier verified.', show_display=True)
+                # self.agent.say('Barrier verified.', show_display=True)
                 print("Barreir verified")
                 self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=True)
                 rospy.sleep(1)
@@ -220,7 +224,7 @@ class HumanFollowing:
                 if (np.mean(_depth) > (thres+0.4)):
                     self.agent.move_rel(0,0,self.stop_rotate_velocity*0.6, wait=True)
                     print("it's safe now!")
-                    self.agent.say("It's safe now!")
+                    # self.agent.say("It's safe now!")
                     break
                 elif (_num_rotate > 5):
                     _num_rotate = 0
@@ -244,7 +248,7 @@ class HumanFollowing:
 
 
             rospy.sleep(1)
-            self.agent.say("stop rotating.")
+            # self.agent.say("stop rotating.")
             # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
             rospy.sleep(3)
             self.agent.move_rel(0.3,0,0, wait=True)
