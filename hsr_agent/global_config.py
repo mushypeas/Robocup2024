@@ -1,7 +1,7 @@
 import os
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
-# data topic name
+# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
@@ -30,13 +30,15 @@ if AIIS:
         'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
-        'breakfast_bypass': [5.4484, 0.2049, 0.0673],
+        'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
+        'kitchen_table_front' : [1.5916, -2.7794, 0.0313], #mjgu
+        'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
-        'dishwasher': [8.2973, -1.0189, 0.0549],
-        'dishwasher_rack': [7.6658, -1.0189, -0.059],
-        'opened_dishwasher': [7.3082, 3.9192, 0.1136],
-        'clean_table_front' : [7.0104, -0.4341, 0.662],
+        'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
+        'dishwasher_rack': [2.0148, 0.8449, 1.6256], #bjkim2
+        'opened_dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
+        'clean_table_front' : [1.6, -1.2796, 0.0], #bjkim2
 
         # receptionist
         'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
@@ -77,7 +79,7 @@ if AIIS:
 
 
         # gpsr
-        'kitchen_table': [6.6449, 0.3005, 0.0422],
+        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
         'gpsr_start': [2, 0, 0],
         'side_table': [2.5619, -0.0344, 1.5821],
@@ -121,7 +123,7 @@ if AIIS:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.8, 0.8, 0.72],
+        'kitchen_table': [0.55, 0.75, 0.730],
         'breakfast_table': [0.855, 0.455, 0.825],
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
@@ -152,7 +154,7 @@ if AIIS:
         'bedside_table': [0.5, 0.45, 0.58],
 
         # clean the table
-        'dishwasher_handle': [0.60, 0.60, 0.84],
+        'dishwasher_handle': [0.60, 0.60, 0.84], #bjkim, but not modified, still France version
 
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
@@ -254,7 +256,8 @@ elif is_sim: # sim mode
         'dishwasher_gpsr': [6.531, 0.946, 1.57],
         'side_table': [3.291, 0.7065, 1.57],
         'grocery_table': [3.291, 0.7065, 1.57],  # dist = 0.9
-        'kitchen_table': [7.431, 0.651, -1.57],
+        'kitchen_table': [1.5916, -2.7794, 0.0313], # dist = 0.6 /mjgu
+        'kitchen_table_ready' : [1.0016, -2.7794, 0.0313], # dist = 2.0 /mjgu
         'pantry': [7.245, 1.051, 0],  # dist = 0.9
         'desk': [2.52, -3.815, -1.57],  # dist = 0.9
         'gpsr_start': [1.3372, 1.1288, 0.5792],
