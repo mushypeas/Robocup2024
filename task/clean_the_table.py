@@ -359,8 +359,19 @@ def clean_the_table(agent: Agent):
         # miss_count = 0
 
         # 4. go place pos
+
+        cutlery_box_position = [0, 0]
+        # cutlery_box_position = [0.1,-0.2]
+        import pdb;
+
+        
+        place_position_dict = {'mug': [0, -0.24], 'bowl': [0.12, 0], 'plate': [0.1, -0.24], 'fork': cutlery_box_position,
+                           'knife': cutlery_box_position, 'spoon': cutlery_box_position, tab_name: [0.05, 0.0]}
+  
         agent.open_gripper()
-        rospy.sleep(5)
+        # rospy.sleep(5)
+        pdb.set_trace()
+
         agent.grasp()
 
         
@@ -370,10 +381,9 @@ def clean_the_table(agent: Agent):
         agent.pose.head_tilt(-30) # look at the table you stupid robot
 
         agent.move_rel(-0.2,0, wait=True)
-
         # import pdb; pdb.set_trace()
 
-        item = 'knife' # for coding only bjkim 24th
+         # for coding only bjkim 24th
 
         dishwasher = 'dishwasher'
         dishwasher_x = distancing(agent.yolo_module.pc, 'dishwasher_table', dist=0.5)
@@ -387,13 +397,8 @@ def clean_the_table(agent: Agent):
         agent.move_rel(0, place_position_dict[item][1], wait=True)
         agent.move_rel(place_position_dict[item][0], 0, wait=True)
 
-        if item == 'fork' or item == 'spoon' or item == 'knife':
-            arm_lift_value = agent.pose.place_cutlery_pose(table=dishwasher) # temp
-            agent.pose.arm_lift_up(arm_lift_value - 0.1)
-       
-        else: # 'plate' or 'bowl'
-            rospy.sleep(0.5)
-            agent.pose.plate_dishwasher_pose()
+        arm_lift_value = agent.pose.place_cutlery_pose(table=dishwasher) # temp
+        agent.pose.arm_lift_up(arm_lift_value - 0.1)
         
         # agent.move_rel(0.27 + place_position_dict[item][0], place_position_dict[item][1], wait=True)
 
@@ -401,5 +406,6 @@ def clean_the_table(agent: Agent):
 
         # agent.pose.pick_up_bowl_pose(table=place_table)
         agent.pose.arm_lift_up(0.3)
+        rospy.sleep(1)
         agent.move_rel(-0.3, 0)
         agent.pose.move_pose()
