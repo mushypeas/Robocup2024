@@ -30,9 +30,11 @@ if AIIS:
         'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
+        'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
-        'kitchen_table_front' : [1.5916, -2.7794, 0.0313], #mjgu
-        'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
+        'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504
+        'kitchen_table_front' : [1.7258, -2.8179, 0.0302], #mjgu 240504
+        'breakfast_table_front': [1.4045, -1.3402, 0.0091], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
         'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
@@ -124,8 +126,8 @@ if AIIS:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.55, 0.75, 0.730],
-        'breakfast_table': [0.55, 0.75, 0.73],
+        'kitchen_table': [0.55, 0.75, 0.735],
+        'breakfast_table': [0.55, 0.75, 0.715],
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
         'grocery_table_pose1': [0.55, 0.75, 0.795], # +065

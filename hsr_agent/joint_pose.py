@@ -78,6 +78,16 @@ class JointPose:
                        'wrist_roll_joint'],
                       [0, 0, -1.57, -1.57, wrist_roll_joint])
 
+    def table_search_pose_breakfast_initial(self):
+        self.gripper.grasp(0.1)
+        self.set_pose(['arm_lift_joint',
+                       'arm_flex_joint',
+                       'arm_roll_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint',
+                       'head_tilt_joint'],
+                      [0.2, 0, -1.57, -1.57, -1.04, -0.52])
+
     def table_search_pose_breakfast(self):
         self.gripper.grasp(0.1)
         self.set_pose(['arm_lift_joint',
@@ -581,7 +591,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
-    def spill_object_pose(self, object_height, table='kitchen_table'):
+    def spill_object_pose(self, object_height, table='breakfast_table'): # kitchen_table 에서 변경 / mjgu
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
         offset = 0.04 # object to table
