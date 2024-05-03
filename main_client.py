@@ -60,7 +60,7 @@ if __name__ == '__main__':
         from task.restaurant import restaurant
         restaurant(agent)
     elif task_id == '8':
-        from task.stickler_for_the_rules import stickler_for_the_rules
+        from task.stickler_for_the_rules_clip import stickler_for_the_rules
         stickler_for_the_rules(agent)
     elif task_id == '9':
         from task.egpsr import egpsr
