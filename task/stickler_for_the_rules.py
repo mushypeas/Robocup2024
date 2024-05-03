@@ -440,6 +440,8 @@ class DrinkDetection:
         self.agent = agent
         rospy.Subscriber('snu/openpose/hand',
                          Int16MultiArray, self._openpose_cb)
+        rospy.Subscriber('snu/openpose/bbox',
+                         Int16MultiArray, self._openpose_bbox_cb)
         self.thre = hand_drink_pixel_dist_threshold
         self.axis_transform = axis_transform
         self.drink_check = False
@@ -451,6 +453,11 @@ class DrinkDetection:
     def _openpose_cb(self, data):
         data_list = data.data
         self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
+
+    # openpose bbox callback (human?)
+    def _openpose_bbox_cb(self, data):
+        data_list = data.data
+        self.human_bboxes = np.reshape(data_list, (-1, 2, 2))
 
     def show_image(self, l_hand_x, l_hand_y, r_hand_x, r_hand_y):
         img = self.agent.rgb_img
@@ -470,15 +477,26 @@ class DrinkDetection:
         count = 0
         while count < 7:
             image = self.agent.rgb_img
-            pos, neg, ntr = self.detector.detect(images=image)
-            if ntr > 0.15:
-                return None
-            if pos > 0.15:
-                return True
-            # if ntr > 0.8:
+            for human_bbox_idx, human_bbox in enumerate(self.human_bboxes):
+                top_left_x, top_left_y = human_bbox[0]
+                bottom_right_x, bottom_right_y = human_bbox[1]
+                crop_img = image[top_left_y:bottom_right_y, top_left_x:bottom_right_x]
+                cv2.imshow('crop_img', crop_img)
+                pos, neg, ntr = self.detector.detect(images=crop_img)
+                ### prob thresholds should be modified
+                if ntr > 0.15:
+                    return None
+                if pos > 0.15:
+                    return True
+            # pos, neg, ntr = self.detector.detect(images=image)
+            # if ntr > 0.15:
             #     return None
-            # if pos > 0.1:
+            # if pos > 0.15:
             #     return True
+            # # if ntr > 0.8:
+            # #     return None
+            # # if pos > 0.1:
+            # #     return True
             count += 1
         return False
     
