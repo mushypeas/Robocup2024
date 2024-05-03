@@ -127,7 +127,7 @@ if AIIS:
     TABLE_DIMENSION = {
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.735],
-        'breakfast_table': [0.55, 0.75, 0.715],
+        'breakfast_table': [0.55, 0.75, 0.715], #이거 715인데 왜 테이프에 735라 써놧어
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
         'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
