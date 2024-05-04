@@ -46,6 +46,7 @@ DRINK_CONFIG = CLIPDetectorConfig(
     labels=["negative", "positive"],
     positive_texts=[
         "an image of a person with a drink in their hand",
+        "an image of a drink in a person's hand",
         # "a photo of a person holding a drink in their hand",
         # "a person holding a drink in their hand",
         # "a person holding a drink",
@@ -56,10 +57,11 @@ DRINK_CONFIG = CLIPDetectorConfig(
         # "a photo of a person not holding any drink in their hand",
         # "a person not holding a drink in their hand",
         # "a person not holding a drink",
-        "a person with empty hands",
+        "an image of a person with empty hands",
         # "an image of a person whose hands are not visible",
         # "a photo of a person whose hands are not visible",
-        "a person whose hands are not visible",
+        "an image of a person whose hands are not visible",
+        # "an image of an empty hands"
     ],
     neutral_texts=[
         # "an image of a background with no people in it",
@@ -469,17 +471,28 @@ class DrinkDetection:
             msg = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
             human_bboxes = np.reshape(msg.data, (-1, 2, 2))
             if len(human_bboxes) == 0:
-                if count == 6:
-                    return None
-                continue
+                return None    
             for human_bbox_idx, human_bbox in enumerate(human_bboxes):
                 print('human_bbox: ', human_bbox)
-                top_left_x, top_left_y = human_bbox[0]
-                bottom_right_x, bottom_right_y = human_bbox[1]
-                crop_img = image[
-                    max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
-                    max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
-                ]
+
+                if len(self.human_hand_poses) > 0:
+                    human_hand = self.human_hand_poses[human_bbox_idx]
+                    print("hand found")
+                    l_hand_x, l_hand_y = human_hand[0]
+                    r_hand_x, r_hand_y = human_hand[1]
+                    square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + self.thre
+                    crop_img = image[
+                        max(0,(r_hand_y + l_hand_y)//2-square_len//2):min(480,(r_hand_y + l_hand_y)//2+square_len//2),
+                        max(0,(r_hand_x + l_hand_x)//2-square_len//2):min(640,(r_hand_x + l_hand_x)//2+square_len//2)
+                    ]
+                else:
+
+                    top_left_x, top_left_y = human_bbox[0]
+                    bottom_right_x, bottom_right_y = human_bbox[1]
+                    crop_img = image[
+                        max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
+                        max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
+                    ]
                 cv2.imshow('crop_img', crop_img)
                 cv2.waitKey(1)
                 # save crop_img at ../module/CLIP/crop_img.jpg
@@ -492,7 +505,7 @@ class DrinkDetection:
                 negative_prob_max = np.max(prob[positive_index:negative_index]).round(3) 
                 positive_prob_sum = np.sum(prob[:positive_index]).round(3) 
                 negative_prob_sum = np.sum(prob[positive_index:negative_index]).round(3) 
-                if positive_prob_max > negative_prob_max:
+                if positive_prob_sum > negative_prob_sum:
                     return True
                 ### prob thresholds should be modified
                 # if ntr > 0.15:
