@@ -24,10 +24,11 @@ from open3d import geometry
 
 # stt
 # from module.stt.stt_client import stt_client
-# from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
+from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
 from utils.simple_action_client import SimpleActionClient
 import control_msgs.msg
 import controller_manager_msgs.srv
@@ -43,7 +44,7 @@ from utils.marker_maker import MarkerMaker
 
 class Agent:
     def __init__(self):
-
+        
         # head display
         self.head_display_file_pub = rospy.Publisher('/hsr_head_file', String, queue_size=10)
         self.head_text_pub = rospy.Publisher('/hsr_head_msg', String, queue_size=10)
@@ -411,8 +412,8 @@ class Agent:
             self.head_show_text(sentence)
 
     # stt
-    def stt(self, sec=5.):
-        return stt_client_hsr_mic(sec=sec)
+    def stt(self, sec=5., mode=None):
+        return stt_client_hsr_mic(sec=sec, mode=mode)
         # return stt_client(sec=sec)
         pass
 

@@ -119,13 +119,13 @@ class Attribute():
         self.cloth_threshold = cloth_threshold
         self.calibration_mode = calibration_mode
 
-        counter = Counter()
-        color_stream = list()
-        pattern_stream = list()
-        gender_stream = list()
-        season_stream = list()
-        class_stream = list()
-        sleeves_stream = list()
+        # counter = Counter()
+        # color_stream = list()
+        # pattern_stream = list()
+        # gender_stream = list()
+        # season_stream = list()
+        # class_stream = list()
+        # sleeves_stream = list()
 
     def counter_parts1(self, sentence):
 

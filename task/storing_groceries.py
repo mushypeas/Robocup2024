@@ -10,9 +10,10 @@ class StoringGroceries:
     def __init__(self, agent: Agent):
         self.agent = agent
 
-        # test params. Set all to False for actual task
-        self.dont_check_door = False
-        self.picking_test_mode = False
+        # test params
+        # Set everything to False for actual task
+        self.ignore_door = True
+        self.picking_test_mode = True
         self.place_test_mode = False
 
         self.pick_table = 'grocery_table'
@@ -28,7 +29,7 @@ class StoringGroceries:
         self.gripper_to_shelf_x = 0.9
         self.default_offset_dist = 0.05
         self.new_category_offset_dist = 0.3
-        self.dist_to_grocery_table = 0.75
+        self.dist_to_grocery_table = 1
 
         # [BONUS] shelf_open
         self.shelf_open = False
@@ -154,11 +155,11 @@ class StoringGroceries:
 
         # front
         if grasping_type == 0:
-            self.agent.pose.pick_side_pose('grocery_table_pose1')
+            self.agent.pose.pick_side_pose('grocery_table_pose2')
+            # self.agent.pose.pick_side_pose('grocery_table_pose1')
             self.agent.open_gripper()
             self.agent.move_rel(0, table_base_xyz[1], wait=True)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.pick_side_pose('grocery_table_pose2')
+            self.agent.move_rel(table_base_xyz[0] + 0.05, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
 
@@ -221,6 +222,7 @@ class StoringGroceries:
         elif shelf_item_cent_z > self.shelf_1_2_height_threshold:
             self.agent.pose.place_shelf_pose('shelf_2f')
         else:
+            self.agent.move_rel(-0.4, 0, wait=True)
             self.agent.pose.place_side_pose('shelf_1f')
 
         if shelf_item_cent_y > 0:   # 3d horizontal cent point.
@@ -236,10 +238,10 @@ class StoringGroceries:
 
         # Place item at 1F
         if shelf_item_cent_z < self.shelf_1_2_height_threshold:
-            self.agent.move_rel(shelf_base_xyz[0] - 0.2, shelf_base_xyz[1], wait=True)  # 2f pose - 1f pose = 0.18
+            self.agent.move_rel(shelf_base_xyz[0] - 0.15, shelf_base_xyz[1], wait=True)  # 2f pose - 1f pose = 0.18
         # Place item at 2F of 3F
         else:
-            self.agent.move_rel(shelf_base_xyz[0] - 0.2, shelf_base_xyz[1], wait=True)
+            self.agent.move_rel(shelf_base_xyz[0] + 0.05, shelf_base_xyz[1], wait=True)
         self.agent.open_gripper()
         self.agent.move_rel(-0.4, 0)
         self.agent.grasp()
@@ -258,7 +260,7 @@ class StoringGroceries:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        if not self.dont_check_door:
+        if not self.ignore_door:
             self.agent.door_open()
             rospy.logwarn('Start Storing Groceries')
             self.agent.say('Start Storing Groceries')
@@ -310,7 +312,7 @@ class StoringGroceries:
                 rospy.logwarn('Go to pick_location...')
                 rospy.sleep(1)
                 self.agent.move_abs_safe(self.pick_location)
-                self.agent.move_rel(0.9 - self.dist_to_grocery_table, 0)
+                self.agent.move_rel(0.6 - self.dist_to_grocery_table, 0)
                 # dist_to_table = distancing(self.agent.yolo_module.pc, self.pick_table, dist=0.9)
                 # self.agent.move_rel(dist_to_table, 0)
                 self.agent.pose.table_search_pose()

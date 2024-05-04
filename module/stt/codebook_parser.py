@@ -17,11 +17,14 @@ lein = Lein()
 mra = MatchingRatingApproach()
 rsoundex = RefinedSoundex()
 
-def parser(input):
+def parser(input, word_list=None):
     if len(input) == 0: return ""
     split = input.split('and')
+    
+    # lst = ['red wine', 'cola','juice pack','tropical juice','milk','iced tea','orange juice','tuna','tomato soup','spam','mustard','strawberry jello','chocolate jello','coffee grounds','sugar','pear','plum','peach','lemon','orange','strawberry','banana','apple','pringles','cornflakes','cheezit', 'yes','no']
+    # lst.extend(['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone'])
+    lst = word_list
 
-    lst = ['red wine', 'cola','juice pack','tropical juice','milk','iced tea','orange juice','tuna','tomato soup','spam','mustard','strawberry jello','chocolate jello','coffee grounds','sugar','pear','plum','peach','lemon','orange','strawberry','banana','apple','pringles','cornflakes','cheezit', 'yes','no']
     order_list =[]
     for item in split:
         if item == '': continue
@@ -29,7 +32,7 @@ def parser(input):
         item = item.lower()
         if item in lst:
             order_list.append(item)
-            print(item, distance(item, item))
+            print('parser item in lst: ', item, distance(item, item))
             continue
         distmin = np.infty
         minstring = ''
@@ -42,9 +45,9 @@ def parser(input):
                 if distance(item, i) < distance(item, minstring):
                     minstring = i
         order_list.append(minstring)
-        print(item, distmin)
+        print('parser item,distmin: ', item, distmin)
         #rospy.loginfo(i, distmin)
-    print(order_list)
+    print('parser order_list', order_list)
     order = ""
     for i, item in enumerate(order_list):
         order += item

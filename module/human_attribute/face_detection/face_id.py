@@ -109,7 +109,7 @@ class FaceId:
             guest_face_vectors.append(self.get_vector(im2=face))
 
         sim_np = self.cos_sim(guest_face_vectors, object_vector)
-        print(sim_np)
+        print('face_id check_host sim_np: ',sim_np)
         checked_id = np.argmax(sim_np)
 
         return checked_id
