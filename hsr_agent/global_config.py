@@ -30,6 +30,10 @@ if AIIS:
         'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
 
         # serve breakfast
+        'breakfast_table_testday' : [0.5649, -0.0299, 1.5483],
+        'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
+        # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
+        'kitchen_table_testday' : [2.1372, 0.3393, 1.5513],
         'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
         'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504
@@ -125,6 +129,9 @@ if AIIS:
 
 
     TABLE_DIMENSION = {
+        # testday용 추가 - mjgu 240504
+        'kitchen_table_testday': [0.8, 0.8, 0.72],
+        'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.735],
         'breakfast_table': [0.55, 0.75, 0.715], #이거 715인데 왜 테이프에 735라 써놧어
