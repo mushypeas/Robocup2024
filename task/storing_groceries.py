@@ -13,9 +13,9 @@ class StoringGroceries:
         # test params
         # Set everything to False for actual task
         self.ignore_door = True
-        self.picking_test_mode = True
+        self.picking_test_mode = False
         self.place_test_mode = False
-
+        self.available_categories = ['fruit', 'food']
         self.pick_table = 'grocery_table'
         self.pick_location = 'grocery_table'
         self.place_table = 'shelf_1f'
@@ -26,6 +26,7 @@ class StoringGroceries:
         self.shelf_head_angle = 10
 
         # hard coding offset
+        self.pick_bias = 0.01
         self.gripper_to_shelf_x = 0.9
         self.default_offset_dist = 0.05
         self.new_category_offset_dist = 0.3
@@ -36,6 +37,8 @@ class StoringGroceries:
         self.shelf_arm_height = 0.59
 
         self.not_using_check_grasp_list = ['milk', 'bubble_tea']  # items that can't be detected by check_grasp
+        self.grasp_failure_count = np.zeros(1000)
+
 
     def detect_shelf_open_point(self):
 
@@ -107,7 +110,7 @@ class StoringGroceries:
 
 
     def search_shelf(self):
-        self.agent.move_rel(-0.5, 0, wait=True)
+        # self.agent.move_rel(-0.5, 0, wait=True)
         center_list = self.agent.yolo_module.detect_3d('shelf_1f')
         print(f"Shelf item center list:\n{center_list}")
         shelf_item_dict = {}
@@ -158,7 +161,7 @@ class StoringGroceries:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
             # self.agent.pose.pick_side_pose('grocery_table_pose1')
             self.agent.open_gripper()
-            self.agent.move_rel(0, table_base_xyz[1], wait=True)
+            self.agent.move_rel(0, table_base_xyz[1] + self.pick_bias, wait=True)
             self.agent.move_rel(table_base_xyz[0] + 0.05, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
@@ -213,8 +216,8 @@ class StoringGroceries:
             self.agent.move_rel(shelf_base_xyz[0] - 0.08 + 0.33, shelf_base_xyz[1], wait=True)
             self.agent.open_gripper()
             self.agent.move_rel(-0.4, 0)
-            self.agent.grasp()
             self.agent.pose.move_pose()
+            self.agent.grasp()
             return
         
         if shelf_item_cent_z > self.shelf_2_3_height_threshold:
@@ -222,7 +225,6 @@ class StoringGroceries:
         elif shelf_item_cent_z > self.shelf_1_2_height_threshold:
             self.agent.pose.place_shelf_pose('shelf_2f')
         else:
-            self.agent.move_rel(-0.4, 0, wait=True)
             self.agent.pose.place_side_pose('shelf_1f')
 
         if shelf_item_cent_y > 0:   # 3d horizontal cent point.
@@ -244,7 +246,7 @@ class StoringGroceries:
             self.agent.move_rel(shelf_base_xyz[0] + 0.05, shelf_base_xyz[1], wait=True)
         self.agent.open_gripper()
         self.agent.move_rel(-0.4, 0)
-        self.agent.grasp()
+        # self.agent.grasp()
         self.agent.pose.move_pose()
 
     # TODO: Also count number of falied attempts per object?
@@ -310,26 +312,45 @@ class StoringGroceries:
             while not has_grasped:
                 # 2-1. Go to pick_location
                 rospy.logwarn('Go to pick_location...')
-                rospy.sleep(1)
+                rospy.sleep(0.5)
                 self.agent.move_abs_safe(self.pick_location)
-                self.agent.move_rel(0.6 - self.dist_to_grocery_table, 0)
+                # self.agent.move_rel(0.6 - self.dist_to_grocery_table, 0)
                 # dist_to_table = distancing(self.agent.yolo_module.pc, self.pick_table, dist=0.9)
                 # self.agent.move_rel(dist_to_table, 0)
                 self.agent.pose.table_search_pose()
 
                 # 2-2. Select item to pick
                 rospy.logwarn('Searching for item to pick...')
-                rospy.sleep(1)
+                rospy.sleep(0.5)
                 start_table_item_list = np.array(self.agent.yolo_module.detect_3d('grocery_table', dist=self.dist_to_grocery_table))
                 if start_table_item_list.size == 0:    # if array is empty(nothing detected)
                     continue
+                # # >>> choose object without exception
+                # table_item_list_sorted = start_table_item_list[start_table_item_list[:, 0].argsort()]
+                # table_item_id = [int(i) for i in table_item_list_sorted[:, 3]][0]
+
+                # # 2-3. Find item name & type
+                # table_item_name = self.agent.yolo_module.find_name_by_id(table_item_id)
+                # table_item_type = self.agent.yolo_module.find_type_by_id(table_item_id)
+                # grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
+                # # <<< choose object without exception
+
+                # >>> choose object with exception
                 table_item_list_sorted = start_table_item_list[start_table_item_list[:, 0].argsort()]
-                table_item_id = [int(i) for i in table_item_list_sorted[:, 3]][0]
+                table_item_list_sorted = [int(i) for i in table_item_list_sorted[:, 3]]
 
                 # 2-3. Find item name & type
-                table_item_name = self.agent.yolo_module.find_name_by_id(table_item_id)
-                table_item_type = self.agent.yolo_module.find_type_by_id(table_item_id)
-                grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
+                # only grasp items of available categories that have failed less than 3 times
+                for table_item_id in table_item_list_sorted:
+                    table_item_name = self.agent.yolo_module.find_name_by_id(table_item_id)
+                    table_item_type = self.agent.yolo_module.find_type_by_id(table_item_id)
+                    grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
+                    if self.grasp_failure_count[table_item_id] > 2 or\
+                        self.agent.object_types[table_item_type] not in self.available_categories:
+                        continue
+                # <<< choose object with exception
+
+                # 2-3. Find item name & type
                 print(f"Table item :      {table_item_name}")
                 print(f"Table item type : {self.agent.object_types[table_item_type]}")
 
@@ -356,6 +377,7 @@ class StoringGroceries:
                     rospy.loginfo(f'Successfuly grasped {table_item_name}!')
                 else:
                     rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
+                    self.grasp_failure_count[table_item_id] += 1
 
             # Don't go to shelf if picking_test_mode
             if self.picking_test_mode:
@@ -366,7 +388,7 @@ class StoringGroceries:
             rospy.logwarn('Going to place_location...')
 
             self.agent.move_abs_safe(self.place_location)
-            dist_to_table = distancing(self.agent.yolo_module.pc, self.pick_table, dist=self.gripper_to_shelf_x)
+            dist_to_table = distancing(self.agent.yolo_module.pc, self.place_table, dist=self.gripper_to_shelf_x)
             # shelf_y = distancing_horizontal(self.agent.yolo_module.pc, place_table)
             self.agent.move_rel(dist_to_table, 0)
 
