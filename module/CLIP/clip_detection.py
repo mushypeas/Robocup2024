@@ -79,9 +79,11 @@ class CLIPDetector:
             positive_prob = np.sum(prob[:self.positive_index], dtype=np.float64).round(3) 
             negative_prob = np.sum(prob[self.positive_index:self.negative_index], dtype=np.float64).round(3) 
             neutral_prob = np.sum(prob[self.negative_index:], dtype=np.float64).round(3)
-            print(f'PROBS: {prob} \n    {"Positive" if (positive_prob + neutral_prob) > negative_prob else "Negative"}')
-            print(f'Positive prob: {positive_prob.round(3)}    Negative prob: {negative_prob.round(3)}    Neutral prob: {neutral_prob.round(3)}')
-            return positive_prob, negative_prob, neutral_prob
+            # print(f'PROBS: {prob} \n    {"Positive" if (positive_prob + neutral_prob) > negative_prob else "Negative"}')
+            # print(f'Positive prob: {positive_prob.round(3)}    Negative prob: {negative_prob.round(3)}    Neutral prob: {neutral_prob.round(3)}')
+            # return positive_prob, negative_prob, neutral_prob
+            print(prob)
+            return prob
         
         # For testing on the local dataset to calculate the accuracy
         elif self.mode == "local":

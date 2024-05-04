@@ -48,33 +48,21 @@ DRINK_CONFIG = CLIPDetectorConfig(
         "an image of a person with a drink in their hand",
         # "a photo of a person holding a drink in their hand",
         # "a person holding a drink in their hand",
-        # "a person holding a cup in their hand",
-        # "a person holding a bottle in their hand",
-        # "a person holding a soda can in their hand",
-        # "a person holding a glass in their hand",
-        # "a person holding a mug in their hand",
-        # "a person holding a beverage in their hand",
-        # "a person holding a juice in their hand",
-        # "a person holding a water in their hand",
-        # "a person holding a milk in their hand",
+        # "a person holding a drink",
+        # "a person holding something in their hand",
     ],
     negative_texts=[
-        "an image of a person without any drink in their hand",
+        # "an image of a person without any drink in their hand",
         # "a photo of a person not holding any drink in their hand",
         # "a person not holding a drink in their hand",
-        # "a person not holding a cup in their hand",
-        # "a person not holding a bottle in their hand",
-        # "a person not holding a soda can in their hand",
-        # "a person not holding a glass in their hand",
-        # "a person not holding a mug in their hand",
-        # "a person not holding a beverage in their hand",
-        # "a person not holding a juice in their hand",
-        # "a person not holding a water in their hand",
-        # "a person not holding a milk in their hand",
-        # "a person with empty hands",
+        # "a person not holding a drink",
+        "a person with empty hands",
+        # "an image of a person whose hands are not visible",
+        # "a photo of a person whose hands are not visible",
+        "a person whose hands are not visible",
     ],
     neutral_texts=[
-        "an image of a background with no people in it",
+        # "an image of a background with no people in it",
         # "a photo without any person in it",
         # "an image of a person whose hands are not visible",
         # "a photo of a person whose hands are not visible",
@@ -440,8 +428,8 @@ class DrinkDetection:
         self.agent = agent
         rospy.Subscriber('snu/openpose/hand',
                          Int16MultiArray, self._openpose_cb)
-        rospy.Subscriber('snu/openpose/bbox',
-                         Int16MultiArray, self._openpose_bbox_cb)
+        # rospy.Subscriber('snu/openpose/bbox',
+        #                  Int16MultiArray, self._openpose_bbox_cb)
         self.thre = hand_drink_pixel_dist_threshold
         self.axis_transform = axis_transform
         self.drink_check = False
@@ -454,10 +442,10 @@ class DrinkDetection:
         data_list = data.data
         self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
 
-    # openpose bbox callback (human?)
-    def _openpose_bbox_cb(self, data):
-        data_list = data.data
-        self.human_bboxes = np.reshape(data_list, (-1, 2, 2))
+    # # openpose bbox callback (human?)
+    # def _openpose_bbox_cb(self, data):
+    #     data_list = data.data
+    #     self.human_bboxes = np.reshape(data_list, (-1, 2, 2))
 
     def show_image(self, l_hand_x, l_hand_y, r_hand_x, r_hand_y):
         img = self.agent.rgb_img
@@ -477,17 +465,42 @@ class DrinkDetection:
         count = 0
         while count < 7:
             image = self.agent.rgb_img
-            for human_bbox_idx, human_bbox in enumerate(self.human_bboxes):
+            # msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
+            msg = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
+            human_bboxes = np.reshape(msg.data, (-1, 2, 2))
+            if len(human_bboxes) == 0:
+                if count == 6:
+                    return None
+                continue
+            for human_bbox_idx, human_bbox in enumerate(human_bboxes):
+                print('human_bbox: ', human_bbox)
                 top_left_x, top_left_y = human_bbox[0]
                 bottom_right_x, bottom_right_y = human_bbox[1]
-                crop_img = image[top_left_y:bottom_right_y, top_left_x:bottom_right_x]
+                crop_img = image[
+                    max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
+                    max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
+                ]
                 cv2.imshow('crop_img', crop_img)
-                pos, neg, ntr = self.detector.detect(images=crop_img)
-                ### prob thresholds should be modified
-                if ntr > 0.15:
-                    return None
-                if pos > 0.15:
+                cv2.waitKey(1)
+                # save crop_img at ../module/CLIP/crop_img.jpg
+                cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{count}_{human_bbox_idx}.jpg', crop_img)
+                # pos, neg, ntr = self.detector.detect(images=crop_img)
+                prob = self.detector.detect(images=crop_img)
+                positive_index = DRINK_CONFIG.positive_index
+                negative_index = DRINK_CONFIG.negative_index
+                positive_prob_max = np.max(prob[:positive_index]).round(3) 
+                negative_prob_max = np.max(prob[positive_index:negative_index]).round(3) 
+                positive_prob_sum = np.sum(prob[:positive_index]).round(3) 
+                negative_prob_sum = np.sum(prob[positive_index:negative_index]).round(3) 
+                if positive_prob_max > negative_prob_max:
                     return True
+                ### prob thresholds should be modified
+                # if ntr > 0.15:
+                #     return None
+                # if pos > 0.3:
+                #     return True
+                # if pos > neg or pos > 0.5:
+                #     return True
             # pos, neg, ntr = self.detector.detect(images=image)
             # if ntr > 0.15:
             #     return None
@@ -983,7 +996,7 @@ if __name__ == '__main__':
     hand_drink_pixel_dist_threshold = 50
     drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    agent.pose.head_tilt(10)
+    # agent.pose.head_tilt(10)
     agent.pose.head_pan(0)
     while True:
         agent.say('Looking for drink')
