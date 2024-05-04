@@ -36,7 +36,7 @@ class CheckSeat():
         user_location_list = []
         user_face_data_list = []
 
-        # left -> sofa -> right
+        # left -> middle -> right
         # sofa range
 
         # left view
@@ -58,7 +58,7 @@ class CheckSeat():
                     seat_info[1][0] = 1
 
         # sofa view
-        print("########## check_empty_seat sofa view ##########")
+        print("########## check_empty_seat middle view ##########")
         agent.pose.head_pan(0)
         rospy.sleep(1)
 
