@@ -33,7 +33,7 @@ if AIIS:
         'breakfast_table_testday' : [0.5649, -0.0299, 1.5483],
         'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
         # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
-        'kitchen_table_testday' : [2.1372, 0.3393, 1.5513],
+        'kitchen_table_testday' : [2.2153, 0.5429, 1.5485],
         'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
         'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504

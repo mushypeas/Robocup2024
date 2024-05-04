@@ -5,11 +5,9 @@ from hsr_agent.agent import Agent
 
 def serve_breakfast(agent: Agent):
     ### 942동 로봇방 212호 실험 ###
-    ##모의고사용 breakfast_table_front [0.5649, -0.0299, 1.5483]
-    ##모의고사용 breakfast_table_bypass [1.7554, 0.9174, 3.1374]
-    ##모의고사용 kitchen_table_front 
-
-    # joint_pose에 kitchen table과 breakfast table....그냥 이름 다 바꿔야할 듯?
+    ##모의고사용 'breakfast_table_testday' : [0.5649, -0.0299, 1.5483],
+    ##모의고사용 'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
+    ##모의고사용 kitchen_table_testday [2.1372, 0.3393, 1.5513]
 
     # start point #
     # outside of the door - 아직 좌표 모름 #
@@ -31,7 +29,7 @@ def serve_breakfast(agent: Agent):
     # breakfast_table_front 도 위치 정해서 global config 에 추가하기.
     # item_list = ['bowl', 'cracker', 'cereal_red', 'milk', 'scrub', 'spoon', 'fork', 'knife']
     # 모의고사용. 대회 당일에는 item_list 가 인지할 수 있는 것들을 가능한 한 추가해야 함. list는 위를 참고.
-    item_list = [ 'bowl', 'spoon', 'spam', 'mustard'] # milk 추가, cereal_red (=spam)
+    item_list = ['bowl', 'spam', 'mustard', 'spoon'] # milk 추가, cereal_red (=spam)
 
     bowl_to_spam_spill_xy = [-0.2, 0.15]  # bowl to cereal
     bowl_to_mustard_spill_xy = [-0.1, 0.05]  # bowl to milk
@@ -40,7 +38,7 @@ def serve_breakfast(agent: Agent):
     # try except params
     # default_base_xyz = [0.376, -0.1, 0.823]  (수정) 주석처리함.
     # bonus params
-    mustard_bonus = False
+    mustard_bonus = True
     spam_bonus = True
 
     ###########################
@@ -71,14 +69,14 @@ def serve_breakfast(agent: Agent):
         # 1. go to kitchen table -> item picking 해야 함.
 
         # Initial pose 정의 (모의고사용) 
-        agent.pose.table_search_pose_breakfast_initial()
+        # agent.pose.table_search_pose_breakfast_initial()
         # agent.pose.move_pose() 주석 처리함. (모의고사용) -> move_pose는 /hsr_agent/joint_pose.py 에서 정의 (70 line)
-        rospy.sleep(0.5)                                    # 움직이는 동안 대기하는 시간
+        # rospy.sleep(0.5)                                    # 움직이는 동안 대기하는 시간
          # 여기서부터 주석함!
          # kitchen table 앞 picking 할 위치(60cm 떨어진 곳)으로 이동
-        agent.move_abs(pick_position) # kitchen_table_front 는 60cm 떨어진 곳이어야 함.
+        agent.move_abs(pick_position) # 60cm 떨어진 곳이어야 함.
         dist_to_table = distancing(agent.yolo_module.pc, pick_table) # kitchen table 좌표 확인
-        agent.move_rel(dist_to_table, 0) # 기존 코드 -> (dist_to_table,0)
+        agent.move_rel(dist_to_table, 0)
          # def get_pose 관련 설명 (아래 참고)
          # hsr_agent -> agent.py에서 262번 줄 def move_distancing 에서 if문 활성화 (if kitchen~)
          # self.move_base.get_pose(), return self.move_base.get_pose() -> 현 위치 반환 함수
@@ -92,32 +90,42 @@ def serve_breakfast(agent: Agent):
         ##################################################### 재문님 도와주신 코드 yolo number unmatch일 시, 지정해서 매칭
         # id_list = [17, 22, 33, 36]
         table_item_list = agent.yolo_module.detect_3d(pick_table)
-        # for table_item in table_item_list:
-        #    table_item[3] = id_list[table_item[3]]
-        # print(table_item_list)
+        # 아이템 ID 순서대로 처리하기 위한 ID 리스트
+        ordered_item_ids = [17, 7, 41, 22]
 
-        is_detected = False
-        
-        agent.say('Wait for second') # 안되면 tab 공백 조정
-        
-        for item in item_list:
-            name, item_id, itemtype, grasping_type = agent.yolo_module.find_object_info_by_name(item)
-        #    print('item_id: {item_id}, item: {name}')
+        # 테이블 아이템 리스트
+        table_item_list = agent.yolo_module.detect_3d(pick_table)
 
-        for table_item in table_item_list:
-            print(table_item)
-            if item_id == table_item[3]:
-                 # 2.2 select target_object_pc
-                table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, name)
-                is_detected = True
-                break
+        # 각 아이템 ID에 대해 처리
+        for item_id in ordered_item_ids:
+            is_detected = False
+            # 아이템 리스트 순회
+            for item in item_list:
+                print('item', item)
+                name, current_item_id, itemtype, grasping_type = agent.yolo_module.find_object_info_by_name(item)
+                
+                # 현재 아이템의 ID가 처리해야 할 ID와 일치하는지 확인
+                if current_item_id == item_id:
+                    # 일치하는 경우, 해당 아이템의 3D 위치 찾기
+                    for table_item in table_item_list:
+                        if current_item_id == table_item[3]:  # 여기서 table_item[3]는 아이템 ID를 나타냄
+                            table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, name)
+                            print(f"{name} found at position {table_base_to_object_xyz}")
+                            is_detected = True
+                            break  # 아이템을 찾았으면 내부 루프 중단
+                    if is_detected:
+                        break  # 아이템을 찾았으면 외부 루프 중단
+
+            # ID에 해당하는 아이템이 검출되지 않았다면 계속해서 다음 ID 검색
+            if not is_detected:
+                print(f"No item with ID {item_id} found on the table.")
+                continue  # 다음 ID로 넘어감
+
+            # 아이템을 찾았으면 더 이상의 검색 중지
             if is_detected:
                 break
 
-        if not is_detected:
-            continue
-
-        print('table_base_to_object_xyz', table_base_to_object_xyz)
+        # print('table_base_to_object_xyz', table_base_to_object_xyz)
 
          # 2.3 calculate dist with offset
         try: # base_xyz는 table까지의 거리 계산 후 count해서 값을 반환 
@@ -125,17 +133,17 @@ def serve_breakfast(agent: Agent):
         except:
             continue
         print('gripper_to_object_xyz', base_xyz)
-        agent.move_rel(-0.15, 0) # 꼭 사용해야 하는 코드인가..?
+        agent.move_rel(-0.2, 0) # 팔 뻗는 거리를 감안해서 좀 뒤로 뺀 후 팔을 뻗기 위해 뒤로 이동함.
         
-         # 4. pick # pick 할 때 애초에 부피가 큰 cereal, milk, bowl 먼저
+         # 4. pick # pick 할 때 bowl 가장 먼저
         if item == 'bowl':
             agent.pose.pick_bowl_pose_last(table=pick_table)
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1], wait=True)
-            agent.move_rel(base_xyz[0] + 0.18, 0, wait=True)
+            agent.move_rel(base_xyz[0] + 0.20, 0, wait=True)
             agent.pose.arm_lift_up(0.510)
             agent.grasp()
-            agent.pose.arm_lift_up(0.69) # 0.8로 수정해보기
+            agent.pose.arm_lift_up(0.8) # 0.8로 수정해보기
             # picking 후, arm을 끌어서 다른 물체를 건드리는 상황이 발생하지 않도록 수정 필요
 
         elif item == 'spoon' : # 기존 elif item == 'spoon' or item == 'fork' or item == 'knife':
@@ -149,31 +157,29 @@ def serve_breakfast(agent: Agent):
             agent.pose.arm_lift_up(0.68)
             rospy.sleep(3)
 
-        else:   # milk, cereal
+        else:   # mustard, spam
              # (모의고사용) 기존 코드 -> if item == 'cereal_red' or item == 'cracker':
             if item == 'spam': # cereal_red를 testday만 spam 사용
                 object_height = spam_height / 2
-            else: # milk
+            else: # mustard
                 object_height = mustard_height / 2
             agent.pose.pick_object_side_pose(object_height, table=pick_table)
             agent.open_gripper()
-            agent.move_rel(0, base_xyz[1]-0.01, wait=True)
-            agent.move_rel(base_xyz[0] + 0.15, 0, wait=True) # + 0.15
+            agent.move_rel(0, base_xyz[1], wait=True) # (0, base_xyz[1]-0.01, wait=True)
+            agent.move_rel(base_xyz[0]+ 0.25, 0, wait=True)  # 기존 (base_xyz[0] + 0.15, 0, wait=True)
              # (모의고사용) 기존 코드 -> if item == 'cereal_red' or item == 'cracker':
             # if item == 'spam': # cereal_red를 testday만 spam 사용
             agent.grasp()
             # else: # milk
                 # rospy.sleep(0.5)
-            rospy.sleep(0.5)
+            rospy.sleep(1)
 
          # 5. return pose
          # (모의고사용) 기존 코드 -> agent.move_rel(-0.4, 0)
-        agent.move_rel(-0.8, 0)
-         # agent.pose.neutral_pose()
+        agent.move_rel(-0.5, 0) # picking 후 뒤로 이동
+        agent.pose.table_search_go_pose() # 팔 부상 방지를 위해 팔 오므린 자세로 변환
 
-         # (모의고사용) 기존 코드 ->         agent.pose.table_search_go_pose()
         agent.pose.check_grasp()
-
         if pick_only_mode:
             agent.open_gripper()
             continue
@@ -182,33 +188,32 @@ def serve_breakfast(agent: Agent):
 
         # 6. go place pos
         agent.move_abs(place_position)
-        dist_to_table = distancing(agent.yolo_module.pc, place_table, dist=1.0)
+        dist_to_table = distancing(agent.yolo_module.pc, place_table, dist=0.9)
         print('dist_to_table', dist_to_table)
         agent.move_rel(dist_to_table, 0)
-        
-        item = 'mustard'
 
-        if item != 'bowl':
-            try:
-                rospy.sleep(1)
-                table_item_list = agent.yolo_module.detect_3d(place_table)
-                table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, 'bowl')
-                base_xyz = agent.yolo_module.calculate_dist_to_pick(table_base_to_object_xyz, grasping_type=2) # 2 == bowl
-                print('bowl base_xyz',base_xyz)
-            except:
-                base_xyz = default_base_xyz
-                print('no bowl detected. set default base_xyz', base_xyz)
-                spam_bonus = False
-                mustard_bonus = True
+        # if item != 'bowl':
+            # try:
+                # rospy.sleep(1)
+                # table_item_list = agent.yolo_module.detect_3d(place_table)
+                # table_base_to_object_xyz = agent.yolo_module.find_3d_points_by_name(table_item_list, 'bowl')
+                # base_xyz = agent.yolo_module.calculate_dist_to_pick(table_base_to_object_xyz, grasping_type=2) # 2 == bowl
+                # print('bowl base_xyz',base_xyz)
+            # except:
+                # base_xyz = default_base_xyz
+                # print('no bowl detected. set default base_xyz', base_xyz)
+                # spam_bonus = False
+                # mustard_bonus = True
 
         # 7. place
         if item == 'bowl':
             agent.pose.place_bowl_pose()
-            agent.move_rel(0.3, -0.15, wait=True)
+            agent.move_rel(0.3, 0, wait=True)
             agent.pose.arm_lift_object_table_down(0.18, table=place_table)
             agent.open_gripper()
-            rospy.sleep(1.0) # gazebo wait
+            rospy.sleep(2.0) # gazebo wait
             agent.move_rel(-0.3, 0)
+
         # (모의고사용) 기존 코드 -> elif item == 'cereal_red' or item == 'cracker':   
         elif item == 'spam': # 기존 elif item == 'cereal_red'
             if spam_bonus:
@@ -239,7 +244,7 @@ def serve_breakfast(agent: Agent):
                 # 7.1 spill
                 agent.pose.spill_object_pose(object_height, table=place_table)
                 agent.move_rel(base_xyz[0]+bowl_to_mustard_spill_xy[0]+0.2, base_xyz[1]+bowl_to_mustard_spill_xy[1]+0.08, wait=True)
-                agent.pose.wrist_roll(80)
+                agent.pose.wrist_roll(80) #110
                 agent.pose.wrist_roll(0)
                 agent.move_rel(0.1, 0.07, wait=True)
                 agent.pose.arm_lift_object_table_down(object_height, table=place_table)
@@ -269,8 +274,7 @@ def serve_breakfast(agent: Agent):
         
         # 8. (모의고사용) 복귀
         agent.pose.neutral_pose()
-        agent.say('I will serve you soon!')       
-        # agent.move_abs(pick_position)
+        agent.say('I will serve you soon!') 
 
 #########################################################################################################################################################################
 
