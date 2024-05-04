@@ -37,7 +37,7 @@ if AIIS:
         'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
-        'dishwasher_rack': [1.3809, -1.4951, 0.0468], #bjkim2 0505
+        'dishwasher_rack': [1.3809, -1.4951, -0.034], #bjkim2 0505
         'clean_table_front' : [0.4212, 0.0165, 1.5642], #bjkim2 0505
 
         # receptionist
