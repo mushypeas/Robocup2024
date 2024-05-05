@@ -26,8 +26,8 @@ if AIIS:
 
 
         # storing grocery
-        'grocery_table': [1.1478, -1.2796, 0.0], #bjkim
-        'shelf_front': [1.9672, -2.8171, -1.58], #bjkim
+        'grocery_table': [3.7086, -0.1316, -1.58], #bjkim
+        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu

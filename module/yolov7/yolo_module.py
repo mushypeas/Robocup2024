@@ -210,6 +210,7 @@ class YoloModule:
                               round(np.nanmax(points_by_base_link[:, 2]), 4)]
             except ValueError:
                 print('[YOLO] zero-size array for ', OBJECT_LIST[class_id][0])
+                object_3d_list.append([0, 0, cent_y, class_id])
                 continue
 
             # print('item', OBJECT_LIST[class_id][0])
