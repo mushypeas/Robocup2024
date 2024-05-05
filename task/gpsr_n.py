@@ -11,11 +11,11 @@ def move_gpsr(loc):
     # rospy.sleep(2)  
     print(f"[MOVE] HSR moved to {loc}")
 
-def pick (obj):
+def pick(obj):
     # [TODO] Implement how the object can be picked up
     print(f"[PICK] {obj} is picked up")
 
-def place (obj, loc):
+def place(obj, loc):
     # [TODO] Implement how the object can be placed at the location
     print(f"[PLACE] {obj} is placed at {loc}")
 
@@ -455,6 +455,7 @@ def countObjOnPlcmt(agent, params):
         print("No objects detected")
         return False
 
+### TODO NOW ###
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
 def tellObjPropOnPlcmt(agent, params):
     # Tell me what is the heaviest object on the storage rack
@@ -471,8 +472,10 @@ def tellObjPropOnPlcmt(agent, params):
 
     # [2] Find the objects in the room
     print(f"[FIND] {tell} me what is the {comp} object {place}")
+
     # [TODO] Implement how the heaviest / smallest object can be detected
 
+### TODO NOW ###
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
 def bringMeObjFromPlcmt(agent, params):
     # Give me a strawberry jello from the desk
@@ -493,6 +496,7 @@ def bringMeObjFromPlcmt(agent, params):
     # [3] Give the object to the human
     print(f"[GIVE] {bring} {art} {obj} from the {loc}")
 
+### TODO NOW ###
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(agent, params):
     # Tell me what is the biggest food on the sofa
