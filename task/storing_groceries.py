@@ -23,7 +23,7 @@ class StoringGroceries:
 
         self.shelf_1_2_height_threshold = 1.15
         self.shelf_2_3_height_threshold = 1.5
-        self.shelf_head_angle = 10
+        self.shelf_head_angle = 15
 
         # hard coding offset
         self.pick_front_bias = [0, 0.01, 0]

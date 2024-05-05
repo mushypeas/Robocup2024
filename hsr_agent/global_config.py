@@ -26,8 +26,8 @@ if AIIS:
 
 
         # storing grocery
-        'grocery_table': [1.1478, -1.2796, 0.0], #bjkim
-        'shelf_front': [1.9672, -2.8171, -1.58], #bjkim
+        'grocery_table': [3.7086, -0.1316, -1.58], #bjkim
+        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
@@ -128,10 +128,10 @@ if AIIS:
         # 'grocery_table_pose': [0.65, 1.2, 0.42 + 0.055], # +055
         # 'grocery_table_pose1': [0.65, 1.2, 0.42 + 0.065], # +065
         # 'grocery_table_pose2': [0.65, 1.2, 0.42 - 0.02], # -020
-        'grocery_table': [0.55, 0.75, 0.730],
-        'grocery_table_pose': [0.55, 0.75, 0.785], # +055
-        'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
-        'grocery_table_pose2': [0.55, 0.75, 0.730 * 0.94], # * 0.94
+        'grocery_table': [1.2, 0.65, 0.420],
+        'grocery_table_pose': [1.2, 0.65, 0.420 + 0.055], # +055
+        'grocery_table_pose1': [1.2, 0.65, 0.420 + 0.065], # +065
+        'grocery_table_pose2': [1.2, 0.65, 0.420 * 0.94], # * 0.94
         'door_handle': [0, 0, 0.96],
         # width, depth, height
         'desk': [1.505, 0.705, 0.8],
