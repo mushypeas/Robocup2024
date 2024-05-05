@@ -106,13 +106,12 @@ class StoringGroceries:
         self.agent.pose.move_pose()
         self.agent.pose.head_tilt(self.shelf_head_angle)
         rospy.sleep(1)
-        # shelf_y = distancing_horizontal(self.agent.yolo_module.pc, place_table)
         self.agent.move_rel(0.2, 0, wait=True)
 
 
     def search_shelf(self):
-        # self.agent.move_rel(-0.5, 0, wait=True)
-        center_list = self.agent.yolo_module.detect_3d('shelf_1f')
+        dist_to_shelf = distancing(self.agent.yolo_module.pc, self.place_table, dist=self.gripper_to_shelf_x)
+        center_list = self.agent.yolo_module.detect_3d('shelf_1f', dist=dist_to_shelf)
         print(f"Shelf item center list:\n{center_list}")
         shelf_item_dict = {}
 
@@ -246,9 +245,6 @@ class StoringGroceries:
         shelf_base_xyz = self.agent.yolo_module.calculate_dist_to_pick(shelf_base_to_object_xyz, 4)
         print(f'shelf_base_xyz: {shelf_base_xyz}')
 
-        # agent.move_rel(0, shelf_base_xyz[1], wait=True)
-        # agent.move_rel(shelf_base_xyz[0], 0, wait=True)
-
         # Place item at 1F
         if shelf_item_cent_z < self.shelf_1_2_height_threshold:
             self.agent.move_rel(shelf_base_xyz[0] - 0.15, shelf_base_xyz[1], wait=True)  # 2f pose - 1f pose = 0.18
@@ -260,7 +256,6 @@ class StoringGroceries:
         # self.agent.grasp()
         self.agent.pose.move_pose()
 
-    # TODO: Also count number of falied attempts per object?
     def check_grasp(self, grasping_type):
         if grasping_type == 0:
             return self.agent.pose.check_grasp()
@@ -287,7 +282,6 @@ class StoringGroceries:
             self.agent.move_abs_safe(self.place_location)
             self.agent.pose.move_pose()
 
-            # self.agent.move_abs_safe('grocery_bypass', thresh=0.05, angle=30)
             self.agent.move_abs_safe(self.place_location, thresh=0.05, angle=30)
             self.agent.pose.head_tilt(self.shelf_head_angle)
             rospy.sleep(1)

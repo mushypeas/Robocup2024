@@ -152,6 +152,8 @@ class YoloModule:
             return self.find_object_info_by_name(name)
         return None
 
+    # def detect_shelf(self):
+
     def detect_3d(self, table, dist=0.6):
         _pc = self.pc.reshape(480, 640)
         pc_np = np.array(_pc.tolist())[:, :, :3]
@@ -210,7 +212,6 @@ class YoloModule:
                               round(np.nanmax(points_by_base_link[:, 2]), 4)]
             except ValueError:
                 print('[YOLO] zero-size array for ', OBJECT_LIST[class_id][0])
-                object_3d_list.append([0, 0, cent_y, class_id])
                 continue
 
             # print('item', OBJECT_LIST[class_id][0])
