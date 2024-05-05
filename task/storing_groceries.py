@@ -12,7 +12,7 @@ class StoringGroceries:
 
         # test params
         # Set everything to False for actual task
-        self.ignore_door = True
+        self.ignore_door = False
         self.picking_test_mode = False
         self.place_test_mode = False
         self.available_categories = ['fruit', 'food']
@@ -161,9 +161,9 @@ class StoringGroceries:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
             self.agent.open_gripper()
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(table_base_xyz[0] - 0.1, 0, wait=True)
             self.agent.move_rel(0, table_base_xyz[1], wait=True)
-            self.agent.move_rel(0.15, 0, wait=True)
+            # self.agent.move_rel(0.15, 0, wait=True)
+            self.agent.move_rel(table_base_xyz[0] + 0.5, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
 
