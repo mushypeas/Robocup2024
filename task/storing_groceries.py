@@ -12,7 +12,7 @@ class StoringGroceries:
 
         # test params
         # Set everything to False for actual task
-        self.ignore_door = True
+        self.ignore_door = False
         self.picking_test_mode = False
         self.place_test_mode = False
         self.available_categories = ['fruit', 'food']
@@ -23,7 +23,7 @@ class StoringGroceries:
 
         self.shelf_1_2_height_threshold = 1.15
         self.shelf_2_3_height_threshold = 1.5
-        self.shelf_head_angle = 10
+        self.shelf_head_angle = 15
 
         # hard coding offset
         self.pick_bias = 0.01
