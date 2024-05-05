@@ -215,7 +215,7 @@ def guidePrsFromBeacToBeac(agent, params):
 
     params = {'guideVerb': 'Lead', 'gestPers_posePers': 'person raising their right arm', 'fromLocPrep': 'from', 'loc': 'bookshelf', 'toLocPrep': 'to', 'loc_room': 'office'}
 
-    # [0] Extract parameters
+    # [0] Extract parametersy
     guide, gestPers_posePers, loc, room = params['guideVerb'], params['gestPers_posePers'], params['loc'], params['loc_room']
 
     # [1] Move to the specified location
@@ -709,12 +709,12 @@ def nogadaParser(inputText):
 
 # MAIN
 def gpsr(agent):
-    # agent.say("I'm ready to receive a command")
-    # rospy.sleep(4)
+    agent.say("I'm ready to receive a command")
+    rospy.sleep(4)
 
     # # inputText = "Locate a food in the office then take it and place it on the sofa"
-    # inputText, _ = agent.stt(10.)
-    inputText = "Tell me what is the biggest food on the sofa"
+    inputText, _ = agent.stt(10.)
+    # inputText = "Tell me what is the biggest food on the sofa"
 
     # cmdName, params = ultimateParser(inputText)
 
