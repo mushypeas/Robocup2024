@@ -17,7 +17,7 @@ if AIIS:
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
-        'breakfast_table': [6.4946, 1.2412, -3.1284],
+        'breakfast_table': [3.4552,-0.6194,-1.5674],
         'table_front': [6.6449, 0.3005, 0.0422],
         'table_side': [7.3455, -1.0624, 1.551],
         'table_back': [8.6478, 0.0623, 3.1025],
@@ -37,8 +37,8 @@ if AIIS:
         'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
-        'dishwasher_rack': [1.3809, -1.4951, -0.034], #bjkim2 0505
-        'clean_table_front' : [0.4212, 0.0165, 1.5642], #bjkim2 0505
+        'dishwasher_rack': [6.3029,-1.0222,0.0161], #bjkim2 0505
+        'clean_table_front' : [3.4552,-0.6194,-1.5674], #bjkim2 0505
 
         # receptionist
         'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
