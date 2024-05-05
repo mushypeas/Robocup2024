@@ -419,10 +419,11 @@ class HumanFollowing:
             self.escape_barrier(calc_z)
 
             if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
-                self.agent.say('Please keep the one meter between us!', show_display=True)
-                print("Please keep the one meter between us!")
-                self.last_say = time.time()
-                rospy.sleep(1)
+                if (calc_z < 1.5)
+                    self.agent.say('You are so close. Please keep the two meter between us!', show_display=True)
+                    print("You are so close. Please keep the two meter between us!")
+                    self.last_say = time.time()
+                    rospy.sleep(1)
             return False
         
 
