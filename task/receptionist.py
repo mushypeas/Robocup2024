@@ -398,23 +398,42 @@ def receptionist(agent):
         data = qr_str.split(',')
         name2, drink2 = data[0], data[1]
 
-    # agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
-    # agent.say(f'{name2}.\n I will find the seat for you', show_display=True)
-    # rospy.sleep(3.5)
-    agent.move_abs_safe(scan_bypass_position)
+    ##########
+    # # agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # agent.say(f'{name2}.\n I will find the seat for you', show_display=True)
+    # # rospy.sleep(3.5)
+    # agent.move_abs_safe(scan_bypass_position)
 
-    # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # agent.pose.head_tilt(10)
+    # agent.say(f'{name2}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
+    # rospy.sleep(5.5)
+
+    # # 7. offer the seat for the second guest
+    # # agent.pose.move_pose()
+    # # agent.move_abs_safe(scan_bypass_position)
+    # # agent.pose.head_tilt(10)
+    # # rospy.sleep(3)
+    # agent.move_abs_safe(scan_position)
+    # agent.pose.head_tilt(0)
+    ##########
+
+    ########## 0505
+    # 4. offer the seat
+    agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
+
+    agent.pose.move_pose()
+    agent.move_abs_safe(scan_bypass_position)
     agent.pose.head_tilt(10)
+    
     agent.say(f'{name2}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
+    # input('##### Debug 5 #####')
 
-    # 7. offer the seat for the second guest
-    # agent.pose.move_pose()
-    # agent.move_abs_safe(scan_bypass_position)
-    # agent.pose.head_tilt(10)
-    # rospy.sleep(3)
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
+    # input('##### Debug 6-1 #####')
+    ########## 0505
 
     # 7-1. check the existing people first
     agent.say('Searching empty seat.')
