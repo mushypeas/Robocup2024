@@ -26,7 +26,8 @@ class StoringGroceries:
         self.shelf_head_angle = 10
 
         # hard coding offset
-        self.pick_bias = 0.01
+        self.pick_front_bias = [0, 0.01, 0]
+        self.pick_top_bias = [0.25, -0.01, 0]
         self.gripper_to_shelf_x = 0.9
         self.default_offset_dist = 0.05
         self.new_category_offset_dist = 0.3
@@ -159,10 +160,10 @@ class StoringGroceries:
         # front
         if grasping_type == 0:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
-            # self.agent.pose.pick_side_pose('grocery_table_pose1')
             self.agent.open_gripper()
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
             self.agent.move_rel(table_base_xyz[0] - 0.1, 0, wait=True)
-            self.agent.move_rel(0, table_base_xyz[1] + self.pick_bias, wait=True)
+            self.agent.move_rel(0, table_base_xyz[1], wait=True)
             self.agent.move_rel(0.15, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
@@ -171,13 +172,22 @@ class StoringGroceries:
         elif grasping_type == 1:
             self.agent.pose.pick_top_pose(table='grocery_table_pose')
             self.agent.open_gripper()
-            self.agent.move_rel(0, table_base_xyz[1], wait=True)
-            self.agent.move_rel(0.05, 0, wait=True)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.arm_lift_top_table_down(height=-0.017, table='grocery_table_pose')  # -0.015
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+            self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
+            self.agent.pose.arm_lift_top_table_down(height=-0.015, table='grocery_table_pose') # modify
             self.agent.grasp()
-            rospy.sleep(0.5)
-            self.agent.pose.arm_lift_top_table_down(height=0.1, table='grocery_table_pose')
+            self.agent.pose.arm_flex(-60)
+            self.agent.move_rel(-0.17, 0)
+
+            # self.agent.pose.pick_top_pose(table='grocery_table_pose')
+            # self.agent.open_gripper()
+            # self.agent.move_rel(0, table_base_xyz[1], wait=True)
+            # self.agent.move_rel(0.05, 0, wait=True)
+            # self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+            # self.agent.pose.arm_lift_top_table_down(height=-0.017, table='grocery_table_pose')  # -0.015
+            # self.agent.grasp()
+            # rospy.sleep(0.5)
+            # self.agent.pose.arm_lift_top_table_down(height=0.1, table='grocery_table_pose')
 
         # bowl. # don't care plate, ...
         else:
