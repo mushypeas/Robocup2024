@@ -161,8 +161,9 @@ class StoringGroceries:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
             # self.agent.pose.pick_side_pose('grocery_table_pose1')
             self.agent.open_gripper()
+            self.agent.move_rel(table_base_xyz[0] - 0.1, 0, wait=True)
             self.agent.move_rel(0, table_base_xyz[1] + self.pick_bias, wait=True)
-            self.agent.move_rel(table_base_xyz[0] + 0.05, 0, wait=True)
+            self.agent.move_rel(0.15, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
 
