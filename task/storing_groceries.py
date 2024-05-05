@@ -375,6 +375,7 @@ class StoringGroceries:
                 has_grasped = self.check_grasp(grasping_type)
                 if has_grasped:
                     rospy.loginfo(f'Successfuly grasped {table_item_name}!')
+                    self.agent.say(f'Grasped a {table_item_name}, which is a {self.agent.object_types[table_item_type]}!')
                 else:
                     rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
                     self.grasp_failure_count[table_item_id] += 1
