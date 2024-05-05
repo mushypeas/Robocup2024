@@ -19,6 +19,8 @@ def serve_breakfast(agent: Agent):
     # wrist_roll : -110 -> 0 (cereal, milk both) 아마도 -1.92 radian //joint_pose.py 594 line에서 
     # spoon은 pick_top_pose 후 앞으로 이동
 
+    # Initial location = zero
+
     ### task params #################
     milk_height = 0.13  # [m] 기존 milk_height
     cereal_red_height = 0.25  # [m] 기존 cereal_height

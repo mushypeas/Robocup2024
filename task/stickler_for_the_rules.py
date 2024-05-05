@@ -598,7 +598,7 @@ class DrinkDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(3)
-        self.agent.move_abs_safe('study_search_reverse')
+        # self.agent.move_abs_safe('study_search_reverse')
 
 
 def stickler_for_the_rules(agent):
