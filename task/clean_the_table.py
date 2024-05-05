@@ -9,8 +9,8 @@ def clean_the_table(agent: Agent):
 
     ### task params #################
     
-    pick_position = 'clean_table_front'
-    place_position = 'dishwasher_rack'
+    pick_position = 'dishwasher_rack'
+    place_position = 'clean_table_front'
     pick_table = 'breakfast_table'
     dishwasher = 'dishwasher'
     dishwasher_table = 'dishwasher_table'
@@ -122,7 +122,7 @@ def clean_the_table(agent: Agent):
 
             agent.move_rel(base_xyz[0] + 0.15, base_xyz[1] + 0.04, wait=True)
 
-            agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.13) # modified from -0.1 to -0.13
+            agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.95) # modified from -0.1 to -0.13
             agent.grasp()
             rospy.sleep(0.5)
 
@@ -395,9 +395,13 @@ def clean_the_table(agent: Agent):
         arm_lift_value = agent.pose.place_cutlery_pose(table=dishwasher) # temp
         agent.pose.arm_lift_up(arm_lift_value - 0.1)
         
+        if item == 'fork' or item == 'spoon' or item == 'knife':
+            agent.pose.wrist_roll(90)
         # agent.move_rel(0.27 + place_position_dict[item][0], place_position_dict[item][1], wait=True)
 
         agent.open_gripper()
+
+        agent.pose.wrist_roll(0)
 
         # agent.pose.pick_up_bowl_pose(table=place_table)
         agent.pose.arm_lift_up(0.3)
