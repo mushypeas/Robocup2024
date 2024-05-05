@@ -52,14 +52,14 @@ def serve_breakfast(agent: Agent):
     ### Initial Location은 global_config.py에 ABS_POSITION에 있음
     ### 942동 212호 냉장고 옆 문을 시작점으로 가정. 문이 열렸다고 가정.
     # 로봇을 초기 위치로 이동시키는 함수를 호출
-    # agent.move_abs('zero')
+    agent.move_abs('zero')
     #########################
 
 
     ### task start ##
-    # agent.door_open()
+    agent.door_open()
     agent.say('Hi, I will serve you breakfast') # 멘트 수정
-    # agent.move_rel(7.5, 0.6, wait=False)
+    agent.move_rel(7.5, 0.6, wait=False)
     agent.move_abs('kitchen_table_testday')
     # 기존) agent.move_abs('breakst_bypass') # 실험해서 정확한 좌표로 수정할 것. 위치 : kitchen table 앞
 

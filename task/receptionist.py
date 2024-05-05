@@ -56,7 +56,7 @@ def receptionist(agent):
     cloth_threshold = 0.15
     # face_threshold = 40 #38
     # face_threshold2 = 38 #35
-    face_threshold = 60
+    face_threshold = 63
     face_threshold2 = 50
 
     ##TODO
@@ -452,23 +452,28 @@ def receptionist(agent):
     cs.gaze_seat(agent, host_seated, first_seated)
     agent.say('Hi everyone.', show_display=True)
     rospy.sleep(0.8)
-    agent.pose.head_pan(100)
+    # agent.pose.head_pan(100)
+    agent.move_abs_safe(scan_bypass_position)
     agent.say('This is ' + name2 + '.', show_display=True)
     rospy.sleep(1.3)
+    agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated, first_seated)
     agent.say(f'{name2}\'s favorite drink\n is ' + drink2, show_display=True)
     rospy.sleep(1.8)
 
-    agent.pose.head_pan(100)
+    # agent.pose.head_pan(100)
+    agent.move_abs_safe(scan_bypass_position)
     agent.say(name2)
     rospy.sleep(0.6)
+    agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated)
     agent.say(f'This is {name_host}', show_display=True)
     rospy.sleep(1.3)
     cs.gaze_seat(agent, first_seated)
     agent.say(f'and {name1}.', show_display=True)
     rospy.sleep(0.8)
-    agent.pose.head_pan(100)
+    # agent.pose.head_pan(100)
+    agent.move_abs_safe(scan_bypass_position)
     agent.say(f'{name_host}\'s favorite drink\n is {drink_host}', show_display=True)
     rospy.sleep(2)
 
@@ -492,6 +497,7 @@ def receptionist(agent):
 
     rospy.sleep(10)
 
+    agent.move_abs_safe(scan_position)
     cs.point_seat(agent, second_2b_seated)
     agent.say(name2+' Please sit down there', show_display=True)
     rospy.sleep(1)
