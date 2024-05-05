@@ -44,11 +44,10 @@ def clean_the_table(agent: Agent):
     agent.pose.move_pose()
 
 
-    # agent.door_open()
+    agent.door_open()
     # agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
 
-    import pdb; pdb.set_trace()
     while True:
         # 1. go to pick table
         if safe_flag == 0:
@@ -368,8 +367,7 @@ def clean_the_table(agent: Agent):
         # 4. go place pos
           
 
-        # rospy.sleep(5)
-        pdb.set_trace()
+        rospy.sleep(2)
         
         agent.move_abs(place_position)
         rospy.sleep(short_move)
