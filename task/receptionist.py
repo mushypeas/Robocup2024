@@ -173,7 +173,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name1, drink1 = '_', '_'
-        for _ in range(10):
+        for _ in range(2):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
@@ -343,7 +343,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name2, drink2 = '_', '_'
-        for _ in range(10):
+        for _ in range(2):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
