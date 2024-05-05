@@ -194,7 +194,7 @@ def tellObjPropOnPlcmt(agent, params):
     pass
 
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
-def bringMeObjFromPlcmt():
+def bringMeObjFromPlcmt(agent, params):
     bringVerb = params['bringVerb']
     art = params['art']
     obj = params['obj']
@@ -203,7 +203,7 @@ def bringMeObjFromPlcmt():
     pass
 
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
-def tellCatPropOnPlcmt():
+def tellCatPropOnPlcmt(agent, params):
     tellVerb = params['tellVerb']
     objComp = params['objComp']
     singCat = params['singCat']
