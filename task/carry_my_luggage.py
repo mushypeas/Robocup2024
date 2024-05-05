@@ -51,17 +51,18 @@ class HumanFollowing:
         self.last_human_pos = start_location
         self.human_seg_pos = None
         self.image_size = None
+        self.image_shape = None
         bytetrack_topic = '/snu/bytetrack_img'
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
-        rospy.Subscriber('/deeplab/segmentation', Image, self._segment_cb) # TODO : topic name
+        rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
 
         rospy.loginfo("LOAD HUMAN FOLLOWING")
 
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
         # self.agent.pose.head_pan_tilt(0, -self.tilt_angle*0.5)
-        self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+        self.agent.pose.head_pan_tilt(0, -self.tilt_angle) #TODO : check tilt angle
         rospy.sleep(1)
         head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor",
                                                                  config_callback=self.head_map_cb)
@@ -96,6 +97,8 @@ class HumanFollowing:
         img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
         h, w, c = img.shape
         self.image_size = h * w
+        self.image_shape = (h, w)
+        # print(f"byte image ")
         if self.show_byte_track_image:
             self.agent.head_display_image_pubish(img)
 
@@ -112,6 +115,9 @@ class HumanFollowing:
         '''
         snu/yolo will be depreciated
         '''
+        # data_img = self.bridge.imgmsg_to_cv2(data)
+
+        # print(f"human_yolo_size : {(data_img.shape)}")
         data_list = data.data
         if data_list[0] == -1:
             self.human_box_list = [None]
@@ -120,34 +126,102 @@ class HumanFollowing:
                                   np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
                                   data_list[5]]
 
-    def _segment_cb(self, human_box_list, data):
-        if data_list[0] == -1:
+    def _segment_cb(self, data):
+        if self.human_box_list[0] == None:
+            print("There is no human box")
             self.human_seg_pos = None
         else :
-            x = human_box_list[1][0]
-            y = human_box_list[1][1]
-            w = human_box_list[1][2]
-            h = human_box_list[1][3]
-            crop_img = data[y:y+h, x:x+w]
+            # print(data)
+            x = self.human_box_list[1][0]
+            y = self.human_box_list[1][1]
+            w = self.human_box_list[1][2]
+            h = self.human_box_list[1][3]
+            # data_img = data
+            data.encoding='mono16'
+            # print(len(data))
+            data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
+            # print(data_img)
+            # data_img = cv2.imread(data, -1)
+            # cv2.imshow("data image", data_img*10)
+            # print(f"data_img shape : {data_img.shape}")
+            # print(f"self.imag shape : {self.image_shape}")
+            seg_size = data_img.shape
+            # data_img = cv2.resize(data_img, self.image_shape)
+            crop_img = data_img[y:y+h, x:x+w]
+            # cv2.imshow("crop image", crop_img)
+            # print(f"crop_img : {crop_img.shape}")
+            # print(f"original human_box size : {self.human_box_list[1]}")
+            print(f"original human box center : {self.human_box_list[1][0] + self.human_box_list[1][2]//2, self.human_box_list[1][1] + self.human_box_list[1][3]//2}")
 
-            ret, labels = cv2.connectedComponents(crop_img)
+            # gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+            # # _, th = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
+            # cv2.imshow("binary", gray)
 
-            centers = []
-            for label in range(1, ret):  
-                mask = labels == label
-                y, x = np.where(mask)
-                center_x, center_y = np.mean(x), np.mean(y)
-                centers.append((center_x, center_y))
 
-            if centers:
-                top_center = min(centers, key=lambda c: c[1])  
-                top_center_global = (top_center[0] + x, top_center[1] + y)
-                self.human_seg_pos = top_center_global
-                print(f"human seg pos : {self.human_seg_pos}")
 
+            #####################BRANCH 1. 여러 SEGMENT중에 사람 찾기###################
+
+            # ret, labels = cv2.connectedComponents(crop_img)
+
+
+            # centers = []
+            # for label in range(1, ret):  
+            #     mask = labels == label
+            #     mask.resize(seg_size)
+            #     y, x = np.where(mask)
+            #     center_x, center_y = np.mean(x), np.mean(y)
+            #     centers.append((center_x, center_y))
+            #     print(f"centers : {centers}")
+
+            # if centers:
+            #     top_center = min(centers, key=lambda c: c[1])  
+            #     top_center_global = (top_center[0] + x, top_center[1] + y)
+            #     self.human_seg_pos = top_center_global
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print(f"human seg pos : {self.human_seg_pos}")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+            #     print("humanhumanhumanhumanhumanhumanhumanhumanhuman")
+
+            # else:
+            #     print("There is a human box but no segmentation anywhere")
+
+
+            #####################여러 SEGMENT중에 사람 찾기###################
+
+
+            #####################BRANCH 2. LABEL=15면 사람임###################
+
+
+            human_mask = crop_img == 15
+            human_y, human_x = np.where(human_mask)
+
+            if human_y.size>0 and human_x.size>0:
+                # center_x, center_y = int(np.mean(human_x)), int(np.mean(human_y))
+                # self.human_seg_pos = (center_x + x, center_y + y)
+                topmost_y = np.min(human_y)
+                x_at_topmost_y = human_x[np.argmin(human_y)]
+                self.human_seg_pos = (x_at_topmost_y + x, topmost_y + y)
+                if topmost_y + y < 1 :
+                    self.human_seg_pos = (x_at_topmost_y + x, 1)
+                print(f"human top seg_pos : {self.human_seg_pos}")
             else:
                 print("There is a human box but no segmentation anywhere")
+                self.human_seg_pos = None
 
+
+            #####################BRANCH 2. LABEL=15면 사람임###################
+
+
+            
 
 
     def check_human_pos(self, human_box_list, location=False):
@@ -184,88 +258,106 @@ class HumanFollowing:
         thres = 0.7
         human_box_thres = 0.5
         if self.human_box_list[0] is not None:
-            human_box_size = self.human_box_list[0][1][2] * self.human_box_list[0][1][3] # TODO: human box size 맞는지 체크
+            # print(f"human_box_list[1] : {self.human_box_list[1]}")
+            human_box_size = self.human_box_list[1][2] * self.human_box_list[1][3] # TODO: human box size 맞는지 체크
         else:
             human_box_size = 0
-        print(f"human box size thres : {self.image_size * human_box_size}")
-        print(f"real human box size : {human_box_size}")
+        # print(f"human box size thres : {self.image_size * human_box_thres}")
+        # print(f"real human box size : {human_box_size}")
         _num_rotate=0
         _depth = self.barrier_check()
         escape_radius = 0.2
         rot_dir_left = 1
         _depth_value_except_0 = _depth[_depth != 0]
         rospy.loginfo(f"rect depth mean : {np.mean(_depth)}")
-        rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
-        rospy.loginfo(f"calc_z  : {np.mean(_depth)}")
+        # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
+        rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
         #and self.image_size * human_box_thres > human_box_size
-        if (np.mean(_depth) < thres and np.mean(_depth)< (calc_z-50) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (np.mean(_depth) < thres and calc_z!=0 and np.mean(_depth)< ((calc_z/ 1000.0)-0.2) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
+            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
             self.agent.say('Barrier checking....', show_display=True)
             print("Barrier checking....")
-            self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+            # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
 
-            rospy.sleep(3)
+            rospy.sleep(1)
 
             _depth = self.barrier_check()
             rospy.loginfo(f"rect depth : {np.mean(_depth)}")
 
-            while (np.mean(_depth)< thres):
-                _num_rotate = _num_rotate + 1
-                rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
+            while (np.mean(_depth)< thres-0.1):
 
-                # self.agent.say('Barrier verified.', show_display=True)
-                print("Barreir verified")
-                self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=True)
-                rospy.sleep(1)
+            ##########################BRANCH1. ROTATING########################    
+            #     _num_rotate = _num_rotate + 1
+            #     rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
+
+            #     # self.agent.say('Barrier verified.', show_display=True)
+            #     print("Barreir verified")
+            #     self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=True)
+            #     rospy.sleep(1)
+            #     _depth = self.barrier_check()
+            #     if (np.mean(_depth) > (thres+0.4)):
+            #         self.agent.move_rel(0,0,self.stop_rotate_velocity*0.6, wait=True)
+            #         print("it's safe now!")
+            #         # self.agent.say("It's safe now!")
+            #         break
+            #     elif (_num_rotate > 5):
+            #         _num_rotate = 0
+            #         self.agent.say("spin opposite direction.")
+            #         rot_dir_left = 1
+            #         rospy.sleep(4)
+            #         _depth = self.barrier_check()
+            #         while (np.mean(_depth) < thres):
+            #             _num_rotate = _num_rotate + 1
+            #             self.agent.say('Barrier verified.', show_display=True)
+            #             print("Barreir verified")
+            #             rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
+            #             self.agent.move_rel(0,0,-self.stop_rotate_velocity, wait=True)
+            #             rospy.sleep(1)
+            #             _depth = self.barrier_check()
+            #             if (np.mean(_depth) > (thres+0.4)):
+            #                 self.agent.move_rel(0,0,-self.stop_rotate_velocity*0.6, wait=True)
+            #                 print("it's safe now!")
+            #                 self.agent.say("It's safe now!")
+            #                 break
+
+
+            # rospy.sleep(1)
+            # # self.agent.say("stop rotating.")
+            # # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+            # rospy.sleep(3)
+            # self.agent.move_rel(0.3,0,0, wait=True)
+            # rospy.sleep(.5)
+            # self.agent.move_rel(0.3,0,0, wait=True)
+            # rospy.sleep(.5)
+            # self.agent.move_rel(0.3,0,0, wait=True)
+            # rospy.sleep(.5)
+            # self.agent.move_rel(0.3,0,0, wait=True)
+
+            # if (rot_dir_left==1):
+            #     self.agent.move_rel(0,0,-(_num_rotate-1) * self.stop_rotate_velocity)
+            # else :
+            #     self.agent.move_rel(0,0,(_num_rotate-1) * self.stop_rotate_velocity)
+            # rospy.sleep(2)
+                
+
+            ##########################BRANCH2. MOVING########################    
                 _depth = self.barrier_check()
-                if (np.mean(_depth) > (thres+0.4)):
-                    self.agent.move_rel(0,0,self.stop_rotate_velocity*0.6, wait=True)
-                    print("it's safe now!")
-                    # self.agent.say("It's safe now!")
-                    break
-                elif (_num_rotate > 5):
-                    _num_rotate = 0
-                    self.agent.say("spin opposite direction.")
-                    rot_dir_left = 1
-                    rospy.sleep(4)
-                    _depth = self.barrier_check()
-                    while (np.mean(_depth) < thres):
-                        _num_rotate = _num_rotate + 1
-                        self.agent.say('Barrier verified.', show_display=True)
-                        print("Barreir verified")
-                        rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
-                        self.agent.move_rel(0,0,-self.stop_rotate_velocity, wait=True)
-                        rospy.sleep(1)
-                        _depth = self.barrier_check()
-                        if (np.mean(_depth) > (thres+0.4)):
-                            self.agent.move_rel(0,0,-self.stop_rotate_velocity*0.6, wait=True)
-                            print("it's safe now!")
-                            self.agent.say("It's safe now!")
-                            break
+                print(f"mean depth: {np.mean(_depth)}")
+                self.agent.move_rel(0,-0.3,0, wait=False)
+                rospy.sleep(1)
 
 
-            rospy.sleep(1)
-            # self.agent.say("stop rotating.")
-            # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
-            rospy.sleep(3)
-            self.agent.move_rel(0.3,0,0, wait=True)
-            rospy.sleep(.5)
-            self.agent.move_rel(0.3,0,0, wait=True)
-            rospy.sleep(.5)
-            self.agent.move_rel(0.3,0,0, wait=True)
-            rospy.sleep(.5)
-            self.agent.move_rel(0.3,0,0, wait=True)
 
-            if (rot_dir_left==1):
-                self.agent.move_rel(0,0,-(_num_rotate-1) * self.stop_rotate_velocity)
-            else :
-                self.agent.move_rel(0,0,(_num_rotate-1) * self.stop_rotate_velocity)
-            rospy.sleep(2)
 
-    def stt_destination(self, stt_option, calc_z=10000):
+
+    def stt_destination(self, stt_option, calc_z=0):
         cur_pose = self.agent.get_pose(print_option=False)
         # print("in area", [cur_pose[0], cur_pose[1]], "last moved time", time.time() - self.agent.last_moved_time)
         if (time.time() - self.agent.last_moved_time > 11.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
@@ -327,8 +419,8 @@ class HumanFollowing:
             self.escape_barrier(calc_z)
 
             if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
-                self.agent.say('Please come closer to me', show_display=True)
-                print("Please come closer to me")
+                self.agent.say('Please keep the one meter between us!', show_display=True)
+                print("Please keep the one meter between us!")
                 self.last_say = time.time()
                 rospy.sleep(1)
             return False
@@ -383,12 +475,12 @@ class HumanFollowing:
                 if loc == 'l':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
                     rospy.sleep(.5)
                 if loc == 'r':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
                     rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
