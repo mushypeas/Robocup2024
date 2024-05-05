@@ -40,7 +40,7 @@ from playsound import playsound
 
 
 def receptionist(agent):
-    ### task params #################
+    #################### TODO: global config ####################
     # door_position = 'door_handle'
     door_position = 'cloth_scan'
     door_bypass_position = 'door_bypass'
@@ -54,8 +54,10 @@ def receptionist(agent):
     calibration_mode = False
 
     cloth_threshold = 0.15
-    face_threshold = 40 #38
-    face_threshold2 = 38 #35
+    # face_threshold = 40 #38
+    # face_threshold2 = 38 #35
+    face_threshold = 60
+    face_threshold2 = 50
 
     ##TODO
     sofa_range = [130, 580]
@@ -64,11 +66,12 @@ def receptionist(agent):
     # calibrate the distance to make sure the upper condition and then calibrate the head pan angle.
     # closer the better to the sofa to cut the sofa side view
 
-
+    #################### TODO: seat angle ####################
     #150cm setting
     sofa_point_angle = 20
-    chair_point_angle = 60
+    chair_point_angle = 50
     head_pan_angle = [chair_point_angle-8, sofa_point_angle-3, -sofa_point_angle, -chair_point_angle]
+    # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
 
     # 150cm setting, sofa side view is visible
     # head_pan_angle = [60, 25, 0, -25, -60]
@@ -78,13 +81,15 @@ def receptionist(agent):
     # head_pan_angle = [50, 25, 0, -25, -50]
     # point_seat_angle = 25
 
-
-    face_list = pd.read_csv("./module/human_attribute/face_detection/data.csv")
+    #################### TODO: guest information ####################
+    # face_list = pd.read_csv("./module/human_attribute/face_detection/data.csv")
     name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
     drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
 
+    #################### TODO: host information ####################
     name_host = 'john'
     drink_host = 'milk'
+
     if calibration_mode:
         name1 = 'juno'
         drink1 = 'lemonade'
@@ -96,16 +101,18 @@ def receptionist(agent):
 
     # cap = Xtion_camera()
     attr = Attribute(cloth_threshold, calibration_mode)
+    #################### TODO: Check Seat ####################
     cs = CheckSeat(face_threshold, face_threshold2, sofa_range,door_range, head_pan_angle, sofa_point_angle, calibration_mode)
     face_attr = FaceAttribute()
 
-
-    ### main scenario ########################
+    #####################################################3
+    ### main scenario ###
     agent.pose.move_pose()
     agent.move_abs_safe(start_position)
     agent.say('start receptionist')
-    input('#################### Debug 1 ####################')
+    # input('##### Debug 1 #####')
 
+    #################### OPEN DOOR? ####################
     # open door X
     # if open_door_mode:
     #     # 1. go to door position
@@ -138,10 +145,10 @@ def receptionist(agent):
     rospy.sleep(8)
 
     agent.pose.head_tilt(10)
-    # agent.say('Hello, I am tidy boy.\n Please stand to the guideline', show_display=True)
     agent.say('Hello, I am tidy boy.\n Please look at my face and\n stand to the guideline', show_display=True)
     rospy.sleep(3.5)
 
+    #################### CHECK: face attribute ####################
     try:
         gender, age = face_attr.face_attribute(agent)
     except:
@@ -149,16 +156,18 @@ def receptionist(agent):
         age = '20-29'
     print('receptionist gender,age: ', gender, age)
     rospy.sleep(1)
-    input('#################### Debug 2 ####################')
+    # input('##### Debug 2 #####')
 
+    #################### CHECK: cloth attribute ####################
     agent.pose.head_tilt(-7.5)
     if calibration_mode:
         attr.cloth_extract_calibration_mode(agent)
     clothes, hair_color = attr.scan_human(agent)
     print('receptionist clothes: ', clothes)
     agent.pose.head_tilt(10)
-    input('#################### Debug 3 ####################')
+    # input('##### Debug 3 #####')
 
+    #################### CHECK: stt ####################
     # First guest STT
     # qr_check = True
     qr_check = False
@@ -166,7 +175,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name1, drink1 = '_', '_'
-        for _ in range(10):
+        for _ in range(2):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
@@ -223,45 +232,62 @@ def receptionist(agent):
         data = qr_str.split(',')
         name1, drink1 = data[0], data[1]
 
-    # input('#################### Debug 4 ####################')
+    #####################################################3
 
+    # input('##### Debug 4 #####')
+
+    ##########
+    # # 4. offer the seat
+    # # agent.pose.move_pose()
+    # agent.move_abs_safe(scan_bypass_position)
+    # agent.pose.head_tilt(10)
+
+    # # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # name1 = 'paris'
+    # agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
+    # rospy.sleep(5.5)
+    # # input('##### Debug 5 #####')
+
+    # agent.move_abs_safe(scan_position)
+    # agent.pose.head_tilt(0)
+    # # input('##### Debug 6-1 #####')
+    ##########
+
+    # ########## 0505
     # 4. offer the seat
-    # agent.pose.move_pose()
+    agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+
+    agent.pose.move_pose()
     agent.move_abs_safe(scan_bypass_position)
     agent.pose.head_tilt(10)
-
-    # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
-    name1 = 'paris'
+    
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
-
-    # input('#################### Debug 5 ####################')
-
+    # input('##### Debug 5 #####')
+    # agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
+    # input('##### Debug 6-1 #####')
+    ########## 0505
 
-    # input('#################### Debug 6-1 ####################')
-
+    #################### TODO: check seat ####################
     agent.say('Searching empty seat.')
     first_seat_info = cs.check_empty_seat(agent)
-
-    # input('#################### Debug 6-2 ####################')
+    # input('##### Debug 6-2 #####')
 
     first_2b_seated = cs.seat_available(first_seat_info)
-
-    # input('#################### Debug 6-3 ####################')
+    # input('##### Debug 6-3 #####')
 
     host_seated = cs.host_seat(first_seat_info)
     print('First Seat info:', first_seat_info, 'First guest Seat:', first_2b_seated, 'Host Seat:', host_seated)
-
-    # input('#################### Debug 7 ####################')
+    # input('##### Debug 7 #####')
 
     cs.point_seat(agent, first_2b_seated)
     agent.say(name1+'. Please sit down there', show_display=True)
     rospy.sleep(1)
+    # input('##### Debug 8 #####')
 
-    # input('#################### Debug 8 ####################')
-
+    #################### TODO: introduce ####################
     # 5. Introduce each other
     agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
@@ -291,21 +317,21 @@ def receptionist(agent):
     agent.move_abs_safe(cloth_position)
     rospy.sleep(8)
 
-    if open_door_mode:
-        # 6-2. open the door
-        # handle_xyz = door_handle_detection(agent)
-        rospy.sleep(1)
-        agent.pose.head_tilt(10)
-        agent.open_gripper()
-        agent.pose.door_open_pose()
-        # agent.move_abs_safe(pick_position)
-        agent.grasp()
-        agent.pose.door_handle_down_pose() # 10cm position add
-        agent.move_rel(-0.5, 0, wait=True)
-        rospy.sleep(1)
-        agent.open_gripper()
-        agent.pose.move_pose()
-        agent.grasp()
+    # if open_door_mode:
+    #     # 6-2. open the door
+    #     # handle_xyz = door_handle_detection(agent)
+    #     rospy.sleep(1)
+    #     agent.pose.head_tilt(10)
+    #     agent.open_gripper()
+    #     agent.pose.door_open_pose()
+    #     # agent.move_abs_safe(pick_position)
+    #     agent.grasp()
+    #     agent.pose.door_handle_down_pose() # 10cm position add
+    #     agent.move_rel(-0.5, 0, wait=True)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.move_pose()
+    #     agent.grasp()
 
     # 6-3. get second guest information
     agent.pose.head_tilt(10)
@@ -319,7 +345,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name2, drink2 = '_', '_'
-        for _ in range(10):
+        for _ in range(2):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
@@ -376,24 +402,42 @@ def receptionist(agent):
         data = qr_str.split(',')
         name2, drink2 = data[0], data[1]
 
-    # agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
-    # agent.say(f'{name2}.\n I will find the seat for you', show_display=True)
-    # rospy.sleep(3.5)
-    agent.move_abs_safe(scan_bypass_position)
+    ##########
+    # # agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # agent.say(f'{name2}.\n I will find the seat for you', show_display=True)
+    # # rospy.sleep(3.5)
+    # agent.move_abs_safe(scan_bypass_position)
 
-    # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # agent.pose.head_tilt(10)
+    # agent.say(f'{name2}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
+    # rospy.sleep(5.5)
+
+    # # 7. offer the seat for the second guest
+    # # agent.pose.move_pose()
+    # # agent.move_abs_safe(scan_bypass_position)
+    # # agent.pose.head_tilt(10)
+    # # rospy.sleep(3)
+    # agent.move_abs_safe(scan_position)
+    # agent.pose.head_tilt(0)
+    ##########
+
+    ########## 0505
+    # 4. offer the seat
+    agent.say(f'Hi, {name2}.\n Please follow me. \nI will find the seat for you', show_display=True)
+
+    agent.pose.move_pose()
+    agent.move_abs_safe(scan_bypass_position)
     agent.pose.head_tilt(10)
+    
     agent.say(f'{name2}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
+    # input('##### Debug 5 #####')
 
-    # 7. offer the seat for the second guest
-    # agent.pose.move_pose()
-    # agent.move_abs_safe(scan_bypass_position)
-    # agent.pose.head_tilt(10)
-    # agent.say('Do not move\n until I find your seat.', show_display=True)
-    # rospy.sleep(3)
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
+    # input('##### Debug 6-1 #####')
+    ########## 0505
 
     # 7-1. check the existing people first
     agent.say('Searching empty seat.')
@@ -438,7 +482,7 @@ def receptionist(agent):
 
     ########################################################################################3
     # with nametag
-    agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes},\n and has a nametag.\n ', show_display=True)
+    # agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes},\n and has a nametag.\n ', show_display=True)
 
     # without nametag
     agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes}.\n ', show_display=True)
@@ -455,7 +499,6 @@ def receptionist(agent):
     agent.pose.move_pose()
     agent.pose.head_tilt(10)
     agent.say('Thank you', show_display=True)
-
 
 
 

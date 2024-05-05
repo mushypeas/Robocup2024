@@ -507,13 +507,29 @@ def tellCatPropOnPlcmt(agent, params):
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
 
     # [1] Move to the specified space
-    move_gpsr(agent, loc)
+    # move_gpsr(agent, loc)
 
     # [2] Find the objects in the room
-    print(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
+    # agent.say(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
 
     # [3] Tell the information
-    # agent.yolo_module.yolo_bbox size
+    # print(agent.yolo_module.yolo_bbox)
+    max = 0
+
+    # for i in range(len(agent.yolo_module.yolo_bbox)):
+    #     bbox_size = agent.yolo_module.yolo_bbox[i][2]*agent.yolo_module.yolo_bbox[i][3]
+    #     if max < bbox_size : 
+    #         max = bbox_size
+    #         agent.say(agent.yolo_module.yolo_bbox[i][4])
+    #     else : 
+    #         pass
+
+    id_area = [(object_info[4], object_info[2] * object_info[3]) for object_info in agent.yolo_module.yolo_bbox]
+
+    max_object_id = max(id_area, key=lambda x: x[1])
+    print(max_object_id)
+    
+    
     # [TODO] Implement how the biggest / smallest object can be detected
 
 verbType2verb = {
@@ -693,15 +709,18 @@ def nogadaParser(inputText):
 
 # MAIN
 def gpsr(agent):
-    agent.say("I'm ready to receive a command")
-    rospy.sleep(4)
+    # agent.say("I'm ready to receive a command")
+    # rospy.sleep(4)
 
-    # inputText = "Locate a food in the office then take it and place it on the sofa"
-    inputText, _ = agent.stt(10.)
+    # # inputText = "Locate a food in the office then take it and place it on the sofa"
+    # inputText, _ = agent.stt(10.)
+    inputText = "Tell me what is the biggest food on the sofa"
 
-    cmdName, params = ultimateParser(inputText)
+    # cmdName, params = ultimateParser(inputText)
 
-    agent.say(f"Given Command is {cmdName}, Given Parameters {params}")
-    cmdFunc = cmdName2cmdFunc[cmdName]
+    # agent.say(f"Given Command is {cmdName}, Given Parameters {params}")
+    # cmdFunc = cmdName2cmdFunc[cmdName]
 
-    cmdFunc(agent, params)
+    # cmdFunc(agent, params)
+    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    tellCatPropOnPlcmt(agent, params)

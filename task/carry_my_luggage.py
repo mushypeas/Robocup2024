@@ -942,7 +942,7 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.5
-    pose_save_time_period = 7
+    pose_save_time_period = 15
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2
@@ -1066,7 +1066,11 @@ def carry_my_luggage(agent):
 
         while len(track_queue):
             coordinate = track_queue.pop()
-            agent.move_abs_coordinate_safe(coordinate)
+            try:
+                agent.move_abs_coordinate_safe(coordinate)
+            except:
+                coordinate = track_queue.pop()
+                agent.move_abs_coordinate_safe(coordinate)
             # rospy.sleep(0.5)
             print('go to arena')
 
