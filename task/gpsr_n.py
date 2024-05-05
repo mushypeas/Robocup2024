@@ -2,75 +2,213 @@ import openai
 import json
 
 # HRI and People Perception Commands
+# "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
 def goToLoc(agent, params):
-    pass
+    goVerb = params['goVerb']
+    toLocPrep = params['toLocPrep']
+    loc_room = params['loc_room']
+    followup = params['followup']
 
+# "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def findPrsInRoom(agent, params):
+    findVerb = params['findVerb']
+    gestPers_posePers = params['gestPers_posePers']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    followup = params['followup']
     pass
 
+# "meetPrsAtBeac": "{meetVerb} {name} {inLocPrep} the {room}",
 def meetPrsAtBeac(agent, params):
+    meetVerb = params['meetVerb']
+    name = params['name']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    followup = params['followup']
     pass
 
+# "countPrsInRoom": "{countVerb} {gestPersPlur_posePersPlur} are {inLocPrep} the {room}",
 def countPrsInRoom(agent, params):
+    countVerb = params['countVerb']
+    gestPersPlur_posePersPlur = params['gestPersPlur_posePersPlur']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
     pass
 
+# "tellPrsInfoInLoc": "{tellVerb} me the {persInfo} of the person {inRoom_atLoc}",
 def tellPrsInfoInLoc(agent, params):
+    tellVerb = params['tellVerb']
+    persInfo = params['persInfo']
+    inRoom_atLoc = params['inRoom_atLoc']
     pass
 
+# "talkInfoToGestPrsInRoom": "{talkVerb} {talk} {talkPrep} the {gestPers} {inLocPrep} the {room}",
 def talkInfoToGestPrsInRoom(agent, params):
+    talkVerb = params['talkVerb']
+    talk = params['talk']
+    talkPrep = params['talkPrep']
+    gestPers = params['gestPers']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
     pass
 
+# "answerToGestPrsInRoom": "{answerVerb} the {question} {ofPrsPrep} the {gestPers} {inLocPrep} the {room}",
 def answerToGestPrsInRoom(agent, params):
+    answerVerb = params['answerVerb']
+    question = params['question']
+    ofPrsPrep = params['ofPrsPrep']
+    gestPers = params['gestPers']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
     pass
 
+# "followNameFromBeacToRoom": "{followVerb} {name} {fromLocPrep} the {loc} {toLocPrep} the {room}",
 def followNameFromBeacToRoom(agent, params):
+    followVerb = params['followVerb']
+    name = params['name']
+    fromLocPrep = params['fromLocPrep']
+    loc = params['loc']
+    toLocPrep = params['toLocPrep']
+    room = params['room']
     pass
 
+# "guidePrsFromBeacToBeac": "{guideVerb} the {gestPers_posePers} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
 def guideNameFromBeacToBeac(agent, params):
+    guideVerb = params['guideVerb']
+    name = params['name']
+    fromLocPrep = params['fromLocPrep']
+    loc = params['loc']
+    toLocPrep = params['toLocPrep']
+    loc_room = params['loc_room']
     pass
 
+# "guidePrsFromBeacToBeac": "{guideVerb} the {gestPers_posePers} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
 def guidePrsFromBeacToBeac(agent, params):
+    guideVerb = params['guideVerb']
+    gestPers_posePers = params['gestPers_posePers']
+    fromLocPrep = params['fromLocPrep']
+    loc = params['loc']
+    toLocPrep = params['toLocPrep']
+    loc_room = params['loc_room']
     pass
 
+# "guideClothPrsFromBeacToBeac": "{guideVerb} the person wearing a {colorClothe} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
 def guideClothPrsFromBeacToBeac(agent, params):
+    guideVerb = params['guideVerb']
+    colorClothe = params['colorClothe']
+    fromLocPrep = params['fromLocPrep']
+    loc = params['loc']
+    toLocPrep = params['toLocPrep']
+    loc_room = params['loc_room']
     pass
 
+# "talkInfoToGestPrsInRoom": "{talkVerb} {talk} {talkPrep} the {gestPers} {inLocPrep} the {room}",
 def greetClothDscInRm(agent, params):
+    greetVerb = params['greetVrb']
+    colorClothe = params['colorClothe']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    followup = params['followup']
     pass
 
+# "greetNameInRm": "{greetVerb} {name} {inLocPrep} the {room} and {followup}",
 def greetNameInRm(agent, params):
+    greetVerb = params['greetVrb']
+    name = params['name']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    followup = params['followup']
     pass
 
+# "meetNameAtLocThenFindInRm": "{meetVerb} {name} {atLocPrep} the {loc} then {findVerb} them {inLocPrep} the {room}",
 def meetNameAtLocThenFindInRm(agent, params):
+    meetVerb = params['meetVerb']
+    name = params['name']
+    atLocPrep = params['atLocPrep']
+    loc = params['loc']
+    findVerb = params['findVerb']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
     pass
 
+# "countClothPrsInRoom": "{countVerb} people {inLocPrep} the {room} are wearing {colorClothes}",
 def countClothPrsInRoom(agent, params):
+    countVerb = params['countVerb']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    colorClothes = params['colorClothes']
     pass
 
+# "tellPrsInfoAtLocToPrsAtLoc": "{tellVerb} the {persInfo} of the person {atLocPrep} the {loc} to the person {atLocPrep} the {loc2}",
 def tellPrsInfoAtLocToPrsAtLoc(agent, params):
+    tellVerb = params['tellVerb']
+    persInfo = params['persInfo']
+    atLocPrep = params['atLocPrep']
+    loc = params['loc']
+    loc2 = params['loc2']
     pass
 
+# "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}",
 def followPrsAtLoc(agent, params):
+    followVerb = params['followVerb']
+    gestPers_posePers = params['gestPers_posePers']
+    inRoom_atLoc = params['inRoom_atLoc']
     pass
 
 # Object Manipulation and Perception Commands
-
+# "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def takeObjFromPlcmt(agent, params):
+    takeVerb = params['takeVerb']
+    art = params['art']
+    obj_singCat = params['obj_singCat']
+    fromLocPrep = params['fromLocPrep']
+    plcmtLoc = params['plcmtLoc']
+    followup = params['followup']
     pass
 
+# "findObjInRoom": "{findVerb} {art} {obj_singCat} {inLocPrep} the {room} then {followup}",
 def findObjInRoom(agent, params):
+    findVerb = params['findVerb']
+    art = params['art']
+    obj_singCat = params['obj_singCat']
+    inLocPrep = params['inLocPrep']
+    room = params['room']
+    followup = params['followup']
     pass
 
+# "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
 def countObjOnPlcmt(agent, params):
+    countVerb = params['countVerb']
+    plurCat = params['plurCat']
+    onLocPrep = params['onLocPrep']
+    plcmtLoc = params['plcmtLoc']
     pass
 
+# "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
 def tellObjPropOnPlcmt(agent, params):
+    tellVerb = params['tellVerb']
+    objComp = params['objComp']
+    singCat = params['singCat']
+    onLocPrep = params['onLocPrep']
+    plcmtLoc = params['plcmtLoc']
     pass
 
+# "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
 def bringMeObjFromPlcmt():
+    bringVerb = params['bringVerb']
+    art = params['art']
+    obj = params['obj']
+    fromLocPrep = params['fromLocPrep']
+    plcmtLoc = params['plcmtLoc']
     pass
 
+# "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt():
+    tellVerb = params['tellVerb']
+    objComp = params['objComp']
+    singCat = params['singCat']
+    onLocPrep = params['onLocPrep']
+    plcmtLoc = params['plcmtLoc']
     pass
 
 verbType2verb = {
