@@ -255,7 +255,7 @@ class HumanFollowing:
 
     def escape_barrier(self, calc_z):
         cur_pose = self.agent.get_pose(print_option=False)
-        thres = 0.7
+        thres = 0.6
         human_box_thres = 0.5
         if self.human_box_list[0] is not None:
             # print(f"human_box_list[1] : {self.human_box_list[1]}")
@@ -475,12 +475,12 @@ class HumanFollowing:
                 if loc == 'l':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
                 if loc == 'r':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
@@ -941,7 +941,7 @@ def head_map_cb(config):
 def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
-    goal_radius = 1.0
+    goal_radius = 0.5
     pose_save_time_period = 7
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
