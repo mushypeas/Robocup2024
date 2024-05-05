@@ -4,11 +4,17 @@ from utils.distancing import distancing, distancing_horizontal
 from hsr_agent.agent import Agent
 
 def clean_the_table(agent: Agent):
+    
+    # things to be modified: pick_table, pick_position, place_postion
 
     ### task params #################
-    pick_table = 'breakfast_table'
+    
     pick_position = 'clean_table_front'
     place_position = 'dishwasher_rack'
+    pick_table = 'breakfast_table'
+    dishwasher = 'dishwasher'
+    dishwasher_table = 'dishwasher_table'
+    
     tab_name = 'dishwasher_tablet'
     item_list = ['mug', 'bowl', 'plate', 'fork', 'spoon', 'knife']
     plate_radius = 0.10
@@ -157,24 +163,24 @@ def clean_the_table(agent: Agent):
             # agent.pose.pick_up_bowl_pose(table=pick_table)
             agent.move_rel(-0.17, 0)
 
-        elif item == tab_name:                               # modify
-            agent.pose.pick_top_pose(table=pick_table)
-            agent.open_gripper()
+        # elif item == tab_name:                               # modify
+        #     agent.pose.pick_top_pose(table=pick_table)
+        #     agent.open_gripper()
 
-            # agent.move_rel(0, base_xyz[1]+0.02, wait=True)
-            # agent.move_rel(base_xyz[0] + 0.35, 0, wait=True)
+        #     # agent.move_rel(0, base_xyz[1]+0.02, wait=True)
+        #     # agent.move_rel(base_xyz[0] + 0.35, 0, wait=True)
 
-            agent.move_rel(base_xyz[0] + 0.35, base_xyz[1] + 0.02, wait=True) # modify
+        #     agent.move_rel(base_xyz[0] + 0.35, base_xyz[1] + 0.02, wait=True) # modify
 
-            agent.pose.arm_lift_top_table_down(height=-0.005, table=pick_table) # modify
-            agent.grasp()
+        #     agent.pose.arm_lift_top_table_down(height=-0.005, table=pick_table) # modify
+        #     agent.grasp()
 
-            is_picked = agent.pose.check_grasp(threshold=-1.45)     # modify this for tab
-            print(f"2.4 grasp value of item '{item}': {is_picked}")
+        #     is_picked = agent.pose.check_grasp(threshold=-1.45)     # modify this for tab
+        #     print(f"2.4 grasp value of item '{item}': {is_picked}")
 
-            agent.pose.arm_flex(-60)
-            # agent.pose.pick_up_bowl_pose(table=pick_table)
-            agent.move_rel(-0.17, 0)
+        #     agent.pose.arm_flex(-60)
+        #     # agent.pose.pick_up_bowl_pose(table=pick_table)
+        #     agent.move_rel(-0.17, 0)
         # elif item == 'plate':
         #     hand_over_mode = True
         #     if hand_over_mode:
@@ -375,8 +381,7 @@ def clean_the_table(agent: Agent):
 
          # for coding only bjkim 24th
 
-        dishwasher = 'dishwasher'
-        dishwasher_x = distancing(agent.yolo_module.pc, 'dishwasher_table', dist=0.5)
+        dishwasher_x = distancing(agent.yolo_module.pc, dishwasher_table, dist=0.5)
 
         agent.move_rel(dishwasher_x, 0, wait=True) # modify
 
