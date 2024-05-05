@@ -67,9 +67,9 @@ def receptionist(agent):
     #################### TODO: seat angle ####################
     #150cm setting
     sofa_point_angle = 20
-    chair_point_angle = 60
-    # head_pan_angle = [chair_point_angle-8, sofa_point_angle-3, -sofa_point_angle, -chair_point_angle]
-    head_pan_angle = [sofa_point_angle, -sofa_point_angle]
+    chair_point_angle = 50
+    head_pan_angle = [chair_point_angle-8, sofa_point_angle-3, -sofa_point_angle, -chair_point_angle]
+    # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
 
     # 150cm setting, sofa side view is visible
     # head_pan_angle = [60, 25, 0, -25, -60]
@@ -88,14 +88,14 @@ def receptionist(agent):
     name_host = 'john'
     drink_host = 'milk'
 
-    # if calibration_mode:
-    #     name1 = 'juno'
-    #     drink1 = 'lemonade'
-    #     name2 = 'matilda'
-    #     drink2 = 'mango milk'
-    #     clothes = 'white no pattern woman spring vest no sleeves'
-    #     gender = ['male']
-    #     age = '20-29'
+    if calibration_mode:
+        name1 = 'juno'
+        drink1 = 'lemonade'
+        name2 = 'matilda'
+        drink2 = 'mango milk'
+        clothes = 'white no pattern woman spring vest no sleeves'
+        gender = ['male']
+        age = '20-29'
 
     # cap = Xtion_camera()
     attr = Attribute(cloth_threshold, calibration_mode)
@@ -158,8 +158,8 @@ def receptionist(agent):
 
     #################### CHECK: cloth attribute ####################
     agent.pose.head_tilt(-7.5)
-    # if calibration_mode:
-    #     attr.cloth_extract_calibration_mode(agent)
+    if calibration_mode:
+        attr.cloth_extract_calibration_mode(agent)
     clothes, hair_color = attr.scan_human(agent)
     print('receptionist clothes: ', clothes)
     agent.pose.head_tilt(10)
@@ -232,13 +232,31 @@ def receptionist(agent):
 
     # input('##### Debug 4 #####')
 
+    ##########
+    # # 4. offer the seat
+    # # agent.pose.move_pose()
+    # agent.move_abs_safe(scan_bypass_position)
+    # agent.pose.head_tilt(10)
+
+    # # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+    # # name1 = 'paris'
+    # agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
+    # rospy.sleep(5.5)
+    # # input('##### Debug 5 #####')
+
+    # agent.move_abs_safe(scan_position)
+    # agent.pose.head_tilt(0)
+    # # input('##### Debug 6-1 #####')
+    ##########
+
+    ########## 0505
     # 4. offer the seat
-    # agent.pose.move_pose()
+    agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
+
+    agent.pose.move_pose()
     agent.move_abs_safe(scan_bypass_position)
     agent.pose.head_tilt(10)
-
-    # agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
-    name1 = 'paris'
+    
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
     # input('##### Debug 5 #####')
@@ -246,6 +264,7 @@ def receptionist(agent):
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
     # input('##### Debug 6-1 #####')
+    ########## 0505
 
     #################### TODO: check seat ####################
     agent.say('Searching empty seat.')
