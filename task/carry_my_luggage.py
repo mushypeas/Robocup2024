@@ -255,7 +255,7 @@ class HumanFollowing:
 
     def escape_barrier(self, calc_z):
         cur_pose = self.agent.get_pose(print_option=False)
-        thres = 0.6
+        thres = 1.0
         human_box_thres = 0.5
         if self.human_box_list[0] is not None:
             # print(f"human_box_list[1] : {self.human_box_list[1]}")
@@ -350,7 +350,8 @@ class HumanFollowing:
             ##########################BRANCH2. MOVING########################    
                 _depth = self.barrier_check()
                 print(f"mean depth: {np.mean(_depth)}")
-                self.agent.move_rel(0,-0.3,0, wait=False)
+                self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
+                # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
                 rospy.sleep(1)
 
 
