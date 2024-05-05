@@ -12,14 +12,12 @@ def serve_breakfast(agent: Agent):
     # joint_pose에 kitchen table과 breakfast table....그냥 이름 다 바꿔야할 듯?
 
     # start point #
-    # outside of the door - 아직 좌표 모름 #
-    # 2 Tables - preparing table (getp 좌표 [2.074, -2.6953, 0.0159]),
-    #            serving table (getp 좌표 [1.1877, -1.1908, 0.0079])
+    # Initial location = zero
+    
     # <Preparing table> object detect 후 pick_side_pose (올라오면서 팔을 펼치고 올라옴 - 팔 부상 가능성)
     # wrist_roll : -110 -> 0 (cereal, milk both) 아마도 -1.92 radian //joint_pose.py 594 line에서 
     # spoon은 pick_top_pose 후 앞으로 이동
 
-    # Initial location = zero
 
     ### task params #################
     mustard_height = 0.19  # [m] 기존 milk_height
@@ -40,7 +38,7 @@ def serve_breakfast(agent: Agent):
     bowl_to_spoon_place_xy = [0, -0.13]  # bowl to spoon
 
     # try except params
-    # default_base_xyz = [0.376, -0.1, 0.823]  (수정) 주석처리함.
+    default_base_xyz = [5.0999, 0.5681, 0.0124]
     # bonus params
     mustard_bonus = True
     spam_bonus = True
@@ -56,14 +54,14 @@ def serve_breakfast(agent: Agent):
     ### Initial Location은 global_config.py에 ABS_POSITION에 있음
     ### 942동 212호 냉장고 옆 문을 시작점으로 가정. 문이 열렸다고 가정.
     # 로봇을 초기 위치로 이동시키는 함수를 호출
-    # agent.move_abs('zero')
+    agent.move_abs('zero')
     #########################
 
 
     ### task start ##
-    # agent.door_open()
-    # agent.say('Hi, I will serve you breakfast') # 멘트 수정
-    # agent.move_rel(7.5, 0.6, wait=False)
+    agent.door_open()
+    agent.say('Hi, I will serve you breakfast') # 멘트 수정
+    agent.move_rel(7.5, 0.6, wait=False)
     agent.move_abs('kitchen_table_testday')
     # 기존) agent.move_abs('breakst_bypass') # 실험해서 정확한 좌표로 수정할 것. 위치 : kitchen table 앞
 
@@ -72,12 +70,10 @@ def serve_breakfast(agent: Agent):
     while True:
         # 1. go to kitchen table -> item picking 해야 함.
 
-        # Initial pose 정의 (모의고사용) 
         agent.pose.neutral_pose()
         # agent.pose.move_pose() 주석 처리함. (모의고사용) -> move_pose는 /hsr_agent/joint_pose.py 에서 정의 (70 line)
         rospy.sleep(0.5)                                    # 움직이는 동안 대기하는 시간
-         # 여기서부터 주석함!
-         # kitchen table 앞 picking 할 위치(60cm 떨어진 곳)으로 이동
+
         agent.move_abs(pick_position) # kitchen_table_front 는 60cm 떨어진 곳이어야 함.
         dist_to_table = distancing(agent.yolo_module.pc, pick_table) # kitchen table 좌표 확인
         agent.move_rel(dist_to_table, 0) # 기존 코드 -> (dist_to_table,0)
@@ -95,7 +91,7 @@ def serve_breakfast(agent: Agent):
 
         is_detected = False
         
-        agent.say('Wait for a moment') # 안되면 tab 공백 조정
+        agent.say('Wait for a moment')
         
         for item in item_list:
             print('item', item)
@@ -123,7 +119,7 @@ def serve_breakfast(agent: Agent):
         agent.move_rel(-0.20, 0) 
         
 
-         # 4. pick # pick 할 때 애초에 부피가 큰 cereal, milk, bowl 먼저
+         # 4. pick (순서: bowl-> spam -> mustard -> spoon)
         if item == 'bowl':
             agent.pose.pick_bowl_pose_last(table=pick_table)
             agent.open_gripper()
@@ -134,20 +130,9 @@ def serve_breakfast(agent: Agent):
             agent.pose.arm_lift_up(0.69) # 0.8로 수정해보기
             # picking 후, arm을 끌어서 다른 물체를 건드리는 상황이 발생하지 않도록 수정 필요
 
-        elif item == 'spoon' : # 기존 elif item == 'spoon' or item == 'fork' or item == 'knife':
-            agent.pose.pick_top_pose_last(table='breakfast_table')
-            agent.open_gripper()
-            agent.move_rel(0, base_xyz[1], wait=True)
-            agent.move_rel(base_xyz[0] + 0.15 + 0.1, 0, wait=True)
-            agent.pose.arm_lift_up(0.520)
-            agent.grasp()
-            rospy.sleep(0.5)
-            agent.pose.arm_lift_up(0.68)
-            rospy.sleep(3)
+        elif item == 'spam' or 'mustard' :  # milk, cereal
 
-        else:   # milk, cereal
-             # (모의고사용) 기존 코드 -> if item == 'cereal_red' or item == 'cracker':
-            if item == 'spam': # cereal_red를 testday만 spam 사용
+            if item == 'spam': 
                 object_height = spam_height / 2
             else: # milk
                 object_height = mustard_height / 2
@@ -155,28 +140,41 @@ def serve_breakfast(agent: Agent):
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1]-0.01, wait=True)
             agent.move_rel(base_xyz[0] + 0.15, 0, wait=True) # + 0.15
-             # (모의고사용) 기존 코드 -> if item == 'cereal_red' or item == 'cracker':
-            if item == 'spam': # cereal_red를 testday만 spam 사용
+
+            if item == 'spam': 
                 agent.grasp()
             else: # milk
-                agent.grasp(weak=True)
+                agent.grasp()
                 rospy.sleep(0.5)
             rospy.sleep(0.5)
 
+        else:                    # 기존 elif item == 'spoon' or item == 'fork' or item == 'knife':
+            if item == 'spoon':
+                agent.pose.pick_top_pose_last(table='breakfast_table')
+                agent.open_gripper()
+                agent.move_rel(0, base_xyz[1], wait=True)
+                agent.move_rel(base_xyz[0] + 0.15 + 0.1, 0, wait=True)
+                agent.pose.arm_lift_up(0.520)
+                agent.grasp()
+                rospy.sleep(0.5)
+                agent.pose.arm_lift_up(0.68)
+                rospy.sleep(3)
 
          # 5. return pose
-         # (모의고사용) 기존 코드 -> agent.move_rel(-0.4, 0)
-        agent.move_rel(-0.8, 0)
-         # agent.pose.neutral_pose()
-        pdb.set_trace()
-         # (모의고사용) 기존 코드 ->         agent.pose.table_search_go_pose()
+
+        agent.move_rel(-1.0, 0)
+        
+        agent.pose.neutral_pose()
+
+         # 기존 코드 -> agent.pose.table_search_go_pose()
         agent.pose.check_grasp()
 
         if pick_only_mode:
             agent.open_gripper()
             continue
-        # 여기까지주석함 (bowl에 둘 때에는 가까이 있어야 함. pose 수정?. dist=1.0 보다 가까운게 좋은거 같음. yolo->mustard)
 
+
+        pdb.set_trace()
 
         # 6. go place pos
         agent.move_abs(place_position)
@@ -209,11 +207,11 @@ def serve_breakfast(agent: Agent):
             agent.move_rel(-0.3, 0)
         # (모의고사용) 기존 코드 -> elif item == 'cereal_red' or item == 'cracker':   
         elif item == 'spam': # 기존 elif item == 'cereal_red'
-            if cereal_bonus:
-                object_height = cereal_red_height / 2
+            if 'spam' :
+                object_height = spam_height / 2
                 # 7.1 spill
                 agent.pose.spill_object_pose(object_height, table=place_table)
-                agent.move_rel(base_xyz[0]+bowl_to_cereal_red_spill_xy[0], base_xyz[1]+bowl_to_cereal_red_spill_xy[1], wait=True)
+                agent.move_rel(base_xyz[0]+bowl_to_spam_spill_xy[0], base_xyz[1]+bowl_to_spam_spill_xy[1], wait=True)
                 agent.pose.wrist_roll(120)
                 agent.pose.wrist_roll(0)
                 agent.move_rel(0, 0.15, wait=True)
@@ -225,7 +223,7 @@ def serve_breakfast(agent: Agent):
                 object_height = spam_height / 2
                 # 7.1 spill
                 agent.pose.spill_object_pose(object_height, table=place_table)
-                agent.move_rel(base_xyz[0]+bowl_to_cereal_red_spill_xy[0], base_xyz[1]+bowl_to_cereal_red_spill_xy[1]+0.25, wait=True)
+                agent.move_rel(base_xyz[0]+bowl_to_spam_spill_xy[0], base_xyz[1]+bowl_to_spam_spill_xy[1]+0.25, wait=True)
                 agent.pose.arm_lift_object_table_down(object_height, table=place_table)
                 agent.open_gripper()
                 rospy.sleep(1.0)  # gazebo wait
@@ -236,7 +234,7 @@ def serve_breakfast(agent: Agent):
                 object_height = mustard_height / 2
                 # 7.1 spill
                 agent.pose.spill_object_pose(object_height, table=place_table)
-                agent.move_rel(base_xyz[0]+bowl_to_milk_spill_xy[0]+0.2, base_xyz[1]+bowl_to_milk_spill_xy[1]+0.08, wait=True)
+                agent.move_rel(base_xyz[0]+bowl_to_mustard_spill_xy[0]+0.2, base_xyz[1]+bowl_to_mustard_spill_xy[1]+0.08, wait=True)
                 agent.pose.wrist_roll(110)
                 agent.pose.wrist_roll(0)
                 agent.move_rel(0.1, 0.07, wait=True)
@@ -248,7 +246,7 @@ def serve_breakfast(agent: Agent):
                 object_height = mustard_height / 2
                 # 7.1 spill
                 agent.pose.spill_object_pose(object_height, table=place_table)
-                agent.move_rel(base_xyz[0] + bowl_to_milk_spill_xy[0], base_xyz[1] + bowl_to_milk_spill_xy[1]+0.17,
+                agent.move_rel(base_xyz[0] + bowl_to_mustard_spill_xy[0], base_xyz[1] + bowl_to_mustard_spill_xy[1]+0.17,
                                wait=True)
                 agent.pose.arm_lift_object_table_down(object_height, table=place_table)
                 agent.open_gripper()
