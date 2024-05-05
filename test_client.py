@@ -19,6 +19,8 @@ if __name__ == '__main__':
             agent.move_abs('start_1')
         elif command == 'p1':
             agent.pose.p1()
+        elif command == 'inspection':
+            agent.move_abs_safe('insp_target')
         elif command == 'zero':
             agent.move_abs('zero')
         elif command == 'dev_front':

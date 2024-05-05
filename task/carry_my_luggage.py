@@ -370,13 +370,13 @@ class HumanFollowing:
             if stt_option:
                 self.agent.say('Is this your destination?\nsay yes or no after a ding sound', show_display=True)
                 rospy.sleep(5)
-                answer, _ = self.agent.stt(3.)
+                answer, _ = self.agent.stt(3, mode='yesno')
                 question_num = 0
                 while 'yes' not in answer and 'no' not in answer and question_num < 3:
                     self.agent.say('Answer only by \nyes or no', show_display=True)
                     print('Answer only by \nyes or no')
                     rospy.sleep(2.5)
-                    answer, _ = self.agent.stt(3.)
+                    answer, _ = self.agent.stt(3., mode='yesno')
                     question_num += 1
                 if 'yes' not in answer and 'no' not in answer:
                     answer = 'yes'
