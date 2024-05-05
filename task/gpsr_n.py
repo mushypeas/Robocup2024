@@ -1,3 +1,4 @@
+import rospy
 import openai
 import json
 
@@ -691,12 +692,15 @@ def nogadaParser(inputText):
 
 # MAIN
 def gpsr(agent):
-    # inputText = input()
-    inputText = "Locate a food in the office then take it and place it on the sofa"
+    agent.say("I'm ready to receive a command")
+    rospy.sleep(4)
+
+    # inputText = "Locate a food in the office then take it and place it on the sofa"
+    inputText, _ = agent.stt(10.)
+
     cmdName, params = ultimateParser(inputText)
+
+    agent.say(f"Given Command is {cmdName}, Given Parameters {params}")
     cmdFunc = cmdName2cmdFunc[cmdName]
 
     cmdFunc(agent, params)
-
-if __name__ == "__main__":
-    gpsr('1')
