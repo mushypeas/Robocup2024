@@ -103,7 +103,7 @@ def receptionist(agent):
     cs = CheckSeat(face_threshold, face_threshold2, sofa_range,door_range, head_pan_angle, sofa_point_angle, calibration_mode)
     face_attr = FaceAttribute()
 
-
+    #####################################################3
     ### main scenario ###
     agent.pose.move_pose()
     agent.move_abs_safe(start_position)
@@ -230,6 +230,8 @@ def receptionist(agent):
         data = qr_str.split(',')
         name1, drink1 = data[0], data[1]
 
+    #####################################################3
+
     # input('##### Debug 4 #####')
 
     ##########
@@ -249,7 +251,7 @@ def receptionist(agent):
     # # input('##### Debug 6-1 #####')
     ##########
 
-    ########## 0505
+    # ########## 0505
     # 4. offer the seat
     agent.say(f'Hi, {name1}.\n Please follow me. \nI will find the seat for you', show_display=True)
 
@@ -260,7 +262,7 @@ def receptionist(agent):
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
     # input('##### Debug 5 #####')
-
+    # agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
     # input('##### Debug 6-1 #####')
