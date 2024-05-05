@@ -52,14 +52,14 @@ def serve_breakfast(agent: Agent):
     ### Initial Location은 global_config.py에 ABS_POSITION에 있음
     ### 942동 212호 냉장고 옆 문을 시작점으로 가정. 문이 열렸다고 가정.
     # 로봇을 초기 위치로 이동시키는 함수를 호출
-    agent.move_abs('zero')
+    # agent.move_abs('zero')
     #########################
 
 
     ### task start ##
-    agent.door_open()
+    # agent.door_open()
     agent.say('Hi, I will serve you breakfast') # 멘트 수정
-    agent.move_rel(7.5, 0.6, wait=False)
+    # agent.move_rel(7.5, 0.6, wait=False)
     agent.move_abs('kitchen_table_testday')
     # 기존) agent.move_abs('breakst_bypass') # 실험해서 정확한 좌표로 수정할 것. 위치 : kitchen table 앞
 
@@ -115,7 +115,7 @@ def serve_breakfast(agent: Agent):
         except:
             continue
         print('gripper_to_object_xyz', base_xyz)
-        agent.move_rel(-0.20, 0) 
+        agent.move_rel(-0.50, 0) 
         
 
          # 4. pick (순서: bowl-> spam -> mustard -> spoon)
@@ -124,7 +124,7 @@ def serve_breakfast(agent: Agent):
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1], wait=True)
             agent.move_rel(base_xyz[0] + 0.20, 0, wait=True)
-            agent.pose.arm_lift_up(0.510)
+            agent.pose.arm_lift_up(0.480)
             agent.grasp()
             agent.pose.arm_lift_up(0.8) # 0.8로 수정해보기
             # picking 후, arm을 끌어서 다른 물체를 건드리는 상황이 발생하지 않도록 수정 필요
@@ -161,7 +161,7 @@ def serve_breakfast(agent: Agent):
 
          # 5. return pose
 
-        agent.move_rel(-1.0, 0)
+        agent.move_rel(0, 0) # -0.4, 0 정도 설정해주기 
         
         agent.pose.neutral_pose()
 
@@ -172,9 +172,6 @@ def serve_breakfast(agent: Agent):
         if pick_only_mode:
             agent.open_gripper()
             continue
-
-
-        pdb.set_trace()
 
         # 6. go place pos
         agent.move_abs(place_position)

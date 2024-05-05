@@ -151,7 +151,7 @@ if AIIS:
 
     TABLE_DIMENSION = {
         # testday용 추가 - mjgu 240504
-        'kitchen_table_testday': [0.8, 0.8, 0.72],
+        'kitchen_table_testday': [0.8, 0.8, 0.715],
         'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.735],
