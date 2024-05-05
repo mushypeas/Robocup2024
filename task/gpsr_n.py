@@ -5,10 +5,9 @@ import json
 def followup(cmd):
     print(cmd)
 
-def move_gpsr(loc):
-# def move_gpsr(loc, agent):
-    # Agent.move_abs(loc)
-    # rospy.sleep(2)  
+def move_gpsr(agent, loc):
+    agent.move_abs(loc)
+    rospy.sleep(2)  
     print(f"[MOVE] HSR moved to {loc}")
 
 def pick(obj):
@@ -18,7 +17,6 @@ def pick(obj):
 def place(obj, loc):
     # [TODO] Implement how the object can be placed at the location
     print(f"[PLACE] {obj} is placed at {loc}")
-
 
 # HRI and People Perception Commands
 # "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
@@ -34,7 +32,7 @@ def goToLoc(agent, params):
     # [1] Move to the specified room
     print(f"I'm moving to the {loc_room}")
     agent.say(f"I'm moving to the {loc_room}")
-    move_gpsr(loc_room)
+    move_gpsr(agent, loc_room)
 
     # [2] Handling the follow-up action
     followup(cmd)
@@ -49,7 +47,7 @@ def findPrsInRoom(agent, params):
     find, human, room, cmd = params['findVerb'], params['gestPers_posePers'], params['room'], params['followup']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Find the person with that pose in the room
     print(f"[FIND] {find} a {human} in the {room}")
@@ -73,7 +71,7 @@ def meetPrsAtBeac(agent, params):
     name, room, cmd = params['name'], params['room'], params['followup']  
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] find the person
     # face recognition?
@@ -93,7 +91,7 @@ def countPrsInRoom(agent, params):
     count, human, room = params['countVerb'], params['gestPers_posePers'], params['room']
 
     # [1] move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Count the number of persons in the room
     print(f"[COUNT] {count} {human} in the {room}")
@@ -135,7 +133,7 @@ def talkInfoToGestPrsInRoom(agent, params):
     talkVerb, talk, talkPrep, gestPers, inLocPrep, room = params['talkVerb'], params['talk'], params['talkPrep'], params['gestPers'], params['inLocPrep'], params['room']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Find the person in the room
     # [TODO] Gesture Detection with OpenPose
@@ -159,7 +157,7 @@ def answerToGestPrsInRoom(agent, params):
     answerVerb, question, ofPrsPrep, gestPers, inLocPrep, room = params['answerVerb'], params['question'], params['ofPrsPrep'], params['gestPers'], params['inLocPrep'], params['room']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Find the person in the room
     # [TODO] Gesture Detection with OpenPose
@@ -180,7 +178,7 @@ def followNameFromBeacToRoom(agent, params):
     follow, name, loc, room = params['followVerb'], params['name'], params['loc'], params['room']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
     
     # [2] Find the person in the location
     print(f"[FIND] {name} in the {loc}")
@@ -200,7 +198,7 @@ def guideNameFromBeacToBeac(agent, params):
     guide, name, loc, room = params['guideVerb'], params['name'], params['loc'], params['loc_room']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the person in the location
     print(f"[FIND] {name} in the {loc}")
@@ -221,7 +219,7 @@ def guidePrsFromBeacToBeac(agent, params):
     guide, gestPers_posePers, loc, room = params['guideVerb'], params['gestPers_posePers'], params['loc'], params['loc_room']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the person in the location
     print(f"[FIND] {gestPers_posePers} in the {loc}")
@@ -242,7 +240,7 @@ def guideClothPrsFromBeacToBeac(agent, params):
     guide, color, loc, room = params['guideVerb'], params['colorClothe'], params['loc'], params['loc_room']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the person in the location
     print(f"[FIND] the person wearing a {color} in the {loc}")
@@ -262,7 +260,7 @@ def greetClothDscInRm(agent, params):
     greet, art, color, room, cmd = params['greetVerb'], params['art'], params['colorClothe'], params['room'], params['followup']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Find the person in the room
     print(f"[FIND] the person wearing {art} {color} in the {room}")
@@ -282,7 +280,7 @@ def greetNameInRm(agent, params):
     greet, name, room, cmd = params['greetVerb'], params['name'], params['room'], params['followup']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2][TODO] Find the person in the room
     print(f"[FIND] {name}")
@@ -302,7 +300,7 @@ def meetNameAtLocThenFindInRm(agent, params):
     name, loc, room = params['name'], params['loc'], params['room']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the person in the location
     print(f"[FIND] {name} in the {loc}")
@@ -322,7 +320,7 @@ def countClothPrsInRoom(agent, params):
     room, color = params['room'], params['colorClothes']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2] Check the number of people wearing the specified color
     # [TODO] Color Detection, Clothes Detection
@@ -343,7 +341,7 @@ def tellPrsInfoAtLocToPrsAtLoc(agent, params):
     tellVerb, persInfo, loc, loc2 = params['tellVerb'], params['persInfo'], params['loc'], params['loc2']
 
     # [1] Move to the specified room
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the person in the room
     # [2-1] name with FaceDetection
@@ -361,7 +359,7 @@ def followPrsAtLoc(agent, params):
     human, room = params['gestPers_posePers'], params['inRoom_atLoc']
 
     # [1] Move to the specified room
-    move_gpsr(room)
+    move_gpsr(agent, room)
 
     # [2][TODO] Find the person with that pose in the room
     
@@ -385,7 +383,7 @@ def takeObjFromPlcmt(agent, params):
     # print(takeVerb, '\n', obj, '\n', fromLocPrep, '\n', plcmtLoc, '\n', cmd)
 
     # [1] Move to the specified space
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Take the object from the specified location
     print(f"[TAKE] {takeVerb} the {obj} from the {loc}")
@@ -404,7 +402,7 @@ def findObjInRoom(agent, params):
     
     # [1] Move to the specified room
     print(f"I'm moving to the {room}")
-    move_gpsr(room)
+    move_gpsr(agent, room)
     
     # [2] Find the object in the room
     print(f"Let me find {art} {obj} in the {room}")
@@ -468,7 +466,7 @@ def tellObjPropOnPlcmt(agent, params):
     tell, comp, place = params['tellVerb'], params['objComp'], params['plcmtLoc']
 
     # [1] Move to the specified space
-    move_gpsr(place)
+    move_gpsr(agent, place)
 
     # [2] Find the objects in the room
     print(f"[FIND] {tell} me what is the {comp} object {place}")
@@ -488,7 +486,7 @@ def bringMeObjFromPlcmt(agent, params):
     bring, art, obj, loc = params['bringVerb'], params['art'], params['obj'], params['plcmtLoc']
 
     # [1] Move to the specified location
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the object in the room
     print(f"[FIND] {obj} in the {loc}")
@@ -509,7 +507,7 @@ def tellCatPropOnPlcmt(agent, params):
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
 
     # [1] Move to the specified space
-    move_gpsr(loc)
+    move_gpsr(agent, loc)
 
     # [2] Find the objects in the room
     print(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
@@ -517,7 +515,6 @@ def tellCatPropOnPlcmt(agent, params):
     # [3] Tell the information
     # agent.yolo_module.yolo_bbox size
     # [TODO] Implement how the biggest / smallest object can be detected
-    
 
 verbType2verb = {
     "{takeVerb}": ["take", "get", "grasp", "fetch"],
