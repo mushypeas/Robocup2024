@@ -48,7 +48,7 @@ if __name__ == '__main__':
         task = StoringGroceries(agent)
         task.run()
     elif task_id == '4':
-        from task.mjgu_serve_breakfast import serve_breakfast
+        from task.serve_breakfast import serve_breakfast
         serve_breakfast(agent)
     elif task_id == '5':
         from task.gpsr import gpsr

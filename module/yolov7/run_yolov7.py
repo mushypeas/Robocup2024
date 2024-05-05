@@ -150,7 +150,9 @@ class Yolov7:
 
 def get_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weight/best_0704.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='weight/best_240410.pt', help='model.pt path(s)')
+    # 기존 경로 : 'weight/best_240409.pt'
+    # 원하는 특정 모델욜로 사용시 여기를 바꾸시오!!!
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
