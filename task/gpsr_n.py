@@ -1,6 +1,39 @@
 import rospy
 import openai
 import json
+import re
+import warnings
+
+# Read data from file
+def read_data(file_path):
+    with open(file_path, 'r') as file:
+        data = file.read()
+    return data
+
+# Parse test.md
+def parse_objects(data):
+    parsed_objects = re.findall(r'\|\s*(\w+)\s*\|', data, re.DOTALL)
+    parsed_objects = [objects for objects in parsed_objects if objects != 'Objectname']
+    parsed_objects = [objects.replace("_", " ") for objects in parsed_objects]
+    parsed_objects = [objects.strip() for objects in parsed_objects]
+
+    parsed_categories = re.findall(r'# Class \s*([\w,\s, \(,\)]+)\s*', data, re.DOTALL)
+    parsed_categories = [category.strip() for category in parsed_categories]
+    parsed_categories = [category.replace('(', '').replace(')', '').split() for category in parsed_categories]
+    parsed_categories_plural = [category[0] for category in parsed_categories]
+    parsed_categories_plural = [category.replace("_", " ") for category in parsed_categories_plural]
+    parsed_categories_singular = [category[1] for category in parsed_categories]
+    parsed_categories_singular = [category.replace("_", " ") for category in parsed_categories_singular]
+
+    if parsed_objects or parsed_categories:
+        return parsed_objects, parsed_categories_plural, parsed_categories_singular
+    else:
+        warnings.warn("List of objects or object categories is empty. Check content of object markdown file")
+        return []
+
+objects_file_path = '../gpsr_repo/test.md'
+objects_data = read_data(objects_file_path)
+object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
 
 def followup(cmd):
     print(cmd)
@@ -453,7 +486,6 @@ def countObjOnPlcmt(agent, params):
         print("No objects detected")
         return False
 
-### TODO NOW ###
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
 # "objComp": ['biggest', 'largest', 'smallest', 'heaviest', 'lightest', 'thinnest']
 def tellObjPropOnPlcmt(agent, params):    
@@ -498,6 +530,24 @@ def tellObjPropOnPlcmt(agent, params):
     robotOutput = f"The {comp} object is {targetObjName}"
     agent.say(robotOutput)
     
+# "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
+### TODO NOW ###
+def tellCatPropOnPlcmt(agent, params):
+    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    
+    # [0] Extract parameters
+    tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
+
+    # [1] Move to the specified space
+    move_gpsr(agent, loc)
+
+    # [2] Find the objects in the room
+    print(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
+
+    # [3] Tell the information
+    # agent.yolo_module.yolo_bbox size
+    # [TODO] Implement how the biggest / smallest object can be detected
+
 
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
 def bringMeObjFromPlcmt(agent, params):
@@ -519,26 +569,6 @@ def bringMeObjFromPlcmt(agent, params):
     # [3] Give the object to the human
     print(f"[GIVE] {bring} {art} {obj} from the {loc}")
 
-# "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
-def tellCatPropOnPlcmt(agent, params):
-    # Tell me what is the biggest food on the sofa
-    # Tell me what is the biggest snack on the sofa
-    # Tell me what is the smallest food on the side tables
-    # Tell me what is the biggest food on the kitchen table
-    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
-    
-    # [0] Extract parameters
-    tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
-
-    # [1] Move to the specified space
-    move_gpsr(agent, loc)
-
-    # [2] Find the objects in the room
-    print(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
-
-    # [3] Tell the information
-    # agent.yolo_module.yolo_bbox size
-    # [TODO] Implement how the biggest / smallest object can be detected
 
 verbType2verb = {
     "{takeVerb}": ["take", "get", "grasp", "fetch"],
@@ -662,7 +692,7 @@ def load_config(config_file):
 
 # CHAT w/ gpt-4
 def chat(prompt):
-    gpsr_config = load_config('gpsr_config.json')
+    gpsr_config = load_config('gpsr_repo/gpsr_config.json')
     openai.api_key = gpsr_config['openai_api_key']
     model_engine = "gpt-4"
 
@@ -717,6 +747,7 @@ def nogadaParser(inputText):
 
 # MAIN
 def gpsr(agent):
+
     # agent.say("I'm ready to receive a command")
     # rospy.sleep(4)
 
