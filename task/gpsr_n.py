@@ -34,17 +34,15 @@ def parse_objects(data):
 # Make Category to Object Dictionary
 def extractCategory2obj(markdown_content):
     category_pattern = re.compile(r'\# Class (\w+) \((\w+)\)')
-    object_pattern = re.compile(r'\| (\w+) \|')
+    object_pattern = re.compile(r'\| (\w+)  \|')
 
     objects_dict = {}
     current_category = None
-    current_object_type = None
 
     for line in markdown_content.split('\n'):
         category_match = category_pattern.match(line)
         if category_match:
-            current_category = category_match.group(1)
-            current_object_type = category_match.group(2)
+            current_category = category_match.group(2)
             objects_dict[current_category] = []
 
         object_match = object_pattern.match(line)
@@ -54,11 +52,27 @@ def extractCategory2obj(markdown_content):
 
     return objects_dict
 
-objects_file_path = '../gpsr_repo/object.md'
+objects_file_path = 'task/gpsr_repo/object.md'
 objects_data = read_data(objects_file_path)
 object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
 category2objDict = extractCategory2obj(objects_data)
-print(category2objDict)
+
+def get_yolo_bbox(agent, category=None):
+    yolo_bbox = agent.yolo_module.yolo_bbox
+
+    if category:
+        print(category)
+        print(category2objDict)
+        categoryItems = category2objDict[category]
+        yolo_bbox = [obj for obj in yolo_bbox if agent.yolo_module.find_name_by_id(obj[4]) in categoryItems]
+
+    while len(yolo_bbox) == 0:
+        print("No objects detected")
+        rospy.sleep(1)
+        yolo_bbox = agent.yolo_module.yolo_bbox
+
+    return yolo_bbox
+
 
 def followup(cmd):
     print(cmd)
@@ -524,12 +538,7 @@ def tellObjPropOnPlcmt(agent, params):
     # [2] Find the objects in the room
     print(f"[FIND] {tell} me what is the {comp} object {place}")
 
-    yolo_bbox = agent.yolo_module.yolo_bbox
-
-    while len(yolo_bbox) == 0:
-        print("No objects detected")
-        rospy.sleep(1)
-        yolo_bbox = agent.yolo_module.yolo_bbox
+    yolo_bbox = get_yolo_bbox(agent)
     
     # [3] biggest, largest
 
@@ -556,9 +565,8 @@ def tellObjPropOnPlcmt(agent, params):
     agent.say(robotOutput)
     
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
-### TODO NOW ###
 def tellCatPropOnPlcmt(agent, params):
-    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
     
     # object_categories_singular
     
@@ -566,16 +574,36 @@ def tellCatPropOnPlcmt(agent, params):
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
 
     # [1] Move to the specified space
-    move_gpsr(agent, loc)
+    agent.move_abs(loc)
 
     # [2] Find the objects in the room
-    print(f"[FIND] {tell} me what is the {comp} {cat} {onLocPrep} the {loc}")
+    yolo_bbox = get_yolo_bbox(agent, cat)
 
     # [3] Tell the information
-    # agent.yolo_module.yolo_bbox size
-    # [TODO] Implement how the biggest / smallest object can be detected
+    ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
+    objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
+
+    if comp in ['biggest', 'largest']:
+        targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+        
+    elif comp in ['smallest']:
+        targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    elif comp in ['thinnest']:
+        targetObjId = min(objIdThinLen, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    ### TODO ###
+    # elif comp in ['heaviest', 'lightest']:
+    # define weight dictionary according to objId
+
+    robotOutput = f"The {comp} {cat} is {targetObjName}"
+    agent.say(robotOutput)
 
 
+### TODO NOW ###
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
 def bringMeObjFromPlcmt(agent, params):
     # Give me a strawberry jello from the desk
@@ -786,4 +814,4 @@ def gpsr(agent):
 
     # cmdFunc(agent, params)
 
-    tellObjPropOnPlcmt(agent, {})
+    tellCatPropOnPlcmt(agent, {})
