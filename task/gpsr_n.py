@@ -57,6 +57,13 @@ objects_data = read_data(objects_file_path)
 object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
 category2objDict = extractCategory2obj(objects_data)
 
+
+
+def followup(cmd):
+    print(cmd)
+
+
+### HELP Functions ###
 def get_yolo_bbox(agent, category=None):
     yolo_bbox = agent.yolo_module.yolo_bbox
 
@@ -73,10 +80,6 @@ def get_yolo_bbox(agent, category=None):
 
     return yolo_bbox
 
-
-def followup(cmd):
-    print(cmd)
-
 def move_gpsr(agent, loc):
     agent.move_abs(loc)
     rospy.sleep(2)  
@@ -90,7 +93,7 @@ def place(obj, loc):
     # [TODO] Implement how the object can be placed at the location
     print(f"[PLACE] {obj} is placed at {loc}")
 
-# HRI and People Perception Commands
+### HRI and People Perception Commands ###
 # "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
 def goToLoc(agent, params):
     # Go to the storage rack then look for a dish and take it and bring it to me
@@ -439,7 +442,7 @@ def followPrsAtLoc(agent, params):
 
     # params = {'followVerb': 'Follow', 'gestPers_posePers': 'person pointing to the left', 'inRoom_atLoc': 'in the bedroom'}
 
-# Object Manipulation and Perception Commands
+### Object Manipulation and Perception Commands ###
 # "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def takeObjFromPlcmt(agent, params):
     # Fetch a dish from the refrigerator / and deliver it to the lying person in the bedroom
@@ -526,11 +529,9 @@ def countObjOnPlcmt(agent, params):
         return False
 
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
-# "objComp": ['biggest', 'largest', 'smallest', 'heaviest', 'lightest', 'thinnest']
 def tellObjPropOnPlcmt(agent, params):    
     # [0] Extract parameters
-    # tell, comp, place = params['tellVerb'], params['objComp'], params['plcmtLoc']
-    tell, comp, place = 'Tell', 'thinnest', 'test_loc'
+    tell, comp, place = params['tellVerb'], params['objComp'], params['plcmtLoc']
 
     # [1] Move to the specified space
     agent.move_abs(place)
@@ -566,9 +567,6 @@ def tellObjPropOnPlcmt(agent, params):
     
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(agent, params):
-    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
-    
-    # object_categories_singular
     
     # [0] Extract parameters
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
@@ -605,18 +603,21 @@ def tellCatPropOnPlcmt(agent, params):
 
 ### TODO NOW ###
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
+# Give me a strawberry jello from the desk
+# Bring me an apple from the refrigerator
+# Give me an iced tea from the bedside table
+# Give me a baseball from the bedside table
 def bringMeObjFromPlcmt(agent, params):
-    # Give me a strawberry jello from the desk
-    # Bring me an apple from the refrigerator
-    # Give me an iced tea from the bedside table
-    # Give me a baseball from the bedside table
     params = {'bringVerb': 'Give', 'art': 'an', 'obj': 'apple', 'fromLocPrep': 'from', 'plcmtLoc': 'refrigerator'}
 
     # [0] Extract parameters
     bring, art, obj, loc = params['bringVerb'], params['art'], params['obj'], params['plcmtLoc']
 
     # [1] Move to the specified location
-    move_gpsr(agent, loc)
+    agent.move_abs(loc)
+
+    # Try picking
+    # Ask Human to give an item
 
     # [2] Find the object in the room
     print(f"[FIND] {obj} in the {loc}")
