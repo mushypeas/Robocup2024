@@ -10,7 +10,7 @@ def read_data(file_path):
         data = file.read()
     return data
 
-# Parse test.md
+# Parse object.md
 def parse_objects(data):
     parsed_objects = re.findall(r'\|\s*(\w+)\s*\|', data, re.DOTALL)
     parsed_objects = [objects for objects in parsed_objects if objects != 'Objectname']
@@ -31,9 +31,34 @@ def parse_objects(data):
         warnings.warn("List of objects or object categories is empty. Check content of object markdown file")
         return []
 
-objects_file_path = '../gpsr_repo/test.md'
+# Make Category to Object Dictionary
+def extractCategory2obj(markdown_content):
+    category_pattern = re.compile(r'\# Class (\w+) \((\w+)\)')
+    object_pattern = re.compile(r'\| (\w+) \|')
+
+    objects_dict = {}
+    current_category = None
+    current_object_type = None
+
+    for line in markdown_content.split('\n'):
+        category_match = category_pattern.match(line)
+        if category_match:
+            current_category = category_match.group(1)
+            current_object_type = category_match.group(2)
+            objects_dict[current_category] = []
+
+        object_match = object_pattern.match(line)
+        if object_match and current_category:
+            object_name = object_match.group(1)
+            objects_dict[current_category].append(object_name)
+
+    return objects_dict
+
+objects_file_path = '../gpsr_repo/object.md'
 objects_data = read_data(objects_file_path)
 object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
+category2objDict = extractCategory2obj(objects_data)
+print(category2objDict)
 
 def followup(cmd):
     print(cmd)
@@ -534,6 +559,8 @@ def tellObjPropOnPlcmt(agent, params):
 ### TODO NOW ###
 def tellCatPropOnPlcmt(agent, params):
     params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    
+    # object_categories_singular
     
     # [0] Extract parameters
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
