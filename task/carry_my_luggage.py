@@ -948,7 +948,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2
-    try_bag_picking = True
+    try_bag_picking = False
     try_bytetrack = False
     map_mode = False
     stt_option = True
