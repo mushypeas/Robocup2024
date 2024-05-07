@@ -245,9 +245,9 @@ class HumanFollowing:
     def barrier_check(self, looking_downside=True):
         # _depth = self.agent.depth_image[:150, 10:630]
         if (looking_downside):
-            _depth = self.agent.depth_image[200:280, 280:360] / 1000
+            _depth = self.agent.depth_image[200:280, 280:640] / 1000 # 480, 640
         else: # no tilt
-            _depth = self.agent.depth_image[200:0, 280:360] / 1000
+            _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
             
         return _depth
