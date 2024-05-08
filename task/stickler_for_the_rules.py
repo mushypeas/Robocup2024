@@ -18,6 +18,7 @@ from std_msgs.msg import ColorRGBA
 
 sys.path.append('.')
 
+
 class ShoeDetection:
     def __init__(self, agent, axis_transform):
         self.agent = agent
@@ -29,7 +30,7 @@ class ShoeDetection:
         # Initialize the CLIP model
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
-        state_dict = torch.load('weights/openfashionclip.pt', map_location=self.device)
+        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
         self.clip_model.load_state_dict(state_dict['CLIP'])
         self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
         self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
@@ -48,7 +49,7 @@ class ShoeDetection:
     def find_shoes(self):
         # Prompt for CLIP model
         prompt = "a photo of a"
-        text_inputs = ["wearing shoes", "bare foot"]
+        text_inputs = ["human who is wearing shoes", "barefoot person"]
         text_inputs = [prompt + " " + t for t in text_inputs]
         tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
@@ -67,15 +68,19 @@ class ShoeDetection:
             # Calculate text probabilities
             text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
 
-        # Convert probabilities to percentage
+        # Convert probabilities to percentages
         text_probs_percent = text_probs * 100
         text_probs_percent_np = text_probs_percent.cpu().numpy()
-        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
+        # Get the numeric value of the first probability
+        first_prob_percent = text_probs_percent_np[0][0]
+
+        # Print the formatted probabilities
+        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
         print("Labels probabilities in percentage:", formatted_probs)
-        
-        # Determine if shoes are detected
-        if text_probs_percent_np[0][0] > 65:
+
+        # Determine if shoes are detected by comparing the numeric value
+        if first_prob_percent > 65:
             return True
         return False
 
@@ -87,10 +92,10 @@ class ShoeDetection:
         for tilt in head_tilt_list:
             self.agent.pose.head_tilt(tilt)
             if self.find_shoes():
-                return False
+                return True
             rospy.sleep(1)
 
-        return True
+        return False
 
 
     def clarify_violated_rule(self):
@@ -147,7 +152,6 @@ class ShoeDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('I give up.\nEnjoy your party', show_display=True)
         rospy.sleep(2.5)
-
 
 class ForbiddenRoom:
     def __init__(self, agent, axis_transform, min_points, max_points):
