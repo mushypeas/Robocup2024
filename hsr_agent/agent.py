@@ -24,7 +24,7 @@ from open3d import geometry
 
 # stt
 # from module.stt.stt_client import stt_client
-# from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -411,8 +411,8 @@ class Agent:
             self.head_show_text(sentence)
 
     # stt
-    def stt(self, sec=5.):
-        return stt_client_hsr_mic(sec=sec)
+    def stt(self, sec=5., mode=None):
+        return stt_client_hsr_mic(sec=sec, mode=mode)
         # return stt_client(sec=sec)
         pass
 

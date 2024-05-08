@@ -13,4 +13,7 @@ test/image
 venv/
 .venv/
 Tools/BoundingBox_Tool/Images/
-Tools/xtioncam_capture/*
+Tools/xtioncam_capture/image/*
+*.caffemodel
+*.pbmm
+.DS_Store

@@ -21,7 +21,7 @@ class TTS():
         msg.language = self._language
         msg.sentence = text
         self._pub.publish(msg)
-        print("finish")
+        print('TTS: ', msg.sentence)
 
 if __name__ == '__main__':
     rospy.init_node('tidyboy_tts')

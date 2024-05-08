@@ -17,6 +17,10 @@ if __name__ == '__main__':
         command = input('task : ')
         if command == 'start_1':
             agent.move_abs('start_1')
+        elif command == 'p1':
+            agent.pose.p1()
+        elif command == 'inspection':
+            agent.move_abs_safe('insp_target')
         elif command == 'zero':
             agent.move_abs('zero')
         elif command == 'dev_front':
@@ -51,6 +55,10 @@ if __name__ == '__main__':
             agent.move_abs_safe('table_side')
         elif command == 'breakfast_table':
             agent.move_abs('breakfast_table')
+
+        ### Pose commands
+        elif command == 'place_cutlery_pose':
+            agent.pose.place_cutlery_pose()
         elif command == 'move_pose':
             agent.pose.move_pose()
         elif command == 'move_pose_vertical':
@@ -149,13 +157,13 @@ if __name__ == '__main__':
             angle = input("Give the head pan angle in degrees(-90 ~ 30) : ")
             agent.pose.head_pan(angle)
         elif command == 'wrist_flex':
-            angle = input("Give the wrist flex angle in degrees : ")
+            angle = input("Give the wrist flex angle in degrees(-110 ~ 70) : ")
             agent.pose.wrist_flex(angle)
         elif command == 'arm_flex':
-            angle = input("Give the arm flex angle in degrees : ")
+            angle = input("Give the arm flex angle in degrees  (-120 ~ 0): ")
             agent.pose.arm_flex(angle)
         elif command == 'arm_roll':
-            angle = input("Give the arm roll angle in degrees : ")
+            angle = input("Give the arm roll angle in degrees (-110 ~ 210) : ")
             agent.pose.arm_roll(angle)
         elif command == 'arm_lift_object_table_down_cereal':
             cereal_height = 0.32  # [m] 
@@ -308,8 +316,10 @@ if __name__ == '__main__':
             agent.pose.hand_me_bag()
         elif command == 'movego':
             agent.pose.move_to_go()
+        elif command == 'armtd':
+            agent.pose.arm_lift_top_down(.33)
         elif command == 'pickbag':
-            agent.pose.pick_up_bag(.25)
+            agent.pose.pick_up_bag(.33)
         elif command == 'head_pan_tilt':
             joints = input('head_pan_joint, head_tilt_joint: ')
             joints = joints.split(' ')
@@ -352,6 +362,11 @@ if __name__ == '__main__':
             agent.pose.restaurant_give_pose()
         elif command == "getj":
             print(agent.pose.joint_value)
+
+        elif command == 'move_rel':
+            rel = input('x, y, rot: ')
+            rel = rel.split(' ')
+            agent.move_rel(float(rel[0]), float(rel[1]), float(rel[2]), wait = True)
         elif command == 'move_abs':
             position = input("position: ")
             agent.move_abs(position, wait=False)

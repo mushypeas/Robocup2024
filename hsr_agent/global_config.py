@@ -13,7 +13,7 @@ if AIIS:
     print('[GLOBAL CONFIG] AIIS mode')
     # real robot
     ABS_POSITION = {
-        'insp_target': [3.7515, -3.6771, -1.5818],
+        'insp_target': [6.2869, 3.5307, 0],
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
@@ -26,53 +26,89 @@ if AIIS:
 
 
         # storing grocery
-        'grocery_table': [1.7478, -1.2796, 0.0], #bjkim
-        'shelf_front': [1.9672, -3.3171, -1.58], #bjkim
+        'grocery_table': [3.7086, -0.1316 -1.58], #bjkim
+        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
-        'breakfast_bypass': [1.6, -1.2796, 0.0], #bjkim2
+        'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
+        'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
+        # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
+        'kitchen_table_testday' : [5.0999, 0.5681, 0.0124], #mjgu 240505
+
+        'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
+        'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
+        'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504
+        'kitchen_table_front' : [1.7258, -2.8179, 0.0302], #mjgu 240504
+        'breakfast_table_front': [1.4045, -1.3402, 0.0091], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
         'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'dishwasher_rack': [2.0148, 0.8449, 1.6256], #bjkim2
+        'dishwasher_rack': [3.4552, -0.6194, -1.5674], #bjkim2
         'opened_dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'clean_table_front' : [1.6, -1.2796, 0.0], #bjkim2
+        'clean_table_front' : [6.3029, -1.0222, 0.0161], #bjkim2
 
         # receptionist
-        'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
-        'handle_front': [1.5502, 0.0104, -3.1301],
-        'door_bypass': [2.507, 0.1598, 1.535],
-        'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
-        'seat_scan_bypass': [1.8008, 0.0949, -2.2551],  # [7.4416, 4.5881, -1.5132] far bypass
-        'start': [2.0208, -1.3355, 2.3405],
+        # 'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
+        'cloth_scan' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'cloth_scan' : [1.0330, -2.2140, -1.4835], # AIIS
+        # 'handle_front': [1.5502, 0.0104, -3.1301],
+        # 'door_bypass': [2.507, 0.1598, 1.535],
+        # 'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
+        # 'seat_scan': [1.3810, 2.2950, 0.0445], # AIIS
+        'seat_scan' : [7.195, -0.8567, -0.9396], # 0505
+        # 'seat_scan_bypass': [1.8008, 0.0949, -2.2551],  # [7.4416, 4.5881, -1.5132] far bypass
+        'seat_scan_bypass': [7.1009, -0.8733, 2.8402], # 0505
+        # 'start': [2.0208, -1.3355, 2.3405],
+        # 'start': [1.7869, 0.0919, -3.1073], # AIIS-safe-cloth
+        'start' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'start': [-1.7020, -1.3990, -3.0880], # AIIS
+        # 'start_receptionist': [-1.7020, -1.3990, -3.0880], # AIIS
 
         # stickler
-        'stickler_search': [5.7458, 1.4637, 1.5781],
-        'forbidden_scan': [3.998, 1.592, 3.139],
-        'stickler_forbidden_room_front': [2.4505, 1.65, -3.0966],
-        'bar': [7.5292, 3.547, 1.6503],
-        'bin': [1.7214, 0.7673, 1.1897],
-        'no_littering_search1': [4.7126, 1.3649, -3.0343],
-        'no_littering_search2': [5.5347, 1.4413, 1.2616],
-        'no_littering_search3': [7.4141, 3.0249, 1.666],
+        # 'stickler_search': [5.7458, 1.4637, 1.5781],
+        # 'forbidden_scan': [3.998, 1.592, 3.139],
+        # 'stickler_forbidden_room_front': [2.4505, 1.65, -3.0966],
+        # 'bar': [7.5292, 3.547, 1.6503],
+        # 'bin': [1.7214, 0.7673, 1.1897],
+        # 'no_littering_search1': [4.7126, 1.3649, -3.0343],
+        # 'no_littering_search2': [5.5347, 1.4413, 1.2616],
+        # 'no_littering_search3': [7.4141, 3.0249, 1.666],
 
         #0707 1957 global config for stickler - lsh
+        #0411 stickler config-1
 
-        'bedroom_search': [6.9591, -3.3772, -1.4738],
-        'kitchen_search': [5.9926, -0.1351, 0.0096],
-        'living_room_search': [3.1224, -0.2803, 1.5814],
-        'study_search': [3.0034, -3.1502, -1.6083],
+        # AIIS
+        # 'bedroom_search': [-2.5427, 0.216, 1.2345],
+        # 'kitchen_search': [0.6884, -1.0065, -0.7347],
+        # 'living_room_search': [0.6534, -0.6374, 0.9569],
+        # 'study_search': [0.027, 0.3138, -2.1569],
 
-        'shoe_warning': [1.1576, -0.9449, 1.5397],
-        'bin_littering': [8.7471, -2.2436, -0.8298],
-        'bar_drink': [4.4979, -3.6124, -2.106],
-        'bedroom_doublecheck' : [5.7844, -4.1101, 0.0552],
-        'study_search_reverse': [3.0034, -3.1502, 1.6083],
-        'bedroom_search_reverse': [6.9591, -3.3772, 1.4738],
+        # 0505
+        'kitchen_search': [3.2691, 0.3223, -2.1086],
+        'living_room_search': [5.932, -0.357, -0.4455],
+        'study_search': [5.2668, 1.273, 2.5436],
+        'bedroom_search': [6.4953, 3.4738, -0.6583],
+
+        # AIIS
+        # 'shoe_warning': [1.0093, -2.4509, -1.5534],
+        # 'bin_littering': [1.846, -2.4151, -1.5907],
+        # 'bar_drink': [0.945, -1.2866, -0.0441],
+        # 'bedroom_doublecheck' : [-2.5427, 0.216, 1.2345],
+        # 'study_search_reverse': [-0.0189, 0.2843, 0.0333],
+        # 'bedroom_search_reverse': [-2.5306, 0.1937, -0.3405],
+
+        # 0505
+        'shoe_warning': [3.1471, 0.1392, -3.0298],
+        'bin_littering': [2.6641, -1.6283, 3.1113],
+        'bar_drink': [2.4819, -2.6883, 0.6981],
+        'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        # 'study_search_reverse': [-0.0189, 0.2843, 0.0333],
+        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033],
 
 
         # gpsr
-        'kitchen_table': [6.6449, 0.3005, 0.0422],
+        'test_loc': [0.5877, 0.0042, 1.5517],
+        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
         'gpsr_start': [2, 0, 0],
         'side_table': [2.5619, -0.0344, 1.5821],
@@ -115,9 +151,12 @@ if AIIS:
 
 
     TABLE_DIMENSION = {
+        # testday용 추가 - mjgu 240504
+        'kitchen_table_testday': [0.8, 0.8, 0.715],
+        'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
-        'kitchen_table': [0.55, 0.75, 0.730],
-        'breakfast_table': [0.855, 0.455, 0.825],
+        'kitchen_table': [0.55, 0.75, 0.735],
+        'breakfast_table': [0.55, 0.75, 0.715], #이거 715인데 왜 테이프에 735라 써놧어
         'grocery_table': [0.55, 0.75, 0.730],
         'grocery_table_pose': [0.55, 0.75, 0.785], # +055
         'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
@@ -128,7 +167,8 @@ if AIIS:
         'side_table': [0.495, 0.495, 0.395],
         'side-tables': [0.495, 0.495, 0.395],
         'sink': [0.515, 0.455, 0.945],
-        'dishwasher': [0.6, 0.6, 0.84],
+        'dishwasher': [0.65, 0.75, 0.595],
+        'dishwasher_table': [0.65, 0.75, 0.42],
         'cabinet': [0.9, 0.46, 0.66],
         'shelf': [0.765, 0.357, 0.805],
         'shelf_1f': [0.765, 0.357, 0.855 + 0.025],
@@ -147,7 +187,7 @@ if AIIS:
         'bedside_table': [0.5, 0.45, 0.58],
 
         # clean the table
-        'dishwasher_handle': [0.60, 0.60, 0.84], #bjkim, but not modified, still France version
+        'dishwasher_handle': [0.65, 0.75, 0.60], #bjkim, but not modified, still France version
 
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
@@ -249,7 +289,8 @@ elif is_sim: # sim mode
         'dishwasher_gpsr': [6.531, 0.946, 1.57],
         'side_table': [3.291, 0.7065, 1.57],
         'grocery_table': [3.291, 0.7065, 1.57],  # dist = 0.9
-        'kitchen_table': [7.431, 0.651, -1.57],
+        'kitchen_table': [1.5916, -2.7794, 0.0313], # dist = 0.6 /mjgu
+        'kitchen_table_ready' : [1.0016, -2.7794, 0.0313], # dist = 2.0 /mjgu
         'pantry': [7.245, 1.051, 0],  # dist = 0.9
         'desk': [2.52, -3.815, -1.57],  # dist = 0.9
         'gpsr_start': [1.3372, 1.1288, 0.5792],
