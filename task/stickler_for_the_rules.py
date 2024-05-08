@@ -48,7 +48,7 @@ class ShoeDetection:
     def find_shoes(self):
         # Prompt for CLIP model
         prompt = "a photo of a"
-        text_inputs = ["wearing shoes", "non-wearing shoes"]
+        text_inputs = ["human who is wearing shoes", "barefoot person"]
         text_inputs = [prompt + " " + t for t in text_inputs]
         tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
