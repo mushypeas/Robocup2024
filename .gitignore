@@ -9,9 +9,11 @@ test/image
 *.weights
 *.jpg
 *.ckpt
+*.caffemodel
 venv/
 .venv/
 Tools/BoundingBox_Tool/Images/
 Tools/xtioncam_capture/image/*
 *.caffemodel
 *.pbmm
+.DS_Store

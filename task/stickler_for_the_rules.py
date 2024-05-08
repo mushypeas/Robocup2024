@@ -8,7 +8,7 @@ import mediapipe as mp
 import open_clip
 from PIL import Image
 import torch
-from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
+# from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
 from utils.marker_maker import MarkerMaker
 from utils.axis_transform import Axis_transform
 from std_msgs.msg import Int16MultiArray
@@ -71,12 +71,8 @@ class ShoeDetection:
         # Convert probabilities to percentages
         text_probs_percent = text_probs * 100
         text_probs_percent_np = text_probs_percent.cpu().numpy()
-
-        # Get the numeric value of the first probability
-        first_prob_percent = text_probs_percent_np[0][0]
-
-        # Print the formatted probabilities
         formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
         print("Labels probabilities in percentage:", formatted_probs)
 
         # Determine if shoes are detected by comparing the numeric value
@@ -152,6 +148,7 @@ class ShoeDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('I give up.\nEnjoy your party', show_display=True)
         rospy.sleep(2.5)
+
 
 class ForbiddenRoom:
     def __init__(self, agent, axis_transform, min_points, max_points):
@@ -407,7 +404,7 @@ class DrinkDetection:
         self.drink_list = [0, 1, 2, 3, 4, 5]
         self.marker_maker = MarkerMaker('/snu/human_location')
         self.no_drink_human_coord = None
-        # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
+        self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
 
     def _openpose_cb(self, data):
         data_list = data.data
