@@ -185,7 +185,7 @@ class YoloModule:
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
-                front_threshold = 1.3
+                front_threshold = 1.6
             if 'pantry' in table:
                 front_threshold = 1.3
 
