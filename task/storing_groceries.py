@@ -161,9 +161,8 @@ class StoringGroceries:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
             self.agent.open_gripper()
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(table_base_xyz[0] - 0.1, 0, wait=True)
             self.agent.move_rel(0, table_base_xyz[1], wait=True)
-            self.agent.move_rel(0.15, 0, wait=True)
+            self.agent.move_rel(table_base_xyz[0] + 0.05, 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_side_pose('grocery_table_pose1')
 
@@ -256,6 +255,7 @@ class StoringGroceries:
         # self.agent.grasp()
         self.agent.pose.move_pose()
 
+
     def check_grasp(self, grasping_type):
         if grasping_type == 0:
             return self.agent.pose.check_grasp()
@@ -319,9 +319,8 @@ class StoringGroceries:
                 rospy.logwarn('Go to pick_location...')
                 rospy.sleep(0.5)
                 self.agent.move_abs_safe(self.pick_location)
-                # self.agent.move_rel(0.6 - self.dist_to_grocery_table, 0)
-                # dist_to_table = distancing(self.agent.yolo_module.pc, self.pick_table, dist=0.9)
-                # self.agent.move_rel(dist_to_table, 0)
+                dist_to_table = distancing(self.agent.yolo_module.pc, self.pick_table, dist=0.9)
+                self.agent.move_rel(dist_to_table, 0)
                 self.agent.pose.table_search_pose()
 
                 # 2-2. Select item to pick
