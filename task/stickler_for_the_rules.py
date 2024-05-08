@@ -407,7 +407,7 @@ class DrinkDetection:
         self.drink_list = [0, 1, 2, 3, 4, 5]
         self.marker_maker = MarkerMaker('/snu/human_location')
         self.no_drink_human_coord = None
-        self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
+        # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
 
     def _openpose_cb(self, data):
         data_list = data.data
