@@ -1,6 +1,0 @@
-mug
-knife
-spoon
-fork
-plate
-bowl
