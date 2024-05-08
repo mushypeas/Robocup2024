@@ -154,7 +154,7 @@ class YoloModule:
 
     # def detect_shelf(self):
 
-    def detect_3d(self, table, dist=0.6):
+    def detect_3d(self, table, dist=0.6, shelf_depth=None):
         _pc = self.pc.reshape(480, 640)
         pc_np = np.array(_pc.tolist())[:, :, :3]
         # base_link [+x, +y, +z] = [front, left, up]
@@ -185,7 +185,7 @@ class YoloModule:
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
-                front_threshold = 1.6
+                front_threshold = table_depth + shelf_depth
             if 'pantry' in table:
                 front_threshold = 1.3
 

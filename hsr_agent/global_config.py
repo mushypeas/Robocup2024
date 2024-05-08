@@ -27,7 +27,7 @@ if AIIS:
 
         # storing grocery
         'grocery_table': [3.7086, -0.1316, -1.58], #bjkim
-        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
+        'grocery_shelf': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
@@ -124,14 +124,7 @@ if AIIS:
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.730],
         'breakfast_table': [0.55, 0.75, 0.73],
-        # 'grocery_table': [0.65, 1.2, 0.42],
-        # 'grocery_table_pose': [0.65, 1.2, 0.42 + 0.055], # +055
-        # 'grocery_table_pose1': [0.65, 1.2, 0.42 + 0.065], # +065
-        # 'grocery_table_pose2': [0.65, 1.2, 0.42 - 0.02], # -020
         'grocery_table': [1.2, 0.65, 0.420],
-        'grocery_table_pose': [1.2, 0.65, 0.420 + 0.055], # +055
-        'grocery_table_pose1': [1.2, 0.65, 0.420 + 0.065], # +065
-        'grocery_table_pose2': [1.2, 0.65, 0.420 * 0.94], # * 0.94
         'door_handle': [0, 0, 0.96],
         # width, depth, height
         'desk': [1.505, 0.705, 0.8],
@@ -141,16 +134,10 @@ if AIIS:
         'dishwasher': [0.65, 0.75, 0.595],
         'dishwasher_table': [0.65, 0.75, 0.42],
         'cabinet': [0.9, 0.46, 0.66],
-        # 'shelf': [0.33, 0.29, 0.51],
-        # 'shelf_1f': [0.33, 0.29, 0.51 + 0.025],
-        # 'shelf_2f': [0.33, 0.29, 0.87 + 0.025],
-        # 'shelf_3f': [0.33, 0.29, 1.4 + 0.025],
-        # 'shelf_4f': [0.33, 0.29, 1.4 + 0.025],
-        'shelf': [0.765, 0.357, 0.805],
-        'shelf_1f': [0.765, 0.357, 0.805],
-        'shelf_2f': [0.765, 0.357, 1.15 + 0.025],
-        'shelf_3f': [0.765, 0.357, 1.4 + 0.025],
-        'shelf_4f': [0.765, 0.357, 1.4 + 0.025],
+        'grocery_shelf_1f': [0.765, 0.357, 0.805],
+        'grocery_shelf_2f': [0.765, 0.357, 1.15],
+        'grocery_shelf_3f': [0.765, 0.357, 1.4],
+        'grocery_shelf_4f': [0.765, 0.357, 1.4],
         'storage_rack': [0.445, 0.9, 0.42],
         'storage_rack_1f': [0.445, 0.9, 0.42],
         'storage_rack_2f': [0.445, 0.9, 0.88],

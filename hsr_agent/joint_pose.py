@@ -186,6 +186,18 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 0])
 
+    def pick_top_pose_by_height(self, height=0.69):
+        robot_default_height = 0.11
+        arm_lift_joint = height - robot_default_height
+        if arm_lift_joint > 0.69:
+            arm_lift_joint = 0.69
+        self.set_pose(['arm_lift_joint',
+                       'arm_roll_joint',
+                       'arm_flex_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, 0, -1.57, -1.57, 0])
+
     def pick_top_pose_last(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.11
@@ -310,7 +322,9 @@ class JointPose:
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
     def pick_side_pose_by_height(self, height=0.69):
-        arm_lift_joint = height
+        robot_default_height = 0.3
+        offset = 0.03
+        arm_lift_joint = height - robot_default_height + offset
 
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
