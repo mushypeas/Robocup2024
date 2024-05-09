@@ -37,12 +37,20 @@ def extractCategory2obj(markdown_content):
     object_pattern = re.compile(r'\| (\w+)  \|')
 
     objects_dict = {}
+    categorySing2Plur = {}
+    categoryPlur2Sing = {}
+    current_category_plur = None
     current_category = None
 
     for line in markdown_content.split('\n'):
         category_match = category_pattern.match(line)
         if category_match:
+            current_category_plur = category_match.group(1)
             current_category = category_match.group(2)
+
+            categorySing2Plur[current_category] = current_category_plur
+            categoryPlur2Sing[current_category_plur] = current_category
+
             objects_dict[current_category] = []
 
         object_match = object_pattern.match(line)
@@ -50,18 +58,15 @@ def extractCategory2obj(markdown_content):
             object_name = object_match.group(1)
             objects_dict[current_category].append(object_name)
 
-    return objects_dict
+    return objects_dict, categoryPlur2Sing, categorySing2Plur
 
 objects_file_path = 'task/gpsr_repo/object.md'
 objects_data = read_data(objects_file_path)
 object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
-category2objDict = extractCategory2obj(objects_data)
-
-
+category2objDict, categoryPlur2Sing, categorySing2Plur = extractCategory2obj(objects_data)
 
 def followup(cmd):
     print(cmd)
-
 
 ### HELP Functions ###
 def get_yolo_bbox(agent, category=None):
@@ -86,7 +91,7 @@ def move_gpsr(agent, loc):
     print(f"[MOVE] HSR moved to {loc}")
 
 def pick(obj):
-    # [TODO] Implement how the object can be picked up
+
     print(f"[PICK] {obj} is picked up")
 
 def place(obj, loc):
@@ -502,31 +507,41 @@ def findObjInRoom(agent, params):
     else:
         print(f"{obj} is not found in the {room}")
 
+### TODO NOW ###
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
-def countObjOnPlcmt(agent, params):
-    # params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+# Tell me how many drinks there are on the sofa
+# Tell me how many drinks there are on the sofa
+# Tell me how many cleaning supplies there are on the bedside table
+# Tell me how many cleaning supplies there are on the shelf
+# Tell me how many snacks there are on the tv stand
+# Tell me how many dishes there are on the kitchen table
 
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many cleaning supplies there are on the bedside table
-    # Tell me how many cleaning supplies there are on the shelf
-    # Tell me how many snacks there are on the tv stand
-    # Tell me how many dishes there are on the kitchen table
-    
+def countObjOnPlcmt(agent, params):
+    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+
     # [0] Extract parameters
     countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    
-    # [1] Find the object in the room
-    print(f"Let me find {plurCat} in the {plcmtLoc}")
+    singCat = categoryPlur2Sing(plurCat)
 
-    found = False
-    # detected_objects = agent.yolo_module.yolo_bbox
-    if len(agent.yolo_module.yolo_bbox) != 0:
-        found = True
-        pass
+    # [1] Find the object in the room
+    agent.move_abs(plcmtLoc)
+    
+    yolo_bbox = get_yolo_bbox(agent, singCat)
+
+    agent.say(f"Let me find {plurCat} in the {plcmtLoc}")
+    rospy.sleep(5)
+
+    numObj = len(yolo_bbox)
+
+    # [2] Tell number of objects
+    if numObj == 0:
+        agent.say(f"There's no {singCat} on the {plcmtLoc}")
+    
+    elif numObj == 1:
+        agent.say(f"There's a {singCat} on the {plcmtLoc}")
+    
     else:
-        print("No objects detected")
-        return False
+        agent.say(f"There are {numObj} {plurCat} on the {plcmtLoc}")
 
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
 def tellObjPropOnPlcmt(agent, params):    
