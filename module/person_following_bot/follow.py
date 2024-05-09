@@ -81,11 +81,11 @@ def new_get_controls(x,z):
 	if angular < -angular_max:
 		angular = -angular_max
 
-	twist.linear.x = linear;
-	twist.linear.y = 0;
+	twist.linear.x = linear
+	twist.linear.y = 0
 	twist.linear.z = 0
-	twist.angular.x = 0;
-	twist.angular.y = 0;
+	twist.angular.x = 0
+	twist.angular.y = 0
 	twist.angular.z = angular
 
 	return twist
