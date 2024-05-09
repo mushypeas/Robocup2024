@@ -22,6 +22,8 @@ from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
 import time
 from sklearn.preprocessing import StandardScaler
+import subprocess
+
 
 class HumanFollowing:
     def __init__(self, agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option):
@@ -1020,6 +1022,11 @@ def carry_my_luggage(agent):
 
     ######################
     # 2. human following
+    ##### TODO : subprocess byte, seg 켜기 되는지 확인!!!!!!!!!!
+    byte_path = ""
+    seg_path = ""
+    process = subprocess.run(['python', byte_path], text=True, capture_output=True, shell=False)
+    process = subprocess.run(['python', seg_path], text=True, capture_output=True, shell=False)
 
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
