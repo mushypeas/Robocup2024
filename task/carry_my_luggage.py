@@ -62,7 +62,7 @@ class HumanFollowing:
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
         # self.agent.pose.head_pan_tilt(0, -self.tilt_angle*0.5)
-        self.agent.pose.head_pan_tilt(0, -self.tilt_angle) #TODO : check tilt angle
+        self.agent.pose.head_pan_tilt(0, -self.tilt_angle) #TODO : check tilt angle -> done
         rospy.sleep(1)
         head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor",
                                                                  config_callback=self.head_map_cb)
@@ -259,7 +259,7 @@ class HumanFollowing:
         human_box_thres = 0.5
         if self.human_box_list[0] is not None:
             # print(f"human_box_list[1] : {self.human_box_list[1]}")
-            human_box_size = self.human_box_list[1][2] * self.human_box_list[1][3] # TODO: human box size 맞는지 체크
+            human_box_size = self.human_box_list[1][2] * self.human_box_list[1][3] # TODO: human box size 맞는지 체크 -> done
         else:
             human_box_size = 0
         # print(f"human box size thres : {self.image_size * human_box_thres}")
@@ -274,7 +274,8 @@ class HumanFollowing:
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
         #and self.image_size * human_box_thres > human_box_size
-        if (np.mean(_depth) < thres and calc_z!=0 and np.mean(_depth)< ((calc_z/ 1000.0)-0.2) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (np.mean(_depth) < thres and calc_z!=0 and (np.mean(_depth)< ((calc_z/ 1000.0)-0.2) or self.agent.dist < ((calc_z/ 1000.0)-0.2) ) \ 
+        and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
@@ -371,13 +372,13 @@ class HumanFollowing:
             if stt_option:
                 self.agent.say('Is this your destination?\nsay yes or no after a ding sound', show_display=True)
                 rospy.sleep(5)
-                answer, _ = self.agent.stt(3, mode='yesno')
+                answer, _ = self.agent.stt(3.)
                 question_num = 0
                 while 'yes' not in answer and 'no' not in answer and question_num < 3:
                     self.agent.say('Answer only by \nyes or no', show_display=True)
                     print('Answer only by \nyes or no')
                     rospy.sleep(2.5)
-                    answer, _ = self.agent.stt(3., mode='yesno')
+                    answer, _ = self.agent.stt(3.)
                     question_num += 1
                 if 'yes' not in answer and 'no' not in answer:
                     answer = 'yes'
@@ -450,6 +451,9 @@ class HumanFollowing:
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
 
+        if calc_z > 1: 
+            calc_z = calc_z + 0.5 #TODO : calc_z 과장할 정도 결정
+
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
             print("2.1 go to center!")
             if time.time()-self.last_say > 3:
@@ -462,11 +466,11 @@ class HumanFollowing:
         else:
             # we move "depth" to the front
 
-            if calc_z > 2000.0 and time.time()-self.last_say > 5:
-                self.agent.say('Your so far')
-                rospy.sleep(0.5)
-                self.agent.say('Please move slowly!')
-                self.last_say = time.time()
+            # if calc_z > 2000.0 and time.time()-self.last_say > 5:
+                # self.agent.say('Your so far')
+                # rospy.sleep(0.5)
+                # self.agent.say('Please move slowly!')
+                # self.last_say = time.time()
 
 
             #########
@@ -944,14 +948,14 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.5
-    pose_save_time_period = 15
+    pose_save_time_period = 7
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
-    stop_rotate_velocity = 1.2
-    try_bag_picking = False
+    stop_rotate_velocity = 2.0 #1.2
+    try_bag_picking = False # True
     try_bytetrack = False
     map_mode = False
-    stt_option = True
+    stt_option = False # True
     tilt_angle = 20
     
 
@@ -1069,10 +1073,12 @@ def carry_my_luggage(agent):
         for i in len(track_queue):
         # len(track_queue):
             cur_track = track_queue[len(track_queue)-i-1]
+            
             # coordinate = track_queue.pop()
             if not agent.move_abs_coordinate_safe(cur_track):
                 pass
             # rospy.sleep(0.5)
+            self.escape_barrier(calc_z) # TODO : excape barrier 위치?
             print('go to arena')
 
 
