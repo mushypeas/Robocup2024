@@ -90,8 +90,12 @@ def move_gpsr(agent, loc):
     rospy.sleep(2)  
     print(f"[MOVE] HSR moved to {loc}")
 
-def pick(obj):
+def pick(agent, obj, loc=None):
+    if loc:
+        agent.move_abs(loc)
+        rospy.sleep(2)
 
+    # [TODO] Implement how the object can be picked up
     print(f"[PICK] {obj} is picked up")
 
 def place(obj, loc):
@@ -507,15 +511,8 @@ def findObjInRoom(agent, params):
     else:
         print(f"{obj} is not found in the {room}")
 
-### TODO NOW ###
+### TEST ###
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
-# Tell me how many drinks there are on the sofa
-# Tell me how many drinks there are on the sofa
-# Tell me how many cleaning supplies there are on the bedside table
-# Tell me how many cleaning supplies there are on the shelf
-# Tell me how many snacks there are on the tv stand
-# Tell me how many dishes there are on the kitchen table
-
 def countObjOnPlcmt(agent, params):
     params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
 
@@ -582,7 +579,8 @@ def tellObjPropOnPlcmt(agent, params):
     
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(agent, params):
-    
+    # params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
+
     # [0] Extract parameters
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
 
@@ -632,12 +630,17 @@ def bringMeObjFromPlcmt(agent, params):
     agent.move_abs(loc)
 
     # Try picking
-    # Ask Human to give an item
+    if pick(agent, obj, loc):
+        pass
+    else:
+        agent.say(f"GIVE {bring} {art} {obj} to me")
 
-    # [2] Find the object in the room
-    print(f"[FIND] {obj} in the {loc}")
+        ### TODO ###
+        # gripper open
+        # get the object
 
-    # [3] Give the object to the human
+    ### TODO ###
+    # give object to human
     print(f"[GIVE] {bring} {art} {obj} from the {loc}")
 
 
