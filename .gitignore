@@ -14,3 +14,4 @@ venv/
 Tools/BoundingBox_Tool/Images/
 Tools/xtioncam_capture/image/*
 *.caffemodel
+*.pbmm
