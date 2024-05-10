@@ -66,28 +66,3 @@ cmdName2cmdStr = {
     "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}"
 }
 
-cmdName2cmdFunc = {
-    "goToLoc": goToLoc,
-    "takeObjFromPlcmt": takeObjFromPlcmt,
-    "findPrsInRoom": findPrsInRoom,
-    "findObjInRoom": findObjInRoom,
-    "meetPrsAtBeac": meetPrsAtBeac,
-    "countObjOnPlcmt": countObjOnPlcmt,
-    "countPrsInRoom": countPrsInRoom,
-    "tellPrsInfoInLoc": tellPrsInfoInLoc,
-    "tellObjPropOnPlcmt": tellObjPropOnPlcmt,
-    "talkInfoToGestPrsInRoom": talkInfoToGestPrsInRoom,
-    "answerToGestPrsInRoom": answerToGestPrsInRoom,
-    "followNameFromBeacToRoom": followNameFromBeacToRoom,
-    "guideNameFromBeacToBeac": guideNameFromBeacToBeac,
-    "guidePrsFromBeacToBeac": guidePrsFromBeacToBeac,
-    "guideClothPrsFromBeacToBeac": guideClothPrsFromBeacToBeac,
-    "bringMeObjFromPlcmt": bringMeObjFromPlcmt,
-    "tellCatPropOnPlcmt": tellCatPropOnPlcmt,
-    "greetClothDscInRm": greetClothDscInRm,
-    "greetNameInRm": greetNameInRm,
-    "meetNameAtLocThenFindInRm": meetNameAtLocThenFindInRm,
-    "countClothPrsInRoom": countClothPrsInRoom,
-    "tellPrsInfoAtLocToPrsAtLoc": tellPrsInfoAtLocToPrsAtLoc,
-    "followPrsAtLoc": followPrsAtLoc
-}
