@@ -29,6 +29,8 @@ from transformers import Speech2TextProcessor, Speech2TextForConditionalGenerati
 pub = rospy.Publisher('/mic_request', Float32, queue_size=10)
 # Alternative Local Model
 local_model = Model("/home/tidy/robocup2023/module/stt/weight/deepspeech-0.9.3-models.pbmm")
+# Gazebo model Setting
+# local_model = Model("./module/stt/weight/deepspeech-0.9.3-models.pbmm")
 local_model.setBeamWidth(20)
 
 name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']

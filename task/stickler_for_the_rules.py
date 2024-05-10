@@ -5,8 +5,10 @@ import sys
 import cv2
 import numpy as np
 import mediapipe as mp
-
-from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
+import open_clip
+from PIL import Image
+import torch
+# from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
 from utils.marker_maker import MarkerMaker
 from utils.axis_transform import Axis_transform
 from std_msgs.msg import Int16MultiArray
@@ -17,82 +19,21 @@ from std_msgs.msg import ColorRGBA
 sys.path.append('.')
 
 
-# Stickler for the rules SHOES CLIP detection config
-SHOES_CONFIG = CLIPDetectorConfig(
-    name="shoes",
-    labels=["negative", "positive"],
-    positive_texts=[
-        "a person not wearing shoes",
-        "a person not wearing sandals",
-        "a person not wearing sneakers",
-        "a person barefoot",
-        "a person wearing socks",
-    ],
-    negative_texts=[
-        "a person wearing shoes",
-        "a person wearing sandals",
-        "a person wearing sneakers",
-    ],
-    neutral_texts=[
-        "a background with no people in it",
-        "a person whose feets are not visible",
-    ],
-    threshold=0
-)
-
-# Stickler for the rules DRINK CLIP detection config
-DRINK_CONFIG = CLIPDetectorConfig(
-    name="drink",
-    labels=["negative", "positive"],
-    positive_texts=[
-        "an image of a person with a drink in their hand",
-        # "a photo of a person holding a drink in their hand",
-        # "a person holding a drink in their hand",
-        # "a person holding a cup in their hand",
-        # "a person holding a bottle in their hand",
-        # "a person holding a soda can in their hand",
-        # "a person holding a glass in their hand",
-        # "a person holding a mug in their hand",
-        # "a person holding a beverage in their hand",
-        # "a person holding a juice in their hand",
-        # "a person holding a water in their hand",
-        # "a person holding a milk in their hand",
-    ],
-    negative_texts=[
-        "an image of a person without any drink in their hand",
-        # "a photo of a person not holding any drink in their hand",
-        # "a person not holding a drink in their hand",
-        # "a person not holding a cup in their hand",
-        # "a person not holding a bottle in their hand",
-        # "a person not holding a soda can in their hand",
-        # "a person not holding a glass in their hand",
-        # "a person not holding a mug in their hand",
-        # "a person not holding a beverage in their hand",
-        # "a person not holding a juice in their hand",
-        # "a person not holding a water in their hand",
-        # "a person not holding a milk in their hand",
-        # "a person with empty hands",
-    ],
-    neutral_texts=[
-        "an image of a background with no people in it",
-        # "a photo without any person in it",
-        # "an image of a person whose hands are not visible",
-        # "a photo of a person whose hands are not visible",
-        # "a person whose hands are not visible",
-    ],
-    threshold=0
-)
-
-
 class ShoeDetection:
     def __init__(self, agent, axis_transform):
         self.agent = agent
         self.axis_transform = axis_transform
-        self.detector = CLIPDetector(config=SHOES_CONFIG, mode="HSR")
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
                          self._knee_pose_callback)
         self.knee_list = None
 
+        # Initialize the CLIP model
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
+        self.clip_model.load_state_dict(state_dict['CLIP'])
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
@@ -106,20 +47,37 @@ class ShoeDetection:
 
 
     def find_shoes(self):
+        # Prompt for CLIP model
+        prompt = "a photo of a"
+        text_inputs = ["human who is wearing shoes", "barefoot person"]
+        text_inputs = [prompt + " " + t for t in text_inputs]
+        tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
-        count = 0
-        while count < 7:
-            image = self.agent.rgb_img
-            pos, neg, ntr = self.detector.detect(images=image)
-            # if ntr > 0.15:
-            #     return None
-            # if pos > 0.15:
-            #     return True
-            # if ntr > 0.2:
-            #     return None
-            if pos > 0.65:
-                return True
-            count += 1
+        # Preprocess image
+        image = self.agent.rgb_img
+        img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        img = self.preprocess(img).unsqueeze(0).to(self.device)
+
+        # Encode image and text features
+        with torch.no_grad():
+            image_features = self.clip_model.encode_image(img)
+            text_features = self.clip_model.encode_text(tokenized_prompt)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            text_features /= text_features.norm(dim=-1, keepdim=True)
+
+            # Calculate text probabilities
+            text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+        # Convert probabilities to percentages
+        text_probs_percent = text_probs * 100
+        text_probs_percent_np = text_probs_percent.cpu().numpy()
+        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+        print("Labels probabilities in percentage:", formatted_probs)
+
+        # Determine if shoes are detected by comparing the numeric value
+        if first_prob_percent > 65:
+            return True
         return False
 
 
@@ -130,10 +88,10 @@ class ShoeDetection:
         for tilt in head_tilt_list:
             self.agent.pose.head_tilt(tilt)
             if self.find_shoes():
-                return False
+                return True
             rospy.sleep(1)
 
-        return True
+        return False
 
 
     def clarify_violated_rule(self):
@@ -598,7 +556,7 @@ class DrinkDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(3)
-        self.agent.move_abs_safe('study_search_reverse')
+        # self.agent.move_abs_safe('study_search_reverse')
 
 
 def stickler_for_the_rules(agent):
