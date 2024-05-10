@@ -245,9 +245,9 @@ class HumanFollowing:
     def barrier_check(self, looking_downside=True):
         # _depth = self.agent.depth_image[:150, 10:630]
         if (looking_downside):
-            _depth = self.agent.depth_image[200:280, 280:360] / 1000
+            _depth = self.agent.depth_image[200:280, 280:640] / 1000 # 480, 640
         else: # no tilt
-            _depth = self.agent.depth_image[200:0, 280:360] / 1000
+            _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
             
         return _depth
@@ -255,7 +255,7 @@ class HumanFollowing:
 
     def escape_barrier(self, calc_z):
         cur_pose = self.agent.get_pose(print_option=False)
-        thres = 0.6
+        thres = 1.0
         human_box_thres = 0.5
         if self.human_box_list[0] is not None:
             # print(f"human_box_list[1] : {self.human_box_list[1]}")
@@ -350,7 +350,8 @@ class HumanFollowing:
             ##########################BRANCH2. MOVING########################    
                 _depth = self.barrier_check()
                 print(f"mean depth: {np.mean(_depth)}")
-                self.agent.move_rel(0,-0.3,0, wait=False)
+                self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
+                # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
                 rospy.sleep(1)
 
 
@@ -418,11 +419,12 @@ class HumanFollowing:
             #     print("seven seconds")
             self.escape_barrier(calc_z)
 
-            if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
-                self.agent.say('Please keep the one meter between us!', show_display=True)
-                print("Please keep the one meter between us!")
-                self.last_say = time.time()
-                rospy.sleep(1)
+            # if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
+                # if (calc_z < 1.5)
+                    # self.agent.say('You are so close. Please keep the two meter between us!', show_display=True)
+                    # print("You are so close. Please keep the two meter between us!")
+                    # self.last_say = time.time()
+                    # rospy.sleep(1)
             return False
         
 
@@ -961,7 +963,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.7,
+                                                   stop_thres=.4,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -1064,11 +1066,15 @@ def carry_my_luggage(agent):
     if not map_mode:
         track_queue = human_following.track_queue  # get trace of the robot
 
-        while len(track_queue):
-            coordinate = track_queue.pop()
-            agent.move_abs_coordinate_safe(coordinate)
+        for i in len(track_queue):
+        # len(track_queue):
+            cur_track = track_queue[len(track_queue)-i-1]
+            # coordinate = track_queue.pop()
+            if not agent.move_abs_coordinate_safe(cur_track):
+                pass
             # rospy.sleep(0.5)
             print('go to arena')
+
 
     # version 3 : ByteTrack
     else:
