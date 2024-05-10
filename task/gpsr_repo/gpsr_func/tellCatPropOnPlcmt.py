@@ -1,6 +1,6 @@
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(g, params):
-    # params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
+    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'snack', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
 
     # [0] Extract parameters
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
@@ -10,6 +10,9 @@ def tellCatPropOnPlcmt(g, params):
 
     # [2] Find the objects in the room
     yolo_bbox = g.get_yolo_bbox(cat)
+
+    while yolo_bbox == []:
+        yolo_bbox = g.get_yolo_bbox(cat)
 
     # [3] Tell the information
     ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]

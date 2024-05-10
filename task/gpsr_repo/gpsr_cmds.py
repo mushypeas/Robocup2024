@@ -1,3 +1,6 @@
+import sys
+sys.path.append('task/gpsr_repo/gpsr_func')
+
 import rospy
 
 ### HRI and People Perception Commands ###
@@ -410,17 +413,17 @@ def findObjInRoom(agent, params):
         print(f"{obj} is not found in the {room}")
 
 def countObjOnPlcmt(g, params):
-    from gpsr_func import countObjOnPlcmt
+    from countObjOnPlcmt import countObjOnPlcmt
     return countObjOnPlcmt(g, params)
 
 def tellObjPropOnPlcmt(g, params):    
-    from gpsr_func import tellObjPropOnPlcmt
+    from tellObjPropOnPlcmt import tellObjPropOnPlcmt
     return tellObjPropOnPlcmt(g, params)
     
 def tellCatPropOnPlcmt(g, params):
-    from gpsr_func import tellCatPropOnPlcmt
+    from tellCatPropOnPlcmt import tellCatPropOnPlcmt
     return tellCatPropOnPlcmt(g, params)
 
 def bringMeObjFromPlcmt(g, params):
-    from gpsr_func import bringMeObjFromPlcmt
+    from bringMeObjFromPlcmt import bringMeObjFromPlcmt
     return bringMeObjFromPlcmt(g, params)

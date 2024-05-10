@@ -1,5 +1,5 @@
 import sys
-sys.path.append('./gpsr_repo/')
+sys.path.append('task/gpsr_repo/')
 
 from gpsr_cmds import *
 from gpsr_parser import *
@@ -114,17 +114,17 @@ class GPSR:
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategory2obj(objects_data)
 
     ### HELP Functions ###
+        
+    ## TODO : Implement yolo id2name & name2id
     def get_yolo_bbox(self, category=None):
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
         if category:
             categoryItems = self.category2objDict[category]
+            print("categoryItems", categoryItems)
             yolo_bbox = [obj for obj in yolo_bbox if self.agent.yolo_module.find_name_by_id(obj[4]) in categoryItems]
-
-        while len(yolo_bbox) == 0:
-            print("No objects detected")
-            rospy.sleep(1)
-            yolo_bbox = self.agent.yolo_module.yolo_bbox
+        
+        print("yolo_bbox", yolo_bbox)
 
         return yolo_bbox
 
@@ -198,15 +198,17 @@ def gpsr(agent):
 
     # cmdFunc(agent, params)
 
-    m = input()
+    print('gpsr start')
+
+    m = int(input("Enter the mode: "))
 
     if m == 1:
-        tellCatPropOnPlcmt(g, {})
-    if m == 2:
         countObjOnPlcmt(g, {})
-    if m == 3:
+    if m == 2:
         tellObjPropOnPlcmt(g, {})
-    elif:
+    if m == 3:
+        tellCatPropOnPlcmt(g, {})
+    if m == 4:
         bringMeObjFromPlcmt(g, {})
 
     # TODO : repeat 3 times, return to the instruction loc

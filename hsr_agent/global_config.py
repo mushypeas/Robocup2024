@@ -108,10 +108,10 @@ if AIIS:
 
         # gpsr
         'gpsr_start_point': [1.7869, 0.0919, -3.1073],
-        'gpsr_instruction_point': [2, 0, 0],
+        'gpsr_instruction_point': [5.3074, 0.2722, 0.0921],
         
 
-        'test_loc': [0.5877, 0.0042, 1.5517],
+        'test_loc': [5.3074, 0.2722, 0.0921],
 
         'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],

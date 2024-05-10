@@ -4,7 +4,7 @@
 # Give me an iced tea from the bedside table
 # Give me a baseball from the bedside table
 def bringMeObjFromPlcmt(g, params):
-    params = {'bringVerb': 'Give', 'art': 'an', 'obj': 'apple', 'fromLocPrep': 'from', 'plcmtLoc': 'refrigerator'}
+    params = {'bringVerb': 'Give', 'art': 'an', 'obj': 'cereal', 'fromLocPrep': 'from', 'plcmtLoc': 'test_loc'}
 
     # [0] Extract parameters
     bring, art, obj, loc = params['bringVerb'], params['art'], params['obj'], params['plcmtLoc']

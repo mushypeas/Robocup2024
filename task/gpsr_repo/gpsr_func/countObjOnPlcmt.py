@@ -1,10 +1,14 @@
+import rospy
+
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
 def countObjOnPlcmt(g, params):
-    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    print("Start CountObjOnPlcmt")
+    
+    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
 
     # [0] Extract parameters
     countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    singCat = g.categoryPlur2Sing(plurCat)
+    singCat = g.categoryPlur2Sing[plurCat]
 
     # [1] Find the object in the room
     g.move(plcmtLoc)
