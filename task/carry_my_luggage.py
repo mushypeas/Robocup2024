@@ -232,11 +232,21 @@ class HumanFollowing:
         h = human_box_list[1][3]
         center = [y + int(h/2), x + int(w/2)] # (y,x)
         # print("center", center)
+        # human_location = 'c'
         if location:
-            if center[1] < 140:
+            if center[1] < 80:
+                return 'lll'
+            elif center[1] < 140:
+                return 'll'
+            elif center[1] < 200:
                 return 'l'
-            if center[1] > 500:
+            elif center[1] > 440:
                 return 'r'
+            elif center[1] > 500:
+                return 'rr'
+            elif center[1] > 560:
+                return 'rrr'
+            
 
         if center[1] < 0 or center[1] > 640:
             return True # stop
@@ -478,12 +488,32 @@ class HumanFollowing:
             if twist.linear.x == 0 and twist.angular.z == 0:
                 # change angular.z
                 loc = self.check_human_pos(human_info_ary, location=True)
-                if loc == 'l':
+                if loc == 'lll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
+                if loc == 'll':
+                    print("left")
+                    # twist.angular.z = -self.stop_rotate_velocity
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                    rospy.sleep(.5)
+                if loc == 'l':
+                    print("left")
+                    # twist.angular.z = -self.stop_rotate_velocity
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+                    rospy.sleep(.5)
                 if loc == 'r':
+                    print("right")
+                    # twist.angular.z = +self.stop_rotate_velocity
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+                    rospy.sleep(.5)
+                if loc == 'rr':
+                    print("right")
+                    # twist.angular.z = +self.stop_rotate_velocity
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                    rospy.sleep(.5)
+                if loc == 'rrr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
@@ -952,11 +982,11 @@ def carry_my_luggage(agent):
     pose_save_time_period = 7
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
-    stop_rotate_velocity = 2.0 #1.2
-    try_bag_picking = True #True
+    stop_rotate_velocity = 1.5 #1.2
+    try_bag_picking = False #True
     try_bytetrack = False
     map_mode = False
-    stt_option = True #True
+    stt_option = False #True
     yolo_success = True
     tilt_angle = 20
     
@@ -969,7 +999,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.4,
+                                                   stop_thres=.8,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -985,8 +1015,9 @@ def carry_my_luggage(agent):
         script_path = "/home/tidy/Robocup2024/yolo.sh"
         yolo_process = subprocess.Popen(['bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
+
         ####################
-        agent.say("start yolo")
+        # agent.say("start yolo")
         rospy.sleep(3)
         if try_bag_picking:
             # [Bonus] 1. bag detection
@@ -1033,9 +1064,15 @@ def carry_my_luggage(agent):
         agent.grasp()
         agent.pose.move_to_go()
 
+
+    yolo_process.terminate()
+
     ######################
     # 2. human following
-
+    byte_path = "/home/tidy/Robocup2024/byte.sh"
+    seg_path = "/home/tidy/Robocup2024/seg.sh"
+    byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
     agent.say("If you are arrived\n at the destination\nPlease stand still", show_display=True)
@@ -1085,15 +1122,18 @@ def carry_my_luggage(agent):
     if not map_mode:
         track_queue = human_following.track_queue  # get trace of the robot
 
-        for i in len(track_queue):
+        for i in range(len(track_queue)):
         # len(track_queue):
             cur_track = track_queue[len(track_queue)-i-1]
             # coordinate = track_queue.pop()
             if not agent.move_abs_coordinate_safe(cur_track):
                 pass
+            calc_z= 2000
+
             human_info_ary = copy.deepcopy(human_following.human_box_list)
             depth = np.asarray(human_following.d2pc.depth)
-            twist, calc_z = human_following.human_reid_and_follower.follow(human_info_ary, depth)
+            if human_info_ary[0] is not None:
+                twist, calc_z = human_following.human_reid_and_follower.follow(human_info_ary, depth, human_following.human_seg_pos)
             human_following.escape_barrier(calc_z)
             # rospy.sleep(0.5)
             print('go to arena')
@@ -1114,6 +1154,8 @@ def carry_my_luggage(agent):
                 human_following.show_byte_track_image = False
                 break
 
+    byte_process.terminate()
+    seg_process.terminate()
     agent.say("Finish carry my luggage", show_display=True)
 
 if __name__ == '__main__':
