@@ -1,4 +1,49 @@
-# HRI and People Perception Commands
+import rospy
+
+### HELP Functions ###
+def get_yolo_bbox(agent, category=None):
+    yolo_bbox = agent.yolo_module.yolo_bbox
+
+    if category:
+        print(category)
+        print(category2objDict)
+        categoryItems = category2objDict[category]
+        yolo_bbox = [obj for obj in yolo_bbox if agent.yolo_module.find_name_by_id(obj[4]) in categoryItems]
+
+    while len(yolo_bbox) == 0:
+        print("No objects detected")
+        rospy.sleep(1)
+        yolo_bbox = agent.yolo_module.yolo_bbox
+
+    return yolo_bbox
+
+def move_gpsr(agent, loc):
+    agent.move_abs(loc)
+    rospy.sleep(2)  
+    print(f"[MOVE] HSR moved to {loc}")
+
+def pick(agent, obj, loc=None):
+    if loc:
+        agent.move_abs(loc)
+        rospy.sleep(2)
+
+    # [TODO] Implement how the object can be picked up
+    if False:
+        pass
+
+    else:
+        agent.say(f"GIVE {obj} to me")
+        rospy.sleep(3)
+        agent.open_gripper()
+        rospy.sleep(5)
+        agent.grasp()
+
+    print(f"[PICK] {obj} is picked up")
+
+def place(agent):
+    agent.open_gripper()
+
+### HRI and People Perception Commands ###
 # "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
 def goToLoc(agent, params):
     # Go to the storage rack then look for a dish and take it and bring it to me
@@ -347,7 +392,7 @@ def followPrsAtLoc(agent, params):
 
     # params = {'followVerb': 'Follow', 'gestPers_posePers': 'person pointing to the left', 'inRoom_atLoc': 'in the bedroom'}
 
-# Object Manipulation and Perception Commands
+### Object Manipulation and Perception Commands ###
 # "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def takeObjFromPlcmt(agent, params):
     # Fetch a dish from the refrigerator / and deliver it to the lying person in the bedroom
@@ -407,28 +452,128 @@ def findObjInRoom(agent, params):
     else:
         print(f"{obj} is not found in the {room}")
 
+### TEST ###
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
 def countObjOnPlcmt(agent, params):
-    # params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
 
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many cleaning supplies there are on the bedside table
-    # Tell me how many cleaning supplies there are on the shelf
-    # Tell me how many snacks there are on the tv stand
-    # Tell me how many dishes there are on the kitchen table
-    
     # [0] Extract parameters
     countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    
-    # [1] Find the object in the room
-    print(f"Let me find {plurCat} in the {plcmtLoc}")
+    singCat = categoryPlur2Sing(plurCat)
 
-    found = False
-    # detected_objects = agent.yolo_module.yolo_bbox
-    if len(agent.yolo_module.yolo_bbox) != 0:
-        found = True
-        pass
+    # [1] Find the object in the room
+    agent.move_abs(plcmtLoc)
+    
+    yolo_bbox = get_yolo_bbox(agent, singCat)
+
+    agent.say(f"Let me find {plurCat} in the {plcmtLoc}")
+    rospy.sleep(5)
+
+    numObj = len(yolo_bbox)
+
+    # [2] Tell number of objects
+    if numObj == 0:
+        agent.say(f"There's no {singCat} on the {plcmtLoc}")
+    
+    elif numObj == 1:
+        agent.say(f"There's a {singCat} on the {plcmtLoc}")
+    
     else:
-        print("No objects detected")
-        return False
+        agent.say(f"There are {numObj} {plurCat} on the {plcmtLoc}")
+
+# "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
+def tellObjPropOnPlcmt(agent, params):    
+    # [0] Extract parameters
+    tell, comp, place = params['tellVerb'], params['objComp'], params['plcmtLoc']
+
+    # [1] Move to the specified space
+    agent.move_abs(place)
+
+    # [2] Find the objects in the room
+    print(f"[FIND] {tell} me what is the {comp} object {place}")
+
+    yolo_bbox = get_yolo_bbox(agent)
+    
+    # [3] biggest, largest
+
+    ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
+    objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
+
+    if comp in ['biggest', 'largest']:
+        targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+        
+    elif comp in ['smallest']:
+        targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    elif comp in ['thinnest']:
+        targetObjId = min(objIdThinLen, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    ### TODO ###
+    # elif comp in ['heaviest', 'lightest']:
+    # define weight dictionary according to objId
+
+    robotOutput = f"The {comp} object is {targetObjName}"
+    agent.say(robotOutput)
+    
+# "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
+def tellCatPropOnPlcmt(agent, params):
+    # params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'food', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
+
+    # [0] Extract parameters
+    tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
+
+    # [1] Move to the specified space
+    agent.move_abs(loc)
+
+    # [2] Find the objects in the room
+    yolo_bbox = get_yolo_bbox(agent, cat)
+
+    # [3] Tell the information
+    ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
+    objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
+
+    if comp in ['biggest', 'largest']:
+        targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+        
+    elif comp in ['smallest']:
+        targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    elif comp in ['thinnest']:
+        targetObjId = min(objIdThinLen, key=lambda x: x[1])[0]
+        targetObjName = agent.yolo_module.find_name_by_id(targetObjId)
+
+    ### TODO ###
+    # elif comp in ['heaviest', 'lightest']:
+    # define weight dictionary according to objId
+
+    robotOutput = f"The {comp} {cat} is {targetObjName}"
+    agent.say(robotOutput)
+
+
+### TODO NOW ###
+# "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
+# Give me a strawberry jello from the desk
+# Bring me an apple from the refrigerator
+# Give me an iced tea from the bedside table
+# Give me a baseball from the bedside table
+def bringMeObjFromPlcmt(agent, params):
+    params = {'bringVerb': 'Give', 'art': 'an', 'obj': 'apple', 'fromLocPrep': 'from', 'plcmtLoc': 'refrigerator'}
+
+    # [0] Extract parameters
+    bring, art, obj, loc = params['bringVerb'], params['art'], params['obj'], params['plcmtLoc']
+
+    # [1] Move to the specified location
+    agent.move_abs(loc)
+
+    # [2] Find the object in the room
+    pick(agent, obj, loc)
+
+    # [3] Give the object to the person
+    agent.move_abs('gpsr_instruction_point')
+    place(agent)
+    print(f"[GIVE] {bring} {art} {obj} from the {loc}")

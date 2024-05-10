@@ -96,11 +96,20 @@ def pick(agent, obj, loc=None):
         rospy.sleep(2)
 
     # [TODO] Implement how the object can be picked up
+    if False:
+        pass
+
+    else:
+        agent.say(f"GIVE {obj} to me")
+        rospy.sleep(3)
+        agent.open_gripper()
+        rospy.sleep(5)
+        agent.grasp()
+
     print(f"[PICK] {obj} is picked up")
 
-def place(obj, loc):
-    # [TODO] Implement how the object can be placed at the location
-    print(f"[PLACE] {obj} is placed at {loc}")
+def place(agent):
+    agent.open_gripper()
 
 ### HRI and People Perception Commands ###
 # "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
@@ -629,21 +638,14 @@ def bringMeObjFromPlcmt(agent, params):
     # [1] Move to the specified location
     agent.move_abs(loc)
 
-    # Try picking
-    if pick(agent, obj, loc):
-        pass
-    else:
-        agent.say(f"GIVE {bring} {art} {obj} to me")
+    # [2] Find the object in the room
+    pick(agent, obj, loc)
 
-        ### TODO ###
-        # gripper open
-        # get the object
-
-    ### TODO ###
-    # give object to human
-    print(f"[GIVE] {bring} {art} {obj} from the {loc}")
-
-
+    # [3] Give the object to the person
+    agent.move_abs('gpsr_instruction_point')
+    
+    place(agent)
+    
 verbType2verb = {
     "{takeVerb}": ["take", "get", "grasp", "fetch"],
     "{placeVerb}": ["put", "place"],
@@ -821,6 +823,7 @@ def nogadaParser(inputText):
 
 # MAIN
 def gpsr(agent):
+    # TODO : goto the instruction loc
 
     # agent.say("I'm ready to receive a command")
     # rospy.sleep(4)
@@ -834,3 +837,5 @@ def gpsr(agent):
     # cmdFunc(agent, params)
 
     tellCatPropOnPlcmt(agent, {})
+
+    # TODO : repeat 3 times, return to the instruction loc
