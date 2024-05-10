@@ -1,14 +1,12 @@
+import sys
+sys.path.append('./gpsr_repo/')
+
+from gpsr_cmds import *
+from gpsr_parser import *
+from gpsr_utils import *
+
 import rospy
 import json
-
-from gpsr_repo.gpsr_parser import *
-from gpsr_repo.gpsr_cmds import *
-
-# Read data from file
-def read_data(file_path):
-    with open(file_path, 'r') as file:
-        data = file.read()
-    return data
 
 objects_file_path = 'task/gpsr_repo/object.md'
 objects_data = read_data(objects_file_path)
@@ -200,6 +198,15 @@ def gpsr(agent):
 
     # cmdFunc(agent, params)
 
-    tellCatPropOnPlcmt(g, {})
+    m = input()
+
+    if m == 1:
+        tellCatPropOnPlcmt(g, {})
+    if m == 2:
+        countObjOnPlcmt(g, {})
+    if m == 3:
+        tellObjPropOnPlcmt(g, {})
+    elif:
+        bringMeObjFromPlcmt(g, {})
 
     # TODO : repeat 3 times, return to the instruction loc

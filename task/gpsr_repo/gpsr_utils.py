@@ -1,6 +1,12 @@
 import openai
 import json
 
+# Read data from file
+def read_data(file_path):
+    with open(file_path, 'r') as file:
+        data = file.read()
+    return data
+
 # LOAD gpsr_config.json
 def load_config(config_file):
     with open(config_file) as f:
