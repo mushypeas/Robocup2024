@@ -39,6 +39,9 @@ if AIIS:
         # clean the table
         'dishwasher_rack': [6.3029,-1.0222,0.0161], #bjkim2 0505
         'clean_table_front' : [3.4552,-0.6194,-1.5674], #bjkim2 0505
+        'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
+        'rack_close_position2': [1.6463, -0.9664, -1.5655],
+        'rack_close_position3': [1.6434, -0.9569, -1.9500],
 
         # receptionist
         'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door

@@ -8,12 +8,20 @@ def clean_the_table(agent: Agent):
     # things to be modified: pick_table, pick_position, place_postion
 
     ### task params #################
-    
+    #POSITION#
     pick_position = 'dishwasher_rack'
     place_position = 'clean_table_front'
+    close_position1 = 'rack_close_position1'
+    close_position2 = 'rack_close_position2'
+    close_position3 = 'rack_close_position3'
+
+    #TABLE#
     pick_table = 'breakfast_table'
     dishwasher = 'dishwasher'
     dishwasher_table = 'dishwasher_table'
+
+    #ACTION PARAMS#
+    rack_open_close_arm_lift = 0.19
     
     tab_name = 'dishwasher_tablet'
     item_list = ['mug', 'bowl', 'plate', 'fork', 'spoon', 'knife']
@@ -40,6 +48,25 @@ def clean_the_table(agent: Agent):
 
     stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
     stop_client.call(EmptyRequest())
+
+    agent.pose.neutral_pose()
+
+    import pdb; pdb.set_trace()
+
+    agent.move_abs(close_position1)
+
+    agent.pose.place_cutlery_pose(table=dishwasher)
+
+    agent.pose.arm_lift_up(rack_open_close_arm_lift) #parameter 1
+    agent.pose.wrist_flex(-70)
+    
+    agent.move_abs(close_position2)
+    agent.move_abs(close_position3)
+    agent.move_abs(close_position2)
+    agent.move_abs(close_position1)
+
+    pdb.set_trace()
+
     agent.grasp()
     agent.pose.move_pose()
 
