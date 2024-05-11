@@ -1057,7 +1057,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.8,
+                                                   stop_thres=.4,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
