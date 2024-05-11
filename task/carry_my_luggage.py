@@ -1075,7 +1075,9 @@ def carry_my_luggage(agent):
     seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
-    agent.say("If you are arrived\n at the destination\nPlease stand still", show_display=True)
+    agent.say("If you are arrived\n at the destination", show_display=True)
+    rospy.sleep(3)
+    agent.say("Please stand still", show_display=True)
     rospy.sleep(3)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
     agent.say("Please keep the one meter between us!", show_display=True)
@@ -1156,6 +1158,8 @@ def carry_my_luggage(agent):
 
     byte_process.terminate()
     seg_process.terminate()
+    yolo_process.terminate()
+
     agent.say("Finish carry my luggage", show_display=True)
 
 if __name__ == '__main__':
