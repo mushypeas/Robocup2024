@@ -269,13 +269,13 @@ class HumanFollowing:
         if location:
             if center[1] < 80:
                 return 'lll'
-            elif center[1] < 140:
+            elif center[1] < 110:
                 return 'll'
-            elif center[1] < 200:
+            elif center[1] < 140:
                 return 'l'
-            elif center[1] > 440:
-                return 'r'
             elif center[1] > 500:
+                return 'r'
+            elif center[1] > 530:
                 return 'rr'
             elif center[1] > 560:
                 return 'rrr'
@@ -512,7 +512,7 @@ class HumanFollowing:
             print("lets go to the last human position")
             if self.last_human_pos is not None:
                 target_xyyaw = self.last_human_pos
-                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
+                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], 0, wait=False)
             return False
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
@@ -548,7 +548,7 @@ class HumanFollowing:
                 if loc == 'lll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=True)
                     rospy.sleep(.5)
                 if loc == 'll':
                     print("left")
@@ -573,7 +573,7 @@ class HumanFollowing:
                 if loc == 'rrr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=True)
                     rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
