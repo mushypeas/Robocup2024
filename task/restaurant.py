@@ -99,7 +99,7 @@ class MoveBaseStandalone:
                     pass
 
     def move_abs(self, agent, goal_x, goal_y, goal_yaw=None):
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(5)
         while not rospy.is_shutdown():
             # goal topic generation
             if goal_yaw is None: goal_yaw = 0.
