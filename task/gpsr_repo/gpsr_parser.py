@@ -2,7 +2,7 @@ import re
 import warnings
 import json 
 
-from gpsr_dicts import verbType2verb, cmdName2cmdStr
+from gpsr_dicts import *
 from gpsr_utils import chat
 
 class NoAppropriateVerbError(Exception):
@@ -75,37 +75,40 @@ def extractCategory2obj(markdown_content):
 # ULTIMATE Text Parser
 def ultimateParser(inputText):
     '''Ultimate parser for the inputText. It uses GPT-4 to parse the inputText.'''
-    splitedInputText = inputText.split()
-    mainVerb = splitedInputText[0]
+    # splitedInputText = inputText.split()
+    # mainVerb = splitedInputText[0]
 
-    for verbType in verbType2verb:
-        if mainVerb.lower() in verbType2verb[verbType]:
-            candidateCmdStr = dict([cmdEntries for cmdEntries in cmdName2cmdStr.items() if cmdEntries[1].split()[0] == verbType])
+    # for verbType in verbType2verb:
+    #     if mainVerb.lower() in verbType2verb[verbType]:
+    #         print([cmdEntries for cmdEntries in cmdName2cmdStr.items()])
+    #         candidateCmdStr = dict([cmdEntries for cmdEntries in cmdName2cmdStr.items() if cmdEntries[1].split()[0] == verbType])
 
-            prompt = f'dict of {{cmdName: parameter}}: {candidateCmdStr}\n'
-            prompt += f'inputText: {inputText}\n'
-            prompt += 'return which cmdName the inputText is, and the parameters in ({})\n'
-            prompt += 'you should only write with format: cmdName, {"parameterName": "parameterValue"}'
-            
-            gptAnswer = chat(prompt)
+    prompt = f'inputText: {inputText}\n'
+    prompt += f'Infer verbType of inputText with this dict first. {{verbType: [verb]}}: {verbType2verb}\n'
+    prompt += f'Then, infer cmdName of the inputText, and every {{parameters}} surrounded by braces {{cmdName: sentence {{parameter}}}}: {cmdName2cmdStr}\n'
+    prompt += 'finally, answer which cmdName inputText is, and every {parameters} in the inputText without missing\n'
+    prompt += 'you should only write with format: cmdName, {"parameterName": "parameterValue", ...}'
+    
+    gptAnswer = chat(prompt)
 
-            splitIndex = gptAnswer.find(', ')
-            cmdName = gptAnswer[:splitIndex]
-            params = json.loads(gptAnswer[splitIndex+2:])
+    splitIndex = gptAnswer.find(', ')
+    cmdName = gptAnswer[:splitIndex]
+    params = json.loads(gptAnswer[splitIndex+2:])
 
-            ### TODO ###
-            ### Catch Error and Retry
+    ### TODO ###
+    ### Catch Error and Retry
 
-            print("[Parser] cmdName:", cmdName)
-            print("[Parser] params:", params)
+    print("[Parser] cmdName:", cmdName)
+    print("[Parser] params:", params)
 
-            return cmdName, params
-            
-    else: 
-        raise NoAppropriateVerbError("No Appropriate Verb")
+    return cmdName, params
     
 def nogadaParser(inputText):
     '''Handcrafted parser for the inputText'''
     ### TODO ###
     ### Make Handcrafted Parser
     pass
+
+if __name__ == "__main__":
+    inputText = "Give me a baseball from the bedside table"
+    print(ultimateParser(inputText))
