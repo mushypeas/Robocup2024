@@ -49,15 +49,20 @@ class HumanFollowing:
         self.tilt_angle = tilt_angle
         self.stt_option = stt_option
         self.save_one_time = False
-        self.last_human_pos = start_location
+        self.last_human_pos = None
         self.human_seg_pos = None
         self.image_size = None
         self.image_shape = None
         bytetrack_topic = '/snu/bytetrack_img'
+        # self.tiny_object_list = ['pink_milk', 'blue_milk', 'coke', 'banana', 'apple', 'carrot', 'strawberry', 'sweet_potato', 'lemon', \
+        #                           'cheezit', 'strawberry_jello', 'chocolate_jello', 'sugar', 'mustard', 'spam', 'tomato_soup', 'fork', 'plate',\
+        #                               'knife', 'bowl', 'spoon', 'blue_mug', 'tennis_ball', 'soft_scrub', 'yellow_bag', 'blue_bag', 'white_bag',\
+        #                                   'plum', 'peach', 'orange']
+        self.tiny_object_list = []
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
-
+        rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
 
     def freeze_for_humanfollowing(self):
@@ -111,6 +116,34 @@ class HumanFollowing:
 
     def base_circle_cb(self, config):
         rospy.loginfo(config)
+
+    def _tiny_cb(self, data):
+        arr = data.data
+        if arr is None:
+            return None
+        
+        grouped_data = [arr[i:i+6] for i in range(0, len(arr), 6)]
+        # print("grouped data")
+        # print(grouped_data)
+
+        # grouped_data = grouped_data[:-3]
+        # print("grouped data w/o last 3")
+
+        # print(grouped_data)
+
+        filtered_data = [group for group in grouped_data if (group[5] >= .90 )]
+        # print("filtered data")
+        # print(filtered_data)
+
+        sorted_data = sorted(filtered_data, key = lambda x: x[0])
+
+
+
+        sorted_arr = [item for sublist in sorted_data for item in sublist]
+
+        # print("sorted_arr")
+        # print(sorted_arr)
+        self.tiny_object_list = sorted_arr
 
     def _human_yolo_cb(self, data):
         '''
@@ -366,7 +399,25 @@ class HumanFollowing:
                 rospy.sleep(1)
 
 
+    def escape_tiny(self):
+        tiny_object_list = self.tiny_object_list
+        tiny_object_exist = False
+        if len(tiny_object_list) > 0:
+             for idx in range(len(tiny_object_list) // 6):
+                
+                item = tiny_object_list[6 * idx: 6 * (idx + 1)]
+                # print("item", item)
+                cent_x, cent_y, width, height, class_id, conf_percent = item
+                # 480 640
+                if cent_y > 330 and cent_x > 200 and cent_x < 440 and conf_percent > 90:
+                    tiny_object_exist = True
+                    self.agent.say('Tiny object.', show_display=False)
+                    break
 
+        if tiny_object_exist:
+            self.agent.say('I\'ll avoid it.', show_display=False)
+            self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
+            rospy.sleep(1)
 
 
     def stt_destination(self, stt_option, calc_z=0):
@@ -429,6 +480,7 @@ class HumanFollowing:
             #     rospy.sleep(1)
             #     print("seven seconds")
             self.escape_barrier(calc_z)
+            self.escape_tiny()
 
             # if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
                 # if (calc_z < 1.5)
@@ -456,6 +508,11 @@ class HumanFollowing:
             # rospy.loginfo("no human")
             if self.stt_destination(self.stt_option):
                 return True
+            print("it is not finished but i missed human...ㅜㅜ")
+            print("lets go to the last human position")
+            if self.last_human_pos is not None:
+                target_xyyaw = self.last_human_pos
+                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             return False
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
@@ -527,6 +584,7 @@ class HumanFollowing:
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
             # 2.4 move to human
+            self.last_human_pos = target_xyyaw
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
@@ -982,7 +1040,7 @@ def carry_my_luggage(agent):
     pose_save_time_period = 7
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
-    stop_rotate_velocity = 1.5 #1.2
+    stop_rotate_velocity = 1.2 #1.2
     try_bag_picking = False #True
     try_bytetrack = False
     map_mode = False
@@ -1013,7 +1071,7 @@ def carry_my_luggage(agent):
     try:
         # yolo_process = subprocess.run(['python3', '/home/tidy/Robocup2024/module/yolov7/run_yolov7.py'])
         script_path = "/home/tidy/Robocup2024/yolo.sh"
-        yolo_process = subprocess.Popen(['bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+        yolo_process = subprocess.Popen(['bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
 
         ####################
@@ -1048,8 +1106,8 @@ def carry_my_luggage(agent):
     except Exception as e:
         print("error starting yolo")
         yolo_success = False
-    finally:
-        yolo_process.terminate()
+    # finally:
+    #     yolo_process.terminate()
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
@@ -1065,7 +1123,7 @@ def carry_my_luggage(agent):
         agent.pose.move_to_go()
 
 
-    yolo_process.terminate()
+    # yolo_process.terminate()
 
     ######################
     # 2. human following
@@ -1075,7 +1133,7 @@ def carry_my_luggage(agent):
     seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
-    agent.say("If you are arrived\n at the destination", show_display=True)
+    agent.say("If you are arrived at the destination", show_display=True)
     rospy.sleep(3)
     agent.say("Please stand still", show_display=True)
     rospy.sleep(3)
@@ -1128,8 +1186,8 @@ def carry_my_luggage(agent):
         # len(track_queue):
             cur_track = track_queue[len(track_queue)-i-1]
             # coordinate = track_queue.pop()
-            if not agent.move_abs_coordinate_safe(cur_track):
-                pass
+            while not agent.move_abs_coordinate_safe(cur_track):
+                print("retry")
             calc_z= 2000
 
             human_info_ary = copy.deepcopy(human_following.human_box_list)
@@ -1137,6 +1195,7 @@ def carry_my_luggage(agent):
             if human_info_ary[0] is not None:
                 twist, calc_z = human_following.human_reid_and_follower.follow(human_info_ary, depth, human_following.human_seg_pos)
             human_following.escape_barrier(calc_z)
+            human_following.escape_tiny()
             # rospy.sleep(0.5)
             print('go to arena')
 
