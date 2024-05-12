@@ -260,6 +260,9 @@ class Agent:
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)
     
+    def move_rel_AFAP(self, x, y, yaw=0, interval = 0.05):
+        return self.move_base.move_rel_AFAP(x, y, yaw, interval)
+    
     def move_distancing(self, place, dist=0.6, timeout=3.0):
         # Move for distancing
         # tilt = 0

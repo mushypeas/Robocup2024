@@ -37,8 +37,8 @@ if AIIS:
         'breakfast_bypass': [1.0016, -2.7794, 0.0313], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
-        'dishwasher_rack': [6.3029,-1.0222,0.0161], #bjkim2 0505
-        'clean_table_front' : [3.4552,-0.6194,-1.5674], #bjkim2 0505
+        'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
+        'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
         'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
         'rack_close_position2': [1.6463, -0.9664, -1.5655],
         'rack_close_position3': [1.6434, -0.9569, -1.9500],
@@ -135,6 +135,13 @@ if AIIS:
         'grocery_table_pose2': [0.55, 0.75, 0.42 - 0.02], # -020
         'door_handle': [0, 0, 0.96],
         # width, depth, height
+        
+        # clean the table
+        'clean_table' : [0.55,0.75,0.715],
+        'dishwasher_door' : [0.595,0.60,0.165], #height is not precise
+        'dishwasher_rack' : [0.520,0.60,0.400],
+        'dishwasher' : [0.520,0.60,0.830], #height is not precise
+
         'desk': [1.505, 0.705, 0.8],
         'side_table': [0.495, 0.495, 0.395],
         'side-tables': [0.495, 0.495, 0.395],
