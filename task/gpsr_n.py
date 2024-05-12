@@ -45,7 +45,7 @@ class GPSR:
             "followPrsAtLoc": followPrsAtLoc
         }
         
-        self.followupName2followUpFunc = {
+        self.followupName2followupFunc = {
             "findObj": findObj,
             "findPrs": findPrs,
             "meetName": meetName,
@@ -103,35 +103,12 @@ class GPSR:
 
     def place(self):
         self.agent.open_gripper()
+        
+    def deliver(self):
+        self.agent.open_gripper()
 
     def say(self, text):
         self.agent.say(text)
-
-cmdName2cmdFunc = {
-    "goToLoc": goToLoc,
-    "takeObjFromPlcmt": takeObjFromPlcmt,
-    "findPrsInRoom": findPrsInRoom,
-    "findObjInRoom": findObjInRoom,
-    "meetPrsAtBeac": meetPrsAtBeac,
-    "countObjOnPlcmt": countObjOnPlcmt,
-    "countPrsInRoom": countPrsInRoom,
-    "tellPrsInfoInLoc": tellPrsInfoInLoc,
-    "tellObjPropOnPlcmt": tellObjPropOnPlcmt,
-    "talkInfoToGestPrsInRoom": talkInfoToGestPrsInRoom,
-    "answerToGestPrsInRoom": answerToGestPrsInRoom,
-    "followNameFromBeacToRoom": followNameFromBeacToRoom,
-    "guideNameFromBeacToBeac": guideNameFromBeacToBeac,
-    "guidePrsFromBeacToBeac": guidePrsFromBeacToBeac,
-    "guideClothPrsFromBeacToBeac": guideClothPrsFromBeacToBeac,
-    "bringMeObjFromPlcmt": bringMeObjFromPlcmt,
-    "tellCatPropOnPlcmt": tellCatPropOnPlcmt,
-    "greetClothDscInRm": greetClothDscInRm,
-    "greetNameInRm": greetNameInRm,
-    "meetNameAtLocThenFindInRm": meetNameAtLocThenFindInRm,
-    "countClothPrsInRoom": countClothPrsInRoom,
-    "tellPrsInfoAtLocToPrsAtLoc": tellPrsInfoAtLocToPrsAtLoc,
-    "followPrsAtLoc": followPrsAtLoc
-}
 
 # MAIN
 def gpsr(agent):
@@ -150,7 +127,7 @@ def gpsr(agent):
     # parse InputText 
     cmdName, params = ultimateParser(inputText)
     
-    cmdFunc = cmdName2cmdFunc[cmdName]
+    cmdFunc = g.cmdName2cmdFunc[cmdName]
     cmdFunc(agent, params)
 
     # TODO : repeat 3 times, return to the instruction loc

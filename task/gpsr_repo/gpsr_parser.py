@@ -109,6 +109,30 @@ def nogadaParser(inputText):
     ### Make Handcrafted Parser
     pass
 
+def ultimateFollowupParser(inputText):
+    '''Ultimate parser for the inputText. It uses GPT-4 to parse the inputText.'''
+
+    prompt = f'inputText: {inputText}\n'
+    prompt += f'Infer verbType of inputText with this dict first. {{verbType: [verb]}}: {verbType2verb}\n'
+    prompt += f'Then, infer followupName of the inputText, and every {{parameters}} surrounded by braces {{followupName: sentence {{parameter}}}}: {followupName2followupStr}\n'
+    prompt += 'finally, answer which followupName inputText is, and every {parameters} in the inputText without missing\n'
+    prompt += 'you should only write with format: followupName, {"parameterName": "parameterValue", ...}'
+    
+    gptAnswer = chat(prompt)
+
+    splitIndex = gptAnswer.find(', ')
+    cmdName = gptAnswer[:splitIndex]
+    params = json.loads(gptAnswer[splitIndex+2:])
+
+    ### TODO ###
+    ### Catch Error and Retry
+
+    print("[Parser] cmdName:", cmdName)
+    print("[Parser] params:", params)
+
+    return cmdName, params
+
+# TEST CODE
 if __name__ == "__main__":
-    inputText = "Give me a baseball from the bedside table"
-    print(ultimateParser(inputText))
+    followup = "and bring it to me"
+    print(ultimateFollowupParser(followup))

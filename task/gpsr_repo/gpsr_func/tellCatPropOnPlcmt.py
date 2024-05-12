@@ -1,6 +1,8 @@
+import rospy
+
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(g, params):
-    params = {'tellVerb': 'Tell', 'objComp': 'biggest', 'singCat': 'snack', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
+    print("Start TellCatPropOnPlcmt")
 
     # [0] Extract parameters
     tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']

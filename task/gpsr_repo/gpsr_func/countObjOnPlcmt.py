@@ -4,8 +4,6 @@ import rospy
 def countObjOnPlcmt(g, params):
     print("Start CountObjOnPlcmt")
     
-    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'test_loc'}
-
     # [0] Extract parameters
     countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
     singCat = g.categoryPlur2Sing[plurCat]

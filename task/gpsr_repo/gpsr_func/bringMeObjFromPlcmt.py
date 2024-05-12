@@ -1,16 +1,24 @@
+import rospy
+
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
-# Give me a strawberry jello from the desk
-# Bring me an apple from the refrigerator
-# Give me an iced tea from the bedside table
-# Give me a baseball from the bedside table
 def bringMeObjFromPlcmt(g, params):
-    params = {'bringVerb': 'Give', 'art': 'an', 'obj': 'cereal', 'fromLocPrep': 'from', 'plcmtLoc': 'test_loc'}
-
+    print("Start BringMeObjFromPlcmt")
+    
     # [0] Extract parameters
-    bring, art, obj, loc = params['bringVerb'], params['art'], params['obj'], params['plcmtLoc']
-
+    try:
+        obj = params['obj']
+    except KeyError:
+        print("[ERROR] obj is not defined")
+        obj = 'any_obj'
+        
+    try:
+        plcmtLoc = params['plcmtLoc']
+    except KeyError:
+        print("[ERROR] plcmtLoc is not defined")
+        plcmtLoc = 'gpsr_instruction_point'
+        
     # [1] Move to the specified location
-    g.move(loc)
+    g.move(plcmtLoc)
 
     # [2] Find the object in the room
     g.pick(obj)

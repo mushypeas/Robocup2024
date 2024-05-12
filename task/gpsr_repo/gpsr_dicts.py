@@ -1,7 +1,7 @@
 verbType2verb = {
     "{takeVerb}": ["take", "get", "grasp", "fetch"],
-    # "{placeVerb}": ["put", "place"],
-    # "{deliverVerb}": ["bring", "give", "deliver"],
+    "{placeVerb}": ["put", "place"],
+    "{deliverVerb}": ["bring", "give", "deliver"],
     "{bringVerb}": ["bring", "give"],
     "{goVerb}": ["go", "navigate"],
     "{findVerb}": ["find", "locate", "look for"],
@@ -66,7 +66,7 @@ cmdName2cmdStr = {
     "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}"
 }
 
-followupName2followUpStr = {
+followupName2followupStr = {
     "findObj": "{findVerb} {art} {obj_singCat} and {followup}",
     "findPrs": "{findVerb} the {gestPers_posePers} and {followup}",
     "meetName": "{meetVerb} {name} and {followup}",
