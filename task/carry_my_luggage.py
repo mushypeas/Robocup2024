@@ -24,6 +24,13 @@ import time
 from sklearn.preprocessing import StandardScaler
 import subprocess
 
+'''
+
+foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
+
+
+'''
+
 class HumanFollowing:
     def __init__(self, agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option):
         self.agent = agent
@@ -518,7 +525,7 @@ class HumanFollowing:
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
 
-        if calc_z > 1000:
+        if calc_z > 500:
             calc_z = calc_z + 500 #TODO : calc_z 과장할 정도 결정
 
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
