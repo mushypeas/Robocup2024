@@ -193,6 +193,10 @@ def restaurant(agent):
     agent.say('start restaurant')
     marker_maker = MarkerMaker('/snu/robot_path_visu')
 
+    openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
+    yolo_process = subprocess.Popen(['bash', openpose_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+
+
     for _ in range(10):
         try:
 
@@ -232,10 +236,15 @@ def restaurant(agent):
                 # Wait message of OpenPose results
                 # Continue if no valid input received
                 msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
+                '''
+                This topic contains the coordinate of every bounding box that the module detects.
+                data ← [*box_0_top_left_x, box_0_top_left_y, box_0_bottom_right_x, box_0_bottom_right_y, … ,
+                 box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
+                '''
                 if len(msg.data) == 0: continue
 
                 table_arr = np.array(msg.data)
-                table_arr = table_arr.reshape(len(table_arr)//34, 17, 2)
+                table_arr = table_arr.reshape(len(table_arr)//34, 17, 2) ## num of people? 
                 pc = agent.pc
                 if pc is None: continue
 
