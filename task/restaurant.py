@@ -6,7 +6,7 @@ from utils.simple_action_client import SimpleActionClient
 import tf
 import time
 import math
-
+import subprocess
 
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
@@ -52,7 +52,7 @@ class MoveBaseStandalone:
                pass
 
     def move_customer(self, agent, goal_x, goal_y, goal_yaw=None):
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(5)
         theta = 0.
         rotate_delta = 30.
         r = 0.5
@@ -195,7 +195,7 @@ def restaurant(agent):
 
     openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
     yolo_process = subprocess.Popen(['bash', openpose_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
-
+    print('OpenPose process started')
 
     for _ in range(10):
         try:

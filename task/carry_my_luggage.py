@@ -51,6 +51,7 @@ class HumanFollowing:
         self.bridge = CvBridge()
         self.show_byte_track_image = False
         self.track_queue = deque()
+        self.angle_queue = deque(maxlen=5)
         self.obstacle_offset = 0.0
         self.last_say = time.time()
         self.tilt_angle = tilt_angle
@@ -71,6 +72,7 @@ class HumanFollowing:
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
+
 
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
@@ -275,16 +277,22 @@ class HumanFollowing:
         # human_location = 'c'
         if location:
             if center[1] < 80:
+                self.angle_queue.append(-1)
                 return 'lll'
             elif center[1] < 110:
+                self.angle_queue.append(-1)
                 return 'll'
             elif center[1] < 140:
+                self.angle_queue.append(-1)
                 return 'l'
             elif center[1] > 500:
+                self.angle_queue.append(1)
                 return 'r'
             elif center[1] > 530:
+                self.angle_queue.append(1)
                 return 'rr'
             elif center[1] > 560:
+                self.angle_queue.append(1)
                 return 'rrr'
             
 
@@ -320,12 +328,20 @@ class HumanFollowing:
         escape_radius = 0.2
         rot_dir_left = 1
         _depth_value_except_0 = _depth[_depth != 0]
+
+        if self.human_box_list[0] is not None:
+            human_box_list = self.human_box_list
+            x = human_box_list[1][0]
+        else:
+            x = 640
+
+
         rospy.loginfo(f"rect depth mean : {np.mean(_depth)}")
         # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
         #and self.image_size * human_box_thres > human_box_size
-        if (np.mean(_depth) < thres and calc_z!=0 and (np.mean(_depth)< ((calc_z/ 1000.0)-0.2) or self.agent.dist <((calc_z/1000.0)-0.2) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (calc_z!=0 and (np.mean(_depth)< ((calc_z/ 1000.0)-0.2) or self.agent.dist <((calc_z/1000.0)-0.2) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
@@ -342,7 +358,7 @@ class HumanFollowing:
             _depth = self.barrier_check()
             rospy.loginfo(f"rect depth : {np.mean(_depth)}")
 
-            while (np.mean(_depth)< thres-0.1):
+            # while (np.mean(_depth)< ((calc_z/ 1000.0)-0.3) or self.agent.dist <((calc_z/1000.0)-0.3)): # TODO : while 하는게 좋은지? 아니면 그때그때 한번만 이동하는게 좋은지?
 
             ##########################BRANCH1. ROTATING########################    
             #     _num_rotate = _num_rotate + 1
@@ -399,11 +415,16 @@ class HumanFollowing:
                 
 
             ##########################BRANCH2. MOVING########################    
-                _depth = self.barrier_check()
-                print(f"mean depth: {np.mean(_depth)}")
-                self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
-                # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
+            # _depth = self.barrier_check()
+            # print(f"mean depth: {np.mean(_depth)}")
+            last_5_angle_average = np.mean(self.angle_queue)
+            if last_5_angle_average < 0: # HSR has rotated left
+                self.agent.move_rel(0,0.3,0, wait=False) #then, HSR is intended to move right
                 rospy.sleep(1)
+            else: #  HSR has rotated right
+                self.agent.move_rel(0,-0.3,0, wait=False)
+            # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
+            rospy.sleep(1)
 
 
     def escape_tiny(self):
@@ -1115,6 +1136,11 @@ def carry_my_luggage(agent):
         yolo_success = False
     # finally:
     #     yolo_process.terminate()
+        
+    byte_path = "/home/tidy/Robocup2024/byte.sh"
+    seg_path = "/home/tidy/Robocup2024/seg.sh"
+    byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
@@ -1134,10 +1160,7 @@ def carry_my_luggage(agent):
 
     ######################
     # 2. human following
-    byte_path = "/home/tidy/Robocup2024/byte.sh"
-    seg_path = "/home/tidy/Robocup2024/seg.sh"
-    byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
     agent.say("If you are arrived at the destination", show_display=True)
