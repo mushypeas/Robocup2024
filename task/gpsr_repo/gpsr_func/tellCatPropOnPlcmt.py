@@ -5,7 +5,26 @@ def tellCatPropOnPlcmt(g, params):
     print("Start TellCatPropOnPlcmt")
 
     # [0] Extract parameters
-    tell, comp, cat, onLocPrep, loc = params['tellVerb'], params['objComp'], params['singCat'], params['onLocPrep'], params['plcmtLoc']
+    try:
+        tell = params['tellVerb']
+    except KeyError:
+        pass
+    try:
+        comp = params['objComp']
+    except KeyError:
+        pass
+    try:
+        cat = params['singCat']
+    except KeyError:
+        pass
+    try:
+        onLocPrep = params['onLocPrep']
+    except KeyError:
+        pass
+    try:
+        loc = params['plcmtLoc']
+    except KeyError:
+        pass
 
     # [1] Move to the specified space
     g.move(loc)

@@ -108,10 +108,11 @@ if AIIS:
 
         # gpsr
         'gpsr_start_point': [1.7869, 0.0919, -3.1073],
-        'gpsr_instruction_point': [5.3074, 0.2722, 0.0921],
+        'gpsr_instruction_point': [2.622, -0.5539, 0.1105],
         
-
-        'test_loc': [5.3074, 0.2722, 0.0921],
+        # gpsr_test
+        'desk': [5.5086, 0.1336, 0.0005],
+        'table': [3.8706, -0.7318, -1.5548],
 
         'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
@@ -119,7 +120,7 @@ if AIIS:
         'side_tables': [2.5619, -0.0344, 1.5821],
         'sofa': [3.7381, 0.6181, 2.3207],
         'storage_rack': [3.5983, -1.0546, -0.0079],
-        'desk': [1.6335, -4.7401, -0.0524],
+        # 'desk': [1.6335, -4.7401, -0.0524],
         'cabinet': [4.0185, -4.9778, 0.0594],
         'shelf': [5.8276, -5.2125, -1.5813],
         'bedside_table': [8.344, -4.7478, -0.0446],
@@ -198,55 +199,85 @@ if AIIS:
     }
 
     OBJECT_LIST = [
-        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
-        # ['cracker', 0, 5, 0], #BJKIM CHANGED OBJECT_LIST FOR JUST EXPERIMENTS.
-        # ['sugar', 1, 2, 0],
-        # ['jello_red', 2, 2, 0],
-        # ['jello_black', 3, 2, 0],
-        # ['coffee_can', 4, 2, 0],
-        # ['tuna_can', 5, 2, 0],
-        ['pringles', 6, 5, 0],
-        ['mustard', 7, 2, 0],
-        ['tomato_soup', 8, 2, 0],
-        ['pear', 9, 3, 0],
-        ['peach', 10, 3, 0],
+        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]
+        ['water', 0, 0, 0],
+        ['milk', 1, 0, 0],
+        ['coke', 2, 0, 0],
+        ['tonic', 3, 0, 0],
+        ['bubble_tea', 4, 0, 0],
+        ['ice tea', 5, 0, 0],
+        ['cereal', 6, 2, 0],
+        ['tuna_can', 7, 2, 0],
+        ['coffee_jar', 8, 2, 0],
+        ['sugar', 9, 2, 0],
+        ['mustard', 10, 2, 0],
         ['apple', 11, 3, 0],
-        ['strawberry', 12, 3, 0],
+        ['peach', 12, 3, 0],
         ['orange', 13, 3, 0],
         ['banana', 14, 3, 0],
-        ['plum', 15, 3, 0],
-        ['lemon', 16, 3, 0],
-        ['bowl', 5, 6, 2], #17
-        ['mug', 0, 6, 0], #18
-        ['plate', 4, 6, 3], #19
-        ['knife', 1, 6, 1], #20
-        ['fork', 3, 6, 1], #21
-        ['spoon', 2, 6, 1], #22
-        ['tennis_ball', 23, 4, 0],
-        ['golf_ball', 24, 4, 0],
-        ['base_ball', 25, 4, 0],
-        ['soccer_ball', 26, 4, 0],
-        ['soft_ball', 27, 4, 0],
-        ['cube', 28, 4, 0],
-        ['dice', 29, 4, 0],
-        ['wine', 30, 1, 0],
-        ['ice_tea', 31, 1, 0],
-        ['orange_juice', 32, 1, 0],
-        ['milk', 33, 1, 0],
-        ['tropical_juice', 34, 1, 0],
-        ['juice_pack', 35, 1, 0],
-        ['cereal_red', 36, 1, 0],
-        ['cereal_yellow', 37, 1, 0],
-        ['coke', 38, 1, 0],
-        ['sponge', 39, 0, 1],
-        ['scrub', 40, 0, 0],
-        ['spam', 41, 2, 0],
-        ['shopping_bag_1', 42, 7, 0],
-        ['shopping_bag_2', 43, 7, 0],
-        ['shopping_bag_3', 44, 7, 0],
-        ['cereal_black', 45, 7, 0],
-        ['dishwasher_tablet', 46, 7, 0],
+        ['strawberry', 15, 3, 0],
+        ['pockys', 16, 4, 0],
+        ['pringles', 17, 4, 0],
+        ['spoon', 18, 5, 1],
+        ['fork', 19, 5, 1],
+        ['plate', 20, 5, 3],
+        ['bowl', 21, 5, 2],
+        ['mug', 22, 5, 0],
+        ['knife', 23, 5, 1],
+        ['paperbag', 24, 1, 1],
+        ['tab', 25, 0, 0]
     ]
+
+    # OBJECT_LIST = [
+    #     # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
+    #     # ['cracker', 0, 5, 0], #BJKIM CHANGED OBJECT_LIST FOR JUST EXPERIMENTS.
+    #     # ['sugar', 1, 2, 0],
+    #     # ['jello_red', 2, 2, 0],
+    #     # ['jello_black', 3, 2, 0],
+    #     # ['coffee_can', 4, 2, 0],
+    #     # ['tuna_can', 5, 2, 0],
+    #     ['pringles', 6, 5, 0],
+    #     ['mustard', 7, 2, 0],
+    #     ['tomato_soup', 8, 2, 0],
+    #     ['pear', 9, 3, 0],
+    #     ['peach', 10, 3, 0],
+    #     ['apple', 11, 3, 0],
+    #     ['strawberry', 12, 3, 0],
+    #     ['orange', 13, 3, 0],
+    #     ['banana', 14, 3, 0],
+    #     ['plum', 15, 3, 0],
+    #     ['lemon', 16, 3, 0],
+    #     ['bowl', 5, 6, 2], #17
+    #     ['mug', 0, 6, 0], #18
+    #     ['plate', 4, 6, 3], #19
+    #     ['knife', 1, 6, 1], #20
+    #     ['fork', 3, 6, 1], #21
+    #     ['spoon', 2, 6, 1], #22
+    #     ['tennis_ball', 23, 4, 0],
+    #     ['golf_ball', 24, 4, 0],
+    #     ['base_ball', 25, 4, 0],
+    #     ['soccer_ball', 26, 4, 0],
+    #     ['soft_ball', 27, 4, 0],
+    #     ['cube', 28, 4, 0],
+    #     ['dice', 29, 4, 0],
+    #     ['wine', 30, 1, 0],
+    #     ['ice_tea', 31, 1, 0],
+    #     ['orange_juice', 32, 1, 0],
+    #     ['milk', 33, 1, 0],
+    #     ['tropical_juice', 34, 1, 0],
+    #     ['juice_pack', 35, 1, 0],
+    #     ['cereal_red', 36, 1, 0],
+    #     ['cereal_yellow', 37, 1, 0],
+    #     ['coke', 38, 1, 0],
+    #     ['sponge', 39, 0, 1],
+    #     ['scrub', 40, 0, 0],
+    #     ['spam', 41, 2, 0],
+    #     ['shopping_bag_1', 42, 7, 0],
+    #     ['shopping_bag_2', 43, 7, 0],
+    #     ['shopping_bag_3', 44, 7, 0],
+    #     ['cereal_black', 45, 7, 0],
+    #     ['dishwasher_tablet', 46, 7, 0],
+    # ]
 
     OBJECT_TYPES = [
         "cleaning",  # 0

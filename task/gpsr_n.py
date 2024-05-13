@@ -6,6 +6,8 @@ from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
 
+from utils.distancing import distancing, distancing_horizontal
+
 import rospy
 import json
 
@@ -46,19 +48,19 @@ class GPSR:
         }
         
         self.followupName2followupFunc = {
-            "findObj": findObj,
-            "findPrs": findPrs,
-            "meetName": meetName,
-            "placeObjOnPlcmt": placeObjOnPlcmt,
+            # "findObj": findObj,
+            # "findPrs": findPrs,
+            # "meetName": meetName,
+            # "placeObjOnPlcmt": placeObjOnPlcmt,
             "deliverObjToMe": deliverObjToMe,
-            "deliverObjToPrsInRoom": deliverObjToPrsInRoom,
-            "deliverObjToNameAtBeac": deliverObjToNameAtBeac,
-            "talkInfo": talkInfo,
-            "answerQuestion": answerQuestion,
-            "followPrs": followPrs,
-            "followPrsToRoom": followPrsToRoom,
-            "guidePrsToBeacon": guidePrsToBeacon,
-            "takeObj": takeObj
+            # "deliverObjToPrsInRoom": deliverObjToPrsInRoom,
+            # "deliverObjToNameAtBeac": deliverObjToNameAtBeac,
+            # "talkInfo": talkInfo,
+            # "answerQuestion": answerQuestion,
+            # "followPrs": followPrs,
+            # "followPrsToRoom": followPrsToRoom,
+            # "guidePrsToBeacon": guidePrsToBeacon,
+            # "takeObj": takeObj
         }
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parse_objects(objects_data)
@@ -70,27 +72,31 @@ class GPSR:
     def get_yolo_bbox(self, category=None):
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
+        print("original_yolo_bbox", yolo_bbox)
+
         if category:
             categoryItems = self.category2objDict[category]
             print("categoryItems", categoryItems)
             yolo_bbox = [obj for obj in yolo_bbox if self.agent.yolo_module.find_name_by_id(obj[4]) in categoryItems]
         
-        print("yolo_bbox", yolo_bbox)
+        print("final_yolo_bbox", yolo_bbox)
 
         return yolo_bbox
 
     def move(self, loc):
+        print("GPSR Move Start")
         self.agent.move_abs(loc)
         print(f"[MOVE] HSR moved to {loc}")
 
-    def pick(self, obj, loc=None):
-        if loc:
-            self.agent.move_abs(loc)
-            rospy.sleep(2)
-
+    def pick(self, obj):
         # [TODO] Implement how the object can be picked up
         if False:
-            pass
+            self.agent.pose.pick_side_pose('grocery_table_pose2')
+            self.agent.open_gripper()
+            self.agent.move_rel(0, 0.5, wait=True)
+            self.agent.move_rel(0.05, 0, wait=True)
+            self.agent.grasp()
+            self.agent.pose.pick_side_pose('grocery_table_pose1')
 
         else:
             self.agent.say(f"GIVE {obj} to me")
@@ -103,9 +109,11 @@ class GPSR:
 
     def place(self):
         self.agent.open_gripper()
+        self.agent.pose.neutral_pose()
         
     def deliver(self):
         self.agent.open_gripper()
+        self.agent.pose.neutral_pose()
 
     def say(self, text):
         self.agent.say(text)
@@ -121,13 +129,13 @@ def gpsr(agent):
 
     # inputText, _ = agent.stt(10.)
     # agent.say(f"Given Command is {inputText}")
-    
-    inputText = "Give me a baseball from the bedside table"
+
+    inputText = "bring me a peach from the table"
     
     # parse InputText 
     cmdName, params = ultimateParser(inputText)
     
     cmdFunc = g.cmdName2cmdFunc[cmdName]
-    cmdFunc(agent, params)
+    cmdFunc(g, params)
 
     # TODO : repeat 3 times, return to the instruction loc

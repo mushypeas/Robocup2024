@@ -5,15 +5,34 @@ def countObjOnPlcmt(g, params):
     print("Start CountObjOnPlcmt")
     
     # [0] Extract parameters
-    countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
+    try:
+        countVerb = params['countVerb'] 
+    except KeyError:
+        pass
+
+    try:
+        plurCat = params['plurCat']
+    except KeyError:
+        pass
+
+    try:   
+        onLocPrep = params['onLocPrep']
+    except KeyError:
+        pass
+
+    try:    
+       plcmtLoc = params['plcmtLoc']
+    except KeyError:
+        pass
+
     singCat = g.categoryPlur2Sing[plurCat]
 
     # [1] Find the object in the room
     g.move(plcmtLoc)
     
-    yolo_bbox = g.get_yolo_bbox(singCat)
 
     g.say(f"Let me find {plurCat} in the {plcmtLoc}")
+    yolo_bbox = g.get_yolo_bbox(singCat)
     rospy.sleep(5)
 
     numObj = len(yolo_bbox)

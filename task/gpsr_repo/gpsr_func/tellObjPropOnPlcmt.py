@@ -5,13 +5,29 @@ def tellObjPropOnPlcmt(g, params):
     print("Start TellObjPropOnPlcmt")
 
     # [0] Extract parameters
-    tell, comp, loc = params['tellVerb'], params['objComp'], params['plcmtLoc']
+    try:
+        tell = params['tellVerb']
+    except KeyError:
+        pass
+    try:
+        comp = params['objComp']
+    except KeyError:
+        pass
+    try:
+        onLocPrep = params['onLocPrep']
+    except KeyError:
+        pass
+    try:
+        loc = params['plcmtLoc']
+    except KeyError:
+        pass
+
 
     # [1] Move to the specified space
     g.move(loc)
 
     # [2] Find the objects in the room
-    print(f"[FIND] {tell} me what is the {comp} object {loc}")
+    print(f"[FIND] Tell me what is the {comp} object {loc}")
 
     yolo_bbox = g.get_yolo_bbox()
     

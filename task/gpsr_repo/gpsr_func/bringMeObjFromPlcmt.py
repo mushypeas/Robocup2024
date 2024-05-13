@@ -25,4 +25,6 @@ def bringMeObjFromPlcmt(g, params):
 
     # [3] Give the object to the person
     g.move('gpsr_instruction_point')
-    g.place()
+    print('moving to the instruction point')
+    rospy.sleep(5)
+    g.deliver()
