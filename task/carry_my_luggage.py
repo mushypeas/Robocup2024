@@ -252,9 +252,9 @@ class HumanFollowing:
                 # self.human_seg_pos = (center_x + x, center_y + y)
                 topmost_y = np.min(human_y)
                 x_at_topmost_y = human_x[np.argmin(human_y)]
-                self.human_seg_pos = (x_at_topmost_y + x, topmost_y + y)
+                self.human_seg_pos = (x_at_topmost_y + x, topmost_y + y + 10)
                 if topmost_y + y < 1 :
-                    self.human_seg_pos = (x_at_topmost_y + x, 1)
+                    self.human_seg_pos = (x_at_topmost_y + x, 1+10)
                 print(f"human top seg_pos : {self.human_seg_pos}")
             else:
                 print("There is a human box but no segmentation anywhere")
