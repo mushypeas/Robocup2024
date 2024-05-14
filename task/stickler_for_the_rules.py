@@ -3,6 +3,16 @@ from utils.axis_transform import Axis_transform
 import rospy
 import time
 import math
+import sys
+import cv2
+import numpy as np
+import mediapipe as mp
+import open_clip
+from PIL import Image
+import torch
+# from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
+from utils.marker_maker import MarkerMaker
+from utils.axis_transform import Axis_transform
 from std_msgs.msg import Int16MultiArray
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
@@ -18,14 +28,18 @@ sys.path.append('.')
 class ShoeDetection:
     def __init__(self, agent):
         self.agent = agent
-        self.axis_transform = Axis_transform()
-        self.shoe_detected = False
-        self.shoe_position = None
-        # FIXME: return shoe_human_pos when detect guest wearing shoe
-        self.shoe_human_pos = None
+        self.axis_transform = axis_transform
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
                          self._knee_pose_callback)
         self.knee_list = None
+
+        # Initialize the CLIP model
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
+        self.clip_model.load_state_dict(state_dict['CLIP'])
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
@@ -35,47 +49,37 @@ class ShoeDetection:
                 self.min_knee = self.agent.depth_image[y, x]
 
     def find_shoes(self):
-        mp_drawing = mp.solutions.drawing_utils
-        mp_objectron = mp.solutions.objectron
+        # Prompt for CLIP model
+        prompt = "a photo of a"
+        text_inputs = ["human who is wearing shoes", "barefoot person"]
+        text_inputs = [prompt + " " + t for t in text_inputs]
+        tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
-        # For webcam input:
-        with mp_objectron.Objectron(static_image_mode=False,
-                                    max_num_objects=5,
-                                    min_detection_confidence=0.65,
-                                    min_tracking_confidence=0.99,
-                                    model_name='Shoe') as objectron:
-            image = self.agent.rgb_img
-            # To improve performance, optionally mark the image as not writeable to
-            # pass by reference.
-            image.flags.writeable = False
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = objectron.process(image)
+        # Preprocess image
+        image = self.agent.rgb_img
+        img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+        img = self.preprocess(img).unsqueeze(0).to(self.device)
 
-            # Draw the box landmarks on the image.
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            if results.detected_objects is not None:
-                for detected_object in results.detected_objects:
-                    print(detected_object)
-                    mp_drawing.draw_landmarks(
-                        image, detected_object.landmarks_2d, mp_objectron.BOX_CONNECTIONS)
-                    mp_drawing.draw_axis(image, detected_object.rotation,
-                                         detected_object.translation)
+        # Encode image and text features
+        with torch.no_grad():
+            image_features = self.clip_model.encode_image(img)
+            text_features = self.clip_model.encode_text(tokenized_prompt)
+            image_features /= image_features.norm(dim=-1, keepdim=True)
+            text_features /= text_features.norm(dim=-1, keepdim=True)
 
-                    shoe_x = 0
-                    shoe_y = 0
-                    for i in detected_object.landmarks_2d.landmark:
-                        shoe_x += i.x / \
-                            len(detected_object.landmarks_2d.landmark)
-                        shoe_y += i.y / \
-                            len(detected_object.landmarks_2d.landmark)
+            # Calculate text probabilities
+            text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
 
-                    self.shoe_position = [shoe_x, shoe_y]
+        # Convert probabilities to percentages
+        text_probs_percent = text_probs * 100
+        text_probs_percent_np = text_probs_percent.cpu().numpy()
+        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
-                    print("shoes found")
-                    cv2.imshow('MediaPipe Objectron', cv2.flip(image, 1))
-                    cv2.waitKey(1)
-                return True
+        print("Labels probabilities in percentage:", formatted_probs)
+
+        # Determine if shoes are detected by comparing the numeric value
+        if first_prob_percent > 65:
+            return True
         return False
 
     def run(self):
@@ -90,6 +94,10 @@ class ShoeDetection:
             rospy.sleep(1)
 
         return False
+<<<<<<< HEAD
+=======
+
+>>>>>>> ab653a359a51a91539880461d819ede5a840ae3a
 
     def clarify_violated_rule(self):
         _pc = self.agent.pc.reshape(480, 640)
@@ -547,7 +555,7 @@ class DrinkDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(3)
-        self.agent.move_abs_safe('study_search_reverse')
+        # self.agent.move_abs_safe('study_search_reverse')
 
 
 

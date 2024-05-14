@@ -297,6 +297,9 @@ class YoloModule:
             try:
                 # # 2. soft-constraint thresholding by objects depth
                 object_depth = 0.1  # 10cm
+                print(f"found object id: {class_id}")
+                print(f"found object: {OBJECT_LIST[class_id][0]}")
+                print(f"points_by_base_link: {points_by_base_link}")
                 point_min_x = round(np.nanmin(points_by_base_link[:, 0]), 4)
                 points_by_base_link = points_by_base_link[
                     np.where((points_by_base_link[:, 0] < point_min_x + object_depth))]
