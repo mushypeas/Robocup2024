@@ -1,6 +1,8 @@
 import rospy
 from std_msgs.msg import Int16MultiArray, String
 from cv_bridge import CvBridge
+from message_filters import ApproximateTimeSynchronizer, Subscriber
+
 import sys
 sys.path.append('.')
 from utils.depth_to_pc import Depth2PC
@@ -67,13 +69,26 @@ class HumanFollowing:
         #                               'knife', 'bowl', 'spoon', 'blue_mug', 'tennis_ball', 'soft_scrub', 'yellow_bag', 'blue_bag', 'white_bag',\
         #                                   'plum', 'peach', 'orange']
         self.tiny_object_list = []
-        rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
+
+
+    ####sync_callback_240514
+        self.byte_sub = rospy.Subscriber(bytetrack_topic, Image)
+        self.segment_sub = rospy.Subscriber(segment_topic, Image)
+        
+        self.sync = ApproximateTimeSynchronizer([self.byte_sub, self.segment_sub], queue_size=10, slop=0.1)
+        self.sync.registerCallback(self.sync_callback)
+    ####
+        # rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
-        rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
+        # rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
-
-
+    
+    ####sync_callback_240514
+    def sync_callback(self, byte_data, segment_data):
+        self._byte_cb(byte_data)
+        self._segment_cb(segment_data)
+    ####   
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
         # self.agent.pose.head_pan_tilt(0, -self.tilt_angle*0.5)
