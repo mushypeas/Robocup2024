@@ -41,6 +41,10 @@ class JointPose:
                 self.joint_value['wrist_flex_joint'] = data.position[i]
             if name == 'wrist_roll_joint':
                 self.joint_value['wrist_roll_joint'] = data.position[i]
+            if name == 'head_pan_joint':
+                self.joint_value['head_pan_joint'] = data.position[i]
+            if name == 'head_tilt_joint':
+                self.joint_value['head_tilt_joint'] = data.position[i]
 
     def check_grasp(self, threshold=-1.74):
         print('gripper_radian', self.gripper_radian)
@@ -559,16 +563,20 @@ class JointPose:
 
     def place_shelf_pose(self, table):
         target_table_height = self.table_dimension[table][2]
-        offset = 0.15
-        robot_default_height = 0.7
-        arm_lift_joint = target_table_height - robot_default_height + offset
 
-        self.set_pose(['arm_lift_joint',
-                       'arm_flex_joint',
-                       'arm_roll_joint',
-                       'wrist_flex_joint',
-                       'wrist_roll_joint'],
-                      [arm_lift_joint, -0.5, 0, -1.07, 0])
+        if target_table_height < 0.9:
+            self.place_side_pose(table=table)
+        else:
+            offset = 0.15
+            robot_default_height = 0.7
+            arm_lift_joint = target_table_height - robot_default_height + offset
+
+            self.set_pose(['arm_lift_joint',
+                        'arm_flex_joint',
+                        'arm_roll_joint',
+                        'wrist_flex_joint',
+                        'wrist_roll_joint'],
+                        [arm_lift_joint, -0.5, 0, -1.07, 0])
 
     def pick_side_inclined_pose(self, table):
         target_table_height = self.table_dimension[table][2]
@@ -677,7 +685,7 @@ class JointPose:
                       [0.4, 0, -1.57, 0, 1.57])
 
 
-    def table_search_pose(self):
+    def table_search_pose(self, head_tilt=-0.52):
         self.gripper.grasp(0.1)
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
@@ -685,7 +693,7 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint',
                        'head_tilt_joint'],
-                      [0.2, 0, -1.57, -1.57, -1.04, -0.52])
+                      [0.2, 0, -1.57, -1.57, -1.04, head_tilt])
 
     def table_search_pose_high(self):
         self.gripper.grasp(0.1)
@@ -763,29 +771,29 @@ class JointPose:
                       [arm_lift_joint, 0, -1.57, -1.57 * 2 / 3, 1.57])
 
     def head_tilt(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['head_tilt_joint'], [angle])
 
     def head_pan(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['head_pan_joint'], [angle])
 
     def head_pan_tilt(self, pan_angle, tilt_angle):
-        pan_angle = math.radians(int(pan_angle))
-        tilt_angle = math.radians(int(tilt_angle))
+        pan_angle = math.radians(float(pan_angle))
+        tilt_angle = math.radians(float(tilt_angle))
         self.set_pose(["head_pan_joint", "head_tilt_joint"], [pan_angle, tilt_angle])
     
     def wrist_roll(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['wrist_roll_joint'], [angle])
 
     def wrist_flex(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['wrist_flex_joint'], [angle])
 
     def arm_flex(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['arm_flex_joint'], [angle])
     def arm_roll(self, angle):
-        angle = math.radians(int(angle))
+        angle = math.radians(float(angle))
         self.set_pose(['arm_roll_joint'], [angle])
