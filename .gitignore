@@ -17,3 +17,4 @@ Tools/xtioncam_capture/image/*
 *.caffemodel
 *.pbmm
 .DS_Store
+Tools/BoundingBox_Tool/Labels/*
