@@ -31,48 +31,65 @@ class CheckSeat():
         self.face_save_idx = 0
 
     def check_empty_seat(self, agent, check_face=False):
-        seat_info = np.full((6, 2), -1)  # [if seated, who]
+        # seat_info = np.full((6, 2), -1)  # [if seated, who]
+        seat_info = np.full((len(self.head_pan_angle), 2), -1)
+
         width = agent.rgb_img.shape[1]
         user_location_list = []
         user_face_data_list = []
 
-        # left -> middle -> right
-        # sofa range
-
         # left view
-        print("########## check_empty_seat left view ##########")
         agent.pose.head_pan(self.head_pan_angle[0])
         rospy.sleep(1)
 
         if self.calibration_mode:
-            self.check_calibration_mode(agent, self.face_threshold, [140, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
+            # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
+            self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
+            # # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
+            # for user in user_locations:
+            #     if self.door_range <= user[0] < width / 2:
+            #         seat_info[0][0] = 1
+            #     elif width / 2 <= user[0] < width:
+            #         seat_info[1][0] = 1
+
+            # 0514
             for user in user_locations:
-                if self.door_range <= user[0] < width / 2:
+                if 200 <= user[0] < 360:
                     seat_info[0][0] = 1
-                elif width / 2 <= user[0] < width:
+                elif 360 <= user[0] < 560:
                     seat_info[1][0] = 1
 
-        # sofa view
-        print("########## check_empty_seat middle view ##########")
+        # middle view
         agent.pose.head_pan(0)
         rospy.sleep(1)
 
         if self.calibration_mode:
-            self.check_calibration_mode(agent, self.face_threshold, [130, 580])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [130, 580])
+            # self.check_calibration_mode(agent, self.face_threshold, [130, 580])
+            self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [130, 580])
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
+            # 기존코드
+            # for user in user_locations:
+            #     if self.sofa_range[0] <= user[0] < self.sofa_width / 2 + self.sofa_range[0]:
+            #         seat_info[2][0] = 1
+            #     else:
+            #         seat_info[3][0] = 1
+
+            # 0514
             for user in user_locations:
-                if self.sofa_range[0] <= user[0] < self.sofa_width / 2 + self.sofa_range[0]:
+                if 100 <= user[0] < 320:
                     seat_info[2][0] = 1
-                else:
+                elif 320 <= user[0] < 500:
                     seat_info[3][0] = 1
 
                 # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
@@ -87,32 +104,45 @@ class CheckSeat():
                 #     seat_info[6][0] = 1
 
         # right view
-        print("########## check_empty_seat right view ##########")
-        agent.pose.head_pan(self.head_pan_angle[-1])
+        # agent.pose.head_pan(self.head_pan_angle[-1])
+        agent.pose.head_pan(self.head_pan_angle[-2])
         rospy.sleep(1)
 
         if self.calibration_mode:
-            self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
+            # self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
+            self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
+        user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
         if user_locations is not None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            for user in user_locations:
-                if 0 <= user[0] < width / 2:
-                    seat_info[4][0] = 1
-                elif width / 2 <= user[0] < width:
-                    seat_info[5][0] = 1
+            # 기존 코드
+            # for user in user_locations:
+            #     if 0 <= user[0] < width / 2:
+            #         seat_info[4][0] = 1
+            #     elif width / 2 <= user[0] < width:
+            #         seat_info[5][0] = 1
 
-        # save host face image
-        if self.host_face_data is None and len(user_face_data_list):
-            self.host_face_data = user_face_data_list[0]
+            # 0514
+            for user in user_locations:
+                if 80 <= user[0] < 210:
+                    seat_info[4][0] = 1
+                elif 210 <= user[0] < 360:
+                    seat_info[5][0] = 1
+                elif 360 <= user[0] < 560:
+                    seat_info[6][0] = 1
+
+        # # save host face image
+        # if self.host_face_data is None and len(user_face_data_list):
+        #     self.host_face_data = user_face_data_list[0]
 
         # identify seated people
         if self.host_face_data is not None:
             host_idx = self.face_id.check_host(self.host_face_data, user_face_data_list)
         else:
             host_idx = 0
+            self.host_face_data = user_face_data_list[0]
         print('check_seat check_empty_seat host_idx: ', host_idx)
 
         user_searched_idx = 0
@@ -139,7 +169,8 @@ class CheckSeat():
 
         face_candidate, locations_candidate = [], []
         if len(faces) != 0:
-            agent.say("Person detected.\n Put your face forward\n and look at me.", show_display=True)
+            # 그냥 tts 지워버릴까?
+            # agent.say("Person detected.\n Put your face forward\n and look at me.", show_display=True)
             rospy.sleep(2.5)
             for i in range(6):
                 img = agent.rgb_img
@@ -147,18 +178,17 @@ class CheckSeat():
                 face_candidate.append(temp_faces)
                 locations_candidate.append(temp_locations)
                 rospy.sleep(0.4)
-            print("check_seat check person detected len(face_candidate): ", len(face_candidate))
-            print("check_seat check len(locations_candidate): ", len(locations_candidate))
             for i in range(6):
                 if len(face_candidate[5 - i]) != 0:
                     faces = face_candidate[5 - i]
                     locations = locations_candidate[5 - i]
-            agent.say("Thank you")
+            # agent.say("Thank you")
 
             for f, face_box in zip(faces, locations):
-                if (f.shape[0] + f.shape[1]) * 0.5 > face_threshold:# and view_range[0] <= face_box[0] and face_box[0] <= view_range[1]:
-                    print("Check seat face size:", (f.shape[0] + f.shape[1]) * 0.5)
-                    print("Check seat face location:", face_box)
+                # 기존 코드 (view range 사용 안함)
+                # if (f.shape[0] + f.shape[1]) * 0.5 > face_threshold:# and view_range[0] <= face_box[0] and face_box[0] <= view_range[1]:
+                # 0514
+                if (f.shape[0] + f.shape[1]) * 0.5 > face_threshold and view_range[0] <= face_box.xmin*640 and (face_box.xmin+face_box.width)*640 <= view_range[1]:
                     guest_faces.append(cv2.cvtColor(f, cv2.COLOR_RGB2BGR))
                     box_info = [(round(face_box.xmin * img.shape[1]), round(face_box.ymin * img.shape[0])),
                                 (round((face_box.xmin + face_box.width) * img.shape[1]), round((face_box.ymin + face_box.height) * img.shape[0]))]
@@ -166,6 +196,10 @@ class CheckSeat():
 
                     cv2.imwrite(f"/home/tidy/Robocup2024/module/human_attribute/face_detection/face_img_debug/{self.face_save_idx}.png", cv2.cvtColor(f, cv2.COLOR_RGB2BGR))
                     self.face_save_idx += 1
+                else:
+                    print("Check face threshold: ", (f.shape[0] + f.shape[1]) * 0.5 > face_threshold)
+                    print("Check face location left: ", view_range[0] <= face_box.xmin*640)
+                    print("Check face location right: ", (face_box.xmin+face_box.width)*640 <= view_range[1])
 
             try:
                 print('check_seat check guest_locations(1): ', guest_locations)
@@ -218,14 +252,17 @@ class CheckSeat():
     def point_seat(self, agent, seat_idx):
         agent.pose.head_pan(0)
 
-        if seat_idx <= 1:
-            agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[0]))
-        elif seat_idx <= 2:
-            agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[1]))
-        elif seat_idx <= 3:
-            agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[2]))
-        else:
-            agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[3]))
+        # 기존코드
+        # if seat_idx <= 1:
+        #     agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[0]))
+        # elif seat_idx <= 2:
+        #     agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[1]))
+        # elif seat_idx <= 3:
+        #     agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[2]))
+        # else:
+        #     agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[3]))
+        # 0514
+        agent.move_rel(0, 0, yaw=math.radians(self.head_pan_angle[seat_idx]))
         # seat_idx -= 2
         # if 0 <= seat_idx <= 4:
         #     print('---------------------------------', -self.point_seat_angle * seat_idx + self.point_seat_angle * 2)
@@ -241,62 +278,71 @@ class CheckSeat():
 
     def gaze_seat(self, agent, seat_idx, guest_seat_idx=None):
         if guest_seat_idx is None:
-            try:
-                if seat_idx <= 1:
-                    agent.pose.head_pan_tilt(self.head_pan_angle[0], 0)
-                elif seat_idx <= 2:
-                    agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
-                elif seat_idx <= 3:
-                    agent.pose.head_pan_tilt(self.head_pan_angle[2], 0)
-                else:
-                    agent.pose.head_pan_tilt(self.head_pan_angle[3], 0)
-                # elif seat_idx <= 4:
-                #     agent.pose.head_pan_tilt(self.head_pan_angle[3], 0)
-                # elif seat_idx <= 5:
-                #     agent.pose.head_pan_tilt(self.head_pan_angle[4], 0)
-                # elif seat_idx <= 6:
-                #     agent.pose.head_pan_tilt(self.head_pan_angle[5], 0)
-                # elif seat_idx <= 7:
-                #     agent.pose.head_pan_tilt(self.head_pan_angle[6], 0)
-            except:
-                agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
+            # 기존 코드
+            # try:
+            #     if seat_idx <= 1:
+            #         agent.pose.head_pan_tilt(self.head_pan_angle[0], 0)
+            #     elif seat_idx <= 2:
+            #         agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
+            #     elif seat_idx <= 3:
+            #         agent.pose.head_pan_tilt(self.head_pan_angle[2], 0)
+            #     else:
+            #         agent.pose.head_pan_tilt(self.head_pan_angle[3], 0)
+            #     # elif seat_idx <= 4:
+            #     #     agent.pose.head_pan_tilt(self.head_pan_angle[3], 0)
+            #     # elif seat_idx <= 5:
+            #     #     agent.pose.head_pan_tilt(self.head_pan_angle[4], 0)
+            #     # elif seat_idx <= 6:
+            #     #     agent.pose.head_pan_tilt(self.head_pan_angle[5], 0)
+            #     # elif seat_idx <= 7:
+            #     #     agent.pose.head_pan_tilt(self.head_pan_angle[6], 0)
+            # except:
+            #     agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
+
+            # 0514
+            agent.pose.head_pan_tilt(self.head_pan_angle[seat_idx], 0)
+
         else:
             try:
-                if seat_idx <= 1:
-                    seat_idx = 0
-                elif seat_idx <= 2:
-                    seat_idx = 1
-                elif seat_idx <= 3:
-                    seat_idx = 2
-                else:
-                    seat_idx = 3
-                # elif seat_idx <= 5:
-                #     seat_idx = 4
-                # elif seat_idx <= 6:
-                #     seat_idx = 5
-                # elif seat_idx <= 7:
-                #     seat_idx = 6
+                # 기존 코드 주석처리
+                # if seat_idx <= 1:
+                #     seat_idx = 0
+                # elif seat_idx <= 2:
+                #     seat_idx = 1
+                # elif seat_idx <= 3:
+                #     seat_idx = 2
+                # else:
+                #     seat_idx = 3
+                # # elif seat_idx <= 5:
+                # #     seat_idx = 4
+                # # elif seat_idx <= 6:
+                # #     seat_idx = 5
+                # # elif seat_idx <= 7:
+                # #     seat_idx = 6
 
-                if guest_seat_idx <= 1:
-                    guest_seat_idx = 0
-                elif guest_seat_idx <= 2:
-                    guest_seat_idx = 1
-                elif guest_seat_idx <= 3:
-                    guest_seat_idx = 2
-                else:
-                    guest_seat_idx = 3
-                # elif guest_seat_idx <= 4:
+                # if guest_seat_idx <= 1:
+                #     guest_seat_idx = 0
+                # elif guest_seat_idx <= 2:
+                #     guest_seat_idx = 1
+                # elif guest_seat_idx <= 3:
+                #     guest_seat_idx = 2
+                # else:
                 #     guest_seat_idx = 3
-                # elif guest_seat_idx <= 5:
-                #     guest_seat_idx = 4
-                # elif guest_seat_idx <= 6:
-                #     guest_seat_idx = 5
-                # elif guest_seat_idx <= 7:
-                #     guest_seat_idx = 6
+                # # elif guest_seat_idx <= 4:
+                # #     guest_seat_idx = 3
+                # # elif guest_seat_idx <= 5:
+                # #     guest_seat_idx = 4
+                # # elif guest_seat_idx <= 6:
+                # #     guest_seat_idx = 5
+                # # elif guest_seat_idx <= 7:
+                # #     guest_seat_idx = 6
 
                 agent.pose.head_pan_tilt((self.head_pan_angle[seat_idx] + self.head_pan_angle[guest_seat_idx]) / 2.0, 0)
             except:
-                agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
+                # 기존 코드
+                # agent.pose.head_pan_tilt(self.head_pan_angle[1], 0)
+                # 0514
+                agent.pose.head_pan_tilt(self.head_pan_angle[seat_idx], 0)
 
     def check_calibration_mode(self, agent, face_threshold, view_range):
         while True:
@@ -326,7 +372,7 @@ class CheckSeat():
             cv2.line(img, (self.sofa_range[0], 0), (self.sofa_range[0], 479), (0, 255, 0), 2)
             cv2.line(img, (self.sofa_range[1], 0), (self.sofa_range[1], 479), (0, 255, 0), 2)
 
-            # sofa seat
+            # sofa seat (sofa half line)
             cv2.line(img, (int(self.sofa_width / 2) + self.sofa_range[0], 0), (int(self.sofa_width / 2) + self.sofa_range[0], 479), (255, 255, 0), 2)
 
             # cv2.line(img, (int(self.sofa_width / 5) + self.sofa_range[0], 0),
@@ -338,7 +384,7 @@ class CheckSeat():
             # cv2.line(img, (int(self.sofa_width / 5 * 4) + self.sofa_range[0], 0),
             #          (int(self.sofa_width / 5 * 4) + self.sofa_range[0], 479), (255, 255, 0), 2)
 
-            # half line
+            # half line (image)
             cv2.line(img, (img.shape[1] // 2, 0), (img.shape[1] // 2, 479), (0, 0, 255), 2)
 
             cv2.imshow('full img', img)

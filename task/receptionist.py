@@ -55,7 +55,7 @@ def receptionist(agent):
 
     cloth_threshold = 0.15
     face_threshold = 40 #38
-    face_threshold2 = 38 #35
+    face_threshold2 = 48 #38 #35
 
     ##TODO
     sofa_range = [130, 580]
@@ -65,11 +65,18 @@ def receptionist(agent):
     # closer the better to the sofa to cut the sofa side view
 
     #################### TODO: seat angle ####################
-    #150cm setting
-    sofa_point_angle = 20
-    chair_point_angle = 50
-    head_pan_angle = [chair_point_angle-8, sofa_point_angle-3, -sofa_point_angle, -chair_point_angle]
+    # #150cm setting
+    # sofa_point_angle = 20
+    # chair_point_angle = 50
+    # head_pan_angle = [chair_point_angle-8, sofa_point_angle-3, -sofa_point_angle, -chair_point_angle]
+    # # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
+    #################### 0514 test ####################
+    sofa_point_angle = 0
+    # chair_point_angle = 50
+    head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65]
+    ### seat_scan이 중심 바라보도록 하는게 중요, 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
     # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
+
 
     # 150cm setting, sofa side view is visible
     # head_pan_angle = [60, 25, 0, -25, -60]
@@ -88,7 +95,7 @@ def receptionist(agent):
     name_host = 'john'
     drink_host = 'milk'
 
-    if calibration_mode:
+    if calibration_mode or not calibration_mode:
         name1 = 'juno'
         drink1 = 'lemonade'
         name2 = 'matilda'
@@ -103,7 +110,7 @@ def receptionist(agent):
     cs = CheckSeat(face_threshold, face_threshold2, sofa_range,door_range, head_pan_angle, sofa_point_angle, calibration_mode)
     face_attr = FaceAttribute()
 
-    #####################################################3
+    # #####################################################3
     ### main scenario ###
     agent.pose.move_pose()
     agent.move_abs_safe(start_position)
@@ -261,15 +268,20 @@ def receptionist(agent):
     
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
-    # input('##### Debug 5 #####')
-    # agent.pose.move_pose()
+
+    # # input('##### Debug 5 #####')
+    agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
     # input('##### Debug 6-1 #####')
     ########## 0505
 
     #################### TODO: check seat ####################
-    agent.say('Searching empty seat.')
+    # agent.say('Searching empty seat.')
+    agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
+    rospy.sleep(3.5)
+    agent.say("Please put your face forward\n and look at me", show_display=True)
+    rospy.sleep(3.5)
     first_seat_info = cs.check_empty_seat(agent)
     # input('##### Debug 6-2 #####')
 
@@ -280,10 +292,12 @@ def receptionist(agent):
     print('First Seat info:', first_seat_info, 'First guest Seat:', first_2b_seated, 'Host Seat:', host_seated)
     # input('##### Debug 7 #####')
 
+
     cs.point_seat(agent, first_2b_seated)
     agent.say(name1+'. Please sit down there', show_display=True)
     rospy.sleep(1)
     # input('##### Debug 8 #####')
+    # return 0
 
     #################### TODO: introduce ####################
     # 5. Introduce each other
@@ -438,7 +452,12 @@ def receptionist(agent):
     ########## 0505
 
     # 7-1. check the existing people first
-    agent.say('Searching empty seat.')
+    # agent.say('Searching empty seat.')
+    agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
+    rospy.sleep(3.5)
+    agent.say("Please put your face forward\n and look at me", show_display=True)
+    rospy.sleep(3.5)
+    
     second_seat_info = cs.check_empty_seat(agent)
     second_2b_seated = cs.seat_available(second_seat_info)
     host_seated, first_seated = cs.crowd_seat(second_seat_info)
