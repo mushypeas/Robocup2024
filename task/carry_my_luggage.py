@@ -378,13 +378,13 @@ class HumanFollowing:
             #     return 'll'
             # elif center[1] < 180:
             #     self.angle_queue.append(-1)
-                return 'l'
+                # return 'l'
             # elif center[1] > 460:
             #     self.angle_queue.append(1)
             #     return 'r'
             # elif center[1] > 510:
             #     self.angle_queue.append(1)
-                return 'rr'
+                # return 'rr'
             elif center[1] > 560:
                 self.angle_queue.append(1)
                 return 'rrr'   
@@ -421,6 +421,7 @@ class HumanFollowing:
         # print(f"real human box size : {human_box_size}")
         _num_rotate=0
         _depth = self.barrier_check()
+        _depth = np.mean(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
 
