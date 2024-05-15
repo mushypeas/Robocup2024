@@ -48,7 +48,7 @@ class HumanFollowing:
         self.bridge = CvBridge()
         self.show_byte_track_image = False
         self.track_queue = deque()
-        self.angle_queue = deque(maxlen=5)
+        self.angle_queue = deque(maxlen=20)
         self.calcz_queue = deque(maxlen=10)
         self.obstacle_offset = 0.0
         self.last_say = time.time()
@@ -523,10 +523,10 @@ class HumanFollowing:
             print("self.angle_queue", self.angle_queue)
             print("last_5_angle_average", last_5_angle_average)
             if last_5_angle_average < 0: # HSR has rotated left
-                self.agent.move_rel(0,0.3,0, wait=False) #then, HSR is intended to move right
+                self.agent.move_rel(0,0.7,0, wait=False) #then, HSR is intended to move right
                 rospy.sleep(1)
             else: #  HSR has rotated right
-                self.agent.move_rel(0,-0.3,0, wait=False)
+                self.agent.move_rel(0,-0.7,0, wait=False)
             # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
             rospy.sleep(1)
 
@@ -739,9 +739,9 @@ class HumanFollowing:
                 # 2.4 move to human
 
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
-            if target_xyyaw[2] > 0:
+            if target_xyyaw[2] > 0.1:
                 self.angle_queue.append(-1)
-            elif target_xyyaw[2] < 0:
+            elif target_xyyaw[2] < -0.1:
                 self.angle_queue.append(1)
 
             rospy.sleep(.5)
@@ -1350,6 +1350,7 @@ def carry_my_luggage(agent):
             cur_track = track_queue[len(track_queue)-i-1]
             # coordinate = track_queue.pop()
             while not agent.move_abs_coordinate_safe(cur_track):
+                agent.move_rel(0, 0, 0, wait=False)
                 print("retry")
             calc_z= 2000
 
