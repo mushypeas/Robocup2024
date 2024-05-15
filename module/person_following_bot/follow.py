@@ -231,6 +231,8 @@ class HumanReidAndFollower:
 			calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
 			if seg_human_point is not None : 
 				calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
+				if calc_z == 0:
+					calc_z = depth_frame[cropped_y, cropped_x]
 			calc_z *= np.cos(self.tilt_angle)
 			self.calc_z_prev = calc_z
 			# twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,

@@ -1,7 +1,8 @@
 import rospy
 from std_msgs.msg import Int16MultiArray, String
 from cv_bridge import CvBridge
-from message_filters import ApproximateTimeSynchronizer, Subscriber
+from message_filters import ApproximateTimeSynchronizer  
+from message_filters import Subscriber as sub
 
 import sys
 sys.path.append('.')
@@ -26,15 +27,9 @@ import time
 from sklearn.preprocessing import StandardScaler
 import subprocess
 
-'''
-
-foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
-
-
-'''
 
 class HumanFollowing:
-    def __init__(self, agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option):
+    def __init__(self, agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option, seg_on):
         self.agent = agent
         rospy.sleep(2)
         # self.omni_client = dynamic_reconfigure.client.Client("/omni_path_follower", config_callback=self.omni_cb)
@@ -54,6 +49,7 @@ class HumanFollowing:
         self.show_byte_track_image = False
         self.track_queue = deque()
         self.angle_queue = deque(maxlen=5)
+        self.calcz_queue = deque(maxlen=10)
         self.obstacle_offset = 0.0
         self.last_say = time.time()
         self.tilt_angle = tilt_angle
@@ -63,7 +59,14 @@ class HumanFollowing:
         self.human_seg_pos = None
         self.image_size = None
         self.image_shape = None
+        self.calc_z = None
+        self._depth = None
+        self.depth = None
+        self.twist = None
+        self.seg_on = seg_on
+        self.last_chance = 1
         bytetrack_topic = '/snu/bytetrack_img'
+        segment_topic = '/deeplab_ros_node/segmentation'
         # self.tiny_object_list = ['pink_milk', 'blue_milk', 'coke', 'banana', 'apple', 'carrot', 'strawberry', 'sweet_potato', 'lemon', \
         #                           'cheezit', 'strawberry_jello', 'chocolate_jello', 'sugar', 'mustard', 'spam', 'tomato_soup', 'fork', 'plate',\
         #                               'knife', 'bowl', 'spoon', 'blue_mug', 'tennis_ball', 'soft_scrub', 'yellow_bag', 'blue_bag', 'white_bag',\
@@ -71,23 +74,29 @@ class HumanFollowing:
         self.tiny_object_list = []
 
 
-    ####sync_callback_240514
-        self.byte_sub = rospy.Subscriber(bytetrack_topic, Image)
-        self.segment_sub = rospy.Subscriber(segment_topic, Image)
+    # ####sync_callback_240514
+    #     self.byte_sub = sub(bytetrack_topic, Image)
+    #     self.segment_sub = sub(segment_topic, Image)
         
-        self.sync = ApproximateTimeSynchronizer([self.byte_sub, self.segment_sub], queue_size=10, slop=0.1)
-        self.sync.registerCallback(self.sync_callback)
-    ####
-        # rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
+    #     self.sync = ApproximateTimeSynchronizer([self.byte_sub, self.segment_sub], queue_size=10, slop=0.1)
+    #     self.sync.registerCallback(self.sync_callback)
+    # ####
+        rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
-        # rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
+        if self.seg_on:
+            rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
+        self.image_pub = rospy.Publisher('/human_segmentation_with_point', Image, queue_size=10)
     
     ####sync_callback_240514
-    def sync_callback(self, byte_data, segment_data):
-        self._byte_cb(byte_data)
-        self._segment_cb(segment_data)
+    # def sync_callback(self, byte_data, segment_data):
+    #     self._byte_cb(byte_data)
+    #     self._segment_cb(segment_data)
+    #     self.human_info_ary = copy.deepcopy(self.human_box_list)
+    #     self.depth = np.asarray(self.d2pc.depth)
+    #     self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, self.depth, self.human_seg_pos)
+    #     self._depth = self.barrier_check()
     ####   
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
@@ -183,6 +192,11 @@ class HumanFollowing:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
                                   np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
                                   data_list[5]]
+        if not self.seg_on:    
+            self.human_info_ary = self.human_box_list
+            depth = np.asarray(self.agent.depth_image)
+            self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
+            self._depth = self.barrier_check()
 
     def _segment_cb(self, data):
         if self.human_box_list[0] == None:
@@ -190,26 +204,35 @@ class HumanFollowing:
             self.human_seg_pos = None
         else :
             # print(data)
+            depth = np.asarray(self.agent.depth_image)
+
             x = self.human_box_list[1][0]
             y = self.human_box_list[1][1]
             w = self.human_box_list[1][2]
             h = self.human_box_list[1][3]
+            data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
+
+            H, W = data_img.shape
+            cropped_y_max = max(min(y + h, H-1), 0)
+            cropped_x_max = max(min(x + w, W-1), 0)
+            cropped_y = max(min(y, H-1), 0)
+            cropped_x = max(min(x, W-1), 0)
+            # print("self.human_box_list[1]: ", self.human_box_list[1])
             # data_img = data
             data.encoding='mono16'
             # print(len(data))
-            data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
             # print(data_img)
             # data_img = cv2.imread(data, -1)
             # cv2.imshow("data image", data_img*10)
             # print(f"data_img shape : {data_img.shape}")
             # print(f"self.imag shape : {self.image_shape}")
-            seg_size = data_img.shape
+            # print("seg_size:", seg_size) ######## 480, 640 즉 (y,x)
             # data_img = cv2.resize(data_img, self.image_shape)
-            crop_img = data_img[y:y+h, x:x+w]
+            crop_img = data_img[cropped_y:cropped_y_max,cropped_x:cropped_x_max]
             # cv2.imshow("crop image", crop_img)
             # print(f"crop_img : {crop_img.shape}")
             # print(f"original human_box size : {self.human_box_list[1]}")
-            print(f"original human box center : {self.human_box_list[1][0] + self.human_box_list[1][2]//2, self.human_box_list[1][1] + self.human_box_list[1][3]//2}")
+            # print(f"original human box center x,y: {self.human_box_list[1][0] + self.human_box_list[1][2]//2, self.human_box_list[1][1] + self.human_box_list[1][3]//2}")
 
             # gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
             # # _, th = cv2.threshold(gray, 127, 255, cv2.THRESH_BINARY)
@@ -258,6 +281,9 @@ class HumanFollowing:
 
             #####################BRANCH 2. LABEL=15면 사람임###################
 
+            byte_y = max(min(y + h//4, H-1), 0)
+            byte_x = max(min(x + w//2, W-1), 0)
+
 
             human_mask = crop_img == 15
             human_y, human_x = np.where(human_mask)
@@ -265,17 +291,47 @@ class HumanFollowing:
             if human_y.size>0 and human_x.size>0:
                 # center_x, center_y = int(np.mean(human_x)), int(np.mean(human_y))
                 # self.human_seg_pos = (center_x + x, center_y + y)
-                topmost_y = np.min(human_y)
-                x_at_topmost_y = human_x[np.argmin(human_y)]
-                self.human_seg_pos = (x_at_topmost_y + x, topmost_y + y + 10)
-                if topmost_y + y < 1 :
-                    self.human_seg_pos = (x_at_topmost_y + x, 1+10)
-                print(f"human top seg_pos : {self.human_seg_pos}")
+                # topmost_y = np.max(human_y)
+                # mean_y = int(np.mean(human_y))
+                min_y = int(np.min(human_y))
+                if min_y < 0:
+                    min_y = 0
+                mean_x = int(np.mean(human_x))
+                print("y", y)
+                # x_at_topmost_y = human_x[np.argmax(human_y)]
+
+
+                #x,y
+                # self.human_seg_pos = (x_at_topmost_y + x, topmost_y + y - 10)
+                if y < 0:
+                    y = 0
+                self.human_seg_pos = (mean_x + x, min_y + y)
+                if min_y + y > 480:
+                    self.human_seg_pos = (mean_x + x, 480-10)
+                # print(f"human top seg_pos x,y: {self.human_seg_pos}")
+                depth_img_8bit = cv2.convertScaleAbs(data_img, alpha=(255.0/65535.0))
+                depth_img_3channel = cv2.cvtColor(depth_img_8bit, cv2.COLOR_GRAY2BGR)
+                cv2.circle(depth_img_3channel, (self.human_seg_pos[0], self.human_seg_pos[1]), 5, (0, 0, 255), -1)
+                cv2.circle(depth_img_3channel, (byte_x, byte_y), 5, (255, 0, 0), -1)
+
+# Convert to 3-channel
+                seg_img_msg = self.bridge.cv2_to_imgmsg(depth_img_3channel, 'bgr8')
+                seg_img_msg.header = data.header
+                self.image_pub.publish(seg_img_msg)
+            
+        
+            
             else:
                 print("There is a human box but no segmentation anywhere")
                 self.human_seg_pos = None
 
-
+            # self.human_info_ary = copy.deepcopy(self.human_box_list)
+            self.human_info_ary = self.human_box_list
+            # print(f"self human info ary : {self.human_info_ary}")
+            # depth = np.asarray(self.d2pc.depth)
+            # print(f"depth : {depth}")
+            self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
+            self._depth = self.barrier_check()
             #####################BRANCH 2. LABEL=15면 사람임###################
 
 
@@ -288,28 +344,50 @@ class HumanFollowing:
         w = human_box_list[1][2]
         h = human_box_list[1][3]
         center = [y + int(h/2), x + int(w/2)] # (y,x)
-        # print("center", center)
+        if self.seg_on:
+            if self.human_seg_pos is not None:
+                (x,y) = self.human_seg_pos
+                center = y,x
+
+        print("center", center)
         # human_location = 'c'
         if location:
+            # if center[1] < 80:
+            #     self.angle_queue.append(-1)
+            #     return 'lll'
+            # elif center[1] < 110:
+            #     self.angle_queue.append(-1)
+            #     return 'll'
+            # elif center[1] < 140:
+            #     self.angle_queue.append(-1)
+            #     return 'l'
+            # elif center[1] > 500:
+            #     self.angle_queue.append(1)
+            #     return 'r'
+            # elif center[1] > 530:
+            #     self.angle_queue.append(1)
+            #     return 'rr'
+            # elif center[1] > 560:
+            #     self.angle_queue.append(1)
+            #     return 'rrr'
             if center[1] < 80:
                 self.angle_queue.append(-1)
                 return 'lll'
-            elif center[1] < 110:
-                self.angle_queue.append(-1)
-                return 'll'
-            elif center[1] < 140:
-                self.angle_queue.append(-1)
+            # elif center[1] < 130:
+            #     self.angle_queue.append(-1)
+            #     return 'll'
+            # elif center[1] < 180:
+            #     self.angle_queue.append(-1)
                 return 'l'
-            elif center[1] > 500:
-                self.angle_queue.append(1)
-                return 'r'
-            elif center[1] > 530:
-                self.angle_queue.append(1)
+            # elif center[1] > 460:
+            #     self.angle_queue.append(1)
+            #     return 'r'
+            # elif center[1] > 510:
+            #     self.angle_queue.append(1)
                 return 'rr'
             elif center[1] > 560:
                 self.angle_queue.append(1)
-                return 'rrr'
-            
+                return 'rrr'   
 
         if center[1] < 0 or center[1] > 640:
             return True # stop
@@ -318,8 +396,9 @@ class HumanFollowing:
     
     def barrier_check(self, looking_downside=True):
         # _depth = self.agent.depth_image[:150, 10:630]
+
         if (looking_downside):
-            _depth = self.agent.depth_image[200:280, 280:640] / 1000 # 480, 640
+            _depth = self.agent.depth_image[200:280, 280:360] / 1000 # 480, 640
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -328,35 +407,43 @@ class HumanFollowing:
     
 
     def escape_barrier(self, calc_z):
+        # if self.calc_z is not None:
+        #     calc_z = self.calc_z
         cur_pose = self.agent.get_pose(print_option=False)
-        thres = 1.0
-        human_box_thres = 0.5
-        if self.human_box_list[0] is not None:
-            # print(f"human_box_list[1] : {self.human_box_list[1]}")
-            human_box_size = self.human_box_list[1][2] * self.human_box_list[1][3] # TODO: human box size 맞는지 체크
-        else:
-            human_box_size = 0
+        # thres = 1.0
+        # human_box_thres = 0.5
+        # if self.human_box_list[0] is not None:
+        #     # print(f"human_box_list[1] : {self.human_box_list[1]}")
+        #     human_box_size = self.human_box_list[1][2] * self.human_box_list[1][3] # TODO: human box size 맞는지 체크
+        # else:
+        #     human_box_size = 0
         # print(f"human box size thres : {self.image_size * human_box_thres}")
         # print(f"real human box size : {human_box_size}")
         _num_rotate=0
-        _depth = self.barrier_check()
+        # _depth = self.barrier_check()
+        _depth = np.mean(self._depth)
         escape_radius = 0.2
-        rot_dir_left = 1
-        _depth_value_except_0 = _depth[_depth != 0]
 
-        if self.human_box_list[0] is not None:
-            human_box_list = self.human_box_list
-            x = human_box_list[1][0]
-        else:
-            x = 640
+        # if calc_z > _depth * 2000:
+        #     calc_z = _depth * 2000
+        # if calc_z > np.mean(self.calcz_queue) * 1000 + 1000:
+        #     calc_z = _depth * 1000
+        # rot_dir_left = 1
+        # _depth_value_except_0 = _depth[_depth != 0]
+
+        # if self.human_box_list[0] is not None:
+        #     human_box_list = self.human_box_list
+        #     x = human_box_list[1][0]
+        # else:
+        #     x = 640
 
 
-        rospy.loginfo(f"rect depth mean : {np.mean(_depth)}")
+        rospy.loginfo(f"rect depth mean : {_depth}")
         # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
         #and self.image_size * human_box_thres > human_box_size
-        if (calc_z!=0 and (np.mean(_depth)< ((calc_z/ 1000.0)-0.2) or self.agent.dist <((calc_z/1000.0)-0.2) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (calc_z!=0 and (_depth< ((calc_z/ 1000.0)-0.2) or self.agent.dist <((calc_z/1000.0)-0.2) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
@@ -433,6 +520,8 @@ class HumanFollowing:
             # _depth = self.barrier_check()
             # print(f"mean depth: {np.mean(_depth)}")
             last_5_angle_average = np.mean(self.angle_queue)
+            print("self.angle_queue", self.angle_queue)
+            print("last_5_angle_average", last_5_angle_average)
             if last_5_angle_average < 0: # HSR has rotated left
                 self.agent.move_rel(0,0.3,0, wait=False) #then, HSR is intended to move right
                 rospy.sleep(1)
@@ -552,17 +641,32 @@ class HumanFollowing:
             if self.stt_destination(self.stt_option):
                 return True
             print("it is not finished but i missed human...ㅜㅜ")
-            print("lets go to the last human position")
-            if self.last_human_pos is not None:
+            print("lets go to the last human position for just one time")
+            if self.last_human_pos is not None and self.last_chance > 0:
                 target_xyyaw = self.last_human_pos
-                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], 0, wait=False)
+                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=True)
+                self.last_chance = 0
             return False
+        else:
+            self.last_chance = 1
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
-        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+        twist, calc_z = self.twist, self.calc_z
+        _depth = np.mean(self._depth)
 
-        if calc_z > 500:
-            calc_z = calc_z + 500 #TODO : calc_z 과장할 정도 결정
+        # if calc_z > _depth * 1000 + 100:
+        #     calc_z = _depth * 1000 + 100
+        print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
+        print("calc_z", calc_z)
+        if calc_z > np.mean(self.calcz_queue) + 1000:
+            calc_z = _depth * 1000
+        else:
+            self.calcz_queue.append(calc_z)
+        # print(f"self.calc_z = {self.calc_z}")
+        # print(f"calc_z = {calc_z}")
+        # if calc_z > 1000:
+        #     calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
 
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
             print("2.1 go to center!")
@@ -591,6 +695,7 @@ class HumanFollowing:
                 if loc == 'lll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
+                    # +가 왼쪽으로 돌림
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=True)
                     rospy.sleep(.5)
                 if loc == 'll':
@@ -623,12 +728,22 @@ class HumanFollowing:
                     return True
 
                 return False
-
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
-            # 2.4 move to human
+                # 2.4 move to human
             self.last_human_pos = target_xyyaw
+            if calc_z > 1000:
+                tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+                target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
+                self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+                # 2.4 move to human
+
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
+            if target_xyyaw[2] > 0:
+                self.angle_queue.append(-1)
+            elif target_xyyaw[2] < 0:
+                self.angle_queue.append(1)
+
             rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
@@ -652,9 +767,10 @@ class HumanFollowing:
                 print('No human detected, go start location')
                 rospy.sleep(0.5)
                 return False
-            human_info_ary = copy.deepcopy(self.human_box_list)
-            depth = np.asarray(self.d2pc.depth)
+            # human_info_ary = copy.deepcopy(self.human_box_list)
+            # depth = np.asarray(self.d2pc.depth)
             twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+            # twist, calc_z = self.twist, self.calc_z
 
             if calc_z < 1200.0:
                 if twist.linear.x == 0 and twist.angular.z == 0:
@@ -1089,6 +1205,7 @@ def carry_my_luggage(agent):
     map_mode = False
     stt_option = False #True
     yolo_success = True
+    seg_on = True
     tilt_angle = 20
     
 
@@ -1104,7 +1221,7 @@ def carry_my_luggage(agent):
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
-    human_following = HumanFollowing(agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option)
+    human_following = HumanFollowing(agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option, seg_on)
     #####################
     # 0. start
     agent.say('start carry my luggage!')
@@ -1153,9 +1270,10 @@ def carry_my_luggage(agent):
     #     yolo_process.terminate()
         
     byte_path = "/home/tidy/Robocup2024/byte.sh"
-    seg_path = "/home/tidy/Robocup2024/seg.sh"
     byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+    if seg_on:
+        seg_path = "/home/tidy/Robocup2024/seg.sh"
+        seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
@@ -1261,7 +1379,8 @@ def carry_my_luggage(agent):
                 break
 
     byte_process.terminate()
-    seg_process.terminate()
+    if seg_on:
+        seg_process.terminate()
     yolo_process.terminate()
 
     agent.say("Finish carry my luggage", show_display=True)

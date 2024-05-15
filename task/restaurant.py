@@ -17,6 +17,14 @@ from utils.marker_maker import MarkerMaker
 from playsound import playsound
 from std_srvs.srv import Trigger
 
+
+'''
+
+foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
+
+
+'''
+
 class MoveBaseStandalone:
     def __init__(self):
         self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
