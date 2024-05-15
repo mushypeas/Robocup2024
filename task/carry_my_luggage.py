@@ -652,8 +652,8 @@ class HumanFollowing:
             self.last_chance = 1
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
-        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
-        twist, calc_z = self.twist, self.calc_z
+        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+        # twist, calc_z = self.twist, self.calc_z
         _depth = np.mean(self._depth)
 
         # if calc_z > _depth * 1000 + 100:
