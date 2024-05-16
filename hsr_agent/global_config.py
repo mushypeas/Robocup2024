@@ -30,10 +30,9 @@ if AIIS:
         'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
-        'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
-        'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
+        'breakfast_table_testday' : [6.536, -1.267, -0.0076], #mjgu 240505
         # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
-        'kitchen_table_testday' : [5.0999, 0.5681, 0.0124], #mjgu 240505
+        'kitchen_table_testday' : [5.3173, 0.2645, 0.0198], #mjgu 240505
 
         'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
         'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
@@ -199,12 +198,12 @@ if AIIS:
 
     OBJECT_LIST = [
         # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
-        # ['cracker', 0, 5, 0], #BJKIM CHANGED OBJECT_LIST FOR JUST EXPERIMENTS.
-        # ['sugar', 1, 2, 0],
-        # ['jello_red', 2, 2, 0],
-        # ['jello_black', 3, 2, 0],
-        # ['coffee_can', 4, 2, 0],
-        # ['tuna_can', 5, 2, 0],
+        ['cracker', 0, 5, 0],
+        ['sugar', 1, 2, 0],
+        ['jello_red', 2, 2, 0],
+        ['jello_black', 3, 2, 0],
+        ['coffee_can', 4, 2, 0],
+        ['tuna_can', 5, 2, 0],
         ['pringles', 6, 5, 0],
         ['mustard', 7, 2, 0],
         ['tomato_soup', 8, 2, 0],
@@ -216,12 +215,12 @@ if AIIS:
         ['banana', 14, 3, 0],
         ['plum', 15, 3, 0],
         ['lemon', 16, 3, 0],
-        ['bowl', 5, 6, 2], #17
-        ['mug', 0, 6, 0], #18
-        ['plate', 4, 6, 3], #19
-        ['knife', 1, 6, 1], #20
-        ['fork', 3, 6, 1], #21
-        ['spoon', 2, 6, 1], #22
+        ['bowl', 17, 6, 2],
+        ['mug', 18, 6, 0],
+        ['plate', 19, 6, 3],
+        ['knife', 20, 6, 1],
+        ['fork', 21, 6, 1],
+        ['spoon', 22, 6, 1],
         ['tennis_ball', 23, 4, 0],
         ['golf_ball', 24, 4, 0],
         ['base_ball', 25, 4, 0],

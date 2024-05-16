@@ -89,7 +89,7 @@ def serve_breakfast(agent: Agent):
         # id_list = [17, 22, 33, 36]
         table_item_list = agent.yolo_module.detect_3d(pick_table)
         # 아이템 ID 순서대로 처리하기 위한 ID 리스트
-        ordered_item_ids = [17, 7, 41, 22]
+        ordered_item_ids = [5, 41, 7, 2]
 
         is_detected = False
         
@@ -115,16 +115,17 @@ def serve_breakfast(agent: Agent):
         except:
             continue
         print('gripper_to_object_xyz', base_xyz)
-        agent.move_rel(-0.50, 0) 
+        agent.move_rel(-0.2, 0)
         
 
          # 4. pick (순서: bowl-> spam -> mustard -> spoon)
         if item == 'bowl':
+            agent.say('I will pick a bowl', show_display=True)
             agent.pose.pick_bowl_pose_last(table=pick_table)
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1], wait=True)
-            agent.move_rel(base_xyz[0] + 0.20, 0, wait=True)
-            agent.pose.arm_lift_up(0.480)
+            agent.move_rel(base_xyz[0] + 0.2, 0 , wait=True)
+            agent.pose.arm_lift_up(0.490)
             agent.grasp()
             agent.pose.arm_lift_up(0.8) # 0.8로 수정해보기
             # picking 후, arm을 끌어서 다른 물체를 건드리는 상황이 발생하지 않도록 수정 필요
@@ -136,20 +137,25 @@ def serve_breakfast(agent: Agent):
             else: # milk
                 object_height = mustard_height / 2
             agent.pose.pick_object_side_pose(object_height, table=pick_table)
+            agent.say('I will pick a spam', show_display=True)
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1]-0.01, wait=True)
             agent.move_rel(base_xyz[0] + 0.15, 0, wait=True) # + 0.15
 
-            if item == 'spam': 
+            if item == 'spam':
+                agent.say('I will pick a spam', show_display=True)
                 agent.grasp()
-            else: # milk
+            else: # mustard
+                agent.say('I will pick a mustard', show_display=True)
                 agent.grasp()
                 rospy.sleep(0.5)
             rospy.sleep(0.5)
 
         else:                    # 기존 elif item == 'spoon' or item == 'fork' or item == 'knife':
             if item == 'spoon':
-                agent.pose.pick_top_pose_last(table='breakfast_table')
+                agent.say('I will pick a spoon', show_display=True)
+                # agent.pose.pick_top_pose_last(table='breakfast_table')
+
                 agent.open_gripper()
                 agent.move_rel(0, base_xyz[1], wait=True)
                 agent.move_rel(base_xyz[0] + 0.15 + 0.1, 0, wait=True)
@@ -161,7 +167,8 @@ def serve_breakfast(agent: Agent):
 
          # 5. return pose
 
-        agent.move_rel(0, 0) # -0.4, 0 정도 설정해주기 
+        agent.move_rel(-0.6, 0) # 부딪힘 방지
+        agent.say('Wait for a moment')
         
         agent.pose.neutral_pose()
 
@@ -175,10 +182,12 @@ def serve_breakfast(agent: Agent):
 
         # 6. go place pos
         agent.move_abs(place_position)
+        agent.pose.holding_pose()
         dist_to_table = distancing(agent.yolo_module.pc, place_table, dist=0.8)
         print('dist_to_table', dist_to_table)
-        agent.move_rel(dist_to_table, 0)
-        
+        agent.move_rel(-0.3, 0)
+
+                
         item = 'mustard'
 
         if item != 'bowl':
@@ -198,7 +207,7 @@ def serve_breakfast(agent: Agent):
         if item == 'bowl':
             agent.pose.place_bowl_pose()
             agent.move_rel(0.3, 0, wait=True)
-            agent.pose.arm_lift_object_table_down(0.18, table=place_table)
+            # agent.pose.arm_lift_object_table_down(0.28, table=place_table)
             agent.open_gripper()
             rospy.sleep(2.0) # gazebo wait
             agent.move_rel(-0.3, 0)

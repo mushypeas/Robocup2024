@@ -125,6 +125,7 @@ def serve_breakfast(agent: Agent):
 
          # 4. pick # pick 할 때 애초에 부피가 큰 cereal, milk, bowl 먼저
         if item == 'bowl':
+            agent.say('I will pick a bowl', show_display=True)
             agent.pose.pick_bowl_pose_last(table=pick_table)
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1], wait=True)
@@ -132,9 +133,11 @@ def serve_breakfast(agent: Agent):
             agent.pose.arm_lift_up(0.510)
             agent.grasp()
             agent.pose.arm_lift_up(0.69) # 0.8로 수정해보기
+            agent.say('I picked a bowl', show_display=True)
             # picking 후, arm을 끌어서 다른 물체를 건드리는 상황이 발생하지 않도록 수정 필요
 
         elif item == 'spoon' : # 기존 elif item == 'spoon' or item == 'fork' or item == 'knife':
+            agent.say('I will pick a spoon', show_display=True)
             agent.pose.pick_top_pose_last(table='breakfast_table')
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1], wait=True)
@@ -152,11 +155,13 @@ def serve_breakfast(agent: Agent):
             else: # milk
                 object_height = milk_height / 2
             agent.pose.pick_object_side_pose(object_height, table=pick_table)
+            agent.say('I will pick a milk', show_display=True)
             agent.open_gripper()
             agent.move_rel(0, base_xyz[1]-0.01, wait=True)
             agent.move_rel(base_xyz[0] + 0.15, 0, wait=True) # + 0.15
              # (모의고사용) 기존 코드 -> if item == 'cereal_red' or item == 'cracker':
             if item == 'cereal_red': # cereal_red를 testday만 spam 사용
+                agent.say('I will pick a cereal', show_display=True)
                 agent.grasp()
             else: # milk
                 agent.grasp(weak=True)

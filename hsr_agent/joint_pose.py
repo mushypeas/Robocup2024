@@ -78,6 +78,16 @@ class JointPose:
                        'wrist_roll_joint'],
                       [0, 0, -1.57, -1.57, wrist_roll_joint])
 
+    def holding_pose(self): # mjgu 240516
+        self.gripper.grasp(0.1)
+        self.set_pose(['arm_lift_joint',
+                       'arm_flex_joint',
+                       'arm_roll_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint',
+                       'head_tilt_joint'],
+                      [0, -1.57, -1.57, -1.57, 0, 0.03])
+
     def table_search_pose_breakfast_initial(self):
         self.gripper.grasp(0.1)
         self.set_pose(['arm_lift_joint',
@@ -393,7 +403,7 @@ class JointPose:
     def arm_lift_object_table_down(self, object_height, table='breakfast_table'): #mjgu 240505
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
-        offset = 0.5  # table to object before open_gripper
+        offset = 0.4  # table to object before open_gripper
         # 0.74(kitchen_table) + 0.16(cereal) + 0.01 - 0.3 = 0.61
         arm_lift_joint = target_table_height + object_height + offset - robot_default_height
         print('arm_lift_joint', arm_lift_joint)
@@ -455,7 +465,7 @@ class JointPose:
 
     def place_bowl_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
-        hand_down_length = 0.15 # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree 
+        hand_down_length = 0.17 # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree 
         robot_default_height = 0.3
         bowl_offset = 0.03
         arm_lift_joint = target_table_height + bowl_offset + hand_down_length - robot_default_height
