@@ -559,22 +559,60 @@ class HumanFollowing:
 
     def escape_tiny_canny(self):
         frame = self.byte_img
+        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        # edges = cv2.Canny(blurred, 50, 150)
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 50, 150)
-        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        blurred = cv2.GaussianBlur(gray, (11,11), 0)
+
+        adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+        adaptive_thresh = cv2.GaussianBlur(adaptive_thresh, (11,11), 0)
+
+        _, binary = cv2.threshold(adaptive_thresh, 50, 255, cv2.THRESH_BINARY_INV)
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        morph = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=2)
+
+
+
+        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
         tiny_exist = False
+
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 500 < area < 5000: 
+            if 7000 < area < 30000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+                print(area)
                 x, y, w, h = cv2.boundingRect(contour)
-                # tiny_center_list.append(x+w/2)
-                tiny_exist = True
-                self.agent.say('Tiny object.', show_display=False)
+                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                if y > 330 and x > 200 and x < 440:
+                    tiny_exist = True
+                    self.agent.say('Tiny object.', show_display=False)
+
+
+
+
+        # tiny_exist = False
+
+        # for contour in contours:
+        #     area = cv2.contourArea(contour)
+        #     if 500 < area < 5000: 
+        #         x, y, w, h = cv2.boundingRect(contour)
+        #         # tiny_center_list.append(x+w/2)
+        #         tiny_exist = True
+        #         self.agent.say('Tiny object.', show_display=False)
         
 
+
+
+
+
+
+
+
+
 # Convert to 3-channel
-        canny_img_msg = self.bridge.cv2_to_imgmsg(edges, 'mono8')
+        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
         canny_img_msg.header = self.data_header
         self.canny_pub.publish(canny_img_msg)
     
@@ -582,7 +620,7 @@ class HumanFollowing:
 
         if tiny_exist:
             self.agent.say('I\'ll avoid it.', show_display=False)
-            self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
+            self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
             rospy.sleep(1)
         
 
@@ -688,6 +726,7 @@ class HumanFollowing:
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
         # twist, calc_z = self.twist, self.calc_z
+        _depth = barrier_check()
         _depth = np.mean(_depth)
 
         # if calc_z > _depth * 1000 + 100:
