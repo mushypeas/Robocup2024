@@ -47,6 +47,7 @@ class HumanFollowing:
         self.human_box_list = [None] # for human_reid_and_follower
         self.bridge = CvBridge()
         self.show_byte_track_image = False
+        self.byte_img = None
         self.track_queue = deque()
         self.angle_queue = deque(maxlen=20)
         self.calcz_queue = deque(maxlen=10)
@@ -134,6 +135,7 @@ class HumanFollowing:
 
     def _byte_cb(self, data):
         img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+        self.byte_img = img
         h, w, c = img.shape
         self.image_size = h * w
         self.image_shape = (h, w)
@@ -552,6 +554,26 @@ class HumanFollowing:
             self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
             rospy.sleep(1)
 
+    def escape_tiny_canny(self):
+        frame = self.byte_img
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 50, 150)
+        contours, _ = cv2.findContours(edges, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        tiny_exist = False
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if 500 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+                x, y, w, h = cv2.boundingRect(contour)
+                # tiny_center_list.append(x+w/2)
+                tiny_exist = True
+                self.agent.say('Tiny object.', show_display=False)
+
+        if tiny_exist:
+            self.agent.say('I\'ll avoid it.', show_display=False)
+            self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
+            rospy.sleep(1)
+        
 
     def stt_destination(self, stt_option, calc_z=0):
         cur_pose = self.agent.get_pose(print_option=False)
@@ -613,7 +635,8 @@ class HumanFollowing:
             #     rospy.sleep(1)
             #     print("seven seconds")
             self.escape_barrier(calc_z)
-            self.escape_tiny()
+            # self.escape_tiny()
+            self.escape_tiny_canny()
 
             # if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
                 # if (calc_z < 1.5)
@@ -1361,6 +1384,7 @@ def carry_my_luggage(agent):
                 twist, calc_z = human_following.human_reid_and_follower.follow(human_info_ary, depth, human_following.human_seg_pos)
             human_following.escape_barrier(calc_z)
             human_following.escape_tiny()
+            human_following.escape_tiny_canny()
             # rospy.sleep(0.5)
             print('go to arena')
 
