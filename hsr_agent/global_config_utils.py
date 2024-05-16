@@ -21,6 +21,7 @@ def make_object_list(yolo_classname_path):
             grasping_type = name_to_grasping_type[class_name]
         
         except KeyError:
+            grasping_type_undiscovered = True
             # 이름 좀 달라도 알잘딱으로 grasping type 찾아줌 
             class_name_replace = [class_name.replace(' ', '_')]
             class_name_replace += [class_name.replace(' ', '')]
@@ -30,23 +31,30 @@ def make_object_list(yolo_classname_path):
             for alt_class_name in class_name_replace:
                 if alt_class_name in name_to_grasping_type:
                     grasping_type = name_to_grasping_type[alt_class_name]
+                    grasping_type_undiscovered = False
                     break
-                
-            for arb_class_name in name_to_grasping_type:
-                if arb_class_name.replace(' ', '_') in class_name:
-                    grasping_type = name_to_grasping_type[arb_class_name]
-                    break
-                elif arb_class_name.replace(' ', '') in class_name:
-                    grasping_type = name_to_grasping_type[arb_class_name]
-                    break
-                elif arb_class_name.replace('_', ' ') in class_name:
-                    grasping_type = name_to_grasping_type[arb_class_name]
-                    break
-                elif arb_class_name.replace('_', '') in class_name:
-                    grasping_type = name_to_grasping_type[arb_class_name]
-                    break
-                
-            grasping_type = 0
+            
+            if grasping_type_undiscovered:
+                for arb_class_name in name_to_grasping_type:
+                    if arb_class_name.replace(' ', '_') == class_name:
+                        grasping_type = name_to_grasping_type[arb_class_name]
+                        grasping_type_undiscovered = False
+                        break
+                    elif arb_class_name.replace(' ', '') == class_name:
+                        grasping_type = name_to_grasping_type[arb_class_name]
+                        grasping_type_undiscovered = False
+                        break
+                    elif arb_class_name.replace('_', ' ') == class_name:
+                        grasping_type = name_to_grasping_type[arb_class_name]
+                        grasping_type_undiscovered = False
+                        break
+                    elif arb_class_name.replace('_', '') == class_name:
+                        grasping_type = name_to_grasping_type[arb_class_name]
+                        grasping_type_undiscovered = False
+                        break
+                    
+            if grasping_type_undiscovered:   
+                grasping_type = 0
             
         OBJECT_LIST.append([idx, class_name, 0, grasping_type])
         
