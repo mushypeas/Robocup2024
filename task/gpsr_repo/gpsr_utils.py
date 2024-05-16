@@ -1,6 +1,12 @@
 import openai
 import json
 
+# Read data from file
+def read_data(file_path):
+    with open(file_path, 'r') as file:
+        data = file.read()
+    return data
+
 # LOAD gpsr_config.json
 def load_config(config_file):
     with open(config_file) as f:
@@ -9,7 +15,7 @@ def load_config(config_file):
 
 # CHAT w/ gpt-4
 def chat(prompt):
-    gpsr_config = load_config('gpsr_config.json')
+    gpsr_config = load_config('task/gpsr_repo/gpsr_config.json')
     openai.api_key = gpsr_config['openai_api_key']
     model_engine = "gpt-4"
 

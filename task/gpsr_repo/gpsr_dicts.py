@@ -66,3 +66,18 @@ cmdName2cmdStr = {
     "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}"
 }
 
+followupName2followupStr = {
+    "findObj": "{findVerb} {art} {obj_singCat} and {followup}",
+    "findPrs": "{findVerb} the {gestPers_posePers} and {followup}",
+    "meetName": "{meetVerb} {name} and {followup}",
+    "placeObjOnPlcmt": "{placeVerb} it {onLocPrep} the {plcmtLoc2}",
+    "deliverObjToMe": "{deliverVerb} it to me",
+    "deliverObjToPrsInRoom": "{deliverVerb} it {deliverPrep} the {gestPers_posePers} {inLocPrep} the {room}",
+    "deliverObjToNameAtBeac": "{deliverVerb} it {deliverPrep} {name} {inLocPrep} the {room}",
+    "talkInfo": "{talkVerb} {talk}}",
+    "answerQuestion": "{answerVerb} a {question}",
+    "followPrs": "{followVerb} them",
+    "followPrsToRoom": "{followVerb} them {toLocPrep} the {loc2_room2}",
+    "guidePrsToBeacon": "{guideVerb} them {toLocPrep} the {loc2_room2}",
+    "takeObj": "{takeVerb} it and {followup}"
+}

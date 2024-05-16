@@ -1,13 +1,33 @@
+import rospy
+
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
 def tellObjPropOnPlcmt(g, params):    
+    print("Start TellObjPropOnPlcmt")
+
     # [0] Extract parameters
-    tell, comp, loc = params['tellVerb'], params['objComp'], params['plcmtLoc']
+    try:
+        tell = params['tellVerb']
+    except KeyError:
+        pass
+    try:
+        comp = params['objComp']
+    except KeyError:
+        pass
+    try:
+        onLocPrep = params['onLocPrep']
+    except KeyError:
+        pass
+    try:
+        loc = params['plcmtLoc']
+    except KeyError:
+        pass
+
 
     # [1] Move to the specified space
     g.move(loc)
 
     # [2] Find the objects in the room
-    print(f"[FIND] {tell} me what is the {comp} object {loc}")
+    print(f"[FIND] Tell me what is the {comp} object {loc}")
 
     yolo_bbox = g.get_yolo_bbox()
     
@@ -18,15 +38,15 @@ def tellObjPropOnPlcmt(g, params):
 
     if comp in ['biggest', 'largest']:
         targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
-        targetObjName = g.yolo_module.find_name_by_id(targetObjId)
+        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
         
     elif comp in ['smallest']:
         targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
-        targetObjName = g.yolo_module.find_name_by_id(targetObjId)
+        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
 
     elif comp in ['thinnest']:
         targetObjId = min(objIdThinLen, key=lambda x: x[1])[0]
-        targetObjName = g.yolo_module.find_name_by_id(targetObjId)
+        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
 
     ### TODO ###
     # elif comp in ['heaviest', 'lightest']:

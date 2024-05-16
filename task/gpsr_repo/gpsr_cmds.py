@@ -1,3 +1,6 @@
+import sys
+sys.path.append('task/gpsr_repo/gpsr_func')
+
 import rospy
 
 ### HRI and People Perception Commands ###
@@ -349,30 +352,6 @@ def followPrsAtLoc(agent, params):
 
     # params = {'followVerb': 'Follow', 'gestPers_posePers': 'person pointing to the left', 'inRoom_atLoc': 'in the bedroom'}
 
-### Object Manipulation and Perception Commands ###
-# "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
-def takeObjFromPlcmt(agent, params):
-    # Fetch a dish from the refrigerator / and deliver it to the lying person in the bedroom
-    # Get a drink from the storage rack / and deliver it to the person pointing to the right in the office
-    # Get a cleaning supply from the tv stand / and bring it to me
-    # Take a cola from the desk / and put it on the sofa
-
-    # params = {'takeVerb': 'Get', 'obj_singCat': 'drink', 'fromLocPrep': 'from', 'plcmtLoc': 'storage rack', 'followup': 'deliver it to the person pointing to the right in the office'}
-    # takeObjFromPlcmt(params)
-    
-    # [0] Extract parameters
-    takeVerb, obj, loc, cmd = params['takeVerb'], params['obj_singCat'], params['plcmtLoc'], params['followup']
-    # print(takeVerb, '\n', obj, '\n', fromLocPrep, '\n', plcmtLoc, '\n', cmd)
-
-    # [1] Move to the specified space
-    move_gpsr(agent, loc)
-
-    # [2] Take the object from the specified location
-    print(f"[TAKE] {takeVerb} the {obj} from the {loc}")
-
-    # [3] Follow-up command
-    followup(cmd)
-
 # "findObjInRoom": "{findVerb} {art} {obj_singCat} {inLocPrep} the {room} then {followup}",
 def findObjInRoom(agent, params):
     
@@ -408,19 +387,23 @@ def findObjInRoom(agent, params):
         # This might involve additional robot movement or manipulator actions
     else:
         print(f"{obj} is not found in the {room}")
+        
+def takeObjFromPlcmt(g, params):
+    from takeObjFromPlcmt import takeObjFromPlcmt
+    takeObjFromPlcmt(g, params)
 
 def countObjOnPlcmt(g, params):
-    from gpsr_func import countObjOnPlcmt
-    return countObjOnPlcmt(g, params)
+    from countObjOnPlcmt import countObjOnPlcmt
+    countObjOnPlcmt(g, params)
 
 def tellObjPropOnPlcmt(g, params):    
-    from gpsr_func import tellObjPropOnPlcmt
-    return tellObjPropOnPlcmt(g, params)
+    from tellObjPropOnPlcmt import tellObjPropOnPlcmt
+    tellObjPropOnPlcmt(g, params)
     
 def tellCatPropOnPlcmt(g, params):
-    from gpsr_func import tellCatPropOnPlcmt
-    return tellCatPropOnPlcmt(g, params)
+    from tellCatPropOnPlcmt import tellCatPropOnPlcmt
+    tellCatPropOnPlcmt(g, params)
 
 def bringMeObjFromPlcmt(g, params):
-    from gpsr_func import bringMeObjFromPlcmt
-    return bringMeObjFromPlcmt(g, params)
+    from bringMeObjFromPlcmt import bringMeObjFromPlcmt
+    bringMeObjFromPlcmt(g, params)
