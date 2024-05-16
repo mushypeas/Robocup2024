@@ -443,7 +443,7 @@ class HumanFollowing:
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
         #and self.image_size * human_box_thres > human_box_size
-        if (calc_z!=0 and (_depth< ((calc_z/ 1000.0)-0.2) or self.agent.dist <((calc_z/1000.0)-0.2) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+        if (calc_z!=0 and (_depth< ((calc_z/ 1000.0)-0.5) or self.agent.dist <((calc_z/1000.0)-0.5) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
             rospy.sleep(1)
