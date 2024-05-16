@@ -64,6 +64,7 @@ class HumanFollowing:
         self._depth = None
         self.depth = None
         self.twist = None
+        self.data_header = None
         self.seg_on = seg_on
         self.last_chance = 1
         bytetrack_topic = '/snu/bytetrack_img'
@@ -89,6 +90,7 @@ class HumanFollowing:
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
         self.image_pub = rospy.Publisher('/human_segmentation_with_point', Image, queue_size=10)
+        self.canny_pub = rospy.Publisher('/canny_result', Image, queue_size=10)
     
     ####sync_callback_240514
     # def sync_callback(self, byte_data, segment_data):
@@ -319,6 +321,7 @@ class HumanFollowing:
 # Convert to 3-channel
                 seg_img_msg = self.bridge.cv2_to_imgmsg(depth_img_3channel, 'bgr8')
                 seg_img_msg.header = data.header
+                self.data_header = data.header
                 self.image_pub.publish(seg_img_msg)
             
         
@@ -563,11 +566,19 @@ class HumanFollowing:
         tiny_exist = False
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 500 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 500 < area < 5000: 
                 x, y, w, h = cv2.boundingRect(contour)
                 # tiny_center_list.append(x+w/2)
                 tiny_exist = True
                 self.agent.say('Tiny object.', show_display=False)
+        
+
+# Convert to 3-channel
+        canny_img_msg = self.bridge.cv2_to_imgmsg(edges, 'mono8')
+        canny_img_msg.header = self.data_header
+        self.canny_pub.publish(canny_img_msg)
+    
+
 
         if tiny_exist:
             self.agent.say('I\'ll avoid it.', show_display=False)
