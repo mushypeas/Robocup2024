@@ -34,8 +34,8 @@ if AIIS:
 
 
         # storing grocery
-        'grocery_table': [3.7086, -0.1316 -1.58], #bjkim
-        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
+        'grocery_table': [3.888, -0.4272, -1.58], #bjkim
+        'grocery_shelf': [2.4002, -0.8467, -3.14], #bjkim
 
         # serve breakfast
         'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
@@ -169,11 +169,8 @@ if AIIS:
         'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.735],
-        'breakfast_table': [0.55, 0.75, 0.715], #이거 715인데 왜 테이프에 735라 써놧어
-        'grocery_table': [0.55, 0.75, 0.730],
-        'grocery_table_pose': [0.55, 0.75, 0.785], # +055
-        'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
-        'grocery_table_pose2': [0.55, 0.75, 0.70], # +030
+        'breakfast_table': [0.55, 0.75, 0.715],
+        'grocery_table': [1.2, 0.65, 0.420],
         'door_handle': [0, 0, 0.96],
         # width, depth, height
         'desk': [1.505, 0.705, 0.8],
@@ -183,11 +180,10 @@ if AIIS:
         'dishwasher': [0.65, 0.75, 0.595],
         'dishwasher_table': [0.65, 0.75, 0.42],
         'cabinet': [0.9, 0.46, 0.66],
-        'shelf': [0.765, 0.357, 0.805],
-        'shelf_1f': [0.765, 0.357, 0.855 + 0.025],
-        'shelf_2f': [0.765, 0.357, 1.15 + 0.025],
-        'shelf_3f': [0.765, 0.357, 1.4 + 0.025],
-        'shelf_4f': [0.765, 0.357, 1.4 + 0.025],
+        'grocery_shelf_1f': [0.765, 0.357, 0.805],
+        'grocery_shelf_2f': [0.765, 0.357, 1.15],
+        'grocery_shelf_3f': [0.765, 0.357, 1.4],
+        'grocery_shelf_4f': [0.765, 0.357, 1.4],
         'storage_rack': [0.445, 0.9, 0.42],
         'storage_rack_1f': [0.445, 0.9, 0.42],
         'storage_rack_2f': [0.445, 0.9, 0.88],
