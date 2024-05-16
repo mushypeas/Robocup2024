@@ -192,11 +192,11 @@ class HumanFollowing:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
                                   np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
                                   data_list[5]]
-        if not self.seg_on:    
-            self.human_info_ary = self.human_box_list
-            depth = np.asarray(self.agent.depth_image)
-            self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
-            self._depth = self.barrier_check()
+        # if not self.seg_on:    
+        #     self.human_info_ary = self.human_box_list
+        #     depth = np.asarray(self.agent.depth_image)
+        #     self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
+        #     self._depth = self.barrier_check()
 
     def _segment_cb(self, data):
         if self.human_box_list[0] == None:
@@ -325,14 +325,14 @@ class HumanFollowing:
                 print("There is a human box but no segmentation anywhere")
                 self.human_seg_pos = None
 
-            # self.human_info_ary = copy.deepcopy(self.human_box_list)
-            self.human_info_ary = self.human_box_list
-            # print(f"self human info ary : {self.human_info_ary}")
-            # depth = np.asarray(self.d2pc.depth)
-            # print(f"depth : {depth}")
-            self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
-            self._depth = self.barrier_check()
-            #####################BRANCH 2. LABEL=15면 사람임###################
+            # # self.human_info_ary = copy.deepcopy(self.human_box_list)
+            # self.human_info_ary = self.human_box_list
+            # # print(f"self human info ary : {self.human_info_ary}")
+            # # depth = np.asarray(self.d2pc.depth)
+            # # print(f"depth : {depth}")
+            # self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
+            # self._depth = self.barrier_check()
+            # #####################BRANCH 2. LABEL=15면 사람임###################
 
 
             
@@ -378,13 +378,13 @@ class HumanFollowing:
             #     return 'll'
             # elif center[1] < 180:
             #     self.angle_queue.append(-1)
-                return 'l'
+                # return 'l'
             # elif center[1] > 460:
             #     self.angle_queue.append(1)
             #     return 'r'
             # elif center[1] > 510:
             #     self.angle_queue.append(1)
-                return 'rr'
+                # return 'rr'
             elif center[1] > 560:
                 self.angle_queue.append(1)
                 return 'rrr'   
@@ -420,8 +420,9 @@ class HumanFollowing:
         # print(f"human box size thres : {self.image_size * human_box_thres}")
         # print(f"real human box size : {human_box_size}")
         _num_rotate=0
-        # _depth = self.barrier_check()
-        _depth = np.mean(self._depth)
+        _depth = self.barrier_check()
+        _depth = np.mean(_depth)
+        # _depth = np.mean(self._depth)
         escape_radius = 0.2
 
         # if calc_z > _depth * 2000:
@@ -651,8 +652,8 @@ class HumanFollowing:
             self.last_chance = 1
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
-        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
-        twist, calc_z = self.twist, self.calc_z
+        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+        # twist, calc_z = self.twist, self.calc_z
         _depth = np.mean(self._depth)
 
         # if calc_z > _depth * 1000 + 100:
