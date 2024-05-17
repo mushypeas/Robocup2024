@@ -559,35 +559,67 @@ class HumanFollowing:
 
     def escape_tiny_canny(self):
         frame = self.byte_img
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        # edges = cv2.Canny(blurred, 50, 150)
-
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        blurred = cv2.GaussianBlur(gray, (11,11), 0)
+        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+        edges = cv2.Canny(blurred, 100, 150)
 
-        adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-        adaptive_thresh = cv2.GaussianBlur(adaptive_thresh, (11,11), 0)
+        # 푸리에 변환 적용
+        rows, cols = edges.shape
+        f = np.fft.fft2(edges)
+        fshift = np.fft.fftshift(f)
+        magnitude_spectrum = 20 * np.log(np.abs(fshift))
 
-        _, binary = cv2.threshold(adaptive_thresh, 50, 255, cv2.THRESH_BINARY_INV)
-        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        morph = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=2)
+        # 중앙의 고주파 성분 제거 (저역통과 필터 적용)
+        crow, ccol = rows // 2, cols // 2
+        mask = np.zeros((rows, cols), np.uint8)
+        r = 50  # 필터 반경
+        center = [crow, ccol]
+        x, y = np.ogrid[:rows, :cols]
+        mask_area = (x - center[0]) ** 2 + (y - center[1]) ** 2 <= r * r
+        mask[mask_area] = 1
+        fshift = fshift * mask
+
+        # 역 푸리에 변환
+        f_ishift = np.fft.ifftshift(fshift)
+        img_back = np.fft.ifft2(f_ishift)
+        img_back = np.abs(img_back)
+
+        frame = img_back
+        if len(frame.shape) == 3 and frame.shape[2] == 3:
+            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        frame_origin = frame
+        frame = cv2.bitwise_not(frame)
+        morph = frame 
+        frame = frame.astype(np.uint8)
+
+        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # blurred = cv2.GaussianBlur(gray, (11,11), 0)
+
+        # adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+        # adaptive_thresh = cv2.GaussianBlur(adaptive_thresh, (11,11), 0)
+
+        # _, binary = cv2.threshold(adaptive_thresh, 50, 255, cv2.THRESH_BINARY_INV)
+        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        # morph = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=2)
 
 
 
-        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         tiny_exist = False
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 7000 < area < 30000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 3000 < area < 15000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
                 print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if y > 330 and x > 200 and x < 440:
                     tiny_exist = True
                     self.agent.say('Tiny object.', show_display=False)
+                    cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
+        morph = cv2.bitwise_not(morph)
+        cv2.imshow('morph', morph)
 
 
 
@@ -612,9 +644,9 @@ class HumanFollowing:
 
 
 # Convert to 3-channel
-        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
-        canny_img_msg.header = self.data_header
-        self.canny_pub.publish(canny_img_msg)
+        # canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        # canny_img_msg.header = self.data_header
+        # self.canny_pub.publish(canny_img_msg)
     
 
 
