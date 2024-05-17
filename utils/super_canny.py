@@ -42,7 +42,7 @@ if len(frame.shape) == 3 and frame.shape[2] == 3:
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 frame_origin = frame
 # 반전
-frame = cv2.bitwise_not(frame)
+# frame = cv2.bitwise_not(frame)
 
 
 

@@ -60,6 +60,7 @@ class HumanFollowing:
         self.human_seg_pos = None
         self.image_size = None
         self.image_shape = None
+        self.seg_img = None
         self.calc_z = None
         self._depth = None
         self.depth = None
@@ -215,7 +216,7 @@ class HumanFollowing:
             w = self.human_box_list[1][2]
             h = self.human_box_list[1][3]
             data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
-
+            self.seg_img = data_img
             H, W = data_img.shape
             cropped_y_max = max(min(y + h, H-1), 0)
             cropped_x_max = max(min(x + w, W-1), 0)
@@ -468,7 +469,7 @@ class HumanFollowing:
 
             # while (np.mean(_depth)< ((calc_z/ 1000.0)-0.3) or self.agent.dist <((calc_z/1000.0)-0.3)): # TODO : while 하는게 좋은지? 아니면 그때그때 한번만 이동하는게 좋은지?
 
-            ##########################BRANCH1. ROTATING########################    
+            ##########################METHOD1. ROTATING########################    
             #     _num_rotate = _num_rotate + 1
             #     rospy.loginfo(f"mean depth: {np.mean(self.agent.depth_image)}")
 
@@ -501,7 +502,7 @@ class HumanFollowing:
             #                 print("it's safe now!")
             #                 self.agent.say("It's safe now!")
             #                 break
-
+            ################################################################################################
 
             # rospy.sleep(1)
             # # self.agent.say("stop rotating.")
@@ -522,19 +523,44 @@ class HumanFollowing:
             # rospy.sleep(2)
                 
 
-            ##########################BRANCH2. MOVING########################    
-            # _depth = self.barrier_check()
-            # print(f"mean depth: {np.mean(_depth)}")
-            last_5_angle_average = np.mean(self.angle_queue)
-            print("self.angle_queue", self.angle_queue)
-            print("last_5_angle_average", last_5_angle_average)
-            if last_5_angle_average < 0: # HSR has rotated left
+            ##########################METHOD2. MOVING########################    
+            # # _depth = self.barrier_check()
+            # # print(f"mean depth: {np.mean(_depth)}")
+            # last_5_angle_average = np.mean(self.angle_queue)
+            # print("self.angle_queue", self.angle_queue)
+            # print("last_5_angle_average", last_5_angle_average)
+            # if last_5_angle_average < 0: # HSR has rotated left
+            #     self.agent.move_rel(0,0.7,0, wait=False) #then, HSR is intended to move right
+            #     rospy.sleep(1)
+            # else: #  HSR has rotated right
+            #     self.agent.move_rel(0,-0.7,0, wait=False)
+            # # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
+            # rospy.sleep(1)
+            ########################################################################
+
+
+            ########################METOD3. SEGMENT#############################
+
+            _depth = self.barrier_check()
+            print(f"mean depth: {np.mean(_depth)}")
+            seg_img = self.seg_img
+            height, width = seg_img.shape
+            mid_x = width // 2
+            background_mask = ( seg_img == 0 or seg_img == 15)# 배경 부분 또는 사람 부분
+            # baack_y, back_x = np.where(background_mask)
+
+            left_background_count = np.sum(background_mask[:, :mid_x])
+            right_background_count = np.sum(background_mask[:, mid_x:])
+
+            if left_background_count > right_background_count:
+                print("left side is empty")
+                self.agent.move_rel(0,-0.7,0, wait=False) #then, HSR is intended to move left
+            elif right_background_count >= left_background_count:
+                print("right side is empty")
                 self.agent.move_rel(0,0.7,0, wait=False) #then, HSR is intended to move right
-                rospy.sleep(1)
-            else: #  HSR has rotated right
-                self.agent.move_rel(0,-0.7,0, wait=False)
-            # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
             rospy.sleep(1)
+
+            ########################################################################
 
 
     def escape_tiny(self):
