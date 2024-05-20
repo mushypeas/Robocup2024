@@ -9,9 +9,13 @@ def get_hand_points(detected_keypoints, personwise_keypoints, pose_hand_pub, rat
     if(detected_keypoints == []):
         pose_hand_pub.publish(ret)
         return
+    
+    print('detected_keypoints:',detected_keypoints)
+    print('personwise_keypoints:',personwise_keypoints)
 
     for personI in personwise_keypoints:
-        if personI[4] != -1 and personI[7] != -1 and personI[9] != -1 and personI[12] != -1:
+        # if personI[4] != -1 and personI[7] != -1 and personI[9] != -1 and personI[12] != -1:
+        if personI[4] != -1 or personI[7] != -1:
             for i in detected_keypoints[4]:
                 if(i[3]==personI[4]):
                     ret.data+=list(i[0:2])
@@ -21,10 +25,10 @@ def get_hand_points(detected_keypoints, personwise_keypoints, pose_hand_pub, rat
                     ret.data+=list(i[0:2])
                     break
     ret.data = list(map(lambda x:int(x//ratio),ret.data))
-    # rospy.loginfo(f'hand {ret.data}')
+    rospy.loginfo(f'hand {ret.data}')
 
     pose_hand_pub.publish(ret)
-    return
+    return ret.data
 
 def get_knee_points(detected_keypoints, knee_pose_pub, ratio):
 
@@ -37,7 +41,7 @@ def get_knee_points(detected_keypoints, knee_pose_pub, ratio):
     for _knee in detected_keypoints[12]:
         ret.data += [int(_k*(1.0/ratio)) for _k in _knee[:2]]
 
-    # rospy.loginfo(f'knee {ret.data}')
+    rospy.loginfo(f'knee {ret.data}')
     knee_pose_pub.publish(ret)
 
 
