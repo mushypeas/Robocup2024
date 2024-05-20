@@ -406,11 +406,19 @@ class DrinkDetection:
         self.drink_list = [0, 1, 2, 3, 4, 5]
         self.marker_maker = MarkerMaker('/snu/human_location')
         self.no_drink_human_coord = None
-        self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
+        # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
+
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
+        self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        print(self.clip_preprocess)
 
     def _openpose_cb(self, data):
         data_list = data.data
-        self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
+        # self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
+        self.human_hand_poses = np.reshape(data_list, (-1, 2))
 
     # # openpose bbox callback (human?)
     # def _openpose_bbox_cb(self, data):
@@ -432,6 +440,12 @@ class DrinkDetection:
 
     def find_drink(self):
 
+        # Prompt for CLIP model
+        prompt = "a photo of a"
+        text_inputs = ["human who is holding drink", "human with empty hand"]
+        text_inputs = [prompt + " " + t for t in text_inputs]
+        tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
+
         count = 0
         while count < 7:
             image = self.agent.rgb_img
@@ -439,42 +453,144 @@ class DrinkDetection:
             msg = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
             human_bboxes = np.reshape(msg.data, (-1, 2, 2))
             if len(human_bboxes) == 0:
-                return None    
+                return None
             for human_bbox_idx, human_bbox in enumerate(human_bboxes):
                 print('human_bbox: ', human_bbox)
-
+                # hand_msg = rospy.wait_for_message('/snu/openpose/hand', Int16MultiArray)
+                l_hand = None
+                r_hand = None
                 if len(self.human_hand_poses) > 0:
-                    human_hand = self.human_hand_poses[human_bbox_idx]
-                    print("hand found")
-                    l_hand_x, l_hand_y = human_hand[0]
-                    r_hand_x, r_hand_y = human_hand[1]
-                    square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + self.thre
-                    crop_img = image[
-                        max(0,(r_hand_y + l_hand_y)//2-square_len//2):min(480,(r_hand_y + l_hand_y)//2+square_len//2),
-                        max(0,(r_hand_x + l_hand_x)//2-square_len//2):min(640,(r_hand_x + l_hand_x)//2+square_len//2)
-                    ]
-                else:
+                    # human_hand = self.human_hand_poses[human_bbox_idx]
+                    # print("hand found")
+                    for hand_coord in self.human_hand_poses:
+                        hand_x, hand_y = hand_coord
+                        if (hand_x >= human_bbox[0][0] or hand_x <= human_bbox[1][0]) and (hand_y >= human_bbox[0][1] or hand_y <= human_bbox[1][1]):
+                            if l_hand is None:
+                                l_hand = hand_coord
+                            else:
+                                r_hand = hand_coord
+                # 1. both hands visible
+                if l_hand is not None and r_hand is not None:
+                    if l_hand[0] > r_hand[0]:
+                        l_hand, r_hand = r_hand, l_hand
 
+                    crop_y_coord_0 = 0
+                    crop_y_coord_1 = 480
+                    crop_x_coord_0 = 0
+                    crop_x_coord_1 = 640
+
+                    l_hand_x, l_hand_y = l_hand
+                    r_hand_x, r_hand_y = r_hand
+                    center_hand_x = (l_hand_x + r_hand_x) // 2
+                    center_hand_y = (l_hand_y + r_hand_y) // 2
+                    square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + self.thre
+                    if square_len < 224:
+                        square_len = 224
+                    crop_y_coord_0 = max(0, center_hand_y - square_len // 2)
+                    crop_y_coord_1 = min(480, center_hand_y + square_len // 2)
+                    crop_x_coord_0 = max(0, center_hand_x - square_len // 2)
+                    crop_x_coord_1 = min(640, center_hand_x + square_len // 2)
+                    if crop_y_coord_1 - crop_y_coord_0 < crop_x_coord_1 - crop_x_coord_0:
+                        if crop_y_coord_0 == 0:
+                            crop_y_coord_1 = min(480, crop_y_coord_1 + (crop_x_coord_1 - crop_x_coord_0) - (crop_y_coord_1 - crop_y_coord_0))
+                        else:
+                            crop_y_coord_0 = max(0, crop_y_coord_0 - (crop_x_coord_1 - crop_x_coord_0) + (crop_y_coord_1 - crop_y_coord_0))
+                    elif crop_x_coord_1 - crop_x_coord_0 < crop_y_coord_1 - crop_y_coord_0:
+                        if crop_x_coord_0 == 0:
+                            crop_x_coord_1 = min(640, crop_x_coord_1 + (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0))
+                        else:
+                            crop_x_coord_0 = max(0, crop_x_coord_0 - (crop_y_coord_1 - crop_y_coord_0) + (crop_x_coord_1 - crop_x_coord_0))
+
+                    crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
+
+                    # crop_img = image[
+                    #     max(0,(r_hand_y + l_hand_y)//2-square_len//2):min(480,(r_hand_y + l_hand_y)//2+square_len//2),
+                    #     max(0,(r_hand_x + l_hand_x)//2-square_len//2):min(640,(r_hand_x + l_hand_x)//2+square_len//2)
+                    # ]
+                # 2. only one hand visible
+                elif l_hand is not None:
+                    l_hand_x, l_hand_y = l_hand
+                    crop_y_coord_0 = 0
+                    crop_y_coord_1 = 480
+                    crop_x_coord_0 = 0
+                    crop_x_coord_1 = 640
+                    square_len = 224
+                    crop_y_coord_0 = max(0, l_hand_y - square_len // 2)
+                    crop_y_coord_1 = min(480, l_hand_y + square_len // 2)
+                    crop_x_coord_0 = max(0, l_hand_x - square_len // 2)
+                    crop_x_coord_1 = min(640, l_hand_x + square_len // 2)
+                    if crop_y_coord_1 - crop_y_coord_0 < crop_x_coord_1 - crop_x_coord_0:
+                        if crop_y_coord_0 == 0:
+                            crop_y_coord_1 = min(480, crop_y_coord_1 + (crop_x_coord_1 - crop_x_coord_0) - (crop_y_coord_1 - crop_y_coord_0))
+                        else:
+                            crop_y_coord_0 = max(0, crop_y_coord_0 - (crop_x_coord_1 - crop_x_coord_0) + (crop_y_coord_1 - crop_y_coord_0))
+                    elif crop_x_coord_1 - crop_x_coord_0 < crop_y_coord_1 - crop_y_coord_0:
+                        if crop_x_coord_0 == 0:
+                            crop_x_coord_1 = min(640, crop_x_coord_1 + (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0))
+                        else:
+                            crop_x_coord_0 = max(0, crop_x_coord_0 - (crop_y_coord_1 - crop_y_coord_0) + (crop_x_coord_1 - crop_x_coord_0))
+                    crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
+                    # crop_img = image[
+                    #     max(0,l_hand_y-224//2):min(480,l_hand_y+224//2), 
+                    #     max(0,l_hand_x-224//2):min(640,l_hand_x+224//2)
+                    # ]
+                # 3. no hand visible
+                ################ 손이 안보이니깐 성능이 곱창남. 손이 안보이더라도 openpose는 손목을 잡아서 손 인식하는 경우가 있는데, clip 성능은 곱창남. -> prompt 수정 필요?
+                else:
                     top_left_x, top_left_y = human_bbox[0]
                     bottom_right_x, bottom_right_y = human_bbox[1]
                     crop_img = image[
                         max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
                         max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
                     ]
+                
+
+                # cv2.imshow('crop_img', np.array(crop_img).transpose(1, 2, 0).astype(np.uint8).copy())
                 cv2.imshow('crop_img', crop_img)
                 cv2.waitKey(1)
-                # save crop_img at ../module/CLIP/crop_img.jpg
+                # cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{count}_{human_bbox_idx}.jpg', np.array(crop_img).transpose(1, 2, 0).astype(np.uint8).copy())
                 cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{count}_{human_bbox_idx}.jpg', crop_img)
-                # pos, neg, ntr = self.detector.detect(images=crop_img)
-                prob = self.detector.detect(images=crop_img)
-                positive_index = DRINK_CONFIG.positive_index
-                negative_index = DRINK_CONFIG.negative_index
-                positive_prob_max = np.max(prob[:positive_index]).round(3) 
-                negative_prob_max = np.max(prob[positive_index:negative_index]).round(3) 
-                positive_prob_sum = np.sum(prob[:positive_index]).round(3) 
-                negative_prob_sum = np.sum(prob[positive_index:negative_index]).round(3) 
-                if positive_prob_sum > negative_prob_sum:
+
+                # Preprocess image
+                # image = self.agent.rgb_img
+                crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+
+                crop_img = self.clip_preprocess(crop_img)
+
+                crop_img = crop_img.unsqueeze(0).to(self.device)
+
+                print(crop_img.size())
+
+                # # pos, neg, ntr = self.detector.detect(images=crop_img)
+                # prob = self.detector.detect(images=crop_img)
+                # positive_index = DRINK_CONFIG.positive_index
+                # negative_index = DRINK_CONFIG.negative_index
+                # positive_prob_max = np.max(prob[:positive_index]).round(3) 
+                # negative_prob_max = np.max(prob[positive_index:negative_index]).round(3) 
+                # positive_prob_sum = np.sum(prob[:positive_index]).round(3) 
+                # negative_prob_sum = np.sum(prob[positive_index:negative_index]).round(3) 
+                # if positive_prob_sum > negative_prob_sum:
+                #     return True
+                
+                # Encode image and text features
+                with torch.no_grad():
+                    image_features = self.clip_model.encode_image(crop_img)
+                    text_features = self.clip_model.encode_text(tokenized_prompt)
+                    image_features /= image_features.norm(dim=-1, keepdim=True)
+                    text_features /= text_features.norm(dim=-1, keepdim=True)
+
+                    # Calculate text probabilities
+                    text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+                # Convert probabilities to percentages
+                text_probs_percent = text_probs * 100
+                text_probs_percent_np = text_probs_percent.cpu().numpy()
+                formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                print("Labels probabilities in percentage:", formatted_probs)
+                if text_probs_percent_np[0][0] > 65:
                     return True
+                
                 ### prob thresholds should be modified
                 # if ntr > 0.15:
                 #     return None
@@ -977,7 +1093,7 @@ if __name__ == '__main__':
     hand_drink_pixel_dist_threshold = 50
     drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    # agent.pose.head_tilt(10)
+    agent.pose.head_tilt(10)
     agent.pose.head_pan(0)
     while True:
         agent.say('Looking for drink')

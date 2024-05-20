@@ -9,9 +9,6 @@ def get_hand_points(detected_keypoints, personwise_keypoints, pose_hand_pub, rat
     if(detected_keypoints == []):
         pose_hand_pub.publish(ret)
         return
-    
-    print('detected_keypoints:',detected_keypoints)
-    print('personwise_keypoints:',personwise_keypoints)
 
     for personI in personwise_keypoints:
         # if personI[4] != -1 and personI[7] != -1 and personI[9] != -1 and personI[12] != -1:
