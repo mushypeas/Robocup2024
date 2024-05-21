@@ -83,6 +83,11 @@ class GPSR:
         print("GPSR Move Start")
         self.agent.move_abs(loc)
         print(f"[MOVE] HSR moved to {loc}")
+        
+    def guide(self, loc):
+        print("GPSR Guide Start")
+        self.say("I will guide you to the location")
+        self.agent.move_abs(loc)
 
     def pick(self, obj):
         # [TODO] Implement how the object can be picked up
@@ -103,7 +108,7 @@ class GPSR:
 
         print(f"[PICK] {obj} is picked up")
 
-    def place(self):
+    def place(self, loc):
         self.agent.open_gripper()
         self.agent.pose.neutral_pose()
         

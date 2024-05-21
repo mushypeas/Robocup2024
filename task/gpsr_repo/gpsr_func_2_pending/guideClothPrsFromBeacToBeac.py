@@ -20,5 +20,5 @@ def guideClothPrsFromBeacToBeac(g, params):
     g.say(f"Please follow me to the {loc2}")
     
     # [3] Make the person to follow HSR to the room
-    g.move(loc2)
+    g.guide(loc2)
     g.say(f"You have arrived at the {loc2}")
