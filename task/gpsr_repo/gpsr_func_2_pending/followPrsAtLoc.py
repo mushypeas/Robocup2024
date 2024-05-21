@@ -14,25 +14,17 @@ def followPrsAtLoc(g, params):
     except KeyError:
         gestPosePers = "any person".split()
     
-    if gestPosePers[0] == 'person':
-        pose = gestPosePers[1]
-    
-    else:
-        pose = gestPosePers[0]
-    
     try:
-        where = params['inRoom_atLoc'].split()
+        loc = params['inRoom_atLoc'].split()[-1]
     
     except KeyError:
-        where = "gpsr_instruction_point".split()
-    
-    loc = where[-1]   
+        loc = "gpsr_instruction_point"
 
     # [1] Move to the specified room
     g.move(loc)
 
     # [2] Find the person with that pose in the room
-    g.identifyPose(pose)
+    g.identifyGestPose(gestPosePers)
 
     # [3] Follow the person
     g.follow()

@@ -113,13 +113,37 @@ class GPSR:
     def say(self, text):
         self.agent.say(text)
         
-    def identifyPose(self, pose):
+    # TODO
+    def getName(self):
+        name = "John Doe"
+        return name
+    
+    # TODO
+    def getPose(self):
+        pose = 'standing'
+        return pose
+    
+    # TODO
+    def getGest(self):
+        gesture = 'pointing'
+        return gesture
+        
+    def identifyName(self, name):
+        # [TODO] Implement how the name can be identified
+        pass
+        
+    def identifyGestPose(self, gestPosePers):
         # [TODO] Implement how the pose can be identified
         pass
     
     def follow(self):
         # [TODO] Implement how the person can be followed
         pass
+    
+    def exeFollowup(self, followup):
+        followupName, params = ultimateFollowupParser(followup)
+        followUpFunc = self.followupNameTofollowupFunc[followupName]
+        followUpFunc(self, params)
     
 
 # MAIN

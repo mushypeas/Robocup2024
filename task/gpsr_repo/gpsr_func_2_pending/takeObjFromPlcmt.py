@@ -1,10 +1,4 @@
-import sys
-sys.path.append('task/gpsr_repo/')
-
 import rospy
-
-from gpsr_parser import ultimateFollowupParser
-from gpsr_followup import *
 
 # "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def takeObjFromPlcmt(g, params):
@@ -37,6 +31,4 @@ def takeObjFromPlcmt(g, params):
     g.pick(obj)
 
     # [3] Follow-up command
-    followupName, params = ultimateFollowupParser(followup)
-    followUpFunc = g.followupNameTofollowupFunc[followupName]
-    followUpFunc(g, params)
+    g.exeFollowup(followup)
