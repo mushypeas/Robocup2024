@@ -28,17 +28,17 @@ def tellPrsInfoInLoc(g, params):
     from tellPrsInfoInLoc import tellPrsInfoInLoc
     tellPrsInfoInLoc(g, params)
     
-def talkInfoToPrsInRoom(g, params):    
-    from talkInfoToPrsInRoom import talkInfoToPrsInRoom
-    talkInfoToPrsInRoom(g, params)
+def talkInfoToGestPrsInRoom(g, params):    
+    from talkInfoToGestPrsInRoom import talkInfoToGestPrsInRoom
+    talkInfoToGestPrsInRoom(g, params)
     
 def answerToGestPrsInRoom(g, params):
     from answerToGestPrsInRoom import answerToGestPrsInRoom
     answerToGestPrsInRoom(g, params)
     
-def followNameFromBeacToBeac(g, params):
-    from followNameFromBeacToBeac import followNameFromBeacToBeac
-    followNameFromBeacToBeac(g, params)
+def followNameFromBeacToRoom(g, params):
+    from followNameFromBeacToRoom import followNameFromBeacToRoom
+    followNameFromBeacToRoom(g, params)
     
 def guideNameFromBeacToBeac(g, params):
     from guidePrsFromBeacToBeac import guidePrsFromBeacToBeac
@@ -52,17 +52,17 @@ def guideClothPrsFromBeacToBeac(g, params):
     from guideClothPrsFromBeacToBeac import guideClothPrsFromBeacToBeac
     guideClothPrsFromBeacToBeac(g, params)
     
-def greetClothPrsInRm(g, params):
-    from greetClothPrsInRm import greetClothPrsInRm
-    greetClothPrsInRm(g, params)
+def greetClothDscInRm(g, params):
+    from greetClothDscInRm import greetClothDscInRm
+    greetClothDscInRm(g, params)
     
-def greetPrsInRm(g, params):
-    from greetPrsInRm import greetPrsInRm
-    greetPrsInRm(g, params)
+def greetNameInRm(g, params):
+    from greetNameInRm import greetNameInRm
+    greetNameInRm(g, params)
     
-def meetNameAtLocThenGuideToLoc(g, params):
-    from meetNameAtLocThenGuideToLoc import meetNameAtLocThenGuideToLoc
-    meetNameAtLocThenGuideToLoc(g, params)
+def meetNameAtLocThenFindInRm(g, params):
+    from meetNameAtLocThenFindInRm import meetNameAtLocThenFindInRm
+    mmeetNameAtLocThenFindInRm(g, params)
 
 def countClothPrsInRoom(g, params):
     from countClothPrsInRoom import countClothPrsInRoom

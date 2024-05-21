@@ -4,17 +4,23 @@ def meetNameAtLocThenFindInRm(g, params):
     # Meet Jane at the desk lamp then locate them in the office
     # Meet Robin at the tv stand then find them in the office
     # Meet Adel at the side tables then look for them in the living room
+    print("Start meetNameAtLocThenFindInRm")
     
     # [0] Extract parameters
-    name, loc, room = params['name'], params['loc'], params['room']
-
+    name = params['name']
+    loc = params['loc']
+    room = params['room']
+        
     # [1] Move to the specified location
-    move_gpsr(agent, loc)
+    g.move(loc)
 
     # [2] Find the person in the location
-    print(f"[FIND] {name} in the {loc}")
+    g.identifyByName(name)
+    humanAttribute = g.getHumanAttribute()
+    
+    # [3] Move to the specified room
+    g.move(room)
 
-    # [3][TODO] Make human locate to the room
-    # print('please follow me')
-
-    # params = {'name': Robin, 'loc': 'tv stand', 'room': 'office'}
+    # [4] Find the person in the room
+    g.identifyByHumanAttribute(humanAttribute)
+    g.say("I found you")

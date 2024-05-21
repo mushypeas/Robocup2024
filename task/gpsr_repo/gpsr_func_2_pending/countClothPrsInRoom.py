@@ -3,17 +3,19 @@ def countClothPrsInRoom(g, params):
     # Tell me how many people in the kitchen are wearing red jackets
     # Tell me how many people in the living room are wearing black jackets
     # Tell me how many people in the bathroom are wearing white jackets
+    print("Start countClothPrsInRoom")
     
     # [0] Extract parameters
-    room, color = params['room'], params['colorClothes']
+    room = params["room"]
+    colorClothes = params["colorClothes"]
 
     # [1] Move to the specified room
-    move_gpsr(agent, room)
+    g.move(room)
 
     # [2] Check the number of people wearing the specified color
-    # [TODO] Color Detection, Clothes Detection
-    count = 0
-    print(f"[COUNT] {count} people in the {room} are wearing {color}")
-
-    # params = {countVerb: 'Tell me how many', room: 'kitchen', colorClothes: 'red jackets'}
+    count = g.countColorClothesPers(colorClothes)
+    
+    # [3] Output the count
+    # TODO : Fix the grammar for singular and plural
+    g.say(f"There are {count} people in the {room} wearing {colorClothes}")
     

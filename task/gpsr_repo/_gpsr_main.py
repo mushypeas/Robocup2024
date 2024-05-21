@@ -1,5 +1,6 @@
 import rospy
 import json
+from datetime import datetime, timedelta
 
 from gpsr_cmds import *
 from gpsr_followup import *
@@ -69,7 +70,7 @@ class GPSR:
 
         print("original_yolo_bbox", yolo_bbox)
 
-        if category:
+        if category and category != 'object':
             categoryItems = self.category2objDict[category]
             print("categoryItems", categoryItems)
             yolo_bbox = [obj for obj in yolo_bbox if self.agent.yolo_module.find_name_by_id(obj[4]) in categoryItems]
@@ -113,32 +114,103 @@ class GPSR:
     def say(self, text):
         self.agent.say(text)
         
+    def talk(self, talk):
+        if talk == 'something about yourself':
+            self.say('I am a robot designed to help people in their daily lives')
+            
+        elif talk == 'the time':
+            self.say(f'The time is {datetime.now().time()}')
+            
+        elif talk == 'what day is today':
+            self.say(f'Today is {datetime.now().date()}')
+            
+        elif talk == 'what day is tomorrow':
+            self.say(f'Tomorrow is {datetime.now().date() + timedelta(days=1)}')
+        
+        elif talk == 'your teams name':
+            self.say('My team name is Tidy Boy')
+            
+    def quiz(self):
+        # [TODO] Implement how the quiz can be answered
+        pass
+            
     # TODO
     def getName(self):
-        name = "John Doe"
-        return name
+        # [TODO] Implement how the name can be extracted
+        return None
     
     # TODO
     def getPose(self):
-        pose = 'standing'
-        return pose
+        # [TODO] Implement how the pose can be extracted
+        return None
     
-    # TODO
     def getGest(self):
-        gesture = 'pointing'
-        return gesture
+        # [TODO] Implement how the gesture can be extracted
+        return None
+    
+    def getHumanAttribute(self):
+        # [TODO] Implement how the human attributes can be extracted
+        return None
         
-    def identifyName(self, name):
+    # 사람 앞에서 멈추기
+    def identifyByName(self, name):
         # [TODO] Implement how the name can be identified
         pass
         
-    def identifyGestPose(self, gestPosePers):
+    def identifyByGestPose(self, gestPosePers):
         # [TODO] Implement how the pose can be identified
         pass
+    
+    def identifyByHumanAttribute(self, humanAttribute):
+        # [TODO] Implement how the human attributes can be identified
+        pass
+    
+    def identifyByClothing(self, Clothes):
+        # [TODO] Implement how the clothes can be identified
+        pass
+    
+    def countGestPosePers(self, gestPosePers):
+        # [TODO] Implement how the pose can be counted
+        return None
+    
+    def countColorClothesPers(self, colorClothes):
+        # [TODO] Implement how the color of clothes can be counted
+        return None
     
     def follow(self):
         # [TODO] Implement how the person can be followed
         pass
+    
+    def followToLoc(self, loc):
+        # [TODO] Implement how the person can be followed to the location
+        pass
+    
+    def extractLocFrominRoomatLoc(self, inRoom_atLoc):
+        # [TODO] Implement how the location can be extracted
+        return None
+    
+    def objIdToName(self, id):
+        return self.agent.yolo_module.find_name_by_id(id)
+    
+    def findBiggestObjId(self, yolo_bbox):
+        ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
+        return max(ObjIdArea, key=lambda x: x[1])[0]
+    
+    def findSmallestObjId(self, yolo_bbox):
+        ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
+        return min(ObjIdArea, key=lambda x: x[1])[0]
+    
+    def findThinnestObjId(self, yolo_bbox):
+        objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
+        return min(objIdThinLen, key=lambda x: x[1])[0]
+    
+    def findHeaviestObjId(self, yolo_bbox):
+        # [TODO] Implement how the heaviest object can be found
+        return None
+    
+    def findLightestObjId(self, yolo_bbox):
+        # [TODO] Implement how the lightest object can be found
+        return None
     
     def exeFollowup(self, followup):
         followupName, params = ultimateFollowupParser(followup)

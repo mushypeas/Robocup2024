@@ -9,21 +9,10 @@ def tellCatPropOnPlcmt(g, params):
     print("Start TellCatPropOnPlcmt")
 
     # [0] Extract parameters
-    try:
-        comp = params['objComp']
-    except KeyError:
-        pass
+    comp = params['objComp']
+    cat = params['singCat']
+    loc = params['plcmtLoc']
     
-    try:
-        cat = params['singCat']
-    except KeyError:
-        pass
-
-    try:
-        loc = params['plcmtLoc']
-    except KeyError:
-        pass
-
     # [1] Move to the specified space
     g.move(loc)
 
@@ -33,25 +22,27 @@ def tellCatPropOnPlcmt(g, params):
     while yolo_bbox == []:
         yolo_bbox = g.get_yolo_bbox(cat)
 
-    # [3] Tell the information
-    ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
-    objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
-
-    if comp in ['biggest', 'largest', 'heaviest']:
-        targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
-        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
+    # [3] Find the object with the specified property
+    if comp in ['biggest', 'largest']:
+        targetObjId = g.findBiggestObj(yolo_bbox)
+        targetObjName = g.objIdToName(targetObjId)
         
-    elif comp in ['smallest', 'lightest']:
-        targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
-        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
+    elif comp in ['smallest']:
+        targetObjId = g.findSmallestObj(yolo_bbox)
+        targetObjName = g.objIdToName(targetObjId)
 
     elif comp in ['thinnest']:
-        targetObjId = min(objIdThinLen, key=lambda x: x[1])[0]
-        targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
+        targetObjId = g.findThinnestObj(yolo_bbox)
+        targetObjName = g.objIdToName(targetObjId)
+        
+    elif comp in ['heaviest']:
+        targetObjId = g.findHeaviestObj(yolo_bbox)
+        targetObjName = g.objIdToName(targetObjId)
+        
+    elif comp in ['lightest']:
+        targetObjId = g.findLightestObj(yolo_bbox)
+        targetObjName = g.objIdToName(targetObjId)
 
-    ### TODO ###
-    # elif comp in ['heaviest', 'lightest']:
-    # define weight dictionary according to objId
-
+    # [4] Tell the information
     robotOutput = f"The {comp} {cat} is {targetObjName}"
     g.say(robotOutput)

@@ -9,20 +9,9 @@ def takeObjFromPlcmt(g, params):
     print('Start takeObjFromPlcmt')
     
     # [0] Extract parameters
-    try:
-        obj = params['obj']
-    except KeyError:
-        obj = 'any_obj'
-        
-    try:
-        plcmtLoc = params['plcmtLoc']
-    except KeyError:
-        plcmtLoc = 'gpsr_instruction_point'
-        
-    try:
-        followup = params['followup']
-    except KeyError:
-        followup = 'none'
+    obj = params['obj']
+    plcmtLoc = params['plcmtLoc']
+    followup = params['followup']
 
     # [1] Move to the specified space
     g.move(plcmtLoc)

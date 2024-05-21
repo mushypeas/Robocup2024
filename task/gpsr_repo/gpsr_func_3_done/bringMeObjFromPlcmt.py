@@ -9,17 +9,8 @@ def bringMeObjFromPlcmt(g, params):
     print("Start BringMeObjFromPlcmt")
     
     # [0] Extract parameters
-    try:
-        obj = params['obj']
-    except KeyError:
-        print("[ERROR] obj is not defined")
-        obj = 'any_obj'
-        
-    try:
-        plcmtLoc = params['plcmtLoc']
-    except KeyError:
-        print("[ERROR] plcmtLoc is not defined")
-        plcmtLoc = 'gpsr_instruction_point'
+    obj = params['obj']
+    plcmtLoc = params['plcmtLoc']
         
     # [1] Move to the specified location
     g.move(plcmtLoc)
@@ -29,6 +20,4 @@ def bringMeObjFromPlcmt(g, params):
 
     # [3] Give the object to the person
     g.move('gpsr_instruction_point')
-    print('moving to the instruction point')
-    rospy.sleep(5)
     g.deliver()

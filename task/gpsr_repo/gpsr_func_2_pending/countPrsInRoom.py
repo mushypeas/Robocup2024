@@ -4,12 +4,18 @@ def countPrsInRoom(g, params):
     # Tell me how many persons pointing to the right are in the kitchen
     # Tell me how many persons pointing to the left are in the bedroom
     # Tell me how many lying persons are in the living room
+    print("Start countPrsInRoom")
     
     # [0] Extract parameters
-    count, human, room = params['countVerb'], params['gestPers_posePers'], params['room']
+    gestPosePersPlur = params["gestPersPlur_posePersPlur"]
+    room = params["room"]
 
     # [1] move to the specified room
-    move_gpsr(agent, room)
+    g.move(room)
 
     # [2] Count the number of persons in the room
-    print(f"[COUNT] {count} {human} in the {room}")
+    count = g.countGestPosePers(gestPosePersPlur)
+    
+    # [3] Output the count
+    # TODO: Fix the grammar for singular and plural
+    g.say(f"There are {count} {gestPosePersPlur} in the {room}")

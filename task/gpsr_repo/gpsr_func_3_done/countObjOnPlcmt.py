@@ -11,15 +11,8 @@ def countObjOnPlcmt(g, params):
     print("Start CountObjOnPlcmt")
     
     # [0] Extract parameters
-    try:
-        plurCat = params['plurCat']
-    except KeyError:
-        pass
-
-    try:    
-        plcmtLoc = params['plcmtLoc']
-    except KeyError:
-        pass
+    plurCat = params['plurCat']
+    plcmtLoc = params['plcmtLoc']
 
     singCat = g.categoryPlur2Sing[plurCat]
 

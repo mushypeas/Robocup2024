@@ -7,26 +7,15 @@ def meetPrsAtBeac(g, params):
     print("Start meetPrsAtBeac")
     
     # [0] Extract parameters
-    try:
-        name = params['name']
-    except KeyError:
-        name = 'any person'
-        
-    try:
-        room = params['room']
-    except KeyError:
-        room = 'gpsr_instruction_point'
-        
-    try:
-        followup = params['followup']
-    except KeyError:
-        followup = 'follow them'
+    name = params['name']
+    room = params['room']
+    followup = params['followup']
         
     # [1] Move to the specified room
     g.move(room)
 
     # [2] find the person
-    g.identifyName(name)
+    g.identifyByName(name)
 
     # [3] Generate the followup comman
     g.exeFollowup(followup)

@@ -4,17 +4,20 @@ def guidePrsFromBeacToBeac(g, params):
     # Escort the lying person from the sink to the shelf
     # Escort the standing person from the chairs to the lamp
     # Guide the waving person from the trashbin to the living room
-
-    params = {'guideVerb': 'Lead', 'gestPers_posePers': 'person raising their right arm', 'fromLocPrep': 'from', 'loc': 'bookshelf', 'toLocPrep': 'to', 'loc_room': 'office'}
-
+    print("Start guidePrsFromBeacToBeac")
+    
     # [0] Extract parameters
-    guide, gestPers_posePers, loc, room = params['guideVerb'], params['gestPers_posePers'], params['loc'], params['loc_room']
-
+    gestPosePers = params['gestPers_posePers']
+    loc = params['loc']
+    loc2 = params['loc_room']
+    
     # [1] Move to the specified location
-    move_gpsr(agent, loc)
-
+    g.move(loc)
+    
     # [2] Find the person in the location
-    print(f"[FIND] {gestPers_posePers} in the {loc}")
-
+    g.identifyByGestPose(gestPosePers)
+    g.say(f"Please follow me to the {loc2}")
+    
     # [3] Make the person to follow HSR to the room
-    # follow
+    g.move(loc2)
+    g.say(f"You have arrived at the {loc2}")

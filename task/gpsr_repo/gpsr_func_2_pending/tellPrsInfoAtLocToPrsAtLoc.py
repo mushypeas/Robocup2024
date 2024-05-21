@@ -7,23 +7,9 @@ def tellPrsInfoAtLocToPrsAtLoc(g, params):
     print("Start tellPrsInfoAtLocToPrsAtLoc")
 
     # [0] Extract parameters
-    try:
-        loc = params['loc']
-    except KeyError:
-        loc = 'gpsr_instruction_point'
-        
-    try:
-        loc2 = params['loc2']
-    except KeyError:
-        loc2 = 'gpsr_instruction_point'
-        
-    try:
-        persInfo = params['persInfo']
-    except KeyError:
-        persInfo = 'name'
-        
-    if persInfo not in ['name', 'pose', 'gesture']:
-        persInfo = 'name'
+    loc = params['loc']
+    loc2 = params['loc2']
+    persInfo = params['persInfo']
         
     # [1] Move to the specified room
     g.move(loc)

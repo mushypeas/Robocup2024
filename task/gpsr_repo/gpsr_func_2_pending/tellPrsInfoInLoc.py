@@ -7,15 +7,8 @@ def tellPrsInfoInLoc(g, params):
     print("Start tellPrsInfoInLoc")
 
     # [0] Extract parameters
-    try:
-        loc = params['inRoom_atLoc'].split()[-1]
-    except KeyError:
-        loc = 'gpsr_instruction_point'
-        
-    try:
-        persInfo = params['persInfo']
-    except KeyError:
-        persInfo = 'name'
+    loc = g.extractLocFrominRoomatLoc(params['inRoom_atLoc'])
+    persInfo = params['persInfo']
         
     if persInfo not in ['name', 'pose', 'gesture']:
         persInfo = 'name'
