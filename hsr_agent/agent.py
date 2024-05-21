@@ -418,17 +418,17 @@ class Agent:
         pass
 
     # gripper
-    def open_gripper(self):
+    def open_gripper(self, wait=True):
         rospy.loginfo("Gripper opened")
-        self.gripper.gripper_command(1.0)
+        self.gripper.gripper_command(1.0, wait=wait)
 
-    def grasp(self, force=1.0, weak=False):
+    def grasp(self, force=1.0, weak=False, wait=True):
         rospy.loginfo("Gripper closed")
         if weak:
             # self.gripper.grasp(0.1)
-            self.gripper.grasp(0.05)
+            self.gripper.grasp(0.05, wait=wait)
         else:
-            self.gripper.grasp(force)
+            self.gripper.grasp(force, wait=wait)
 
     def grasp_degree(self, radian):
         self.gripper.gripper_command(radian)

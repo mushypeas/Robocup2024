@@ -29,7 +29,7 @@ class MoveBase:
         msg.pose.pose.orientation.z = q[2]
         msg.pose.pose.orientation.w = q[3]
         msg.pose.covariance = np.eye(6).flatten().tolist()
-        msg.header.stamp = rospy.Time.now()
+        # msg.header.stamp = rospy.Time.now()
         msg.header.frame_id = 'map'
         self.initial_pose_pub.publish(msg)
         return
@@ -77,7 +77,7 @@ class MoveBase:
         self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
@@ -130,7 +130,7 @@ class MoveBase:
         rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
 
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "base_link"
         pose.pose.position = Point(x, y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)

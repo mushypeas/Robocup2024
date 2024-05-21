@@ -163,8 +163,8 @@ class YoloModule:
             marker.action = marker.DELETEALL
             self.mark_pub.publish(marker)
         self.object_len = len(self.yolo_bbox)
-        object_3d_list = []
 
+        object_3d_list = []
         for idx, item in enumerate(self.yolo_bbox):
             cent_x, cent_y, width, height, class_id = item
             start_x = cent_x - (width // 2)
@@ -174,12 +174,12 @@ class YoloModule:
             points_by_base_link = self.axis_transform.tf_camera_to_base(object_pc, multi_dimention=True)
 
             table_height = TABLE_DIMENSION[table][2]
-            height_offset = -0.025
+            height_offset = -0.01
             front_threshold = dist + depth
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.005
+                height_offset = 0.01
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
@@ -190,11 +190,9 @@ class YoloModule:
             height_threshold = [table_height - height_offset, 1.5]
 
             # 1. hard-constraint thresholding by fixed parameters
-            points_by_base_link = points_by_base_link[np.where((points_by_base_link[:, 0] < front_threshold))]
-            rospy.loginfo(f'{OBJECT_LIST[class_id][0]} points 1: {points_by_base_link.shape}')
-            points_by_base_link = points_by_base_link[np.where((points_by_base_link[:, 2] > height_threshold[0]))]
-            rospy.loginfo(f'{OBJECT_LIST[class_id][0]} points 2: {points_by_base_link.shape}')
-            points_by_base_link = points_by_base_link[np.where((points_by_base_link[:, 2] < height_threshold[1]))]
+            points_by_base_link = points_by_base_link[np.where((points_by_base_link[:, 0] < front_threshold)
+                                                             & (points_by_base_link[:, 2] > height_threshold[0])
+                                                             & (points_by_base_link[:, 2] < height_threshold[1]))]
             rospy.loginfo(f'{OBJECT_LIST[class_id][0]} points 3: {points_by_base_link.shape}')
             try:
                 # # 2. soft-constraint thresholding by objects depth
@@ -211,7 +209,7 @@ class YoloModule:
                               round(np.nanmax(points_by_base_link[:, 1]), 4),
                               round(np.nanmax(points_by_base_link[:, 2]), 4)]
             except ValueError:
-                rospy.logerr('[YOLO] Invalid object detected. Try again.')
+                rospy.logerr(f'[YOLO] zero-size array for {OBJECT_LIST[class_id][0]}. Try searching again.')
                 return []
 
             # print('item', OBJECT_LIST[class_id][0])
