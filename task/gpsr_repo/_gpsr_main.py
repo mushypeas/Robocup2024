@@ -7,7 +7,7 @@ from gpsr_parser import *
 from gpsr_utils import *
 
 objects_file_path = 'task/gpsr_repo/object.md'
-objects_data = read_data(objects_file_path)
+objects_data = readData(objects_file_path)
 
 def followup(cmd):
     print(cmd)
@@ -16,7 +16,7 @@ class GPSR:
     def __init__(self, agent):
         self.agent = agent
         
-        self.cmdName2cmdFunc = {
+        self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
             "takeObjFromPlcmt": takeObjFromPlcmt,
             "findPrsInRoom": findPrsInRoom,
@@ -42,7 +42,7 @@ class GPSR:
             "followPrsAtLoc": followPrsAtLoc
         }
         
-        self.followupName2followupFunc = {
+        self.followupNameTofollowupFunc = {
             # "findObj": findObj,
             # "findPrs": findPrs,
             # "meetName": meetName,
@@ -58,8 +58,8 @@ class GPSR:
             # "takeObj": takeObj
         }
 
-        self.object_names, self.object_categories_plural, self.object_categories_singular = parse_objects(objects_data)
-        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategory2obj(objects_data)
+        self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
+        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
 
     ### HELP Functions ###
         
@@ -112,6 +112,15 @@ class GPSR:
 
     def say(self, text):
         self.agent.say(text)
+        
+    def identifyPose(self, pose):
+        # [TODO] Implement how the pose can be identified
+        pass
+    
+    def follow(self):
+        # [TODO] Implement how the person can be followed
+        pass
+    
 
 # MAIN
 def gpsr(agent):
@@ -130,7 +139,7 @@ def gpsr(agent):
     # parse InputText 
     cmdName, params = ultimateParser(inputText)
     
-    cmdFunc = g.cmdName2cmdFunc[cmdName]
+    cmdFunc = g.cmdNameTocmdFunc[cmdName]
     cmdFunc(g, params)
 
     # TODO : repeat 3 times, return to the instruction loc

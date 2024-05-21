@@ -1,22 +1,19 @@
 import rospy
 
 # "tellObjPropOnPlcmt": "{tellVerb} me what is the {objComp} object {onLocPrep} the {plcmtLoc}",
-def tellObjPropOnPlcmt(g, params):    
+def tellObjPropOnPlcmt(g, params):
+    # Tell me what is the heaviest object on the storage rack
+    # Tell me what is the heaviest object on the bed
+    # Tell me what is the smallest object on the dishwasher
+    # Tell me what is the heaviest object on the cabinet
     print("Start TellObjPropOnPlcmt")
 
     # [0] Extract parameters
     try:
-        tell = params['tellVerb']
-    except KeyError:
-        pass
-    try:
         comp = params['objComp']
     except KeyError:
         pass
-    try:
-        onLocPrep = params['onLocPrep']
-    except KeyError:
-        pass
+    
     try:
         loc = params['plcmtLoc']
     except KeyError:
@@ -31,16 +28,15 @@ def tellObjPropOnPlcmt(g, params):
 
     yolo_bbox = g.get_yolo_bbox()
     
-    # [3] biggest, largest
-
+    # [3] biggest, largest, heaviest, smallest, thinnest
     ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
     objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
 
-    if comp in ['biggest', 'largest']:
+    if comp in ['biggest', 'largest', 'heaviest']:
         targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
         targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
         
-    elif comp in ['smallest']:
+    elif comp in ['smallest', 'lightest']:
         targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
         targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
 

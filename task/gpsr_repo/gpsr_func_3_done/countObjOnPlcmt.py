@@ -2,26 +2,22 @@ import rospy
 
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
 def countObjOnPlcmt(g, params):
+    # Tell me how many drinks there are on the sofa
+    # Tell me how many drinks there are on the sofa
+    # Tell me how many cleaning supplies there are on the bedside table
+    # Tell me how many cleaning supplies there are on the shelf
+    # Tell me how many snacks there are on the tv stand
+    # Tell me how many dishes there are on the kitchen table
     print("Start CountObjOnPlcmt")
     
     # [0] Extract parameters
-    try:
-        countVerb = params['countVerb'] 
-    except KeyError:
-        pass
-
     try:
         plurCat = params['plurCat']
     except KeyError:
         pass
 
-    try:   
-        onLocPrep = params['onLocPrep']
-    except KeyError:
-        pass
-
     try:    
-       plcmtLoc = params['plcmtLoc']
+        plcmtLoc = params['plcmtLoc']
     except KeyError:
         pass
 

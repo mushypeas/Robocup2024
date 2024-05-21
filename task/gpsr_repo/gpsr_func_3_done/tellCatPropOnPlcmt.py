@@ -2,25 +2,23 @@ import rospy
 
 # "tellCatPropOnPlcmt": "{tellVerb} me what is the {objComp} {singCat} {onLocPrep} the {plcmtLoc}",
 def tellCatPropOnPlcmt(g, params):
+    # Tell me what is the biggest food on the sofa
+    # Tell me what is the biggest snack on the sofa
+    # Tell me what is the smallest food on the side tables
+    # Tell me what is the biggest food on the kitchen table
     print("Start TellCatPropOnPlcmt")
 
     # [0] Extract parameters
     try:
-        tell = params['tellVerb']
-    except KeyError:
-        pass
-    try:
         comp = params['objComp']
     except KeyError:
         pass
+    
     try:
         cat = params['singCat']
     except KeyError:
         pass
-    try:
-        onLocPrep = params['onLocPrep']
-    except KeyError:
-        pass
+
     try:
         loc = params['plcmtLoc']
     except KeyError:
@@ -39,11 +37,11 @@ def tellCatPropOnPlcmt(g, params):
     ObjIdArea = [(objInfo[4], objInfo[2] * objInfo[3]) for objInfo in yolo_bbox]
     objIdThinLen = [(objInfo[4], min(objInfo[2], objInfo[3])) for objInfo in yolo_bbox]
 
-    if comp in ['biggest', 'largest']:
+    if comp in ['biggest', 'largest', 'heaviest']:
         targetObjId = max(ObjIdArea, key=lambda x: x[1])[0]
         targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
         
-    elif comp in ['smallest']:
+    elif comp in ['smallest', 'lightest']:
         targetObjId = min(ObjIdArea, key=lambda x: x[1])[0]
         targetObjName = g.agent.yolo_module.find_name_by_id(targetObjId)
 

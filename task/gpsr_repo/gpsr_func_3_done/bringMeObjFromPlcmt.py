@@ -2,6 +2,10 @@ import rospy
 
 # "bringMeObjFromPlcmt": "{bringVerb} me {art} {obj} {fromLocPrep} the {plcmtLoc}",
 def bringMeObjFromPlcmt(g, params):
+    # Give me a strawberry jello from the desk
+    # Bring me an apple from the refrigerator
+    # Give me an iced tea from the bedside table
+    # Give me a baseball from the bedside table
     print("Start BringMeObjFromPlcmt")
     
     # [0] Extract parameters
