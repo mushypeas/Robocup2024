@@ -1,15 +1,10 @@
-import sys
-sys.path.append('task/gpsr_repo/')
+import rospy
+import json
 
 from gpsr_cmds import *
 from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
-
-from utils.distancing import distancing, distancing_horizontal
-
-import rospy
-import json
 
 objects_file_path = 'task/gpsr_repo/object.md'
 objects_data = read_data(objects_file_path)
