@@ -1,21 +1,41 @@
-# "countClothPrsInRoom": "{countVerb} people {inLocPrep} the {room} are wearing {colorClothes}",
-def countClothPrsInRoom(g, params):
-    # Tell me how many people in the kitchen are wearing red jackets
-    # Tell me how many people in the living room are wearing black jackets
-    # Tell me how many people in the bathroom are wearing white jackets
-    print("Start countClothPrsInRoom")
-    
+from module.CLIP.clip_detection import init_clip, detectTopColor, detectTopClothe
+from PIL import Image
+import torch
+
+def move_gpsr(agent, room):
+    # Placeholder for the move_gpsr function
+    print("[HSR] : I'm moving !")
+
+def countClothPrsInRoom(agent, params):
+
     # [0] Extract parameters
-    room = params["room"]
-    colorClothes = params["colorClothes"]
+    room, color = params['room'], params['colorClothes']
 
-    # [1] Move to the specified room
-    g.move(room)
+    desired_color, desired_clothe = params['colorClothes'].split()
 
-    # [2] Check the number of people wearing the specified color
-    count = g.countColorClothesPers(colorClothes)
-    
-    # [3] Output the count
-    # TODO : Fix the grammar for singular and plural
-    g.say(f"There are {count} people in the {room} wearing {colorClothes}")
-    
+    # Move to the specified room
+    move_gpsr(agent, room)
+
+    # [2] Check the number of people wearing the specified color    # Initialize the CLIP model and necessary components for detection
+    clip_model, preprocess, tokenizer, device = init_clip()
+
+    count = 0
+    img_path = 'examples/shoes.jpg'
+    img = Image.open(img_path)
+
+    # [3] Process the image with the CLIP model
+    img_processed = preprocess(img).unsqueeze(0).to(device)
+
+    for img in img_processed:
+        # Detect the top color of the clothes
+        top_color, top_color_prob = detectTopColor(img, clip_model, preprocess, tokenizer, device)
+        # Detect the type of top clothes
+        top_clothe, top_clothe_prob = detectTopClothe(img, clip_model, preprocess, tokenizer, device)
+        print (f"Top color: {top_color} ({top_color_prob})")
+        print (f"Top clothe: {top_clothe} ({top_clothe_prob})")
+        # Check if the detected color and clothe type match the desired ones
+        if top_color == desired_color and top_clothe == desired_clothe:
+            count += 1
+
+    # Print the result
+    print(f"[COUNT] {count} people in the {room} are wearing {desired_color} {desired_clothe}")
