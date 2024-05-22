@@ -334,7 +334,7 @@ class Agent:
         # send message to the action server
         goal = MoveBaseGoal()
         goal.target_pose = pose
-        goal.target_pose.header.stamp = rospy.Time.now()
+        # goal.target_pose.header.stamp = rospy.Time.now()
         # before_moved_time = self.last_moved_time
 
         self.move_base.base_action_client.send_goal(goal)
@@ -369,7 +369,7 @@ class Agent:
                         break
                     rospy.sleep(0.1)
                 time_trapped = time.time()
-                goal.target_pose.header.stamp = rospy.Time.now()
+                # goal.target_pose.header.stamp = rospy.Time.now()
                 self.move_base.base_action_client.send_goal(goal)
 
             else:
@@ -384,7 +384,7 @@ class Agent:
                             self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
 
                             return True
-                        goal.target_pose.header.stamp = rospy.Time.now()
+                        # goal.target_pose.header.stamp = rospy.Time.now()
                         self.move_base.base_action_client.send_goal(goal)
             rospy.sleep(0.01)
         return True

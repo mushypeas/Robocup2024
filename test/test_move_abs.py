@@ -18,7 +18,7 @@ goal_x, goal_y, goal_yaw =4.349187868004667, 2.5028621883979887, 1.5496914794986
 
 # fill ROS message
 goal = PoseStamped()
-goal.header.stamp = rospy.Time.now()
+# goal.header.stamp = rospy.Time.now()
 goal.header.frame_id = "map"
 goal.pose.position = Point(goal_x, goal_y, 0)
 quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)

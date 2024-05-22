@@ -206,7 +206,7 @@ class HumanFollowing:
     def _segment_cb(self, data):
         if self.human_box_list[0] == None:
             print("There is no human box")
-            self.human_seg_pos = None
+            # self.human_seg_pos = None
         else :
             # print(data)
             depth = np.asarray(self.agent.depth_image)
@@ -404,7 +404,7 @@ class HumanFollowing:
         # _depth = self.agent.depth_image[:150, 10:630]
 
         if (looking_downside):
-            _depth = self.agent.depth_image[200:280, 280:360] / 1000 # 480, 640
+            _depth = self.agent.depth_image[200:340, 310:330] / 1000 # 480, 640
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -427,7 +427,9 @@ class HumanFollowing:
         # print(f"real human box size : {human_box_size}")
         _num_rotate=0
         _depth = self.barrier_check()
-        _depth = np.mean(_depth)
+        # _depth = np.mean(_depth)
+        _depth = _depth[_depth != 0]
+        _depth = np.min(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
 
@@ -445,7 +447,7 @@ class HumanFollowing:
         #     x = 640
 
 
-        rospy.loginfo(f"rect depth mean : {_depth}")
+        rospy.loginfo(f"rect depth min : {_depth}")
         # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
@@ -464,8 +466,8 @@ class HumanFollowing:
 
             rospy.sleep(1)
 
-            _depth = self.barrier_check()
-            rospy.loginfo(f"rect depth : {np.mean(_depth)}")
+            # _depth = self.barrier_check()
+            # rospy.loginfo(f"rect depth : {np.mean(_depth)}")
 
             # while (np.mean(_depth)< ((calc_z/ 1000.0)-0.3) or self.agent.dist <((calc_z/1000.0)-0.3)): # TODO : while 하는게 좋은지? 아니면 그때그때 한번만 이동하는게 좋은지?
 
@@ -542,11 +544,12 @@ class HumanFollowing:
             ########################METOD3. SEGMENT#############################
 
             _depth = self.barrier_check()
-            print(f"mean depth: {np.mean(_depth)}")
+            _depth = _depth[_depth != 0]
+            print(f"depth min depth: {np.min(_depth)}")
             seg_img = self.seg_img
             height, width = seg_img.shape
             mid_x = width // 2
-            background_mask = ( seg_img == 0 or seg_img == 15)# 배경 부분 또는 사람 부분
+            background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
             # baack_y, back_x = np.where(background_mask)
 
             left_background_count = np.sum(background_mask[:, :mid_x])
@@ -584,10 +587,12 @@ class HumanFollowing:
             rospy.sleep(1)
 
     def escape_tiny_canny(self):
-        frame = self.byte_img
+        frame = self.agent.rgb_img
+        # cv2.imshow('original frame', frame)
+
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(blurred, 100, 150)
+        edges = cv2.Canny(gray, 100, 150)
 
         # 푸리에 변환 적용
         rows, cols = edges.shape
@@ -633,6 +638,7 @@ class HumanFollowing:
         contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
         tiny_exist = False
+        tiny_loc = None
 
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -641,11 +647,16 @@ class HumanFollowing:
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if y > 330 and x > 200 and x < 440:
+                    if x < 320:
+                        tiny_loc == 'left'
+                    else:
+                        tiny_loc == 'right'
                     tiny_exist = True
                     self.agent.say('Tiny object.', show_display=False)
                     cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
+                    break
         morph = cv2.bitwise_not(morph)
-        cv2.imshow('morph', morph)
+        # cv2.imshow('morph', morph)
 
 
 
@@ -670,16 +681,27 @@ class HumanFollowing:
 
 
 # Convert to 3-channel
-        # canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
-        # canny_img_msg.header = self.data_header
-        # self.canny_pub.publish(canny_img_msg)
+        morph = np.uint8(morph)
+        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        canny_img_msg.header = self.data_header
+        if canny_img_msg is not None:
+            self.canny_pub.publish(canny_img_msg)
     
+        last_calc_z = self.calcz_queue[-1]
 
-
-        if tiny_exist:
+        if tiny_exist and last_calc_z > 1999:
             self.agent.say('I\'ll avoid it.', show_display=False)
-            self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
+            if tiny_loc == 'left':
+                self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
+            else:
+                self.agent.move_rel(0,0.3,0, wait=False)
             rospy.sleep(1)
+
+
+        # cv2.destroyAllWindows()
+
+
+
         
 
     def stt_destination(self, stt_option, calc_z=0):
@@ -784,14 +806,15 @@ class HumanFollowing:
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
         # twist, calc_z = self.twist, self.calc_z
-        _depth = barrier_check()
-        _depth = np.mean(_depth)
+        _depth = self.barrier_check()
+        _depth = _depth[_depth != 0]
+        _depth = np.min(_depth)
 
         # if calc_z > _depth * 1000 + 100:
         #     calc_z = _depth * 1000 + 100
         print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
         print("calc_z", calc_z)
-        if calc_z > np.mean(self.calcz_queue) + 1000:
+        if calc_z > np.mean(self.calcz_queue) + 500:
             calc_z = _depth * 1000
         else:
             self.calcz_queue.append(calc_z)
@@ -823,12 +846,12 @@ class HumanFollowing:
             # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
             if twist.linear.x == 0 and twist.angular.z == 0:
                 # change angular.z
-                loc = self.check_human_pos(human_info_ary, location=True)
+                loc = self.check_human_pos(human_info_ary, location=False)
                 if loc == 'lll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
                     # +가 왼쪽으로 돌림
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=True)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
                 if loc == 'll':
                     print("left")
@@ -853,7 +876,7 @@ class HumanFollowing:
                 if loc == 'rrr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=True)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
                     rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
@@ -864,13 +887,17 @@ class HumanFollowing:
             self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
                 # 2.4 move to human
             self.last_human_pos = target_xyyaw
-            if calc_z > 1000:
-                tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
-                target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
-                self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
-                # 2.4 move to human
-
-            self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
+            # if calc_z > 1000:
+            #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+            #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
+            #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+            #     # 2.4 move to human
+            target_yaw = target_xyyaw[2]
+            if target_xyyaw[2] > 0.05:
+                target_yaw = 0.05
+            if target_xyyaw[2] < -0.05:
+                target_yaw = -0.05
+            self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_yaw, wait=False)
             if target_xyyaw[2] > 0.1:
                 self.angle_queue.append(-1)
             elif target_xyyaw[2] < -0.1:
@@ -1363,7 +1390,7 @@ def carry_my_luggage(agent):
     try:
         # yolo_process = subprocess.run(['python3', '/home/tidy/Robocup2024/module/yolov7/run_yolov7.py'])
         script_path = "/home/tidy/Robocup2024/yolo.sh"
-        yolo_process = subprocess.Popen(['bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+        # yolo_process = subprocess.Popen(['bash', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
 
 
         ####################
@@ -1414,9 +1441,9 @@ def carry_my_luggage(agent):
         agent.say("Please Hand me bag", show_display=True)
         agent.pose.neutral_pose()
         rospy.sleep(1)
-        for i in range(5, 0, -1):
-            agent.say(str(i))
-            rospy.sleep(1)
+        # for i in range(5, 0, -1):
+        #     agent.say(str(i))
+        #     rospy.sleep(1)
         agent.grasp()
         agent.pose.move_to_go()
 
@@ -1491,7 +1518,7 @@ def carry_my_luggage(agent):
             if human_info_ary[0] is not None:
                 twist, calc_z = human_following.human_reid_and_follower.follow(human_info_ary, depth, human_following.human_seg_pos)
             human_following.escape_barrier(calc_z)
-            human_following.escape_tiny()
+            # human_following.escape_tiny()
             human_following.escape_tiny_canny()
             # rospy.sleep(0.5)
             print('go to arena')
@@ -1515,7 +1542,7 @@ def carry_my_luggage(agent):
     byte_process.terminate()
     if seg_on:
         seg_process.terminate()
-    yolo_process.terminate()
+    # yolo_process.terminate()
 
     agent.say("Finish carry my luggage", show_display=True)
 

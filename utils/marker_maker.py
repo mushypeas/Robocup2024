@@ -9,7 +9,7 @@ class MarkerMaker():
     def pub_marker(self, xyz, frame_id, scale=.3, ns="0"):
         marker = Marker()
         marker.header.frame_id = frame_id
-        marker.header.stamp = rospy.Time.now()
+        # marker.header.stamp = rospy.Time.now()
         # set shape, Arrow: 0; Cube: 1 ; Sphere: 2 ; Cylinder: 3
         marker.type = 2
         marker.ns = ns
