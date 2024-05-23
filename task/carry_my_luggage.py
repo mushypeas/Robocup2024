@@ -557,10 +557,10 @@ class HumanFollowing:
 
             if left_background_count > right_background_count:
                 print("left side is empty")
-                self.agent.move_rel(0,-0.7,0, wait=False) #then, HSR is intended to move left
+                self.agent.move_rel(0,-1.2,0, wait=False) #then, HSR is intended to move left
             elif right_background_count >= left_background_count:
                 print("right side is empty")
-                self.agent.move_rel(0,0.7,0, wait=False) #then, HSR is intended to move right
+                self.agent.move_rel(0,1.2,0, wait=False) #then, HSR is intended to move right
             rospy.sleep(1)
 
             ########################################################################
