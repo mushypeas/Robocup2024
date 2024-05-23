@@ -22,10 +22,11 @@ def get_hand_points(detected_keypoints, personwise_keypoints, pose_hand_pub, rat
                     ret.data+=list(i[0:2])
                     break
     ret.data = list(map(lambda x:int(x//ratio),ret.data))
-    rospy.loginfo(f'hand {ret.data}')
+    # rospy.loginfo(f'hand {ret.data}')
 
     pose_hand_pub.publish(ret)
-    return ret.data
+    # return ret.data
+    return
 
 def get_knee_points(detected_keypoints, knee_pose_pub, ratio):
 

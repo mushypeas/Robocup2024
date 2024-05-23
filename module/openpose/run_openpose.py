@@ -44,7 +44,8 @@ class OpenPoseWrapper:
         if 'knee' in self.detect_option:
             self.knee_pose_pub = rospy.Publisher('/snu/openpose/knee', Int16MultiArray, queue_size=10)
         self.bbox_pub = rospy.Publisher('/snu/openpose/bbox', Int16MultiArray, queue_size=10)
-        self.human_bbox_pub = rospy.Publisher('/snu/openpose/human_bbox', Int16MultiArray, queue_size=10)
+        # self.human_bbox_pub = rospy.Publisher('/snu/openpose/human_bbox', Int16MultiArray, queue_size=10)
+        self.human_bbox_with_hand_pub = rospy.Publisher('/snu/openpose/human_bbox_with_pub', Int16MultiArray, queue_size=10)
 
         # Image Info
         self.width  = int(640 * size_ratio)
@@ -95,14 +96,15 @@ class OpenPoseWrapper:
         # print(f'Detected Keypoints: {detected_keypoints}')
         ####### postprocessing start ############
         if 'hands' in self.detect_option:
-            hand_coord = get_hand_points(detected_keypoints, personwise_keypoints, self.pose_hand_pub, self.ratio)
-            hand_coord = np.int32(np.array(hand_coord).reshape(-1, 2) * self.ratio)
+            get_hand_points(detected_keypoints, personwise_keypoints, self.pose_hand_pub, self.ratio)
+            # hand_coord = np.int32(np.array(hand_coord).reshape(-1, 2) * self.ratio)
         if 'knee' in self.detect_option:
             get_knee_points(detected_keypoints, self.knee_pose_pub, self.ratio)
         # todo -> move to humanpose_process.py
-        handup_bbox_list = self.personwise_handup(keypoints_list, personwise_keypoints)
+        # handup_bbox_list = self.personwise_handup(keypoints_list, personwise_keypoints) # handup deactivated
 
-        human_bbox_list = self.personwise_human_bbox(keypoints_list, personwise_keypoints)
+        # human_bbox_list = self.personwise_human_bbox(keypoints_list, personwise_keypoints)
+        human_bbox_with_hand_list = self.personwise_human_bbox_with_hand(detected_keypoints, keypoints_list, personwise_keypoints)
 
         # Visualize and publish Openpose result if enabled
         if self.enable_viz:
@@ -120,15 +122,21 @@ class OpenPoseWrapper:
                     cv2.line(img, (B[0], A[0]), (B[1], A[1]), COLORS[i], 1, cv2.LINE_AA)
                     
             # Draw human bbox
-            for bbox in human_bbox_list:
-                cv2.rectangle(img, bbox[0:2], bbox[2:4], (255, 0, 255), 3)
+            for bbox in human_bbox_with_hand_list:
+                cv2.rectangle(img, bbox[0:2], bbox[2:4], (255, 0, 255), 2)
 
-            for coord in hand_coord:
-                cv2.circle(img, tuple(coord), 10, (0, 0, 255), -1)
+            # for coord in hand_coord:
+            #     cv2.circle(img, tuple(coord), 6, (0, 0, 255), -1)
+            for coord in human_bbox_with_hand_list:
+                if coord[4] != -1:
+                    cv2.circle(img, (coord[4], coord[5]), 6, (0, 0, 255), -1)
+                if coord[6] != -1:
+                    cv2.circle(img, (coord[6], coord[7]), 6, (0, 0, 255), -1)
+                # cv2.circle(img, tuple(coord), 6, (0, 0, 255), -1)
             
-            # Draw handup bbox
-            for bbox in handup_bbox_list:
-                cv2.rectangle(img, bbox[0:2], bbox[2:4], (0, 255, 0), 2)
+            # # Draw handup bbox # handup deactivated
+            # for bbox in handup_bbox_list:
+            #     cv2.rectangle(img, bbox[0:2], bbox[2:4], (0, 255, 0), 2)
             img = cv2.resize(img,
                              (int(self.width / self.ratio), int(self.height / self.ratio)),
                              cv2.INTER_LINEAR)
@@ -137,32 +145,52 @@ class OpenPoseWrapper:
             msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
             self.openpose_pub.publish(msg)
 
-        # Send human_bbox info of all people
-        human_bbox_msg = Int16MultiArray()
-        human_bbox_data = []
-        for human_bbox in human_bbox_list:
+        # # Send human_bbox info of all people
+        # human_bbox_msg = Int16MultiArray()
+        # human_bbox_data = []
+        # for human_bbox in human_bbox_list:
+        #     human_bbox[0] = int(human_bbox[0] / self.ratio)
+        #     human_bbox[1] = int(human_bbox[1] / self.ratio)
+        #     human_bbox[2] = int(human_bbox[2] / self.ratio)
+        #     human_bbox[3] = int(human_bbox[3] / self.ratio)
+        #     # rospy.loginfo(f'human_bbox: TOP LFET: {human_bbox[0:2]} BOTTOM RIGHT: {human_bbox[2:4]}')
+        #     human_bbox_data += human_bbox
+        # human_bbox_msg.data = human_bbox_data
+        # rospy.loginfo(f'human_bbox_data: {human_bbox_data}')
+        # self.human_bbox_pub.publish(human_bbox_msg)
+            
+        # Send human_bbox_with_hand info of all people
+        human_bbox_with_hand_msg = Int16MultiArray()
+        human_bbox_with_hand_data = []
+        for human_bbox in human_bbox_with_hand_list:
             human_bbox[0] = int(human_bbox[0] / self.ratio)
             human_bbox[1] = int(human_bbox[1] / self.ratio)
             human_bbox[2] = int(human_bbox[2] / self.ratio)
             human_bbox[3] = int(human_bbox[3] / self.ratio)
-            rospy.loginfo(f'human_bbox: TOP LFET: {human_bbox[0:2]} BOTTOM RIGHT: {human_bbox[2:4]}')
-            human_bbox_data += human_bbox
-        human_bbox_msg.data = human_bbox_data
-        # rospy.loginfo(f'human_bbox_data: {human_bbox_data}')
-        self.human_bbox_pub.publish(human_bbox_msg)
+            if human_bbox[4] != -1:
+                human_bbox[4] = int(human_bbox[4] / self.ratio)
+                human_bbox[5] = int(human_bbox[5] / self.ratio)
+            if human_bbox[6] != -1:
+                human_bbox[6] = int(human_bbox[6] / self.ratio)
+                human_bbox[7] = int(human_bbox[7] / self.ratio)
+            # rospy.loginfo(f'human_bbox: TOP LFET: {human_bbox[0:2]} BOTTOM RIGHT: {human_bbox[2:4]}')
+            human_bbox_with_hand_data += human_bbox
+        human_bbox_with_hand_msg.data = human_bbox_with_hand_data
+        rospy.loginfo(f'human_bbox_with_hand_list: {human_bbox_with_hand_list}')
+        self.human_bbox_with_hand_pub.publish(human_bbox_with_hand_msg)
 
-        # Send bbox info of hand-waving people
-        msg = Int16MultiArray()
-        data = []
-        for bbox in handup_bbox_list:
-            bbox[0] = int(bbox[0] / self.ratio)
-            bbox[1] = int(bbox[1] / self.ratio)
-            bbox[2] = int(bbox[2] / self.ratio)
-            bbox[3] = int(bbox[3] / self.ratio)
-            # rospy.loginfo(f'Found: TOP LFET: {bbox[0:2]} BOTTOM RIGHT: {bbox[2:4]}')
-            data += bbox
-        msg.data = data
-        self.bbox_pub.publish(msg)
+        # # Send bbox info of hand-waving people # handup deactivated
+        # msg = Int16MultiArray()
+        # data = []
+        # for bbox in handup_bbox_list:
+        #     bbox[0] = int(bbox[0] / self.ratio)
+        #     bbox[1] = int(bbox[1] / self.ratio)
+        #     bbox[2] = int(bbox[2] / self.ratio)
+        #     bbox[3] = int(bbox[3] / self.ratio)
+        #     # rospy.loginfo(f'Found: TOP LFET: {bbox[0:2]} BOTTOM RIGHT: {bbox[2:4]}')
+        #     data += bbox
+        # msg.data = data
+        # self.bbox_pub.publish(msg)
         return
 
     def get_keypoints(self, pmap, thresh=0.1):
@@ -325,62 +353,53 @@ class OpenPoseWrapper:
         return bbox_list
     
 
-    def personwise_human_bbox(self, keypoints, personwise):
+    # def personwise_human_bbox(self, keypoints, personwise):
 
-        bbox_list = []
-        # print('keypoints: ' , keypoints)
-        # print('personwise: ', personwise)
+    #     bbox_list = []
+    #     # print('keypoints: ' , keypoints)
+    #     # print('personwise: ', personwise)
 
-        # for pidx, person in enumerate(personwise):
-        #     # l_index = person[np.array(POSE_PAIRS[3])]
-        #     # r_index = person[np.array(POSE_PAIRS[5])]
-        #     # l_flag = False
-        #     # r_flag = False
-        #     # if not (-1 in l_index):
-        #     #     B = np.int32(keypoints[l_index.astype(int), 0])
-        #     #     A = np.int32(keypoints[l_index.astype(int), 1])
-        #     #     if A[0] > A[1] + int(20 * self.ratio): l_flag = True
-        #     # if not (-1 in r_index):
-        #     #     B = np.int32(keypoints[r_index.astype(int), 0])
-        #     #     A = np.int32(keypoints[r_index.astype(int), 1])
-        #     #     if A[0] > A[1] + int(20 * self.ratio): r_flag = True
-        #     # if l_flag or r_flag:
-        #     x_max = 0
-        #     x_min = self.width
-        #     y_max = 0
-        #     y_min = self.height
-        #     # for i in range(17):
-        #     for i in range(len(keypoints[pidx])):
-        #     # for i in range(len(POSE_PAIRS)):
-        #     #     index = person[np.array(POSE_PAIRS[i])]
-        #         # print(i, index)
-        #         # if -1 in index: continue
-        #         # B = np.int32(keypoints[index.astype(int), 0])
-        #         # A = np.int32(keypoints[index.astype(int), 1])
-        #         B = np.int32(keypoints[i, 0])
-        #         A = np.int32(keypoints[i, 1])
-        #         # if min(B[0], B[1]) < x_min: x_min = min(B[0], B[1])
-        #         # if max(B[0], B[1]) > x_max: x_max = max(B[0], B[1])
-        #         # if min(A[0], A[1]) < y_min: y_min = min(A[0], A[1])
-        #         # if max(A[0], A[1]) > y_max: y_max = max(A[0], A[1])
-        #         x_min = min(x_min, B)
-        #         x_max = max(x_max, B)
-        #         y_min = min(y_min, A)
-        #         y_max = max(y_max, A)
-        #     bbox_list.append([x_min, y_min, x_max, y_max])
+    #     for person in personwise:
+    #         person = person[person != -1][:-1]
+    #         # print(person)
+    #         person_keypoints = np.int32(keypoints[person.astype(int)])
+    #         x_max = max(person_keypoints[:, 0])
+    #         x_min = min(person_keypoints[:, 0])
+    #         y_max = max(person_keypoints[:, 1])
+    #         y_min = min(person_keypoints[:, 1])
+    #         bbox_list.append([x_min, y_min, x_max, y_max])
+    #     # print(bbox_list)
+    #     return bbox_list
 
-        for person in personwise:
-            person = person[person != -1][:-1]
-            # print(person)
-            person_keypoints = np.int32(keypoints[person.astype(int)])
+    def personwise_human_bbox_with_hand(self, detected_keypoints, keypoints_list, personwise_keypoints):
+
+        human_bbox_with_hand_list = []
+
+        for person in personwise_keypoints:
+            # bbox
+            person_1 = person[person != -1][:-1]
+            person_keypoints = np.int32(keypoints_list[person_1.astype(int)])
             x_max = max(person_keypoints[:, 0])
             x_min = min(person_keypoints[:, 0])
             y_max = max(person_keypoints[:, 1])
             y_min = min(person_keypoints[:, 1])
-            bbox_list.append([x_min, y_min, x_max, y_max])
-        # print(bbox_list)
-        return bbox_list
 
+            # hand
+            l_hand_x, l_hand_y, r_hand_x, r_hand_y = -1, -1, -1, -1
+            if person[4] != -1 or person[7] != -1:
+                for i in detected_keypoints[4]:
+                    if(i[3]==person[4]):
+                        # ret.data+=list(i[0:2])
+                        l_hand_x, l_hand_y = i[0], i[1]
+                        break
+                for i in detected_keypoints[7]:
+                    if(i[3]==person[7]):
+                        # ret.data+=list(i[0:2])
+                        r_hand_x, r_hand_y = i[0], i[1]
+                        break
+
+            human_bbox_with_hand_list.append([x_min, y_min, x_max, y_max, l_hand_x, l_hand_y, r_hand_x, r_hand_y])
+        return human_bbox_with_hand_list
     # def person_grasp_drink(self, keypoints):
 
 
@@ -388,7 +407,8 @@ if __name__ == '__main__':
     import time
     rospy.init_node('run_snu_openpose', anonymous=False, disable_signals=True)
     BASE_DIR = './models/'
-    detect_option = ['handup', 'hands', 'knee']
+    # detect_option = ['handup', 'hands', 'knee']
+    detect_option = [ 'knee']
     openpose = OpenPoseWrapper(BASE_DIR, detect_option, size_ratio=0.4, enable_viz=True)
     while not rospy.is_shutdown():
         # start_time = time.time()
