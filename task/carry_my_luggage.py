@@ -490,9 +490,10 @@ class HumanFollowing:
         _depth = np.mean(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
-        human_info_ary = copy.deepcopy(self.human_box_list)
-        depth = np.asarray(self.d2pc.depth)
-        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+        if self.human_box_list[0] is not None:
+            human_info_ary = copy.deepcopy(self.human_box_list)
+            depth = np.asarray(self.d2pc.depth)
+            twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
 
 
         # if calc_z > _depth * 2000:
@@ -646,7 +647,7 @@ class HumanFollowing:
         if tiny_object_exist:
             self.agent.say('I\'ll avoid it.', show_display=False)
             self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
-            # rospy.sleep(1)
+            rospy.sleep(1)
 
     def escape_tiny_canny(self):
         contours = self.contours
@@ -660,7 +661,7 @@ class HumanFollowing:
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                if y+h/2 > 330 and x+w/2 > 260 and x+w/2 < 380:
+                if y > 400 and x > 240 and x < 400:
                     if x < 320:
                         tiny_loc == 'left'
                     else:
@@ -702,10 +703,11 @@ class HumanFollowing:
             if tiny_exist and last_calc_z > 1000:
                 self.agent.say('I\'ll avoid it.', show_display=False)
                 if tiny_loc == 'left':
-                    self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
+                    self.agent.move_rel(0,-0.5,0, wait=False) ## TODO : go right?left?
                 else:
-                    self.agent.move_rel(0,0.3,0, wait=False)
-                # rospy.sleep(1)
+                    self.agent.move_rel(0,0.5,0, wait=False)
+                rospy.sleep(1)
+                self.agent.move_rel(0.5,0,0, wait=False)
 
 
         # cv2.destroyAllWindows()
