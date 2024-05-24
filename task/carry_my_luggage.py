@@ -61,6 +61,7 @@ class HumanFollowing:
         self.image_size = None
         self.image_shape = None
         self.seg_img = None
+        self.contours = None
         self.calc_z = None
         self._depth = None
         self.depth = None
@@ -86,6 +87,7 @@ class HumanFollowing:
     # ####
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
+        self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_rect_color', Image, self._rgb_callback)
         if self.seg_on:
             rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
@@ -202,6 +204,62 @@ class HumanFollowing:
         #     depth = np.asarray(self.agent.depth_image)
         #     self.twist, self.calc_z = self.human_reid_and_follower.follow(self.human_info_ary, depth, self.human_seg_pos)
         #     self._depth = self.barrier_check()
+
+
+    def _rgb_callback(self, data):
+        frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
+        # cv2.imshow('original frame', frame)
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # gray = cv2.GaussianBlur(gray, (5, 5), 0)
+        # cv2.imshow('gray', gray)
+
+        edges = cv2.Canny(gray, 100, 150)
+
+        # 푸리에 변환 적용
+        rows, cols = edges.shape
+        f = np.fft.fft2(edges)
+        fshift = np.fft.fftshift(f)
+
+        # Gaussian Low-Pass Filter
+        crow, ccol = rows // 2, cols // 2
+        mask = np.zeros((rows, cols), np.float32)
+        sigma = 50  # Standard deviation for Gaussian filter
+        x, y = np.ogrid[:rows, :cols]
+        mask = np.exp(-((x - crow) ** 2 + (y - ccol) ** 2) / (2 * sigma ** 2))
+
+        # Apply mask and inverse DFT
+        fshift = fshift * mask
+        f_ishift = np.fft.ifftshift(fshift)
+        img_back = np.fft.ifft2(f_ishift)
+        img_back = np.abs(img_back)
+
+
+        
+        img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
+        img_back = np.uint8(img_back)
+
+        kernel = np.ones((1, 1), np.uint8)
+        img_back = cv2.dilate(img_back, kernel, iterations=1)
+        img_back = cv2.erode(img_back, kernel, iterations=1)
+
+        morph = img_back
+
+        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        tiny_exist = False
+        tiny_loc = None
+
+        self.contours = contours
+
+        morph = cv2.bitwise_not(morph)
+
+
+        morph = np.uint8(morph)
+        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        # canny_img_msg.header = self.data_header
+        if canny_img_msg is not None:
+            self.canny_pub.publish(canny_img_msg)
 
     def _segment_cb(self, data):
         if self.human_box_list[0] == None:
@@ -429,7 +487,7 @@ class HumanFollowing:
         _depth = self.barrier_check()
         # _depth = np.mean(_depth)
         _depth = _depth[_depth != 0]
-        _depth = np.min(_depth)
+        _depth = np.mean(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
 
@@ -447,7 +505,7 @@ class HumanFollowing:
         #     x = 640
 
 
-        rospy.loginfo(f"rect depth min : {_depth}")
+        rospy.loginfo(f"rect depth mean : {_depth}")
         # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
         rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
         #and np.mean(_depth)< (calc_z-100)
@@ -543,9 +601,9 @@ class HumanFollowing:
 
             ########################METOD3. SEGMENT#############################
 
-            _depth = self.barrier_check()
-            _depth = _depth[_depth != 0]
-            print(f"depth min depth: {np.min(_depth)}")
+            # _depth = self.barrier_check()
+            # _depth = _depth[_depth != 0]
+            # print(f"depth min depth: {np.mean(_depth)}")
             seg_img = self.seg_img
             height, width = seg_img.shape
             mid_x = width // 2
@@ -587,63 +645,15 @@ class HumanFollowing:
             rospy.sleep(1)
 
     def escape_tiny_canny(self):
-        frame = self.agent.rgb_img
-        # cv2.imshow('original frame', frame)
-
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
-        edges = cv2.Canny(gray, 100, 150)
-
-        # 푸리에 변환 적용
-        rows, cols = edges.shape
-        f = np.fft.fft2(edges)
-        fshift = np.fft.fftshift(f)
-        magnitude_spectrum = 20 * np.log(np.abs(fshift))
-
-        # 중앙의 고주파 성분 제거 (저역통과 필터 적용)
-        crow, ccol = rows // 2, cols // 2
-        mask = np.zeros((rows, cols), np.uint8)
-        r = 50  # 필터 반경
-        center = [crow, ccol]
-        x, y = np.ogrid[:rows, :cols]
-        mask_area = (x - center[0]) ** 2 + (y - center[1]) ** 2 <= r * r
-        mask[mask_area] = 1
-        fshift = fshift * mask
-
-        # 역 푸리에 변환
-        f_ishift = np.fft.ifftshift(fshift)
-        img_back = np.fft.ifft2(f_ishift)
-        img_back = np.abs(img_back)
-
-        frame = img_back
-        if len(frame.shape) == 3 and frame.shape[2] == 3:
-            frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        frame_origin = frame
-        frame = cv2.bitwise_not(frame)
-        morph = frame 
-        frame = frame.astype(np.uint8)
-
-        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # blurred = cv2.GaussianBlur(gray, (11,11), 0)
-
-        # adaptive_thresh = cv2.adaptiveThreshold(blurred, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 11, 2)
-        # adaptive_thresh = cv2.GaussianBlur(adaptive_thresh, (11,11), 0)
-
-        # _, binary = cv2.threshold(adaptive_thresh, 50, 255, cv2.THRESH_BINARY_INV)
-        # kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-        # morph = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel, iterations=2)
-
-
-
-        contours, _ = cv2.findContours(frame, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        contours = self.contours
 
         tiny_exist = False
         tiny_loc = None
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 3000 < area < 15000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
-                print(area)
+            if 400 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+                # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 if y > 330 and x > 200 and x < 440:
@@ -653,9 +663,8 @@ class HumanFollowing:
                         tiny_loc == 'right'
                     tiny_exist = True
                     self.agent.say('Tiny object.', show_display=False)
-                    cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
+                    # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
                     break
-        morph = cv2.bitwise_not(morph)
         # cv2.imshow('morph', morph)
 
 
@@ -681,21 +690,18 @@ class HumanFollowing:
 
 
 # Convert to 3-channel
-        morph = np.uint8(morph)
-        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
-        canny_img_msg.header = self.data_header
-        if canny_img_msg is not None:
-            self.canny_pub.publish(canny_img_msg)
-    
-        last_calc_z = self.calcz_queue[-1]
+        
+        if self.calcz_queue[-1] is not None:
+            last_calc_z = self.calcz_queue[-1]
+            print("canny last calc_z: ", last_calc_z)
 
-        if tiny_exist and last_calc_z > 1999:
-            self.agent.say('I\'ll avoid it.', show_display=False)
-            if tiny_loc == 'left':
-                self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
-            else:
-                self.agent.move_rel(0,0.3,0, wait=False)
-            rospy.sleep(1)
+            if tiny_exist and last_calc_z > 1999:
+                self.agent.say('I\'ll avoid it.', show_display=False)
+                if tiny_loc == 'left':
+                    self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
+                else:
+                    self.agent.move_rel(0,0.3,0, wait=False)
+                rospy.sleep(1)
 
 
         # cv2.destroyAllWindows()
@@ -808,14 +814,16 @@ class HumanFollowing:
         # twist, calc_z = self.twist, self.calc_z
         _depth = self.barrier_check()
         _depth = _depth[_depth != 0]
-        _depth = np.min(_depth)
+        _depth = np.mean(_depth)
 
         # if calc_z > _depth * 1000 + 100:
         #     calc_z = _depth * 1000 + 100
-        print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
+        # print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
         print("calc_z", calc_z)
         if calc_z > np.mean(self.calcz_queue) + 500:
             calc_z = _depth * 1000
+            self.calcz_queue.append(calc_z)
+
         else:
             self.calcz_queue.append(calc_z)
         # print(f"self.calc_z = {self.calc_z}")
@@ -1384,6 +1392,10 @@ def carry_my_luggage(agent):
     #####################
     # 0. start
     agent.say('start carry my luggage!')
+    if seg_on:
+        seg_path = "/home/tidy/Robocup2024/seg.sh"
+        seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+
     agent.pose.move_pose()
     rospy.sleep(3)
     agent.pose.head_pan_tilt(0, 0)
@@ -1430,9 +1442,6 @@ def carry_my_luggage(agent):
         
     byte_path = "/home/tidy/Robocup2024/byte.sh"
     byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-    if seg_on:
-        seg_path = "/home/tidy/Robocup2024/seg.sh"
-        seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
