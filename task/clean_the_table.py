@@ -26,8 +26,8 @@ def clean_the_table(agent: Agent):
 
     # MODE PARAMETERS #
     no_distancing_mode = True
-    picking_mode = False
-    placing_mode = True
+    picking_mode = True
+    placing_mode = False
     rack_close_mode = True
 
     
@@ -143,7 +143,7 @@ def clean_the_table(agent: Agent):
 
                 agent.move_rel(base_xyz[0] + 0.15, base_xyz[1] + 0.04, wait=True)
 
-                agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.95) # modified from -0.1 to -0.13
+                agent.pose.pick_bowl_max_pose(table=pick_table, height=0) # modified from -0.1 to -0.13
                 agent.grasp()
                 rospy.sleep(0.5)
 
