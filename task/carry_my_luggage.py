@@ -490,6 +490,10 @@ class HumanFollowing:
         _depth = np.mean(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
+        human_info_ary = copy.deepcopy(self.human_box_list)
+        depth = np.asarray(self.d2pc.depth)
+        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth, self.human_seg_pos)
+
 
         # if calc_z > _depth * 2000:
         #     calc_z = _depth * 2000
@@ -513,7 +517,7 @@ class HumanFollowing:
         if (calc_z!=0 and (_depth< ((calc_z/ 1000.0)-0.5) or self.agent.dist <((calc_z/1000.0)-0.5) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
         self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
             _num_rotate = _num_rotate + 1
-            rospy.sleep(1)
+            # rospy.sleep(1)
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
@@ -522,7 +526,7 @@ class HumanFollowing:
             print("Barrier checking....")
             # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
 
-            rospy.sleep(1)
+            # rospy.sleep(1)
 
             # _depth = self.barrier_check()
             # rospy.loginfo(f"rect depth : {np.mean(_depth)}")
@@ -619,7 +623,7 @@ class HumanFollowing:
             elif right_background_count >= left_background_count:
                 print("right side is empty")
                 self.agent.move_rel(0,1.2,0, wait=False) #then, HSR is intended to move right
-            rospy.sleep(1)
+            # rospy.sleep(1)
 
             ########################################################################
 
@@ -642,7 +646,7 @@ class HumanFollowing:
         if tiny_object_exist:
             self.agent.say('I\'ll avoid it.', show_display=False)
             self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
-            rospy.sleep(1)
+            # rospy.sleep(1)
 
     def escape_tiny_canny(self):
         contours = self.contours
@@ -656,7 +660,7 @@ class HumanFollowing:
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                if y > 330 and x > 200 and x < 440:
+                if y+h/2 > 330 and x+w/2 > 260 and x+w/2 < 380:
                     if x < 320:
                         tiny_loc == 'left'
                     else:
@@ -695,13 +699,13 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and last_calc_z > 1999:
+            if tiny_exist and last_calc_z > 1000:
                 self.agent.say('I\'ll avoid it.', show_display=False)
                 if tiny_loc == 'left':
                     self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right?left?
                 else:
                     self.agent.move_rel(0,0.3,0, wait=False)
-                rospy.sleep(1)
+                # rospy.sleep(1)
 
 
         # cv2.destroyAllWindows()
@@ -860,32 +864,32 @@ class HumanFollowing:
                     # twist.angular.z = -self.stop_rotate_velocity
                     # +가 왼쪽으로 돌림
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
                 if loc == 'll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
                 if loc == 'l':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
                 if loc == 'r':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
                 if loc == 'rr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
                 if loc == 'rrr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
-                    rospy.sleep(.5)
+                    # rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
                     return True
@@ -911,7 +915,7 @@ class HumanFollowing:
             elif target_xyyaw[2] < -0.1:
                 self.angle_queue.append(1)
 
-            rospy.sleep(.5)
+            # rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
                 if self.save_one_time:
