@@ -30,8 +30,8 @@ if AIIS:
         'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
 
         # serve breakfast
-        'breakfast_table': [5.3173, 0.2645, 0.0198], # mjgu 240516
-        'kitchen_table' : [6.1732, -1.3899, -0.0733], # mjgu 240516
+        'breakfast_table': [5.1209, 0.2621, 0.0233], # mjgu 240516 
+        'kitchen_table' : [6.1711, -1.2379, -0.027], # mjgu 240516
         # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
         # clean the table
