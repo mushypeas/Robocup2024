@@ -49,7 +49,7 @@ class HumanFollowing:
         self.show_byte_track_image = False
         self.byte_img = None
         self.track_queue = deque()
-        self.angle_queue = deque(maxlen=20)
+        # self.angle_queue = deque(maxlen=20)
         self.calcz_queue = deque(maxlen=10)
         self.obstacle_offset = 0.0
         self.last_say = time.time()
@@ -206,7 +206,7 @@ class HumanFollowing:
         #     self._depth = self.barrier_check()
 
 
-    def _rgb_callback(self, data):
+    def _rgb_callback(self, data): ## tiny_object_edge 검출 용
         frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
         # cv2.imshow('original frame', frame)
 
@@ -372,16 +372,20 @@ class HumanFollowing:
                 if min_y + y > 480:
                     self.human_seg_pos = (mean_x + x, 480-10)
                 # print(f"human top seg_pos x,y: {self.human_seg_pos}")
-                depth_img_8bit = cv2.convertScaleAbs(data_img, alpha=(255.0/65535.0))
-                depth_img_3channel = cv2.cvtColor(depth_img_8bit, cv2.COLOR_GRAY2BGR)
-                cv2.circle(depth_img_3channel, (self.human_seg_pos[0], self.human_seg_pos[1]), 5, (0, 0, 255), -1)
-                cv2.circle(depth_img_3channel, (byte_x, byte_y), 5, (255, 0, 0), -1)
+
+
+
+                ###point pubish
+                # depth_img_8bit = cv2.convertScaleAbs(data_img, alpha=(255.0/65535.0))
+                # depth_img_3channel = cv2.cvtColor(depth_img_8bit, cv2.COLOR_GRAY2BGR)
+                # cv2.circle(depth_img_3channel, (self.human_seg_pos[0], self.human_seg_pos[1]), 5, (0, 0, 255), -1)
+                # cv2.circle(depth_img_3channel, (byte_x, byte_y), 5, (255, 0, 0), -1)
 
 # Convert to 3-channel
-                seg_img_msg = self.bridge.cv2_to_imgmsg(depth_img_3channel, 'bgr8')
-                seg_img_msg.header = data.header
-                self.data_header = data.header
-                self.image_pub.publish(seg_img_msg)
+                # seg_img_msg = self.bridge.cv2_to_imgmsg(depth_img_3channel, 'bgr8')
+                # seg_img_msg.header = data.header
+                # self.data_header = data.header
+                # self.image_pub.publish(seg_img_msg)
             
         
             
@@ -435,7 +439,7 @@ class HumanFollowing:
             #     self.angle_queue.append(1)
             #     return 'rrr'
             if center[1] < 80:
-                self.angle_queue.append(-1)
+                # self.angle_queue.append(-1)
                 return 'lll'
             # elif center[1] < 130:
             #     self.angle_queue.append(-1)
@@ -450,7 +454,7 @@ class HumanFollowing:
             #     self.angle_queue.append(1)
                 # return 'rr'
             elif center[1] > 560:
-                self.angle_queue.append(1)
+                # self.angle_queue.append(1)
                 return 'rrr'   
 
         if center[1] < 0 or center[1] > 640:
@@ -523,7 +527,7 @@ class HumanFollowing:
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
             print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-            self.agent.say('Barrier checking....', show_display=True)
+            # self.agent.say('Barrier checking....', show_display=True)
             print("Barrier checking....")
             # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
 
@@ -641,11 +645,11 @@ class HumanFollowing:
                 # 480 640
                 if cent_y > 330 and cent_x > 200 and cent_x < 440 and conf_percent > 90:
                     tiny_object_exist = True
-                    self.agent.say('Tiny object.', show_display=False)
+                    print('Tiny object.')
                     break
 
         if tiny_object_exist:
-            self.agent.say('I\'ll avoid it.', show_display=False)
+            print('I\'ll avoid it.')
             self.agent.move_rel(0,-0.3,0, wait=False) ## TODO : go right
             rospy.sleep(1)
 
@@ -667,7 +671,7 @@ class HumanFollowing:
                     else:
                         tiny_loc == 'right'
                     tiny_exist = True
-                    self.agent.say('Tiny object.', show_display=False)
+                    print('Tiny object.')
                     # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
                     break
         # cv2.imshow('morph', morph)
@@ -701,7 +705,7 @@ class HumanFollowing:
             print("canny last calc_z: ", last_calc_z)
 
             if tiny_exist and last_calc_z > 1000:
-                self.agent.say('I\'ll avoid it.', show_display=False)
+                print('I\'ll avoid it.')
                 if tiny_loc == 'left':
                     self.agent.move_rel(0,-0.5,0, wait=False) ## TODO : go right?left?
                 else:
@@ -806,8 +810,9 @@ class HumanFollowing:
             if self.stt_destination(self.stt_option):
                 return True
             print("it is not finished but i missed human...ㅜㅜ")
-            print("lets go to the last human position for just one time")
             if self.last_human_pos is not None and self.last_chance > 0:
+                print("lets go to the last human position for just one time")
+
                 target_xyyaw = self.last_human_pos
                 self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=True)
                 self.last_chance = 0
@@ -907,15 +912,18 @@ class HumanFollowing:
             #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
             #     # 2.4 move to human
             target_yaw = target_xyyaw[2]
-            if target_xyyaw[2] > 0.05:
-                target_yaw = 0.05
-            if target_xyyaw[2] < -0.05:
-                target_yaw = -0.05
-            self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_yaw, wait=False)
-            if target_xyyaw[2] > 0.1:
-                self.angle_queue.append(-1)
-            elif target_xyyaw[2] < -0.1:
-                self.angle_queue.append(1)
+
+
+            ####TODO : twist 해결 됐는지 확인 
+            # if target_xyyaw[2] > 0.05:
+            #     target_yaw = 0.05
+            # if target_xyyaw[2] < -0.05:
+            #     target_yaw = -0.05
+            self.agent.move_rel(target_xyyaw[0]+0.5, target_xyyaw[1], target_yaw, wait=False)
+            # if target_xyyaw[2] > 0.1:
+            #     self.angle_queue.append(-1)
+            # elif target_xyyaw[2] < -0.1:
+            #     self.angle_queue.append(1)
 
             # rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
