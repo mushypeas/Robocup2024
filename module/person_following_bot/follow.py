@@ -206,7 +206,7 @@ class HumanReidAndFollower:
 	def resume_agent(self):
 		self.run = True
 		
-	def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
+	def follow(self, human_info_ary, depth_frame): # yolo box: list of bbox , frame : img, seg : (x,y)
 		twist = Twist()
 		human_id, target_tlwh, target_score = human_info_ary
 		(self.x, self.y, self.w, self.h) = [int(v) for v in target_tlwh]
@@ -229,10 +229,10 @@ class HumanReidAndFollower:
 			# cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
 			# cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
 			calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
-			if seg_human_point is not None : 
-				calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
-				if calc_z == 0:
-					calc_z = depth_frame[cropped_y, cropped_x]
+
+			# if seg_human_point is not None and human_info_ary[0] is None : 
+			# 	calc_x, calc_z = seg_human_point[0], depth_frame[seg_human_point[1], seg_human_point[0]]
+
 			calc_z *= np.cos(self.tilt_angle)
 			self.calc_z_prev = calc_z
 			# twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
@@ -250,7 +250,40 @@ class HumanReidAndFollower:
 		twist.angular.z *= self.run
 
 		return twist, calc_z
+
+
+	
 		
+	def back_follow(self, depth_frame, seg_human_point): #frame : img, seg : img
+		twist = Twist()
+
+
+		# cv2.rectangle(frame, (x, y), (x + w, y + h),(0, 255, 0), 2)
+		calc_z = 0.0
+		try:
+			# if self.tilt_angle < math.radians(10):
+			# else:
+			# cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
+			# cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
+			calc_x, calc_z = seg_human_point[0], depth_frame[seg_human_point[1], seg_human_point[0]]
+
+			calc_z *= np.cos(self.tilt_angle)
+			self.calc_z_prev = calc_z
+			# twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
+			# 					 linear_max=self.linear_max, angular_max=self.angular_max)
+			twist = new_get_controls(calc_x,calc_z)
+			if calc_z / 1000.0 < self.stop_thres:
+				self.run = False
+			else:
+				self.run = True
+		except:
+			print("failed to run",human_info_ary)
+			self.run = False
+
+		twist.linear.x *= self.run
+		twist.angular.z *= self.run
+
+		return twist, calc_z
 
 
 # if __name__ == '__main__':
