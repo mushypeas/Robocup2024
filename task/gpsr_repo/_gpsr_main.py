@@ -235,8 +235,29 @@ def gpsr(agent):
     # inputText, _ = agent.stt(10.)
     # agent.say(f"Given Command is {inputText}")
 
-    inputText = "bring me a peach from the table"
-    
+    inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
+    inputText = "Tell me how many drinks there are on the desk" #countObjOnPlcmt
+    inputText = "Tell me what is the biggest food on the desk" #tellCatPropOnPlcmt
+    inputText = "Tell me what is the biggest object on the desk" #tellObjPropOnPlcmt
+    inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
+    inputText = "Tell me how many people in the kitchen are wearing red jackets" #countClothPrsInRoom
+    inputText = "Tell me how many lying persons are in the living room" #countPrsInRoom
+    inputText = "Find a drink in the living room then grasp it and put it on the bed" #findObjInRoom
+    inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
+    inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
+    inputText = "Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen" #goToLoc
+    inputText = "Introduce yourself to the person wearing an orange coat in the bedroom and answer a quiz" #greetClothDscInRm
+    inputText = "Say hello to Jules in the living room and tell the time" #greetNameInRm
+    inputText = "Take the person wearing a white shirt from the entrance to the trashbin" #guideClothPrsFromBeacToBeac
+    inputText = "Lead Paris from the lamp to the kitchen" #guideNameFromBeacToBeac
+    inputText = "Lead the person raising their right arm from the bookshelf to the office" #guidePrsFromBeacToBeac
+    inputText = "Meet Charlie at the shelf then find them in the living room" #meetNameAtLocThenFindInRm
+    inputText = "Meet Jules in the living room and follow them" #meetPrsAtBeac
+    inputText = "Take a cola from the desk and put it on the sofa" #takeObjFromPlcmt
+    inputText = "Tell the day of the week to the person pointing to the left in the office" #talkInfoToGestPrsInRoom
+    inputText = "Tell the name of the person at the potted plant to the person at the lamp" #tellPrsInfoAtLocToPrsAtLoc
+    inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
+        
     # parse InputText 
     cmdName, params = ultimateParser(inputText)
     
