@@ -1,6 +1,5 @@
 from module.CLIP.clip_detection import init_clip, detectTopColor, detectTopClothe
 from PIL import Image
-import torch
 
 # "talkInfoToGestPrsInRoom": "{talkVerb} {talk} {talkPrep} the {gestPers} {inLocPrep} the {room}",
 def move_gpsr(agent, room):

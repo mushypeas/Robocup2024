@@ -7,11 +7,51 @@ from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
 
+import torch
+import open_clip
+
 objects_file_path = 'task/gpsr_repo/object.md'
 objects_data = readData(objects_file_path)
 
 def followup(cmd):
     print(cmd)
+    
+def init_clip():
+    # Assuming the necessary OpenFashionClip setup
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    clip_model, _, preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+    state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=device)
+    clip_model.load_state_dict(state_dict['CLIP'])
+    clip_model = clip_model.eval().requires_grad_(False).to(device)
+    tokenizer = open_clip.get_tokenizer('ViT-B-32')
+    return clip_model, preprocess, tokenizer, device
+
+def detect_feature(img, feature_list, prompt_prefix, clip_model, preprocess, tokenizer, device):
+    prompts = [prompt_prefix + " " + feature for feature in feature_list]
+    tokenized_prompt = tokenizer(prompts).to(device)
+    
+    with torch.no_grad():
+        image = preprocess(img).unsqueeze(0).to(device)
+        image_features = clip_model.encode_image(image)
+        text_features = clip_model.encode_text(tokenized_prompt)
+        image_features /= image_features.norm(dim=-1, keepdim=True)
+        text_features /= text_features.norm(dim=-1, keepdim=True)
+        
+        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+        
+    text_probs_percent = text_probs * 100
+    text_probs_percent_np = text_probs_percent.cpu().numpy()
+    
+    top_index = text_probs_percent_np[0].argmax()
+    top_feature = feature_list[top_index]
+    top_feature_prob = "{:.2f}%".format(text_probs_percent_np[0][top_index])
+    
+    return top_feature, top_feature_prob
+
+def detectLegPose(img, clip_model, preprocess, tokenizer, device):
+    leg_pose_list = ["standing", "sitting", "lying"]
+    prompt_prefix = "A photo of person who is"
+    return detect_feature(img, leg_pose_list, prompt_prefix, clip_model, preprocess, tokenizer, device)
     
 class GPSR:
     def __init__(self, agent):
@@ -61,6 +101,9 @@ class GPSR:
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
+        
+        # CLIP
+        self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
 
     ### HELP Functions ###
         
@@ -119,6 +162,10 @@ class GPSR:
     def say(self, text):
         self.agent.say(text)
         
+    def hear(self):
+        userSpoken, _ = self.agent.stt()
+        return userSpoken
+        
     def talk(self, talk):
         if talk == 'something about yourself':
             self.say('I am a robot designed to help people in their daily lives')
@@ -136,48 +183,61 @@ class GPSR:
             self.say('My team name is Tidy Boy')
             
     def quiz(self):
-        # [TODO] Implement how the quiz can be answered
-        pass
+        self.say("I'm ready to hear your question")
+        userSpeech = self.hear()
+        robotAns = chat(userSpeech)
+        self.say(robotAns)
+        # [TODO] improve how the quiz can be answered
             
     # TODO
     def getName(self):
-        # [TODO] Implement how the name can be extracted
-        return None
+        self.say("Please say your name")
+        userName = self.hear()
+        # [TODO] improve how the name can be extracted
+        return userName
     
     # TODO
     def getPose(self):
         # [TODO] Implement how the pose can be extracted
-        return None
+        img = TODO
+        feature, _ = detectLegPose(img, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        return feature
     
     def getGest(self):
-        # [TODO] Implement how the gesture can be extracted
         return None
     
     def getHumanAttribute(self):
         # [TODO] Implement how the human attributes can be extracted
         return None
         
-    # 사람 앞에서 멈추기
+    # 이름을 가진 사람 앞에서 멈추기
     def identifyByName(self, name):
+        self.say(f"{name}, come on.")
         # [TODO] Implement how the name can be identified
-        pass
         
+    # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
         # [TODO] Implement how the pose can be identified
-        pass
+        # TODO: in으로 확인하는 게 아니라 확률로 높은쪽 선택
+        if gestPosePers in ['standing', 'lying', 'sitting']:
+            pass
     
+    # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
     def identifyByHumanAttribute(self, humanAttribute):
         # [TODO] Implement how the human attributes can be identified
         pass
     
+    # 옷으로 찾기
     def identifyByClothing(self, Clothes):
         # [TODO] Implement how the clothes can be identified
         pass
     
+    # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
         # [TODO] Implement how the pose can be counted
         return None
     
+    # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
         # [TODO] Implement how the color of clothes can be counted
         return None

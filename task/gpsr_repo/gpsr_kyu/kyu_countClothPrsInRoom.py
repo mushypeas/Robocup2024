@@ -1,6 +1,5 @@
 from module.CLIP.clip_detection import init_clip, detectTopColor, detectTopClothe
 from PIL import Image
-import torch
 
 def move_gpsr(agent, room):
     # Placeholder for the move_gpsr function

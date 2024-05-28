@@ -1,7 +1,6 @@
 # [TODO] 자세한 시나리오 구성 필요 Ex. 시야 내부에서 해당 cloth를 입은 상대 앞으로 이동한 후 eye gaze 한 상태 등
 from module.CLIP.clip_detection import init_clip, detectTopColor, detectTopClothe
 from PIL import Image
-import torch
 
 # Placeholder for the move_gpsr function
 def move_gpsr(agent, loc):
