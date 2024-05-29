@@ -153,7 +153,7 @@ class YoloModule:
         return None
 
 
-    def detect_3d_safe(self, table, dist=0.6, depth=0.8):
+    def detect_3d_safe(self, table, dist=0.6, depth=0.8, item_list=None):
         _pc = self.pc.reshape(480, 640)
         pc_np = np.array(_pc.tolist())[:, :, :3]
         # base_link [+x, +y, +z] = [front, left, up]
@@ -167,6 +167,9 @@ class YoloModule:
         object_3d_list = []
         for idx, item in enumerate(self.yolo_bbox):
             cent_x, cent_y, width, height, class_id = item
+            class_name = self.find_name_by_id(class_id)
+            if item_list is not None and class_name not in item_list:
+                rospy.logwarn(f"Ignoring {class_name}...")
             start_x = cent_x - (width // 2)
             start_y = cent_y - (height // 2)
             object_pc = pc_np[start_y:start_y+height, start_x:start_x+width]
@@ -179,7 +182,7 @@ class YoloModule:
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.01
+                height_offset = 0.0
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
