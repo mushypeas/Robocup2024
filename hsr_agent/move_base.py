@@ -6,6 +6,9 @@ import numpy as np
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
+NAVIGATION_STATUS = ['PENDING', 'ACTIVE', 'PREEMPTED', 'SUCCEEDED', 'ABORTED', 'REJECTED', 'PREEMPTING', 'RECALLING', 'RECALLED', 'LOST']
+
 class MoveBase:
     def __init__(self, ABS_POSITION):
         self.abs_position = ABS_POSITION
@@ -59,7 +62,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
                 return False
 
     # add wait argument by yspark and shlim
@@ -95,7 +98,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (GOAL {action_state})")
                 return False
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
@@ -122,7 +125,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
                 return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
@@ -149,7 +152,7 @@ class MoveBase:
                 rospy.loginfo("Navigation Succeeded.")
                 return True
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
                 self.base_action_client.cancel_all_goals()
                 return False
 
