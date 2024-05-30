@@ -445,10 +445,10 @@ class HumanFollowing:
         _depth = np.mean(_depth)
         # _depth = np.mean(self._depth)
         escape_radius = 0.2
-        if self.human_box_list[0] is not None:
-            human_info_ary = copy.deepcopy(self.human_box_list)
-            depth = np.asarray(self.d2pc.depth)
-            twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+        # if self.human_box_list[0] is not None:
+        #     human_info_ary = copy.deepcopy(self.human_box_list)
+        #     depth = np.asarray(self.d2pc.depth)
+        #     twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
 
 
         # if calc_z > _depth * 2000:
@@ -656,7 +656,7 @@ class HumanFollowing:
 
 # Convert to 3-channel
         
-        if self.calcz_queue[-1] is not None:
+        if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
@@ -787,6 +787,7 @@ class HumanFollowing:
         #     calc_z = _depth * 1000 + 100
         # print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
         print("calc_z", calc_z)
+        print("calcz_queue : ", self.calcz_queue)
         if calc_z > np.mean(self.calcz_queue) + 500:
             calc_z = _depth * 1000
             self.calcz_queue.append(calc_z)
@@ -867,7 +868,7 @@ class HumanFollowing:
             #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
             #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
             #     # 2.4 move to human
-            target_yaw = target_xyyaw[2]
+            # target_yaw = target_xyyaw[2]
 
 
             ####TODO : twist 해결 됐는지 확인 
@@ -875,7 +876,7 @@ class HumanFollowing:
             #     target_yaw = 0.05
             # if target_xyyaw[2] < -0.05:
             #     target_yaw = -0.05
-            self.agent.move_rel(target_xyyaw[0]+0.5, target_xyyaw[1], target_yaw, wait=False)
+            self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             # if target_xyyaw[2] > 0.1:
             #     self.angle_queue.append(-1)
             # elif target_xyyaw[2] < -0.1:
@@ -1409,6 +1410,11 @@ def carry_my_luggage(agent):
     byte_path = "/home/tidy/Robocup2024/byte.sh"
     byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
 
+
+    seg_path = "/home/tidy/Robocup2024/seg.sh"
+    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+
+
     if not yolo_success or not try_bag_picking:
        # no try bag picking
         agent.open_gripper()
@@ -1461,9 +1467,6 @@ def carry_my_luggage(agent):
     demotrack_pub.publish(String('off_feature'))
 
 
-    seg_path = "/home/tidy/Robocup2024/seg.sh"
-    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-
 
     agent.say("Take your bag", show_display=True)
     agent.pose.hand_me_bag()
@@ -1478,7 +1481,7 @@ def carry_my_luggage(agent):
     byte_process.terminate()
 
     # 4. back to the start location
-    agent.move_rel(0, 0, np.pi, wait=True)
+    agent.move_rel(0, 0, np.pi, wait=True) ######TODO : return
     rospy.loginfo("go back to original location")
 
     now_d2pc = Depth2PC()
@@ -1497,15 +1500,46 @@ def carry_my_luggage(agent):
             human_info_ary = copy.deepcopy(human_following.human_box_list)
             depth = np.asarray(now_d2pc.depth)
 
+            depth_slice = depth[150:330, 280:360]
+            seg_img = human_following.seg_img[150:330, 280:360]
 
-            seg_img = self.seg_img
-            seg_img = seg_img[150:330, 280:360]
-            human_mask = seg_img == 15
+            # Create a mask for depth values greater than 0 and seg_img equal to 15
+            valid_depth_mask = depth_slice > 0
+            human_mask = (seg_img == 15) & valid_depth_mask
+
+            # Get the coordinates where both masks are true
             human_y, human_x = np.where(human_mask)
-            min_human_y, min_human_x = np.argmin(depth[human_y, human_x]) # TODO : 되는지 확인 필요
-            human_seg_pos = [min_human_x, min_human_y]
 
-            twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
+            # Extract the depth values for these coordinates
+            human_depth_values = depth_slice[human_y, human_x]
+
+            # Find the index of the minimum depth value
+
+            if human_depth_values.size != 0:
+                min_index = np.argmin(human_depth_values)
+
+            # if min_index is not None:
+
+                # Get the corresponding coordinates in the original image
+                min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+
+
+
+
+                # seg_img = human_following.seg_img
+                # seg_img = seg_img[150:330, 280:360]
+                # valid_depth_mask = seg_img > 0
+                # human_mask = seg_img == 15 & valid_depth_mask
+                # human_y, human_x = np.where(human_mask)
+
+                # human_depth_values = depth[150:330, 280:360][human_y, human_x]
+                # min_index = np.argmin(human_depth_values)
+
+                # min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                human_seg_pos = [min_human_x, min_human_y]
+
+                twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
+                print("seg human detected, calc_z : ", calc_z)
             human_following.escape_barrier(calc_z)
             # human_following.escape_tiny()
             human_following.escape_tiny_canny()
@@ -1536,7 +1570,7 @@ def carry_my_luggage(agent):
     seg_process.terminate()
     # yolo_process.terminate()
 
-    agent.say("Finish carry my luggage", show_display=True)
+    agent.say("Finnish carry my luggage", show_display=True)
 
 if __name__ == '__main__':
     rospy.init_node('carry_my_luggage_test')
