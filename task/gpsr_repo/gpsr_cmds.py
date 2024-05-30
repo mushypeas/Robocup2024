@@ -1,434 +1,97 @@
-# HRI and People Perception Commands
-# "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
-def goToLoc(agent, params):
-    # Go to the storage rack then look for a dish and take it and bring it to me
-    # Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen
-    # Go to the living room then find a fruit and get it and give it to me
-    # Go to the kitchen then look for a cleaning supply and grasp it and bring it to the standing person in the kitchen
+import sys
+sys.path.append('task/gpsr_repo/gpsr_func_0_todo')
+sys.path.append('task/gpsr_repo/gpsr_func_1_progress')
+sys.path.append('task/gpsr_repo/gpsr_func_2_pending')
+sys.path.append('task/gpsr_repo/gpsr_func_3_done')
     
-    # [0] Extract parameters
-    goVerb, toLocPrep, loc_room, cmd = params['goVerb'], params['toLocPrep'], params['loc_room'], params['followup']
+def goToLoc(g, params):
+    from goToLoc import goToLoc
+    goToLoc(g, params)
+        
+def findObjInRoom(g, params):
+    from findObjInRoom import findObjInRoom
+    findObjInRoom(g, params)
     
-    # [1] Move to the specified room
-    print(f"I'm moving to the {loc_room}")
-    agent.say(f"I'm moving to the {loc_room}")
-    move_gpsr(agent, loc_room)
+def findPrsInRoom(g, params):
+    from findPrsInRoom import findPrsInRoom
+    findPrsInRoom(g, params)
 
-    # [2] Handling the follow-up action
-    followup(cmd)
-
-# "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
-def findPrsInRoom(agent, params):
-    # Find a person pointing to the left in the bedroom and take them to the dishwasher
-    # Find a lying person in the bedroom and lead them to the potted plant
-    # Locate a waving person in the office and answer a quiz
+def meetPrsAtBeac(g, params):
+    from meetPrsAtBeac import meetPrsAtBeac
+    meetPrsAtBeac(g, params)
     
-    # [0] Extract parameters
-    find, human, room, cmd = params['findVerb'], params['gestPers_posePers'], params['room'], params['followup']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] Find the person with that pose in the room
-    print(f"[FIND] {find} a {human} in the {room}")
-
-    # [2-1] find waving person
-    # [2-2] find person raising their left/right arm
-    # [2-3] find person pointing to the left/right
-    # [2-4] find sitting/standing/lying person
-
-    # [3] Follow-up command
-    followup(cmd)
-
-# "meetPrsAtBeac": "{meetVerb} {name} {inLocPrep} the {room}",
-def meetPrsAtBeac(agent, params):
-    # Meet Jules in the living room and follow them
-    # Meet Angel in the kitchen and take them to the shelf
-    # Meet Simone in the living room and follow them
-    # Meet Axel in the office and follow them to the bedroom
+def countPrsInRoom(g, params):
+    from countPrsInRoom import countPrsInRoom
+    countPrsInRoom(g, params)
+        
+def tellPrsInfoInLoc(g, params):
+    from tellPrsInfoInLoc import tellPrsInfoInLoc
+    tellPrsInfoInLoc(g, params)
     
-    # [0] Extract parameters
-    name, room, cmd = params['name'], params['room'], params['followup']  
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] find the person
-    # face recognition?
-    print(f"[FIND] {name}")
-
-    # [3] Generate the followup comman
-    followup(cmd)
-
-# "countPrsInRoom": "{countVerb} {gestPersPlur_posePersPlur} are {inLocPrep} the {room}",
-def countPrsInRoom(agent, params):
-    # Tell me how many waving persons are in the living room
-    # Tell me how many persons pointing to the right are in the kitchen
-    # Tell me how many persons pointing to the left are in the bedroom
-    # Tell me how many lying persons are in the living room
+def talkInfoToGestPrsInRoom(g, params):    
+    from talkInfoToGestPrsInRoom import talkInfoToGestPrsInRoom
+    talkInfoToGestPrsInRoom(g, params)
     
-    # [0] Extract parameters
-    count, human, room = params['countVerb'], params['gestPers_posePers'], params['room']
-
-    # [1] move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] Count the number of persons in the room
-    print(f"[COUNT] {count} {human} in the {room}")
-
-# "tellPrsInfoInLoc": "{tellVerb} me the {persInfo} of the person {inRoom_atLoc}",
-def tellPrsInfoInLoc(agent, params):
-    # Tell me the name of the person at the trashbin
-    # Tell me the pose of the person at the storage rack
-    # Tell me the gesture of the person in the office
-    # Tell me the name of the person at the cabinet
-
-    # params= {'tellVerb': 'Tell', 'persInfo': 'gesture', 'inRoom_atLoc': 'at the trashbin'}    
-    # [0] Extract parameters
-    tellVerb, persInfo, loc = params['tellVerb'], params['persInfo'], params['inRoom_atLoc']
+def answerToGestPrsInRoom(g, params):
+    from answerToGestPrsInRoom import answerToGestPrsInRoom
+    answerToGestPrsInRoom(g, params)
     
-    # [1] Move to the specifed room
-    print(f"I'm moving to the {loc}")
-
-    # [2] Find the person in the room
-    print(f"Humans are detected in the {loc}")
-
-    # [3] Get the information of the person
-    if persInfo == 'name':
-        # Face Detection
-        pass
-    elif persInfo == 'pose' or persInfo == 'gesture':
-        # OpenPose
-        print(f"[INFO] {tellVerb} me the gesture of the person {loc}")
-
-# "talkInfoToGestPrsInRoom": "{talkVerb} {talk} {talkPrep} the {gestPers} {inLocPrep} the {room}",
-def talkInfoToGestPrsInRoom(agent, params):
-    # Tell the day of the week to the person pointing to the left in the office
-    # Tell something about yourself to the person raising their right arm in the kitchen
-    # Tell the time to the person raising their right arm in the living room
-    # Tell your teams affiliation to the person pointing to the right in the bathroom
+def followNameFromBeacToRoom(g, params):
+    from followNameFromBeacToRoom import followNameFromBeacToRoom
+    followNameFromBeacToRoom(g, params)
     
-    # params = {'talkVerb': 'Tell', 'talk': 'the day of the week', 'talkPrep': 'to', 'gestPers': 'person pointing to the left', 'inLocPrep': 'in', 'room': 'office'}
-    # [0] Extract parameters
-    talkVerb, talk, talkPrep, gestPers, inLocPrep, room = params['talkVerb'], params['talk'], params['talkPrep'], params['gestPers'], params['inLocPrep'], params['room']
+def guideNameFromBeacToBeac(g, params):
+    from guidePrsFromBeacToBeac import guidePrsFromBeacToBeac
+    guidePrsFromBeacToBeac(g, params)    
 
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
+def guidePrsFromBeacToBeac(g, params):
+    from guidePrsFromBeacToBeac import guidePrsFromBeacToBeac
+    guidePrsFromBeacToBeac(g, params)
 
-    # [2] Find the person in the room
-    # [TODO] Gesture Detection with OpenPose
-    print(f"[FIND] {gestPers}")
-
-    # [3] Talk to the person
-    # [TODO] Speech Synthesis
-    #     talk_list = ["something about yourself", "the time", "what day is today", "what day is tomorrow", "your teams name",
-                #  "your teams country", "your teams affiliation", "the day of the week", "the day of the month"]
-    print(f"[TALK] {talkVerb} {talk} {talkPrep} {gestPers} {inLocPrep} the {room}")
-
-# "answerToGestPrsInRoom": "{answerVerb} the {question} {ofPrsPrep} the {gestPers} {inLocPrep} the {room}",
-def answerToGestPrsInRoom(agent, params):
-    # Answer the question of the person raising their right arm in the bedroom
-    # Answer the quiz of the person raising their left arm in the kitchen
-    # Answer the quiz of the person raising their left arm in the living room
-    # Answer the question of the person raising their left arm in the bedroom
-
-    # params = {'answerVerb': 'Answer', 'question': 'quiz', 'ofPrsPrep': 'of', 'gestPers': 'person raising their left arm', 'inLocPrep': 'in', 'room': 'kitchen'}
-    # [0] Extract parameters
-    answerVerb, question, ofPrsPrep, gestPers, inLocPrep, room = params['answerVerb'], params['question'], params['ofPrsPrep'], params['gestPers'], params['inLocPrep'], params['room']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] Find the person in the room
-    # [TODO] Gesture Detection with OpenPose
-    print(f"[FIND] {gestPers}")
-
-    # [3] Answer the question/quiz?
-    # 어떻게 할지 감이 안잡히네 어떤 quiz일지, 어떤 question일지
-
-# "followNameFromBeacToRoom": "{followVerb} {name} {fromLocPrep} the {loc} {toLocPrep} the {room}",
-def followNameFromBeacToRoom(agent, params):
-    # Follow Angel from the desk lamp to the office
-    # Follow Morgan from the bookshelf to the bathroom
-    # Follow Angel from the side tables to the kitchen
-    # Follow Angel from the tv stand to the living room
-    params = {'followVerb': 'Follow', 'name': 'Angel', 'fromLocPrep': 'from', 'loc': 'desk lamp', 'toLocPrep': 'to', 'room': 'office'}
-
-    # [0] Extract parameters
-    follow, name, loc, room = params['followVerb'], params['name'], params['loc'], params['room']
-
-    # [1] Move to the specified location
-    move_gpsr(agent, loc)
+def guideClothPrsFromBeacToBeac(g, params):
+    from guideClothPrsFromBeacToBeac import guideClothPrsFromBeacToBeac
+    guideClothPrsFromBeacToBeac(g, params)
     
-    # [2] Find the person in the location
-    print(f"[FIND] {name} in the {loc}")
-
-    # [3] Make the person to follow HSR to the room 
-    # follow 
-
-# "guidePrsFromBeacToBeac": "{guideVerb} the {gestPers_posePers} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
-def guideNameFromBeacToBeac(agent, params):
-    # Lead Paris from the lamp to the kitchen
-    # Escort Charlie from the entrance to the bathroom
-    # Lead Angel from the storage rack to the chairs
-    # Take Paris from the coatrack to the living room
+def greetClothDscInRm(g, params):
+    from greetClothDscInRm import greetClothDscInRm
+    greetClothDscInRm(g, params)
     
-    params = {'guideVerb': 'Lead', 'name': 'Paris', 'fromLocPrep': 'from', 'loc': 'lamp', 'toLocPrep': 'to', 'loc_room': 'kitchen'}
-    # [0] Extract parameters
-    guide, name, loc, room = params['guideVerb'], params['name'], params['loc'], params['loc_room']
-
-    # [1] Move to the specified location
-    move_gpsr(agent, loc)
-
-    # [2] Find the person in the location
-    print(f"[FIND] {name} in the {loc}")
-
-    # [3] Make the person to follow HSR to the room
-    # follow
-
-# "guidePrsFromBeacToBeac": "{guideVerb} the {gestPers_posePers} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
-def guidePrsFromBeacToBeac(agent, params):
-    # Lead the person raising their right arm from the bookshelf to the office
-    # Escort the lying person from the sink to the shelf
-    # Escort the standing person from the chairs to the lamp
-    # Guide the waving person from the trashbin to the living room
-
-    params = {'guideVerb': 'Lead', 'gestPers_posePers': 'person raising their right arm', 'fromLocPrep': 'from', 'loc': 'bookshelf', 'toLocPrep': 'to', 'loc_room': 'office'}
-
-    # [0] Extract parameters
-    guide, gestPers_posePers, loc, room = params['guideVerb'], params['gestPers_posePers'], params['loc'], params['loc_room']
-
-    # [1] Move to the specified location
-    move_gpsr(agent, loc)
-
-    # [2] Find the person in the location
-    print(f"[FIND] {gestPers_posePers} in the {loc}")
-
-    # [3] Make the person to follow HSR to the room
-    # follow
-
-# "guideClothPrsFromBeacToBeac": "{guideVerb} the person wearing a {colorClothe} {fromLocPrep} the {loc} {toLocPrep} the {loc_room}",
-def guideClothPrsFromBeacToBeac(agent, params):
-    # Take the person wearing a white shirt from the entrance to the trashbin
-    # Escort the person wearing a yellow shirt from the pantry to the kitchen
-    # Lead the person wearing a yellow t shirt from the kitchen table to the sofa
-    # Escort the person wearing a blue sweater from the kitchen table to the office
-    # Take the person wearing a gray sweater from the storage rack to the living room
-    params = {'guideVerb': 'Take', 'colorClothe': 'white shirt', 'fromLocPrep': 'from', 'loc': 'entrance', 'toLocPrep': 'to', 'loc_room': 'trashbin'}
-
-    # [0] Extract parameters
-    guide, color, loc, room = params['guideVerb'], params['colorClothe'], params['loc'], params['loc_room']
-
-    # [1] Move to the specified location
-    move_gpsr(agent, loc)
-
-    # [2] Find the person in the location
-    print(f"[FIND] the person wearing a {color} in the {loc}")
-
-    # [3] Make the person to follow HSR to the room
-    # follow
-
-# "talkInfoToGestPrsInRoom": "{talkVerb} {talk} {talkPrep} the {gestPers} {inLocPrep} the {room}",
-def greetClothDscInRm(agent, params):
-    # Salute the person wearing a blue t shirt in the living room and follow them to the kitchen
-    # Introduce yourself to the person wearing an orange coat in the bedroom and answer a quiz
-    # Greet the person wearing a blue t shirt in the bedroom and answer a question
-    # Introduce yourself to the person wearing a gray t shirt in the kitchen and say something about yourself
-    # params = {'greetVerb': 'Salute', 'art': 'a', 'colorClothe': 'blue t shirt', 'inLocPrep': 'in', 'room': 'living room', 'followup': 'follow them to the kitchen'}
-
-    # [0] Extract parameters
-    greet, art, color, room, cmd = params['greetVerb'], params['art'], params['colorClothe'], params['room'], params['followup']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] Find the person in the room
-    print(f"[FIND] the person wearing {art} {color} in the {room}")
-
-    # [3] Generate the followup command
-    followup(cmd)
-
-# "greetNameInRm": "{greetVerb} {name} {inLocPrep} the {room} and {followup}",
-def greetNameInRm(agent, params):
-    # Salute Morgan in the living room and follow them to the storage rack
-    # Say hello to Jules in the living room and tell the time
-    # Say hello to Robin in the office and say your teams country
-    # Greet Angel in the living room and say your teams name
-
-    # params = {'greetVerb': 'Salute', 'name': 'Morgan', 'inLocPrep': 'in', 'room': 'living room', 'followup': 'follow them to the storage rack'}
-    # [0] Extract parameters
-    greet, name, room, cmd = params['greetVerb'], params['name'], params['room'], params['followup']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2][TODO] Find the person in the room
-    print(f"[FIND] {name}")
-
-    # [3] Generate the followup command
-    # [3-1][TODO] Team Country, Name, Time...
-    followup(cmd)
-
-# "meetNameAtLocThenFindInRm": "{meetVerb} {name} {atLocPrep} the {loc} then {findVerb} them {inLocPrep} the {room}",
-def meetNameAtLocThenFindInRm(agent, params):
-    # Meet Charlie at the shelf then find them in the living room
-    # Meet Jane at the desk lamp then locate them in the office
-    # Meet Robin at the tv stand then find them in the office
-    # Meet Adel at the side tables then look for them in the living room
+def greetNameInRm(g, params):
+    from greetNameInRm import greetNameInRm
+    greetNameInRm(g, params)
     
-    # [0] Extract parameters
-    name, loc, room = params['name'], params['loc'], params['room']
+def meetNameAtLocThenFindInRm(g, params):
+    from meetNameAtLocThenFindInRm import meetNameAtLocThenFindInRm
+    mmeetNameAtLocThenFindInRm(g, params)
 
-    # [1] Move to the specified location
-    move_gpsr(agent, loc)
+def countClothPrsInRoom(g, params):
+    from countClothPrsInRoom import countClothPrsInRoom
+    countClothPrsInRoom(g, params)
 
-    # [2] Find the person in the location
-    print(f"[FIND] {name} in the {loc}")
+def tellPrsInfoAtLocToPrsAtLoc(g, params):
+    from tellPrsInfoAtLocToPrsAtLoc import tellPrsInfoAtLocToPrsAtLoc
+    tellPrsInfoAtLocToPrsAtLoc(g, params)
 
-    # [3][TODO] Make human locate to the room
-    # print('please follow me')
+def followPrsAtLoc(g, params):
+    from followPrsAtLoc import followPrsAtLoc
+    followPrsAtLoc(g, params)
 
-    # params = {'name': Robin, 'loc': 'tv stand', 'room': 'office'}
+def takeObjFromPlcmt(g, params):
+    from takeObjFromPlcmt import takeObjFromPlcmt
+    takeObjFromPlcmt(g, params)
 
-# "countClothPrsInRoom": "{countVerb} people {inLocPrep} the {room} are wearing {colorClothes}",
-def countClothPrsInRoom(agent, params):
-    # Tell me how many people in the kitchen are wearing red jackets
-    # Tell me how many people in the living room are wearing black jackets
-    # Tell me how many people in the bathroom are wearing white jackets
+def countObjOnPlcmt(g, params):
+    from countObjOnPlcmt import countObjOnPlcmt
+    countObjOnPlcmt(g, params)
+
+def tellObjPropOnPlcmt(g, params):    
+    from tellObjPropOnPlcmt import tellObjPropOnPlcmt
+    tellObjPropOnPlcmt(g, params)
     
-    # [0] Extract parameters
-    room, color = params['room'], params['colorClothes']
+def tellCatPropOnPlcmt(g, params):
+    from tellCatPropOnPlcmt import tellCatPropOnPlcmt
+    tellCatPropOnPlcmt(g, params)
 
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2] Check the number of people wearing the specified color
-    # [TODO] Color Detection, Clothes Detection
-    count = 0
-    print(f"[COUNT] {count} people in the {room} are wearing {color}")
-
-    # params = {countVerb: 'Tell me how many', room: 'kitchen', colorClothes: 'red jackets'}
-
-# "tellPrsInfoAtLocToPrsAtLoc": "{tellVerb} the {persInfo} of the person {atLocPrep} the {loc} to the person {atLocPrep} the {loc2}",
-def tellPrsInfoAtLocToPrsAtLoc(agent, params):
-    # Tell the name of the person at the potted plant to the person at the lamp
-    # Tell the gesture of the person at the entrance to the person at the desk
-    # Tell the name of the person at the desk to the person at the sink
-    # Tell the pose of the person at the entrance to the person at the trashbin
-
-    # params = {'tellVerb': 'Tell', 'persInfo': 'name', 'loc': 'potted plant', 'loc2': 'lamp'}
-    # [0] Extract parameters
-    tellVerb, persInfo, loc, loc2 = params['tellVerb'], params['persInfo'], params['loc'], params['loc2']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, loc)
-
-    # [2] Find the person in the room
-    # [2-1] name with FaceDetection
-    # [2-2] pose, gesture with OpenPose
-    pass 
-
-# "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}",
-def followPrsAtLoc(agent, params):
-    # Follow the person raising their right arm at the armchair
-    # Follow the standing person in the bedroom
-    # Follow the sitting person at the dishwasher
-    # Follow the person pointing to the left in the bedroom
-
-    # [0] Extract parameters
-    human, room = params['gestPers_posePers'], params['inRoom_atLoc']
-
-    # [1] Move to the specified room
-    move_gpsr(agent, room)
-
-    # [2][TODO] Find the person with that pose in the room
-    
-    print(f"[FIND] {human}")
-
-    # params = {'followVerb': 'Follow', 'gestPers_posePers': 'person pointing to the left', 'inRoom_atLoc': 'in the bedroom'}
-
-# Object Manipulation and Perception Commands
-# "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
-def takeObjFromPlcmt(agent, params):
-    # Fetch a dish from the refrigerator / and deliver it to the lying person in the bedroom
-    # Get a drink from the storage rack / and deliver it to the person pointing to the right in the office
-    # Get a cleaning supply from the tv stand / and bring it to me
-    # Take a cola from the desk / and put it on the sofa
-
-    # params = {'takeVerb': 'Get', 'obj_singCat': 'drink', 'fromLocPrep': 'from', 'plcmtLoc': 'storage rack', 'followup': 'deliver it to the person pointing to the right in the office'}
-    # takeObjFromPlcmt(params)
-    
-    # [0] Extract parameters
-    takeVerb, obj, loc, cmd = params['takeVerb'], params['obj_singCat'], params['plcmtLoc'], params['followup']
-    # print(takeVerb, '\n', obj, '\n', fromLocPrep, '\n', plcmtLoc, '\n', cmd)
-
-    # [1] Move to the specified space
-    move_gpsr(agent, loc)
-
-    # [2] Take the object from the specified location
-    print(f"[TAKE] {takeVerb} the {obj} from the {loc}")
-
-    # [3] Follow-up command
-    followup(cmd)
-
-# "findObjInRoom": "{findVerb} {art} {obj_singCat} {inLocPrep} the {room} then {followup}",
-def findObjInRoom(agent, params):
-    
-    # params = {'findVerb': 'Find', 'art': 'a', 'obj_singCat': 'food', 'inLocPrep': 'in', 'room': 'kitchen', 'followup': 'take it and bring it to me'}
-    
-    # [0] Extract parameters
-    findVerb, art, obj, room = params['findVerb'], params['art'], params['obj_singCat'], params['room']
-    cmd = params['followup']
-    
-    # [1] Move to the specified room
-    print(f"I'm moving to the {room}")
-    move_gpsr(agent, room)
-    
-    # [2] Find the object in the room
-    print(f"Let me find {art} {obj} in the {room}")
-    
-    found = False
-    detected_objects = agent.yolo_module.yolo_bbox
-    # detected_objects = [{'name': 'food', 'bbox': (10, 20, 30, 40)}, 
-    #                     {'name': 'drink', 'bbox': (50, 60, 70, 80)}]
-    
-    for obj_data in detected_objects:
-        obj_name, obj_bbox = obj_data['name'], obj_data['bbox']
-        if obj_name == obj:
-            print(f"{obj} is found at {obj_bbox}")
-            found = True
-            break
-    
-    # [3] Do follow-up action
-    if found:
-        followup(cmd)
-        # Here you would add the code to manipulate the object as described in `followup`
-        # This might involve additional robot movement or manipulator actions
-    else:
-        print(f"{obj} is not found in the {room}")
-
-# "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
-def countObjOnPlcmt(agent, params):
-    # params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
-
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many cleaning supplies there are on the bedside table
-    # Tell me how many cleaning supplies there are on the shelf
-    # Tell me how many snacks there are on the tv stand
-    # Tell me how many dishes there are on the kitchen table
-    
-    # [0] Extract parameters
-    countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    
-    # [1] Find the object in the room
-    print(f"Let me find {plurCat} in the {plcmtLoc}")
-
-    found = False
-    # detected_objects = agent.yolo_module.yolo_bbox
-    if len(agent.yolo_module.yolo_bbox) != 0:
-        found = True
-        pass
-    else:
-        print("No objects detected")
-        return False
+def bringMeObjFromPlcmt(g, params):
+    from bringMeObjFromPlcmt import bringMeObjFromPlcmt
+    bringMeObjFromPlcmt(g, params)

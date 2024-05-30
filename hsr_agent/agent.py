@@ -95,7 +95,6 @@ class Agent:
 
         # object
         self.object_list = OBJECT_LIST
-        self.object_types = OBJECT_TYPES
         self.location_map = LOCATION_MAP  # for gpsr
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
