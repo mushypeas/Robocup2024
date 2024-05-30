@@ -31,14 +31,14 @@ class StoringGroceries:
         # !!! Hard-Coded Offsets !!!
         self.pick_front_bias = [0.03, 0.00, -0.03] # [x, y, height]
         self.pick_top_bias = [0.03, 0, -0.015]
-        self.pick_bowl_bias = [0.15, 0.04, 0]
+        self.pick_bowl_bias = [0.15, 0.04, -0.13]
         self.place_x_bias = [None, -0.20, -0.10, 0.0]
 
         self.pick_table = 'grocery_table'
-        self.table_height = self.agent.table_dimension['grocery_table'][2]
-        self.table_depth = self.agent.table_dimension['grocery_table'][1]
+        self.table_height = self.agent.table_dimension[self.pick_table][2]
+        self.table_depth = self.agent.table_dimension[self.pick_table][1]
         self.table_head_angle = np.arctan(
-            (self.table_height - 1.1) / self.dist_to_shelf # 1.1: HSR height
+            (self.table_height - 1.1) / self.dist_to_table # 1.1: HSR height
         )
 
         self.place_location = 'grocery_shelf'
@@ -240,7 +240,7 @@ class StoringGroceries:
             return None
 
 
-    def pick_item(self, grasping_type, item_name, table_base_xyz):
+    def pick_item(self, grasping_type, table_base_xyz):
 
         # front
         if grasping_type == 0:
@@ -264,16 +264,16 @@ class StoringGroceries:
             self.agent.pose.arm_flex(-60)
 
         # bowl. # don't care plate, ...
-        elif item_name == 'bowl':
+        elif grasping_type == 2:
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
+
             self.agent.pose.bring_bowl_pose(table=self.pick_table)
             self.agent.open_gripper()
 
-            self.agent.move_rel(table_base_xyz[0] + 0.15, table_base_xyz[1] + 0.04, wait=True)
+            self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
 
-            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=-0.13) # modified from -0.1 to -0.13
+            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
             self.agent.grasp()
-            rospy.sleep(0.5)
-
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.2, 0)
 
@@ -317,7 +317,7 @@ class StoringGroceries:
         self.agent.move_rel(shelf_base_xyz[0], shelf_base_xyz[1], wait=True)
         self.agent.open_gripper()
         self.agent.move_rel(-0.4, 0, wait=False)
-        rospy.sleep(1) # wait for opening manually
+        rospy.sleep(1) # wait manually
 
 
     def check_grasp(self, grasping_type):
@@ -383,7 +383,7 @@ class StoringGroceries:
 
                 # 2-3. Pick item
                 rospy.logwarn('Picking item...')
-                self.pick_item(grasping_type, table_item_name, table_base_xyz)
+                self.pick_item(grasping_type, table_base_xyz)
                 self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=False)
 
                 # 2-4. Check if grasping is successful
