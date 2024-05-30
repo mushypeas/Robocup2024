@@ -44,7 +44,7 @@ cmdName2cmdStr = {
     "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
     "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
     "findPrsInRoom": "{findVerb} a {gestPers_posePers} {inLocPrep} the {room} and {followup}",
-    "findObjInRoom": "{findVerb} {art} {obj_singCat} {inLocPrep} the {room} then {followup}",
+    "findObjInRoom": "{findVerb} {art} {obj_singCat} {inLocPrep} the {room} then {takeVerb} it and {followup}",
     "meetPrsAtBeac": "{meetVerb} {name} {inLocPrep} the {room} and {followup}",
     "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
     "countPrsInRoom": "{countVerb} {gestPersPlur_posePersPlur} are {inLocPrep} the {room}",
@@ -66,3 +66,17 @@ cmdName2cmdStr = {
     "followPrsAtLoc": "{followVerb} the {gestPers_posePers} {inRoom_atLoc}"
 }
 
+followupName2followupStr = {
+    "findTakeObj": "{findVerb} {art} {obj_singCat} and {takeVerb} it and  {followup}",
+    "findPrs": "{findVerb} the {gestPers_posePers} and {followup}",
+    "meetName": "{meetVerb} {name} and {followup}",
+    "placeObjOnPlcmt": "{placeVerb} it {onLocPrep} the {plcmtLoc}",
+    "deliverObjToMe": "{deliverVerb} it to me",
+    "deliverObjToPrsInRoom": "{deliverVerb} it {deliverPrep} the {gestPers_posePers} {inLocPrep} the {room}",
+    "deliverObjToNameAtBeac": "{deliverVerb} it {deliverPrep} {name} {inLocPrep} the {room}",
+    "talkInfo": "{talkVerb} {talk}",
+    "answerQuestion": "{answerVerb} a {question}",
+    "followPrs": "{followVerb} them",
+    "followPrsToRoom": "{followVerb} them {toLocPrep} the {loc_room}",
+    "guidePrsToBeacon": "{guideVerb} them {toLocPrep} the {loc_room}",
+}

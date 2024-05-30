@@ -58,7 +58,7 @@ if __name__ == '__main__':
         from task.serve_breakfast import serve_breakfast
         serve_breakfast(agent)
     elif task_id == '5':
-        from task.gpsr_n import gpsr
+        from task.gpsr import gpsr
         gpsr(agent)
     elif task_id == '6':
         from task.clean_the_table import clean_the_table

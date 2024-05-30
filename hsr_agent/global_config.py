@@ -1,4 +1,6 @@
 import os
+from global_config_utils import make_object_list
+
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
 # data topic name.
@@ -6,6 +8,12 @@ RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
+# 기존 경로 : 'weight/best_240409.pt'
+# YOLO weight 변경 시 경로 변경
+yolo_weight_path = 'weight/test.pt'
+yolo_classnames_path = 'weight/test.cn'
+
+OBJECT_LIST = make_object_list(yolo_classnames_path)
 
 AIIS = True
 
@@ -101,16 +109,19 @@ if AIIS:
 
         # gpsr
         'gpsr_start_point': [1.7869, 0.0919, -3.1073],
-        'gpsr_instruction_point': [2, 0, 0],
+        'gpsr_instruction_point': [2.622, -0.5539, 0.1105],
         
+        # gpsr_test
+        'desk': [5.5086, 0.1336, 0.0005],
+        'table': [3.8706, -0.7318, -1.5548],
 
-        'test_loc': [0.5877, 0.0042, 1.5517],
+        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
         'sofa': [3.7381, 0.6181, 2.3207],
         'storage_rack': [3.5983, -1.0546, -0.0079],
-        'desk': [1.6335, -4.7401, -0.0524],
+        # 'desk': [1.6335, -4.7401, -0.0524],
         'cabinet': [4.0185, -4.9778, 0.0594],
         'shelf': [5.8276, -5.2125, -1.5813],
         'bedside_table': [8.344, -4.7478, -0.0446],
@@ -242,6 +253,7 @@ if AIIS:
         "dish",  # 6
         "bag",  # 7
     ]
+
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
     # added by lsh
@@ -287,36 +299,7 @@ elif is_sim: # sim mode
         'sink': [6.1375, -1.91, 3.14],  # dist = 0.6
         'cabinet': [3.45, -4.44, 0]  # dist = 0.6
     }
-    OBJECT_LIST = [
-        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]
-        ['water', 0, 0, 0],
-        ['milk', 1, 0, 0],
-        ['coke', 2, 0, 0],
-        ['tonic', 3, 0, 0],
-        ['bubble_tea', 4, 0, 0],
-        ['ice tea', 5, 0, 0],
-        ['cereal', 6, 2, 0],
-        ['tuna_can', 7, 2, 0],
-        ['coffee_jar', 8, 2, 0],
-        ['sugar', 9, 2, 0],
-        ['mustard', 10, 2, 0],
-        ['apple', 11, 3, 0],
-        ['peach', 12, 3, 0],
-        ['orange', 13, 3, 0],
-        ['banana', 14, 3, 0],
-        ['strawberry', 15, 3, 0],
-        ['pockys', 16, 4, 0],
-        ['pringles', 17, 4, 0],
-        ['spoon', 18, 5, 1],
-        ['fork', 19, 5, 1],
-        ['plate', 20, 5, 3],
-        ['bowl', 21, 5, 2],
-        ['mug', 22, 5, 0],
-        ['knife', 23, 5, 1],
-        ['paperbag', 24, 1, 1],
-        ['tab', 25, 0, 0]
-    ]
-
+    
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
     TABLE_DIMENSION = {
@@ -358,15 +341,7 @@ elif is_sim: # sim mode
         "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
         "living room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
     }
-
-    OBJECT_TYPES = [
-        "food",  # 0
-        "fruit",  # 1
-        "kitchen",  # 2
-        "shape",  # 3
-        "drink",  # 4
-        "task",  # 5
-    ]
+    
     # TODO AREA_EDGES FOR sim_mode must be updated
     ARENA_EDGES = [[1.167, -0.2321], [7.0443, -0.1863], [7.015, 2.5457], [8.2162, 2.6681], [8.2485, 6.0065], \
                    [5.6399, 5.8781], [5.5177, 3.6958], [4.7759, 3.6698], [4.7012, 2.4829], [0.9986, 2.0893]]
@@ -447,46 +422,7 @@ elif False:
         "office": ['desk', 'show_rack', 'bin', 'office_shelf'],
         "living room": ['house_plant', 'coat_rack', 'sola', 'couch_table', 'tv', 'side_table', 'book_shelf']
     }
-    OBJECT_LIST = [
-        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]
-        ['cracker', 0, 0, 0],
-        ['sugar', 1, 0, 0],
-        ['jello red', 2, 0, 0],
-        ['jello black', 3, 0, 0],
-        ['spam', 4, 0, 0],
-        ['coffee can', 5, 0, 0],
-        ['tuna can', 6, 0, 0],
-        ['pringles', 7, 0, 0],
-        ['mustard', 8, 0, 0],
-        ['tomato soup', 9, 0, 0],
-        ['pear', 10, 1, 0],
-        ['peach', 11, 1, 0],
-        ['apple', 12, 1, 0],
-        ['strawberry', 13, 1, 0],
-        ['orange', 14, 1, 0],
-        ['plum', 15, 1, 0],
-        ['lemon', 16, 1, 0],
-        ['bowl', 17, 2, 2],
-        ['mug', 18, 2, 0],
-        ['plate', 19, 2, 3],
-        ['knife', 20, 2, 1],
-        ['fork', 21, 2, 1],
-        ['spoon', 22, 2, 1],
-        ['tennis ball', 23, 3, 0],
-        ['golf ball', 24, 3, 0],
-        ['base ball', 25, 3, 0],
-        ['water', 26, 4, 0],
-        ['bubble tea', 27, 4, 0],
-        ['tonic', 28, 4, 0],
-        ['coke', 29, 4, 0],
-        ['ice tea', 30, 4, 0],
-        ['milk', 31, 4, 0],
-        ['cereal', 32, 5, 0],
-        ['shopping bag', 33, 5, 0],
-        ['dishwasher tablet', 34, 5, 1],
-        ['cube', 35, 5, 0],
-        ['banana', 36, 1, 0],
-    ]
+    
 
     '''
     Insert TABLE_DIMENSION OBJECT_TYPES
@@ -506,15 +442,6 @@ elif False:
         'shelf': [0.56, 0.23, 0.78],
         'grocery_table': [0.4, 0.4, 0.615],
     }
-
-    OBJECT_TYPES = [
-        "food",  # 0
-        "fruit",  # 1
-        "kitchen",  # 2
-        "shape",  # 3
-        "drink",  # 4
-        "task",  # 5
-    ]
 
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
