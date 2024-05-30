@@ -695,8 +695,8 @@ class JointPose:
                       [0.4, 0, -1.57, 0, 1.57])
 
 
-    def table_search_pose(self, head_tilt=-0.52):
-        self.gripper.grasp(0.1)
+    def table_search_pose(self, head_tilt=-0.52, wait_gripper=True):
+        self.gripper.grasp(0.1, wait=wait_gripper)
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
