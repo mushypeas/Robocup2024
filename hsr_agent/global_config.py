@@ -12,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/test.pt'
+yolo_weight_path = 'weight/best_0704.pt'
 yolo_classnames_path = 'weight/test.cn'
 
 OBJECT_LIST = make_object_list(yolo_classnames_path)
@@ -27,7 +27,6 @@ if AIIS:
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
-        'breakfast_table': [6.4946, 1.2412, -3.1284],
         'table_front': [6.6449, 0.3005, 0.0422],
         'table_side': [7.3455, -1.0624, 1.551],
         'table_back': [8.6478, 0.0623, 3.1025],
@@ -40,8 +39,8 @@ if AIIS:
         'grocery_shelf': [-1.091, -0.1197, 1.6165],
 
         # serve breakfast
-        'breakfast_table': [5.1042, 0.3169, -0.0039], # mjgu 240530
-        'kitchen_table' : [6.2082, -1.1592, 0.022], # mjgu 240530
+        'breakfast_table': [5.1527, 0.2285, 0.0], # mjgu 240530
+        'kitchen_table' : [6.086, -1.1229, 0.0], # mjgu 240530
         # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
         # clean the table
@@ -117,7 +116,6 @@ if AIIS:
         'desk': [5.5086, 0.1336, 0.0005],
         'table': [3.8706, -0.7318, -1.5548],
 
-        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],

@@ -182,7 +182,7 @@ class YoloModule:
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.0
+                height_offset = 0.01
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
