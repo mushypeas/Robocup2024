@@ -1,4 +1,6 @@
-# HRI and People Perception Commands
+import rospy
+
+### HRI and People Perception Commands ###
 # "goToLoc": "{goVerb} {toLocPrep} the {loc_room} then {followup}",
 def goToLoc(agent, params):
     # Go to the storage rack then look for a dish and take it and bring it to me
@@ -347,7 +349,7 @@ def followPrsAtLoc(agent, params):
 
     # params = {'followVerb': 'Follow', 'gestPers_posePers': 'person pointing to the left', 'inRoom_atLoc': 'in the bedroom'}
 
-# Object Manipulation and Perception Commands
+### Object Manipulation and Perception Commands ###
 # "takeObjFromPlcmt": "{takeVerb} {art} {obj_singCat} {fromLocPrep} the {plcmtLoc} and {followup}",
 def takeObjFromPlcmt(agent, params):
     # Fetch a dish from the refrigerator / and deliver it to the lying person in the bedroom
@@ -407,28 +409,18 @@ def findObjInRoom(agent, params):
     else:
         print(f"{obj} is not found in the {room}")
 
-# "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
-def countObjOnPlcmt(agent, params):
-    # params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
+def countObjOnPlcmt(g, params):
+    from gpsr_func import countObjOnPlcmt
+    return countObjOnPlcmt(g, params)
 
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many drinks there are on the sofa
-    # Tell me how many cleaning supplies there are on the bedside table
-    # Tell me how many cleaning supplies there are on the shelf
-    # Tell me how many snacks there are on the tv stand
-    # Tell me how many dishes there are on the kitchen table
+def tellObjPropOnPlcmt(g, params):    
+    from gpsr_func import tellObjPropOnPlcmt
+    return tellObjPropOnPlcmt(g, params)
     
-    # [0] Extract parameters
-    countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    
-    # [1] Find the object in the room
-    print(f"Let me find {plurCat} in the {plcmtLoc}")
+def tellCatPropOnPlcmt(g, params):
+    from gpsr_func import tellCatPropOnPlcmt
+    return tellCatPropOnPlcmt(g, params)
 
-    found = False
-    # detected_objects = agent.yolo_module.yolo_bbox
-    if len(agent.yolo_module.yolo_bbox) != 0:
-        found = True
-        pass
-    else:
-        print("No objects detected")
-        return False
+def bringMeObjFromPlcmt(g, params):
+    from gpsr_func import bringMeObjFromPlcmt
+    return bringMeObjFromPlcmt(g, params)

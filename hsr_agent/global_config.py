@@ -30,16 +30,9 @@ if AIIS:
         'grocery_shelf': [-1.091, -0.1197, 1.6165],
 
         # serve breakfast
-        'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
-        'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
-        # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
-        'kitchen_table_testday' : [5.0999, 0.5681, 0.0124], #mjgu 240505
-
-        'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
-        'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
-        'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504
-        'kitchen_table_front' : [1.7258, -2.8179, 0.0302], #mjgu 240504
-        'breakfast_table_front': [1.4045, -1.3402, 0.0091], #bjkim2 [1.6, -1.2796, 0.0]
+        'breakfast_table': [5.1042, 0.3169, -0.0039], # mjgu 240530
+        'kitchen_table' : [6.2082, -1.1592, 0.022], # mjgu 240530
+        # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
         # clean the table
         'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
@@ -107,10 +100,12 @@ if AIIS:
 
 
         # gpsr
+        'gpsr_start_point': [1.7869, 0.0919, -3.1073],
+        'gpsr_instruction_point': [2, 0, 0],
+        
+
         'test_loc': [0.5877, 0.0042, 1.5517],
-        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
         'taxi': [6.2415, 3.3874, 1.5591],
-        'gpsr_start': [2, 0, 0],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
         'sofa': [3.7381, 0.6181, 2.3207],
@@ -151,9 +146,6 @@ if AIIS:
 
 
     TABLE_DIMENSION = {
-        # testday용 추가 - mjgu 240504
-        'kitchen_table_testday': [0.8, 0.8, 0.715],
-        'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
         'kitchen_table': [0.55, 0.75, 0.735],
         'breakfast_table': [0.55, 0.75, 0.715],
@@ -191,7 +183,7 @@ if AIIS:
 
     OBJECT_LIST = [
         # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
-        ['cracker', 0, 5, 0], #BJKIM CHANGED OBJECT_LIST FOR JUST EXPERIMENTS.
+        ['cracker', 0, 5, 0],
         ['sugar', 1, 2, 0],
         ['jello_red', 2, 2, 0],
         ['jello_black', 3, 2, 0],
@@ -208,12 +200,12 @@ if AIIS:
         ['banana', 14, 3, 0],
         ['plum', 15, 3, 0],
         ['lemon', 16, 3, 0],
-        ['bowl', 17, 6, 2], #17
-        ['mug', 18, 6, 0], #18
-        ['plate', 19, 6, 3], #19
-        ['knife', 20, 6, 1], #20
-        ['fork', 21, 6, 1], #21
-        ['spoon', 22, 6, 1], #22
+        ['bowl', 17, 6, 2],
+        ['mug', 18, 6, 0],
+        ['plate', 19, 6, 3],
+        ['knife', 20, 6, 1],
+        ['fork', 21, 6, 1],
+        ['spoon', 22, 6, 1],
         ['tennis_ball', 23, 4, 0],
         ['golf_ball', 24, 4, 0],
         ['base_ball', 25, 4, 0],
