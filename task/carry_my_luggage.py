@@ -1327,8 +1327,28 @@ class BagInspection:
             print("We find bag!")
             return target_base_xyz, object_size, bag_height
 
+
+processes = []
+
+
 def head_map_cb(config):
     rospy.loginfo(config)
+
+
+# def start_process(command):
+#     process = subprocess.Popen(command)
+#     processes.append(process)
+#     return process
+
+# # 모든 프로세스를 종료하는 함수
+# def terminate_all_processes():
+#     for process in processes:
+#         try:
+#             os.kill(process.pid, signal.SIGTERM)
+#             process.wait()
+#         except OSError as e:
+#             print(f"Error terminating process {process.pid}: {e}")
+
 
 def carry_my_luggage(agent):
     # task params
@@ -1406,13 +1426,18 @@ def carry_my_luggage(agent):
         yolo_success = False
     # finally:
     #     yolo_process.terminate()
-        
+
+    
+            
     byte_path = "/home/tidy/Robocup2024/byte.sh"
-    byte_process = subprocess.Popen(['bash', byte_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
-
-
     seg_path = "/home/tidy/Robocup2024/seg.sh"
-    seg_process = subprocess.Popen(['bash', seg_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+
+    # 명령어들
+    byte_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {byte_path}; exec bash']
+    seg_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {seg_path}; exec bash']
+
+    byte_process = subprocess.Popen(byte_command)
+    seg_process = subprocess.Popen(seg_command)
 
 
     if not yolo_success or not try_bag_picking:
@@ -1465,6 +1490,7 @@ def carry_my_luggage(agent):
     rospy.sleep(3)
     # stop feature extraction
     demotrack_pub.publish(String('off_feature'))
+    byte_process.terminate()
 
 
 
@@ -1478,7 +1504,6 @@ def carry_my_luggage(agent):
     rospy.sleep(1)
     agent.pose.move_pose()
     agent.grasp()
-    byte_process.terminate()
 
     # 4. back to the start location
     agent.move_rel(0, 0, np.pi, wait=True) ######TODO : return
@@ -1540,9 +1565,53 @@ def carry_my_luggage(agent):
 
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("seg human detected, calc_z : ", calc_z)
+
+                while calc_z < 700.0:
+                    rospy.sleep(3)
+                    
+                    human_info_ary = copy.deepcopy(human_following.human_box_list)
+                    depth = np.asarray(now_d2pc.depth)
+
+                    depth_slice = depth[150:330, 280:360]
+                    seg_img = human_following.seg_img[150:330, 280:360]
+
+                    # Create a mask for depth values greater than 0 and seg_img equal to 15
+                    valid_depth_mask = depth_slice > 0
+                    human_mask = (seg_img == 15) & valid_depth_mask
+
+                    # Get the coordinates where both masks are true
+                    human_y, human_x = np.where(human_mask)
+
+                    # Extract the depth values for these coordinates
+                    human_depth_values = depth_slice[human_y, human_x]
+
+                    min_index = np.argmin(human_depth_values)
+
+                # if min_index is not None:
+
+                    # Get the corresponding coordinates in the original image
+                    min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+
+
+
+
+                    # seg_img = human_following.seg_img
+                    # seg_img = seg_img[150:330, 280:360]
+                    # valid_depth_mask = seg_img > 0
+                    # human_mask = seg_img == 15 & valid_depth_mask
+                    # human_y, human_x = np.where(human_mask)
+
+                    # human_depth_values = depth[150:330, 280:360][human_y, human_x]
+                    # min_index = np.argmin(human_depth_values)
+
+                    # min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                    human_seg_pos = [min_human_x, min_human_y]
+                    twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
             human_following.escape_barrier(calc_z)
             # human_following.escape_tiny()
             human_following.escape_tiny_canny()
+
+
 
             while not agent.move_abs_coordinate_safe(cur_track):
                 agent.move_rel(0, 0, 0, wait=True)
@@ -1569,6 +1638,8 @@ def carry_my_luggage(agent):
 
     seg_process.terminate()
     # yolo_process.terminate()
+    # terminate_all_processes()
+
 
     agent.say("Finnish carry my luggage", show_display=True)
 

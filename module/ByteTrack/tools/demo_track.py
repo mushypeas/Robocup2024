@@ -163,7 +163,7 @@ class Predictor(object):
 def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, human_feature, feature_on):
     # tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
-    if frame_id < 10: #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
+    if frame_id < 100: #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
         height, width, _ = ros_img.shape
         bar_width = width // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
         ros_img[:, :bar_width] = 0
@@ -192,12 +192,31 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
                 online_ids.append(tid)
                 online_scores.append(t.score)
 
-        if not found_prev_human:
+
+        if human_id == -1:
+            random_target = online_targets[0]
+            x, y, w, h = int(random_target.tlwh[0]), int(random_target.tlwh[1]), int(random_target.tlwh[2]), int(random_target.tlwh[3])
+            human_reid = HumanId()
+            target_feature = human_reid.get_vector(ros_img[y:y + h, x:x + w])
+            print('Initial Target index: ', random_target.track_id)
+            del human_reid
+
+            human_id = random_target.track_id
+            target_score = random_target.score
+            target_tlwh = random_target.tlwh
+
+
+        elif not found_prev_human:
+            print("not found prev human")
             # if len(online_targets) == 0:
             human_id = None
             target_feature = None
             target_score = None
             target_tlwh = None
+
+
+
+
             # else:
                 # # if human_id == 1 : start bytetrack
                 # if human_id == -1:
@@ -332,6 +351,8 @@ class Bytetrack_ros:
             human_info_ary, online_im, online_tlwhs = image_ros_demo(self.rgb_img, self.predictor, self.exp, self.args, self.frame_id, self.tracker, self.cur_human_idx, self.target_feature, self.feature_on)
             if human_info_ary[0] is not None:
                 self.cur_human_idx = human_info_ary[0]
+                print("self.cur_human_idx: ", self.cur_human_idx)
+
                 self.target_feature = human_info_ary[3]
                 x, y, w, h = int(human_info_ary[1][0]), int(human_info_ary[1][1]), int(human_info_ary[1][2]), int(human_info_ary[1][3])
                 intary = Int16MultiArray()
