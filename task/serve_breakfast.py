@@ -23,11 +23,13 @@ from hsr_agent.agent import Agent
 # 현 위치 반환 함수 : self.move_base.get_pose(), return self.move_base.get_pose()
 # Head display 관련 : HSR에 직접 키보드 연결 후 "python3 /hsr_head_display/hsr_head_monitor.py" 실행
 
-<<<<<<< HEAD
 # 아래는 재문님이 수정 및 재작성해주신 코드. 깔끔함에 감사 (-_-)(_ _) 꾸벅.
+# object detect 횟수 100번
+# spoon만 따로 list 두고 제일 마지막에 spoon만 pick and place?
+# object detect 100번 초과 시 사람에게 달라고 하기
+# pouring 할 때, 흘리지 않으려면 새로운 포즈 생성해야 함. object height 기준으로 arm_lift_up 설정하기. 올라감과 동시에 wrist_roll이 함께 동작하여 '부으면서 살짝 내려갔다가 다시 살짝 들고' + 두기 로 변경하기.
+# 100번 초과 시 사람에게 달라고 해서 grasp한 상태로 코드 동작하는지 확인 필요.
 
-=======
->>>>>>> 60df98a84e4f4dfc0b0655f6a1d2193cf09bf290
 class ServeBreakfast:
 
     def __init__(self, agent: Agent):
@@ -40,14 +42,14 @@ class ServeBreakfast:
             'mustard': True,
         }
 
-        self.item_list = ['bowl', 'spam', 'mustard', 'spoon'] # In order
+        self.item_list = ['bowl','spam','mustard','spoon'] # In order
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.93
         self.dist_to_place_table = 0.97
         self.item_height = {
-            'spam': 0.083,
-            'mustard': 0.19,
+            'spam': 0.073, # pointcloud에서 1cm 잘려서 높이를 기존 높이에서 -1cm 시킴. 
+            'mustard': 0.18, # pointcloud에서 1cm 잘려서 높이를 기존 높이에서 -1cm 시킴. 
         }
 
         # !!! Hard-Coded Offsets !!!
@@ -55,15 +57,15 @@ class ServeBreakfast:
         self.pick_top_bias = [-0.03, 0.00, -0.015]  # [x, y, height]
         self.pick_bowl_bias = [0.0, 0.00, -0.11]    # [x, y, height]
         self.pour_offsets = { # [x, y, angle]
-            'spam': [-0.03, 0.08, 120],
-            'mustard': [-0.104, 0.04, 130],
+            'spam': [0.0, 0.07, 110],
+            'mustard': [0.0, 0.075, 130],
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height]
-            'bowl': [self.dist_to_place_table - 0.50, -0.1, 0],
-            'spam': [0.0, 0.30, 0],
-            'mustard': [0.0, 0.15, 0],
-            'spoon': [0.1, -0.13, 0.23]
+            'bowl': [self.dist_to_place_table - 0.60, -0.2, 0],
+            'spam': [0.0, 0.18, 0],
+            'mustard': [0.02, 0.12, 0],
+            'spoon': [0.25, -0.15, 0.23]
         }
 
         self.pick_table = 'breakfast_table'
@@ -76,19 +78,25 @@ class ServeBreakfast:
         self.place_table = 'kitchen_table'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
-        self.default_base_xyz = [6.2082, -1.1592, 0.022] # serving table 기준
 
-
-    def search_item(self, item):
+    def search_item(self, item, picked_items):
         table_item_list = np.zeros(0)
         table_search_attempts = 0
+
+        item_list = [item for item in self.item_list if item not in picked_items]
+        if len(item_list) == 1:
+            item_list.append('fork')
+            item_list.append('knife')
+            
+        rospy.loginfo(f"Items to search: {item_list}")
         while table_item_list.size == 0:
+            
             rospy.sleep(0.2) # give some time for the YOLO to update
             table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
                 table='grocery_table',
                 dist=self.dist_to_pick_table,
                 depth=self.pick_table_depth,
-                item_list=self.item_list
+                item_list=item_list
             ))
             table_search_attempts += 1
             if table_search_attempts == 20:
@@ -96,7 +104,10 @@ class ServeBreakfast:
             if table_search_attempts == 60:
                 self.agent.say('Still searching...')
             if table_search_attempts == 100:
-                self.agent.say('What the...')
+                self.agent.say('Oh.. please give me the item. I cannot find it.')
+                self.agent.open_gripper(wait=False)
+                rospy.sleep(2)
+                self.agent.grasp()
                 rospy.logwarn('Finish Serve Breakfast.')
                 return
 
@@ -146,40 +157,41 @@ class ServeBreakfast:
                 self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
                 self.agent.open_gripper(wait=False)
-                self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
+                self.agent.move_rel(0, table_base_xyz[1], wait=True)
+                self.agent.move_rel(table_base_xyz[0], 0, wait=True)
                 self.agent.grasp(wait=False)
                 rospy.sleep(0.5) # wait for grasping manually
                 self.agent.pose.arm_flex(-60)
 
 
-    def pour_item(self, item, table_base_xyz):
+    def pour_item(self, item):
 
+        table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])] 
         self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table)
         self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
         self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
         self.agent.pose.wrist_roll(0) # 붓기 완료
 
 
-    def place_item(self, item, table_base_xyz):
+    def place_item(self, item):
 
         if item == 'bowl': # 주석 풀기
             self.agent.pose.place_bowl_pose()
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
 
         elif item in ['spam', 'mustard']:
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.place_offsets[item])]
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
             self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
         
         elif item == 'spoon':
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.place_offsets[item])]
+            table_base_xyz = [axis + bias for axis, bias in zip(self.place_offsets[item], self.place_offsets['bowl'])]
             self.agent.pose.place_top_pose(0.05, table=self.place_table)
             self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
             self.agent.pose.arm_lift_object_table_down(self.place_offsets[item][2], table=self.place_table) # top_pose = 0.2
             
         self.agent.open_gripper()
         self.agent.pose.arm_lift_up(self.arm_lift_height)
-        self.agent.move_rel(-0.4, 0, wait=False)
+        self.agent.move_rel(-0.6, 0, wait=False)
         rospy.sleep(1) # wait manually
 
 
@@ -200,6 +212,8 @@ class ServeBreakfast:
         self.agent.say('Hi, I will serve breakfast for you!')
         rospy.sleep(2)
 
+        picked_items = []
+
         for item in self.item_list:
 
             has_grasped = False
@@ -212,7 +226,7 @@ class ServeBreakfast:
                 self.agent.move_abs_safe(self.pick_table)
                 rospy.sleep(2)
                 # Search item
-                item_info = self.search_item(item)
+                item_info = self.search_item(item, picked_items)
                 if item_info is None:
                     rospy.logwarn('Failed to find item to pick. Retrying...')
                     continue
@@ -229,6 +243,7 @@ class ServeBreakfast:
                 has_grasped = self.check_grasp(grasping_type)
                 if has_grasped:
                     rospy.loginfo(f'Successfuly grasped {item}!')
+                    picked_items.append(item)
                 else:
                     rospy.logwarn(f'Failed to grasp {item}! Retrying...')
 
@@ -242,25 +257,9 @@ class ServeBreakfast:
             self.agent.move_abs_safe(self.place_table)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
-            base_xyz = None
-            if item != 'bowl':
-                try:
-                    rospy.sleep(1)
-                    table_item_list = self.agent.yolo_module.detect_3d_safe(
-                        table=self.place_table,
-                        dist=self.dist_to_place_table,
-                        depth=self.place_table_depth,
-                        item_list=['bowl']
-                    )
-                    table_base_to_object_xyz = self.agent.yolo_module.find_3d_points_by_name(table_item_list, 'bowl')
-                    base_xyz = self.agent.yolo_module.calculate_dist_to_pick(table_base_to_object_xyz, grasping_type=2) # 2 == bowl
-                    print('bowl base_xyz',base_xyz)
-                except:
-                    base_xyz = self.default_base_xyz
-                    print('no bowl detected. set default base_xyz', base_xyz)
-
             if item in ['spam', 'mustard']:
-                self.pour_item(item=item, table_base_xyz=base_xyz)
+                self.pour_item(item=item)
+
 
             rospy.logwarn('Placing item...')
-            self.place_item(item=item, table_base_xyz=base_xyz)
+            self.place_item(item=item)

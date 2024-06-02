@@ -62,7 +62,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
 
     # add wait argument by yspark and shlim
@@ -80,7 +80,7 @@ class MoveBase:
         self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
-        # pose.header.stamp = rospy.Time.now()
+        pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
@@ -98,7 +98,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr(f"Navigation Failed! (GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
@@ -133,7 +133,7 @@ class MoveBase:
         rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
 
         pose = PoseStamped()
-        # pose.header.stamp = rospy.Time.now()
+        pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "base_link"
         pose.pose.position = Point(x, y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
@@ -152,7 +152,7 @@ class MoveBase:
                 rospy.loginfo("Navigation Succeeded.")
                 return True
             else:
-                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 self.base_action_client.cancel_all_goals()
                 return False
 

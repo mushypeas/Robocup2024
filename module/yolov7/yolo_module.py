@@ -170,6 +170,7 @@ class YoloModule:
             class_name = self.find_name_by_id(class_id)
             if item_list is not None and class_name not in item_list:
                 rospy.logwarn(f"Ignoring {class_name}...")
+                continue
             start_x = cent_x - (width // 2)
             start_y = cent_y - (height // 2)
             object_pc = pc_np[start_y:start_y+height, start_x:start_x+width]
@@ -182,7 +183,7 @@ class YoloModule:
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.01
+                height_offset = 0.0 # 0 에서 0.01 사이
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
