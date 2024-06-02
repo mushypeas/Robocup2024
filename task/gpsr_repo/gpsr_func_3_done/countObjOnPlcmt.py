@@ -1,17 +1,27 @@
+import rospy
+
 # "countObjOnPlcmt": "{countVerb} {plurCat} there are {onLocPrep} the {plcmtLoc}",
 def countObjOnPlcmt(g, params):
-    params = {'countVerb': 'tell me how many', 'plurCat': 'drinks', 'onLocPrep': 'on', 'plcmtLoc': 'sofa'}
-
+    # Tell me how many drinks there are on the sofa
+    # Tell me how many drinks there are on the sofa
+    # Tell me how many cleaning supplies there are on the bedside table
+    # Tell me how many cleaning supplies there are on the shelf
+    # Tell me how many snacks there are on the tv stand
+    # Tell me how many dishes there are on the kitchen table
+    print("Start CountObjOnPlcmt")
+    
     # [0] Extract parameters
-    countVerb, plurCat, onLocPrep, plcmtLoc = params['countVerb'], params['plurCat'], params['onLocPrep'], params['plcmtLoc']
-    singCat = g.categoryPlur2Sing(plurCat)
+    plurCat = params['plurCat']
+    plcmtLoc = params['plcmtLoc']
+
+    singCat = g.categoryPlur2Sing[plurCat]
 
     # [1] Find the object in the room
     g.move(plcmtLoc)
     
-    yolo_bbox = g.get_yolo_bbox(singCat)
 
     g.say(f"Let me find {plurCat} in the {plcmtLoc}")
+    yolo_bbox = g.get_yolo_bbox(singCat)
     rospy.sleep(5)
 
     numObj = len(yolo_bbox)

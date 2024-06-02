@@ -23,8 +23,11 @@ from hsr_agent.agent import Agent
 # 현 위치 반환 함수 : self.move_base.get_pose(), return self.move_base.get_pose()
 # Head display 관련 : HSR에 직접 키보드 연결 후 "python3 /hsr_head_display/hsr_head_monitor.py" 실행
 
+<<<<<<< HEAD
 # 아래는 재문님이 수정 및 재작성해주신 코드. 깔끔함에 감사 (-_-)(_ _) 꾸벅.
 
+=======
+>>>>>>> 60df98a84e4f4dfc0b0655f6a1d2193cf09bf290
 class ServeBreakfast:
 
     def __init__(self, agent: Agent):

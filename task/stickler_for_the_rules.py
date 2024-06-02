@@ -1,3 +1,5 @@
+from utils.marker_maker import MarkerMaker
+from utils.axis_transform import Axis_transform
 import rospy
 import time
 import math
@@ -15,12 +17,16 @@ from std_msgs.msg import Int16MultiArray
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
+import cv2
+import numpy as np
+import mediapipe as mp
+import sys
 
 sys.path.append('.')
 
 
 class ShoeDetection:
-    def __init__(self, agent, axis_transform):
+    def __init__(self, agent):
         self.agent = agent
         self.axis_transform = axis_transform
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
@@ -37,14 +43,10 @@ class ShoeDetection:
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
-        visualize_mode = False
-        if visualize_mode:
-            for x, y in self.knee_list:
-                cv2.circle(self.agent.rgb_img, (x, y), 2,
-                           (255, 0, 0), -1, cv2.LINE_AA)
-            cv2.imshow('hsr_vision', self.agent.rgb_img)
-            cv2.waitKey(1)  # 1 millisecond
-
+        self.min_knee = np.inf
+        for x, y in self.knee_list:
+            if self.agent.depth_image[y, x] < self.min_knee:
+                self.min_knee = self.agent.depth_image[y, x]
 
     def find_shoes(self):
         # Prompt for CLIP model
@@ -80,9 +82,9 @@ class ShoeDetection:
             return True
         return False
 
-
-    def detect(self):
+    def run(self):
         rospy.sleep(1)
+        # head_tilt_list = [-30]
         head_tilt_list = [-20, -40]
 
         for tilt in head_tilt_list:
@@ -92,22 +94,39 @@ class ShoeDetection:
             rospy.sleep(1)
 
         return False
+<<<<<<< HEAD
+=======
 
+>>>>>>> ab653a359a51a91539880461d819ede5a840ae3a
 
     def clarify_violated_rule(self):
-        if len(self.knee_list) > 0:
-            for x, y in self.knee_list:
-                move_human_infront(
-                    self.agent, self.axis_transform, y, x, coord=False)
+        _pc = self.agent.pc.reshape(480, 640)
+        pc_np = np.array(_pc.tolist())[:, :, :3]
+        shoe_x = self.shoe_position[0]
+        shoe_y = self.shoe_position[1]
+        human_pc = pc_np[max(0, min(480, int(shoe_y*480))),
+                         max(0, min(640, int(shoe_x*640)))]  # Shoe Position!
+        closest_ppos = self.axis_transform.transform_coordinate(
+            'head_rgbd_sensor_rgb_frame', 'map', human_pc)
+
+        if len(closest_ppos) != 0:
+            # go to the offender
+            print("CLOSEST PPOS SHOES", closest_ppos)
+            move_human_infront(self.agent, self.axis_transform,
+                               closest_ppos[1], closest_ppos[0], coord=True)
 
             # clarify what rule is being broken
             self.agent.pose.head_tilt(20)
             self.agent.say('Hello!', show_display=True)
             rospy.sleep(1)
+            # self.agent.say('I apologize for\nany inconvenience,\nbut unfortunately,', show_display=True)
+            # rospy.sleep(4.5)
             self.agent.say(
-                'Sorry but\n all guests should take off\n their shoes at the entrance.', show_display=True)
+                'Sorry but\n all guests should take off\n their shoes outside the entrance.', show_display=True)
             rospy.sleep(5)
-                
+
+        else:
+            self.agent.say("Please come closer to me")
 
     def ask_to_action(self, entrance):
         rospy.sleep(1)
@@ -121,32 +140,41 @@ class ShoeDetection:
 
         # ask to take off their shoes
         self.agent.pose.head_tilt(20)
-        self.agent.say('Please take off your shoes\n here at the enterance', show_display=True)
+        self.agent.say('Please put your shoes\n outside the entrance', show_display=True)
         rospy.sleep(3)
 
-        self.agent.say('I will wait ten seconds\nfor you to take off your shoes', show_display=True)
-        rospy.sleep(13)
+        self.agent.say('seven');
+        rospy.sleep(1)
+        self.agent.say('six');
+        rospy.sleep(1)
+        self.agent.say('five');
+        rospy.sleep(1)
+        self.agent.say('four');
+        rospy.sleep(1)
+        self.agent.say('three')
+        rospy.sleep(1)
+        self.agent.say('two')
+        rospy.sleep(1)
+        self.agent.say('one')
+        rospy.sleep(1)
 
-        rebelion_count = 0
-        while rebelion_count < 3:
-            self.agent.pose.head_tilt(-40)
-            self.agent.say('Are you finished?\nLet me see your feet', show_display=True)
-            rospy.sleep(4)
-
-            if self.find_shoes():
-                self.agent.pose.head_tilt(20)
-                self.agent.say('You are still wearing shoes!', show_display=True)
-                rospy.sleep(2)
-                self.agent.say(f'I will wait five more seconds\nfor you to take off your shoes', show_display=True)
-                rospy.sleep(8)
-                rebelion_count += 1
-            else:
-                self.agent.pose.head_tilt(20)
-                self.agent.say('Thank you!\nEnjoy your party', show_display=True)
-                rospy.sleep(2.5)
+        # confirming action
+        # lsh 0708 1226 - add comfirming action
+        self.agent.pose.head_tilt(-40)
+        self.agent.say('I am gonna double check \n let me see your feet', show_display=True)
+        rospy.sleep(4)
+        if self.find_shoes():
+            self.agent.pose.head_tilt(20)
+            self.agent.say('shoes are still here!',
+                           show_display=True)
+            rospy.sleep(2)
+            self.agent.say('Please put your shoes\n outside the entrance', show_display=True)
+            rospy.sleep(3)
+        self.agent.pose.head_tilt(-40) # TODO : tilt degree check -40 -30
+        rospy.sleep(5)
 
         self.agent.pose.head_tilt(20)
-        self.agent.say('I give up.\nEnjoy your party', show_display=True)
+        self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(2.5)
 
 
@@ -404,7 +432,6 @@ class DrinkDetection:
         self.drink_list = [0, 1, 2, 3, 4, 5]
         self.marker_maker = MarkerMaker('/snu/human_location')
         self.no_drink_human_coord = None
-        self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
 
     def _openpose_cb(self, data):
         data_list = data.data
@@ -423,34 +450,6 @@ class DrinkDetection:
         cv2.imshow('img', img)
         cv2.waitKey(1)
 
-    def find_drink(self):
-
-        count = 0
-        while count < 7:
-            image = self.agent.rgb_img
-            pos, neg, ntr = self.detector.detect(images=image)
-            if ntr > 0.15:
-                return None
-            if pos > 0.15:
-                return True
-            # if ntr > 0.8:
-            #     return None
-            # if pos > 0.1:
-            #     return True
-            count += 1
-        return False
-    
-    def detect(self):
-        self.agent.pose.head_tilt(0)
-        rospy.sleep(0.5)
-
-        if self.find_drink():
-            return True
-        rospy.sleep(1)
-
-        return False
-
-    
     def detect_no_drink_hand(self):
         self.agent.pose.head_tilt(0)
         rospy.sleep(0.5)
@@ -559,6 +558,7 @@ class DrinkDetection:
         # self.agent.move_abs_safe('study_search_reverse')
 
 
+
 def stickler_for_the_rules(agent):
     agent.say('start stickler for the rules')
     stickler_start_time = time.time()
@@ -594,18 +594,19 @@ def stickler_for_the_rules(agent):
     forbidden_room = ForbiddenRoom(agent, axis_transform,
                                    forbidden_room_min_points[forbidden_search_location],
                                    forbidden_room_max_points[forbidden_search_location])
-    shoe_detection = ShoeDetection(agent, axis_transform)
+    shoe_detection = ShoeDetection(agent)
     no_littering = NoLittering(agent, axis_transform)
     drink_detection = DrinkDetection(
         agent, axis_transform, hand_drink_pixel_dist_threshold)
     #################################
-
     forbidden_room_name = 'bedroom_search'
-    search_location_list = ['living_room_search', 'study_search']
-    # search_location_list = ['bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
-    #                         'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
-    #                         'kitchen_search', 'living_room_search', 'study_search',
-    #                         'kitchen_search', 'living_room_search', 'study_search']
+    # 'study_search', 'living_room_search', 'kitchen_search', 'living_room_search'
+    # search_location_list = ['living_room_search', 'study_search']
+    # search_location_list = ['living_room_search'] #todo delete
+    search_location_list = ['bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
+                            'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
+                            'kitchen_search', 'living_room_search', 'study_search',
+                            'kitchen_search', 'living_room_search', 'study_search']
 
     agent.pose.head_pan_tilt(0, 0)
     forbidden_search_start = False
@@ -676,20 +677,20 @@ def stickler_for_the_rules(agent):
             for pan_degree in pan_degree_list:
                 agent.pose.head_pan(pan_degree)
 
-                # # [RULE 4] Compulsory hydration : tilt 0
-                # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
-                #     # marking no drink violation detection
-                #     break_rule_check_list['drink'] = True
+                # [RULE 4] Compulsory hydration : tilt 0
+                if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
+                    # marking no drink violation detection
+                    break_rule_check_list['drink'] = True
 
-                #     # go to the offender and clarify what rule is being broken
-                #     drink_detection.clarify_violated_rule()
-                #     # ask offender to grab a drink
-                #     drink_detection.ask_to_action(
-                #         compulsory_hydration_bar_location)
-                #     break
+                    # go to the offender and clarify what rule is being broken
+                    drink_detection.clarify_violated_rule()
+                    # ask offender to grab a drink
+                    drink_detection.ask_to_action(
+                        compulsory_hydration_bar_location)
+                    break
 
                 # [RULE 1] No shoes : tilt -20, -40
-                if break_rule_check_list['shoes'] is False and shoe_detection.detect():
+                if break_rule_check_list['shoes'] is False and shoe_detection.run():
                     # marking whether wearing shoes violation is detected
                     break_rule_check_list['shoes'] = True
 
@@ -699,16 +700,16 @@ def stickler_for_the_rules(agent):
                     shoe_detection.ask_to_action(entrance)
                     break
 
-                # # [RULE 3] No littering : tilt -40
-                # if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
-                #     # marking no littering violation detection
-                #     break_rule_check_list['garbage'] = True
+                # [RULE 3] No littering : tilt -40
+                if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
+                    # marking no littering violation detection
+                    break_rule_check_list['garbage'] = True
 
-                #     # go to the offender and clarify what rule is being broken
-                #     no_littering.clarify_violated_rule()
-                #     # ask the offender to pick up and trash the garbage
-                #     no_littering.ask_to_action(bin_location)
-                #     break
+                    # go to the offender and clarify what rule is being broken
+                    no_littering.clarify_violated_rule()
+                    # ask the offender to pick up and trash the garbage
+                    no_littering.ask_to_action(bin_location)
+                    break
 
         if sum(break_rule_check_list.values())==4:
             break
@@ -883,60 +884,20 @@ def move_human_infront(agent, axis_transform, y, x, coord=False):
 
 if __name__ == '__main__':
     from hsr_agent.agent import Agent
-    sys.path.append('../../../robocup2024')
 
     rospy.init_node('stickler_rule_test')
     agent = Agent()
+    forbidden_room_min_points = [-2.01, 3.74, 0]
+    forbidden_room_max_points = [-0.66, 4.97, 2.0]
     axis_transform = Axis_transform()
-
-    # forbidden_room_min_points = [-2.01, 3.74, 0]
-    # forbidden_room_max_points = [-0.66, 4.97, 2.0]
     # forbidden_room = ForbiddenRoom(agent, axis_transform,
     #                                forbidden_room_min_points,
     #                                forbidden_room_max_points)
 
-    # SHOE
-    # shoe_detection = ShoeDetection(agent, axis_transform)
-
-    # agent.pose.head_pan(0)
-    # agent.pose.head_tilt(-40)
-    # while True:
-    #     # agent.say('Looking for drink')
-    #     agent.say('Looking for shoes')
-    #     rospy.sleep(1)
-    #     is_shoe_detected = shoe_detection.find_shoes()
-    #     # is_drink_detected = drink_detection.detect()
-    #     if is_shoe_detected is None:
-    #         agent.say('No one in sight')
-    #         rospy.sleep(2)
-    #     else:
-    #         if not is_shoe_detected:
-    #             # agent.say('Drink Detected')
-    #             agent.say('Shoe Detected')
-    #             rospy.sleep(2)
-    #         else:
-    #             # agent.say('Drink not detected')
-    #             agent.say('Shoe not detected')
-    #             rospy.sleep(2)
-    
-    # DRINK
     hand_drink_pixel_dist_threshold = 50
-    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
+    shoe_detection = ShoeDetection(agent)
+    # drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
-    agent.pose.head_tilt(10)
+    agent.pose.head_tilt(-30)
     agent.pose.head_pan(0)
-    while True:
-        agent.say('Looking for drink')
-        rospy.sleep(1)
-        is_drink_detected = drink_detection.find_drink()
-        if is_drink_detected is None:
-            agent.say('No one in sight')
-            rospy.sleep(2)
-        else:
-            if not is_drink_detected:
-                agent.say('Drink not detected')
-                rospy.sleep(2)
-            else:
-                agent.say('Drink detected')
-                rospy.sleep(2)
-            
+    shoe_detection.find_shoes()

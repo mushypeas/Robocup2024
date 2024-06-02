@@ -17,19 +17,26 @@ from task.inspection import inspection
 if __name__ == '__main__':
     rospy.init_node('main_client_hsr', disable_signals=True)
     agent = Agent()
-    print('TASK')
-    print('0 : inspection')
-    print('1 : carry_my_luggage')
-    print('2 : receptionist')
-    print('3 : storing_groceries')
-    print('4 : serve_breakfast')
-    print('5 : gpsr')
-    print('6 : clean_the_table')
-    print('7 : restaurant')
-    print('8 : stickler_for_the_rules')
-    print('9 : egpsr')
-    print('10 : final')
-
+    print()
+    print('╭─────────────────────────────────────────────────────────────────────────╮')
+    print('│                                                                         │')
+    print('│              - Team TIDYBOY-DSPL ROBOCUP2024 Main Client -              │')
+    print('│                                                                         │')
+    print('╭───────────────────────── Select Task (0 - 10) ──────────────────────────╮')
+    print('│                                                                         │')
+    print('│   0  : Inspection                                                       │')
+    print('│   1  : Carry My Luggage                                                 │')
+    print('│   2  : Receptionist                                                     │')
+    print('│   3  : Storing Groceries                                                │')
+    print('│   4  : Serve Breakfast                                                  │')
+    print('│   5  : GPSR (General Purpose Service Robot)                             │')
+    print('│   6  : Clean the Table                                                  │')
+    print('│   7  : Restaurant                                                       │')
+    print('│   8  : Stickler for the Rules                                           │')
+    print('│   9  : EGPSR (Enhanced General Purpose Service Robot)                   │')
+    print('│   10 : Final                                                            │')
+    print('│                                                                         │')
+    print('╰─────────────────────────────────────────────────────────────────────────╯')
 
 
     task_id = input('task num : ')
@@ -48,10 +55,11 @@ if __name__ == '__main__':
         task = StoringGroceries(agent)
         task.run()
     elif task_id == '4':
-        from task.serve_breakfast import serve_breakfast
-        serve_breakfast(agent)
+        from task.serve_breakfast import ServeBreakfast
+        task = ServeBreakfast(agent)
+        task.run()
     elif task_id == '5':
-        from task.gpsr_n import gpsr
+        from task.gpsr import gpsr
         gpsr(agent)
     elif task_id == '6':
         from task.clean_the_table import clean_the_table

@@ -148,14 +148,10 @@ class Yolov7:
         yolo_img_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
         self.yolo_img_pub.publish(yolo_img_msg)
 
+# 앞으로 global_config.py 상단에서 yolo_weight_path를 바꿔주세요!
 def get_opt():
     parser = argparse.ArgumentParser()
-
-    parser.add_argument('--weights', nargs='+', type=str, default='weight/best_0704.pt', help='model.pt path(s)')
-
-    # 기존 경로 : 'weight/best_240409.pt'
-    # 원하는 특정 모델욜로 사용시 여기를 바꾸시오!!!
-
+    parser.add_argument('--weights', nargs='+', type=str, default=yolo_weight_path, help='model.pt path(s)')
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
