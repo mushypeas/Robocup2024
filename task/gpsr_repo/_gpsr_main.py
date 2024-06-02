@@ -84,19 +84,19 @@ class GPSR:
         }
         
         self.followupNameTofollowupFunc = {
-            # "findObj": findObj,
-            # "findPrs": findPrs,
-            # "meetName": meetName,
-            # "placeObjOnPlcmt": placeObjOnPlcmt,
+            "findObj": findObj,
+            "findPrs": findPrs,
+            "meetName": meetName,
+            "placeObjOnPlcmt": placeObjOnPlcmt,
             "deliverObjToMe": deliverObjToMe,
-            # "deliverObjToPrsInRoom": deliverObjToPrsInRoom,
-            # "deliverObjToNameAtBeac": deliverObjToNameAtBeac,
-            # "talkInfo": talkInfo,
-            # "answerQuestion": answerQuestion,
-            # "followPrs": followPrs,
-            # "followPrsToRoom": followPrsToRoom,
-            # "guidePrsToBeacon": guidePrsToBeacon,
-            # "takeObj": takeObj
+            "deliverObjToPrsInRoom": deliverObjToPrsInRoom,
+            "deliverObjToNameAtBeac": deliverObjToNameAtBeac,
+            "talkInfo": talkInfo,
+            "answerQuestion": answerQuestion,
+            "followPrs": followPrs,
+            "followPrsToRoom": followPrsToRoom,
+            "guidePrsToBeacon": guidePrsToBeacon,
+            "takeObj": takeObj
         }
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
@@ -199,11 +199,12 @@ class GPSR:
     # TODO
     def getPose(self):
         # [TODO] Implement how the pose can be extracted
-        img = TODO
-        feature, _ = detectLegPose(img, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        image = self.agent.rgb_img
+        feature, _ = detectLegPose(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
         return feature
     
     def getGest(self):
+        
         return None
     
     def getHumanAttribute(self):
