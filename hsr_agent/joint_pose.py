@@ -256,11 +256,13 @@ class JointPose:
                       [0.4, 0, -1.57, 0, 1.57])
 
 
-    def pick_bowl_max_pose(self, table='kitchen_table', height=0):  # added height parameter by Minjun at June 11th
+    def pick_bowl_max_pose(self, table='kitchen_table', height=0):  # added height parameter by Minjun at June 11th, 2023
+        #modifed by BYUNGJU on 03 June 2024, for clean the table.s
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
         arm_lift_joint = target_table_height + table_to_gripper + height - robot_default_height
+        print('arm_lift_joint', arm_lift_joint)
         if arm_lift_joint > 0.69:
             arm_lift_joint = 0.69
         self.set_pose(['arm_lift_joint',
