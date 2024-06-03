@@ -157,6 +157,39 @@ class MoveBase:
                 return False
 
         return True
+    
+    def move_rel_AFAP(self, x, y, yaw=0, interval = 0.05):
+        while 1:
+            self.base_action_client.wait_for_server(timeout=2)
+            rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
+
+            pose = PoseStamped()
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = "base_link"
+            pose.pose.position = Point(x, y, 0)
+            quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
+            pose.pose.orientation = Quaternion(*quat)
+
+            goal = MoveBaseGoal()
+            goal.target_pose = pose
+    
+            # send message to the action server
+            self.base_action_client.send_goal(goal)
+            # wait for the action server to complete the order
+            self.base_action_client.wait_for_result(timeout=rospy.Duration(5))
+            # print result of navigation
+            action_state = self.base_action_client.get_state()
+            if action_state == GoalStatus.SUCCEEDED:
+                rospy.loginfo("Navigation Succeeded.")
+                return True
+                break
+            else:
+                rospy.logerr("Navigation FAILED!!!!")
+                self.base_action_client.cancel_all_goals()
+                x = x - interval
+                # y = y - interval
+                continue
+        
 
     def get_pose(self):
         while not rospy.is_shutdown():
