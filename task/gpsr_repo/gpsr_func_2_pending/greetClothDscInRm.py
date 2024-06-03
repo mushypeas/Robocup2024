@@ -11,7 +11,7 @@ def greetClothDscInRm(g, params):
     colorClothe = params['colorClothe']
     room = params['room']
     followup = params['followup']
-    
+
     # [1] Move to the specified room
     g.move(room)
 
