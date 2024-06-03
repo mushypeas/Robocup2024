@@ -12,7 +12,7 @@ import open_clip
 from PIL import Image
 import cv2
 
-objects_file_path = 'task/gpsr_repo/object.md'
+objects_file_path = 'CompetitionTemplate/objects/test.md'
 objects_data = readData(objects_file_path)
 
 def followup(cmd):
