@@ -6,7 +6,7 @@ from .codebook_parser import parser
 #from codebook_parser import parser
 from playsound import playsound
 
-def stt_client(sec=5, FS=16000):
+def stt_client(sec=5, FS=16000, mode=None):
 
     '''
     Outer functions should call this client method only
@@ -22,6 +22,7 @@ def stt_client(sec=5, FS=16000):
     record = record.astype(np.int16).flatten()
     stt = client(record)
     answer = parser(stt.result)
+    
     return stt.result, answer
 
 
