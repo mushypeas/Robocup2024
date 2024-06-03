@@ -46,6 +46,11 @@ class VisionController(object):
             sound = threading.Thread(target=play_ding)
             sound.start()
 
+        if key == 100: #'d'
+            self.start_idx -= 1
+            print('deleted', self.start_idx)
+            os.remove(args.dir + str(self.start_idx) + '.png')
+
 
 if __name__ == '__main__':
     rospy.init_node('openni2_capture_baseline', anonymous=True)

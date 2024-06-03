@@ -44,7 +44,7 @@ def clean_the_table(agent: Agent):
 
     is_using_check_grasp_dict = {'mug': True, 'bowl': True, 'plate': True,
                                  'fork': False, 'knife': False, 'spoon': False, tab_name: True}     # do not use check_grasp for motions that scrapes the table
-    id_item_dict = {46: tab_name, 22: 'spoon', 21: 'fork', 19: 'plate', 17: 'bowl', 18: 'mug', 20: 'knife', 46: 'tab'}
+    id_item_dict = {46: tab_name, 2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 46: 'tab'}
     miss_count = 0
     is_picked = False
     double_check_item_list = ['plate', 'bowl']  # items that have ambiguous values when using check_grasp
