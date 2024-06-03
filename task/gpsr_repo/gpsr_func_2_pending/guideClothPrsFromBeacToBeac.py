@@ -6,19 +6,19 @@ def guideClothPrsFromBeacToBeac(g, params):
     # Escort the person wearing a blue sweater from the kitchen table to the office
     # Take the person wearing a gray sweater from the storage rack to the living room
     print("Start guideClothPrsFromBeacToBeac")
-    
+
     # [0] Extract parameters
     colorClothe = params['colorClothe']
     loc = params['loc']
     loc2 = params['loc_room']
-    
+
     # [1] Move to the specified location
     g.move(loc)
-    
+
     # [2] Find the person in the location
     g.identifyByClothing(colorClothe)
     g.say(f"Please follow me to the {loc2}")
-    
+
     # [3] Make the person to follow HSR to the room
     g.guide(loc2)
     g.say(f"You have arrived at the {loc2}")
