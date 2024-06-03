@@ -19,7 +19,6 @@ from std_msgs.msg import Int16MultiArray, Float32MultiArray
 import time
 
 import sys
-sys.path.append('../../../robocup2024')
 from hsr_agent.global_config import *
 
 class Yolov7:
