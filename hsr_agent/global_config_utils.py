@@ -58,9 +58,13 @@ def make_object_list(yolo_classname_path):
             
         OBJECT_LIST.append([idx, class_name, 0, grasping_type])
         
-    print('[Object list]')
-    print(OBJECT_LIST)
-    return OBJECT_LIST
+    print('========== Object list ==========')
+
+    for OBJECT in OBJECT_LIST:
+        print(OBJECT)
+
+    print()
+    
 
 if __name__ == '__main__':
     OBJECT_LIST = make_object_list('weight/test.cn')

@@ -15,8 +15,8 @@ def loadConfig(configFile):
 
 # Chat with GPT-4
 def chat(prompt):
-    gpsrConfig = loadConfig('task/gpsr_repo/gpsr_config.json')
-    openai.api_key = gpsrConfig['openai_api_key']
+    credentials = loadConfig('task/gpsr_repo/gpsr_credentials.json')
+    openai.api_key = credentials['openai_api_key']
     modelEngine = "gpt-4"
 
     response = openai.ChatCompletion.create(
