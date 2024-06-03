@@ -20,6 +20,7 @@ import time
 
 import sys
 sys.path.append('hsr_agent')
+sys.path.append('../../hsr_agent')
 from global_config import *
 
 class Yolov7:

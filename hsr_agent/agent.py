@@ -28,6 +28,7 @@ from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
+from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
 from utils.simple_action_client import SimpleActionClient
 import control_msgs.msg
 import controller_manager_msgs.srv
@@ -43,7 +44,7 @@ from utils.marker_maker import MarkerMaker
 
 class Agent:
     def __init__(self):
-
+        
         # head display
         self.head_display_file_pub = rospy.Publisher('/hsr_head_file', String, queue_size=10)
         self.head_text_pub = rospy.Publisher('/hsr_head_msg', String, queue_size=10)
@@ -105,7 +106,7 @@ class Agent:
         else:
             static_topic_name = '/static_obstacle_map_ref'
 
-        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=3.0)
+        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
         self.static_res = grid.info.resolution
         self.static_w = grid.info.width
@@ -257,6 +258,9 @@ class Agent:
 
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)
+    
+    def move_rel_AFAP(self, x, y, yaw=0, interval = 0.05):
+        return self.move_base.move_rel_AFAP(x, y, yaw, interval)
     
     def move_distancing(self, place, dist=0.6, timeout=3.0):
         # Move for distancing
@@ -416,17 +420,17 @@ class Agent:
         pass
 
     # gripper
-    def open_gripper(self):
+    def open_gripper(self, wait=True):
         rospy.loginfo("Gripper opened")
-        self.gripper.gripper_command(1.0)
+        self.gripper.gripper_command(1.0, wait=wait)
 
-    def grasp(self, force=1.0, weak=False):
+    def grasp(self, force=1.0, weak=False, wait=True):
         rospy.loginfo("Gripper closed")
         if weak:
             # self.gripper.grasp(0.1)
-            self.gripper.grasp(0.05)
+            self.gripper.grasp(0.05, wait=wait)
         else:
-            self.gripper.grasp(force)
+            self.gripper.grasp(force, wait=wait)
 
     def grasp_degree(self, radian):
         self.gripper.gripper_command(radian)

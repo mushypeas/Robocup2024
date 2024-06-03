@@ -15,7 +15,10 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 yolo_weight_path = 'weight/test.pt'
 yolo_classnames_path = 'weight/test.cn'
 
-OBJECT_LIST = make_object_list(yolo_classnames_path)
+try:
+    OBJECT_LIST = make_object_list(yolo_classnames_path)
+except:
+    pass
 
 AIIS = True
 
@@ -27,7 +30,7 @@ if AIIS:
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
-        'breakfast_table': [6.4946, 1.2412, -3.1284],
+        'breakfast_table': [3.4552,-0.6194,-1.5674],
         'table_front': [6.6449, 0.3005, 0.0422],
         'table_side': [7.3455, -1.0624, 1.551],
         'table_back': [8.6478, 0.0623, 3.1025],
@@ -36,8 +39,8 @@ if AIIS:
 
 
         # storing grocery
-        'grocery_table': [3.7086, -0.1316 -1.58], #bjkim
-        'shelf_front': [2.4902, -0.8467, -3.14], #bjkim
+        'grocery_table': [-0.7854, -0.2033, -1.548],
+        'grocery_shelf': [-1.091, -0.1197, 1.6165],
 
         # serve breakfast
         'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
@@ -52,10 +55,13 @@ if AIIS:
         'breakfast_table_front': [1.4045, -1.3402, 0.0091], #bjkim2 [1.6, -1.2796, 0.0]
 
         # clean the table
-        'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'dishwasher_rack': [3.4552, -0.6194, -1.5674], #bjkim2
-        'opened_dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'clean_table_front' : [6.3029, -1.0222, 0.0161], #bjkim2
+
+        'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
+        'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
+        'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
+        'rack_close_position2': [1.6463, -0.9664, -1.5655],
+        'rack_close_position3': [1.6434, -0.9569, -1.9500],
+
 
         # receptionist
         # 'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
@@ -117,14 +123,9 @@ if AIIS:
 
 
         # gpsr
-        'gpsr_start_point': [1.7869, 0.0919, -3.1073],
-        'gpsr_instruction_point': [2.622, -0.5539, 0.1105],
-        
-        # gpsr_test
-        'desk': [5.5086, 0.1336, 0.0005],
-        'table': [3.8706, -0.7318, -1.5548],
 
-        'kitchen_table': [2.1348, -2.7771, -0.0066], #mjgu
+        'kitchen_table': [2.1348, -2.7771, -0.0066], 
+
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
@@ -170,14 +171,23 @@ if AIIS:
         'kitchen_table_testday': [0.8, 0.8, 0.715],
         'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
-        'kitchen_table': [0.55, 0.75, 0.735],
-        'breakfast_table': [0.55, 0.75, 0.715], #이거 715인데 왜 테이프에 735라 써놧어
-        'grocery_table': [0.55, 0.75, 0.730],
-        'grocery_table_pose': [0.55, 0.75, 0.785], # +055
-        'grocery_table_pose1': [0.55, 0.75, 0.795], # +065
-        'grocery_table_pose2': [0.55, 0.75, 0.70], # +030
+
+        'kitchen_table': [0.55, 0.75, 0.730],
+        'breakfast_table': [0.89, 0.89, 0.715],
+        'grocery_table': [0.65, 1.2, 0.42],
+        'grocery_table_pose': [0.55, 0.75, 0.42 + 0.055], # +055
+        'grocery_table_pose1': [0.55, 0.75, 0.42 + 0.065], # +065
+        'grocery_table_pose2': [0.55, 0.75, 0.42 - 0.02], # -020
+
         'door_handle': [0, 0, 0.96],
         # width, depth, height
+        
+        # clean the table
+        'clean_table' : [0.55,0.75,0.715],
+        'dishwasher_door' : [0.595,0.60,0.165], #height is not precise
+        'dishwasher_rack' : [0.520,0.60,0.400],
+        'dishwasher' : [0.520,0.60,0.830], #height is not precise
+
         'desk': [1.505, 0.705, 0.8],
         'side_table': [0.495, 0.495, 0.395],
         'side-tables': [0.495, 0.495, 0.395],
@@ -185,11 +195,10 @@ if AIIS:
         'dishwasher': [0.65, 0.75, 0.595],
         'dishwasher_table': [0.65, 0.75, 0.42],
         'cabinet': [0.9, 0.46, 0.66],
-        'shelf': [0.765, 0.357, 0.805],
-        'shelf_1f': [0.765, 0.357, 0.855 + 0.025],
-        'shelf_2f': [0.765, 0.357, 1.15 + 0.025],
-        'shelf_3f': [0.765, 0.357, 1.4 + 0.025],
-        'shelf_4f': [0.765, 0.357, 1.4 + 0.025],
+        'grocery_shelf_1f': [0.765, 0.357, 0.805],
+        'grocery_shelf_2f': [0.765, 0.357, 1.11],
+        'grocery_shelf_3f': [0.765, 0.357, 1.4],
+        'grocery_shelf_4f': [0.765, 0.357, 1.4],
         'storage_rack': [0.445, 0.9, 0.42],
         'storage_rack_1f': [0.445, 0.9, 0.42],
         'storage_rack_2f': [0.445, 0.9, 0.88],
@@ -207,6 +216,68 @@ if AIIS:
         # final
         'final_kitchen_table': [1.505, 0.705, 0.8],
     }
+
+    OBJECT_LIST = [
+        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
+        ['cracker', 0, 5, 0], #BJKIM CHANGED OBJECT_LIST FOR JUST EXPERIMENTS.
+        ['sugar', 1, 2, 0],
+        ['jello_red', 2, 2, 0],
+        ['jello_black', 3, 2, 0],
+        ['coffee_can', 4, 2, 0],
+        ['tuna_can', 5, 2, 0],
+        ['pringles', 6, 5, 0],
+        ['mustard', 7, 2, 0],
+        ['tomato_soup', 8, 2, 0],
+        ['pear', 9, 3, 0],
+        ['peach', 10, 3, 0],
+        ['apple', 11, 3, 0],
+        ['strawberry', 12, 3, 0],
+        ['orange', 13, 3, 0],
+        ['banana', 14, 3, 0],
+        ['plum', 15, 3, 0],
+        ['lemon', 16, 3, 0],
+        ['bowl', 17, 6, 2], #17
+        ['mug', 18, 6, 0], #18
+        ['plate', 19, 6, 3], #19
+        ['knife', 20, 6, 1], #20
+        ['fork', 21, 6, 1], #21
+        ['spoon', 22, 6, 1], #22
+        ['tennis_ball', 23, 4, 0],
+        ['golf_ball', 24, 4, 0],
+        ['base_ball', 25, 4, 0],
+        ['soccer_ball', 26, 4, 0],
+        ['soft_ball', 27, 4, 0],
+        ['cube', 28, 4, 0],
+        ['dice', 29, 4, 0],
+        ['wine', 30, 1, 0],
+        ['ice_tea', 31, 1, 0],
+        ['orange_juice', 32, 1, 0],
+        ['milk', 33, 1, 0],
+        ['tropical_juice', 34, 1, 0],
+        ['juice_pack', 35, 1, 0],
+        ['cereal_red', 36, 1, 0],
+        ['cereal_yellow', 37, 1, 0],
+        ['coke', 38, 1, 0],
+        ['sponge', 39, 0, 1],
+        ['scrub', 40, 0, 0],
+        ['spam', 41, 2, 0],
+        ['shopping_bag_1', 42, 7, 0],
+        ['shopping_bag_2', 43, 7, 0],
+        ['shopping_bag_3', 44, 7, 0],
+        ['cereal_black', 45, 7, 0],
+        ['dishwasher_tablet', 46, 7, 0],
+    ]
+
+    OBJECT_TYPES = [
+        "cleaning",  # 0
+        "drink",  # 1
+        "food",  # 2
+        "fruit",  # 3
+        "toy",  # 4
+        "snack",  # 5
+        "dish",  # 6
+        "bag",  # 7
+    ]
 
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
