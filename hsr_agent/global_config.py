@@ -15,7 +15,10 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 yolo_weight_path = 'weight/test.pt'
 yolo_classnames_path = 'weight/test.cn'
 
-OBJECT_LIST = make_object_list(yolo_classnames_path)
+try:
+    OBJECT_LIST = make_object_list(yolo_classnames_path)
+except:
+    pass
 
 AIIS = True
 

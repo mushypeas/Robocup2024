@@ -19,7 +19,9 @@ from std_msgs.msg import Int16MultiArray, Float32MultiArray
 import time
 
 import sys
-from hsr_agent.global_config import *
+sys.path.append('hsr_agent')
+sys.path.append('../../hsr_agent')
+from global_config import *
 
 class Yolov7:
     def __init__(self):

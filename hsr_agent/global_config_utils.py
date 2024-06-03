@@ -58,6 +58,8 @@ def make_object_list(yolo_classname_path):
             
         OBJECT_LIST.append([idx, class_name, 0, grasping_type])
         
+    print('[Object list]')
+    print(OBJECT_LIST)
     return OBJECT_LIST
 
 if __name__ == '__main__':
