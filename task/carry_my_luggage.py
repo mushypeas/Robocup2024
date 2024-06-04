@@ -743,11 +743,11 @@ class HumanFollowing:
                 print('Tiny object. I\'ll avoid it.')
                 self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if tiny_loc == 'left':
-                    self.agent.move_rel(0.3,-0.5,self.stop_rotate_velocity//6, wait=False) ## move right is neg
+                    self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
                 else:
-                    self.agent.move_rel(0.3,0.5,-self.stop_rotate_velocity//6, wait=False)
+                    self.agent.move_rel(0.3,0.5,0, wait=False)
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
 
@@ -1699,8 +1699,24 @@ def carry_my_luggage(agent):
 
 
 
-            while not agent.move_abs_coordinate_safe(cur_track):
-                agent.move_rel(0, 0, 0, wait=True)
+            while not agent.move_abs_coordinate(cur_track):
+                human_following.escape_barrier(calc_z)
+                human_following.escape_tiny_canny()
+                while calc_z < 1700.0:
+                    human_info_ary = copy.deepcopy(human_following.human_box_list)
+                    depth = np.asarray(now_d2pc.depth)
+                    depth_slice = depth[150:330, 280:360]
+                    seg_img = human_following.seg_img[150:330, 280:360]
+                    valid_depth_mask = depth_slice > 0
+                    human_mask = (seg_img == 15) & valid_depth_mask
+                    human_y, human_x = np.where(human_mask)
+                    human_depth_values = depth_slice[human_y, human_x]
+                    if human_depth_values.size == 0:
+                        break
+                    min_index = np.argmin(human_depth_values)
+                    min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                    human_seg_pos = [min_human_x, min_human_y]
+                    twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("retry")
                 rospy.sleep(4)
             # rospy.sleep(0.5)
