@@ -64,8 +64,8 @@ class STrack(BaseTrack):
         self.state = TrackState.Tracked
         self.is_activated = True
         self.frame_id = frame_id
-        if new_id:
-            self.track_id = self.next_id()
+        # if new_id:
+        #     self.track_id = self.next_id()
         self.score = new_track.score
 
     def update(self, new_track, frame_id):

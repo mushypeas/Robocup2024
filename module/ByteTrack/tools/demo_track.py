@@ -161,9 +161,10 @@ class Predictor(object):
         return outputs, img_info
 
 def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, human_feature, feature_on):
+    print('human_id: ', human_id)
     # tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
-    if frame_id < 100: #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
+    if frame_id < 100 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
         height, width, _ = ros_img.shape
         bar_width = width // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
         ros_img[:, :bar_width] = 0
@@ -181,10 +182,13 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+            print('Target index: ', tid)
             vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
             if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
                 if tid == human_id:
                     found_prev_human = True
+                    print('Found prev human')
+                    print('Target index: ', tid)
                     target_tlwh = tlwh
                     target_score = t.score
                     target_feature = human_feature
@@ -193,7 +197,16 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
                 online_scores.append(t.score)
 
 
-        if human_id == -1:
+                if not found_prev_human:
+                    print("not found prev human")
+                    # if len(online_targets) == 0:
+                    human_id = tid
+                    target_feature = None
+                    target_score = None
+                    target_tlwh = None
+
+
+        if human_id == -1: ##initialize
             random_target = online_targets[0]
             x, y, w, h = int(random_target.tlwh[0]), int(random_target.tlwh[1]), int(random_target.tlwh[2]), int(random_target.tlwh[3])
             human_reid = HumanId()
@@ -206,13 +219,6 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
             target_tlwh = random_target.tlwh
 
 
-        elif not found_prev_human:
-            print("not found prev human")
-            # if len(online_targets) == 0:
-            human_id = None
-            target_feature = None
-            target_score = None
-            target_tlwh = None
 
 
 

@@ -289,7 +289,7 @@ class OnlineTracker(object):
         for ilost, idet in matches:
             track = self.lost_stracks[ilost]  # type: STrack
             det = detections[idet]
-            track.re_activate(det, self.frame_id, image, new_id=not self.use_refind)
+            track.re_activate(det, self.frame_id, image, new_id=False)
             refind_stracks.append(track)
 
         # remaining tracked

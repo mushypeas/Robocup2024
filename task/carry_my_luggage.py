@@ -192,6 +192,21 @@ class HumanFollowing:
         data_list = data.data
         if data_list[0] == -1:
             self.human_box_list = [None]
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
+            print("There is no human box")
         else:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
                                   np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
@@ -357,7 +372,7 @@ class HumanFollowing:
             
 
 
-    def check_human_pos(self, human_box_list, location=False):
+    def check_human_pos(self, human_box_list, location=True):
         x = human_box_list[1][0]
         y = human_box_list[1][1]
         w = human_box_list[1][2]
@@ -408,7 +423,7 @@ class HumanFollowing:
                 # self.angle_queue.append(1)
                 return 'rrr'   
 
-        if center[1] < 0 or center[1] > 640:
+        if center[1] < -40 or center[1] > 680:
             return True # stop
 
         return False # pass
@@ -446,7 +461,10 @@ class HumanFollowing:
         _depth = _depth[_depth != 0]
         print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
-            _depth = np.min(_depth)
+            _depth = np.partition(_depth, 40)
+            _depth = np.mean(_depth)
+
+            # _depth = np.min(_depth)
             masked_depth = np.ma.masked_equal(origin_depth, 0)
             min_index = np.argmin(masked_depth)
             print("min_index : ", min_index)
@@ -665,6 +683,12 @@ class HumanFollowing:
             rospy.sleep(1)
 
     def escape_tiny_canny(self):
+
+        x = self.human_box_list[1][0]
+        y = self.human_box_list[1][1]
+        w = self.human_box_list[1][2]
+        h = self.human_box_list[1][3]
+        center = [y + int(h/2), x + int(w/2)] # (y,x)
         contours = self.contours
 
         tiny_exist = False
@@ -715,8 +739,9 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and last_calc_z > 1000:
-                print('I\'ll avoid it.')
+            if tiny_exist and last_calc_z > 1000 and center[1] > 180 and center[1] < 500:
+                print('Tiny object. I\'ll avoid it.')
+                self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if tiny_loc == 'left':
                     self.agent.move_rel(0.3,-0.5,self.stop_rotate_velocity//6, wait=False) ## move right is neg
                     rospy.sleep(3)
@@ -827,7 +852,7 @@ class HumanFollowing:
                 print("lets go to the last human position for just one time")
 
                 target_xyyaw = self.last_human_pos
-                self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=True)
+                self.agent.move_rel(0, 0, target_xyyaw[2]*1.5, wait=True)
                 self.last_chance = 0
             return False
         else:
@@ -879,37 +904,37 @@ class HumanFollowing:
             # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
             if twist.linear.x == 0 and twist.angular.z == 0:
                 # change angular.z
-                loc = self.check_human_pos(human_info_ary, location=False)
+                loc = self.check_human_pos(human_info_ary, location=True)
                 if loc == 'lll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
                     # +가 왼쪽으로 돌림
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity*1.5, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'll':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'l':
                     print("left")
                     # twist.angular.z = -self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+                    self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'r':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'rr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'rrr':
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
-                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                    self.agent.move_rel(0, 0, -self.stop_rotate_velocity*1.5, wait=True)
                     # rospy.sleep(.5)
 
                 if self.stt_destination(self.stt_option, calc_z):
