@@ -237,6 +237,7 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 1.57])
+        return arm_lift_joint # added by bjkim 5th june
 
 
 

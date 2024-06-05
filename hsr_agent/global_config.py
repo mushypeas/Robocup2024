@@ -12,8 +12,8 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/test.pt'
-yolo_classnames_path = 'weight/test.cn'
+yolo_weight_path = 'weight/best_0704.pt'
+yolo_classnames_path = 'weight/best_0704.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
@@ -58,9 +58,10 @@ if AIIS:
 
         'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
         'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
-        'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
-        'rack_close_position2': [1.6463, -0.9664, -1.5655],
-        'rack_close_position3': [1.6434, -0.9569, -1.9500],
+        'rack_close_position1': [2.0321, -0.9474, -1.5822], #bjkim 0512
+        'rack_close_position2': [1.6463, -0.9464, -1.5655],
+        'rack_close_position3': [1.6434, -0.9469, -1.9500],
+        'rack_open_position1': [2.6089, -1.6472, 3.039],
 
 
         # receptionist
