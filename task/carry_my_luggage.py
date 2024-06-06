@@ -1436,7 +1436,7 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.5
-    pose_save_time_period = 7
+    pose_save_time_period = 3
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
@@ -1699,7 +1699,7 @@ def carry_my_luggage(agent):
 
 
 
-            while not agent.move_abs_coordinate(cur_track):
+            while not agent.move_abs_coordinate(cur_track, wait=False):
                 human_following.escape_barrier(calc_z)
                 human_following.escape_tiny_canny()
                 while calc_z < 1700.0:
@@ -1718,8 +1718,9 @@ def carry_my_luggage(agent):
                     human_seg_pos = [min_human_x, min_human_y]
                     twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("retry")
-                rospy.sleep(4)
+                rospy.sleep(1)
             # rospy.sleep(0.5)
+            rospy.sleep(3)
             print('go to arena')
 
 
