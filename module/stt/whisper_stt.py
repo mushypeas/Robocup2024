@@ -1,40 +1,72 @@
-import rospy
-import numpy as np
-import io
-from scipy.io.wavfile import write
-from std_msgs.msg import Float32, Float32MultiArray
-from .codebook_parser import parser
+from std_msgs.msg import Float32
 from playsound import playsound
-import time
-import torch
+import pyaudio
 import whisper
-
-
-# Request Publish
-pub = rospy.Publisher('/mic_request', Float32, queue_size=10)
+import wave
 
 name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
 drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
 yesno_list = ['yes', 'no']
 
-def stt_client_hsr_mic(sec=5, mode=None):
+def record(sec=5, filename="temp_recording.wav"):
+    # Parameters for audio recording
+    FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
+    CHANNELS = 1  # Number of channels
+    RATE = 16000  # Sample rate, Whisper models often use 16kHz
+    CHUNK = 1024  # Chunk size
 
-    st = time.time()
+    # Initialize pyaudio
+    audio = pyaudio.PyAudio()
+
+    # Open stream
+    stream = audio.open(format=FORMAT,
+                        channels=CHANNELS,
+                        rate=RATE,
+                        input=True,
+                        frames_per_buffer=CHUNK)
+
+    print("Recording...")
+
+    frames = []
+
+    # Record audio
+    for _ in range(int(RATE / CHUNK * sec)):
+        data = stream.read(CHUNK)
+        frames.append(data)
+
+    print("Finished recording.")
+
+    # Stop and close the stream
+    stream.stop_stream()
+    stream.close()
+    audio.terminate()
+
+    # Save to a temporary WAV file
+    with wave.open(filename, 'wb') as wf:
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(audio.get_sample_size(FORMAT))
+        wf.setframerate(RATE)
+        wf.writeframes(b''.join(frames))
+
+    return filename
+
+
+def stt_client_hsr_mic(sec=3):
     topic = Float32(); topic.data = sec
-    while time.time() - st <= 0.1:
-        pub.publish(topic)
     playsound('./Tools/xtioncam_capture/ding_3x.mp3')
-    rospy.loginfo('record start')
-    stream = rospy.wait_for_message('/mic_record', Float32MultiArray)
-    rospy.loginfo('record end')
-    content = np.array(stream.data, dtype=np.float32)
+    print('Record start')
+    
+    wave_file = record(sec)
+    
+    print('Record end')
+    
     model = whisper.load_model("base.en")
-    result = model.transcribe(content)
-    print(result["text"])
+    result = model.transcribe(audio=wave_file, verbose=True)
+    
+    return result["text"]
+
 
 if __name__=="__main__":
-    rospy.init_node('stt_server_mic', anonymous=False, disable_signals=True)
-
-    while not rospy.is_shutdown():
+    while True:
         result = stt_client_hsr_mic()
         print(result)
