@@ -2,7 +2,6 @@ import rospy
 import numpy as np
 from std_srvs.srv import Empty, EmptyRequest
 import cv2
-from utils.distancing import distancing, distancing_horizontal
 from hsr_agent.agent import Agent
 
 class StoringGroceries:
@@ -26,7 +25,8 @@ class StoringGroceries:
         self.dist_to_table = 0.85
         self.dist_to_shelf = 1.22
         self.place_dist = 0.07
-        self.new_category_dist = (self.shelf_width * 0.9 - self.place_dist * 2) / 2
+        self.new_category_dist = (self.agent.table_dimension['grocery_shelf_1f'][0] * 0.9
+                                - self.place_dist * 2) / 2
 
         # !!! Hard-Coded Offsets !!!
         self.pick_front_bias = [0.03, 0.00, -0.03] # [x, y, height]
