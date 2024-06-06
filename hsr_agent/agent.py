@@ -25,6 +25,7 @@ from open3d import geometry
 # stt
 from module.stt.stt_client import stt_client
 from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+from module.stt.whisper_stt import whisper_stt
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -415,8 +416,9 @@ class Agent:
 
     # stt
     def stt(self, sec=5., mode=None):
-        return stt_client_hsr_mic(sec=sec, mode=mode)
+        # return stt_client_hsr_mic(sec=sec, mode=mode)
         # return stt_client(sec=sec, mode=mode)
+        return whisper_stt(sec=sec)
         pass
 
     # gripper

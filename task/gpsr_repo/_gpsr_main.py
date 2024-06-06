@@ -11,6 +11,9 @@ import torch
 import open_clip
 from PIL import Image
 import cv2
+import numpy as np
+
+from std_msgs.msg import Int16MultiArray
 
 objects_file_path = 'CompetitionTemplate/objects/test.md'
 objects_data = readData(objects_file_path)
@@ -86,7 +89,8 @@ def detectPersonCount(img, clip_model, preprocess, tokenizer, device, type=None,
 class GPSR:
     def __init__(self, agent):
         self.agent = agent
-        
+        rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
+
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
             "takeObjFromPlcmt": takeObjFromPlcmt,
@@ -134,6 +138,9 @@ class GPSR:
         
         # CLIP
         self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+    
+    def _knee_pose_callback(self, msg):
+        rospy.loginfo(msg.data)
 
     ### HELP Functions ###
         
@@ -201,14 +208,11 @@ class GPSR:
         return Image.fromarray(cv2.cvtColor(self.agent.rgb_img, cv2.COLOR_RGB2BGR))
         
     def hear(self, len=5.):
-        userSpoken, _ = self.agent.stt(len)
-        return userSpoken
-        
-    def hear(self):
-        userSpoken, _ = self.agent.stt()
+        userSpoken = self.agent.stt(len)
         return userSpoken
         
     def talk(self, talk):
+        ### TODO: cluster talk into commands (5)
         if talk == 'something about yourself':
             self.say('I am a robot designed to help people in their daily lives')
             
@@ -225,16 +229,16 @@ class GPSR:
             self.say('My team name is Tidy Boy')
 
     def quiz(self): 
-        self.say("I'm ready to hear your question")
-        rospy.sleep(2.5)
-        userSpeech = self.hear(10.)
+        self.say("Ask question after the ding sound")
+        rospy.sleep(3)
+        userSpeech = self.hear(7.)
         robotAns = chat(userSpeech)
         self.say(robotAns)
         # [TODO] improve how the quiz can be answered
             
     # TODO
     def getName(self):
-        self.say("Please say your name after ding sound", show_display=True)
+        self.say("Please say your name after ding sound")
         rospy.sleep(3)
         userName = self.hear()
         # [TODO] improve how the name can be extracted

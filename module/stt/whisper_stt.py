@@ -51,7 +51,7 @@ def record(sec=5, filename="temp_recording.wav"):
     return filename
 
 
-def stt_client_hsr_mic(sec=3):
+def whisper_stt(sec=5):
     topic = Float32(); topic.data = sec
     playsound('./Tools/xtioncam_capture/ding_3x.mp3')
     print('Record start')
@@ -68,5 +68,5 @@ def stt_client_hsr_mic(sec=3):
 
 if __name__=="__main__":
     while True:
-        result = stt_client_hsr_mic()
+        result = whisper_stt(3)
         print(result)

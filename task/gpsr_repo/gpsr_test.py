@@ -12,26 +12,21 @@ def gpsr_test(agent):
         if cmd == "exit":
             break
 
-        if cmd == "pick":
-            item_name = input("What item do you want to pick?: ")
-            g.pick(item_name)
+        if cmd == "img":
+            g.img().show()
 
         if cmd == "hear":
             userSpoken = g.hear()
             print(f"user said: {userSpoken}")
 
         if cmd == "talk":
-            g.talk("the time")
-            rospy.sleep(1)
-            g.talk("what day is today")
-            rospy.sleep(1)
-            g.talk("what day is tomorrow")
-
-        if cmd == "img":
-            g.img().show()
+            talk_subject = input("What talk do you want?: ")
+            g.talk(talk_subject)
 
         if cmd == "quiz":
             g.quiz()
+
+        ### Perfectly working commands ###
 
         if cmd == "getName":
             name = g.getName()
@@ -54,3 +49,7 @@ def gpsr_test(agent):
 
         if cmd == "identifyStand":
             g.identifyByGestPose('standing')
+
+        if cmd == "pick":
+            item_name = input("What item do you want to pick?: ")
+            g.pick(item_name)
