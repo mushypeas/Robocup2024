@@ -1,6 +1,7 @@
 .idea/
 *.pyc
 *.pt
+*.cn
 token.txt
 tokens.txt
 Tools/BoundingBox_Tool/Images/storing_groceries/
