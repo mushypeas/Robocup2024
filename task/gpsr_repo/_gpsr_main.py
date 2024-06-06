@@ -204,6 +204,10 @@ class GPSR:
         userSpoken, _ = self.agent.stt(len)
         return userSpoken
         
+    def hear(self):
+        userSpoken, _ = self.agent.stt()
+        return userSpoken
+        
     def talk(self, talk):
         if talk == 'something about yourself':
             self.say('I am a robot designed to help people in their daily lives')
@@ -219,7 +223,7 @@ class GPSR:
         
         elif talk == 'your teams name':
             self.say('My team name is Tidy Boy')
-            
+
     def quiz(self): 
         self.say("I'm ready to hear your question")
         rospy.sleep(2.5)

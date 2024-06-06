@@ -13,7 +13,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/test.pt'
+yolo_weight_path = 'weight/best_0704.pt'
 yolo_classnames_path = 'weight/test.cn'
 
 # YOLO classnames load
@@ -33,7 +33,6 @@ if AIIS:
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
-        'breakfast_table': [3.4552,-0.6194,-1.5674],
         'table_front': [6.6449, 0.3005, 0.0422],
         'table_side': [7.3455, -1.0624, 1.551],
         'table_back': [8.6478, 0.0623, 3.1025],
@@ -48,16 +47,9 @@ if AIIS:
         'grocery_shelf': [-1.091, -0.1197, 1.6165],
 
         # serve breakfast
-        'breakfast_table_testday' : [6.3927, -1.0289, -0.0093], #mjgu 240505
-        'testday_breakfast_table_nearby' : [1.3235, -0.0452, 1.5803],
-        # 필요할 경우, (의자 등) 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
-        'kitchen_table_testday' : [5.0999, 0.5681, 0.0124], #mjgu 240505
-
-        'initial_position' : [0.9951, -3.7974, 1.5979], # mjgu 240504 
-        'breakfast_table': [1.7478, -1.2796, 0.0], #mjgu
-        'kitchen_table_front_far' : [0.9951, -2.7733, 0.0088], #mjgu 240504
-        'kitchen_table_front' : [1.7258, -2.8179, 0.0302], #mjgu 240504
-        'breakfast_table_front': [1.4045, -1.3402, 0.0091], #bjkim2 [1.6, -1.2796, 0.0]
+        'breakfast_table': [5.1527, 0.2285, 0.0], # mjgu 240530
+        'kitchen_table' : [6.086, -1.1229, 0.0], # mjgu 240530
+        # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
         # clean the table
 
@@ -70,18 +62,21 @@ if AIIS:
 
         # receptionist
         # 'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
-        'cloth_scan' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'cloth_scan' : [3.1471, 0.1392, -3.0298], # 0505
+        'cloth_scan': [5.3575, -0.8901, -1.5689], # 0531
         # 'cloth_scan' : [1.0330, -2.2140, -1.4835], # AIIS
         # 'handle_front': [1.5502, 0.0104, -3.1301],
         # 'door_bypass': [2.507, 0.1598, 1.535],
         # 'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
         # 'seat_scan': [1.3810, 2.2950, 0.0445], # AIIS
-        'seat_scan' : [7.195, -0.8567, -0.9396], # 0505
+        # 'seat_scan' : [7.195, -0.8567, -0.9396], # 0505
+        'seat_scan' : [7.1866, -0.8539, -0.8736], # 0514
         # 'seat_scan_bypass': [1.8008, 0.0949, -2.2551],  # [7.4416, 4.5881, -1.5132] far bypass
         'seat_scan_bypass': [7.1009, -0.8733, 2.8402], # 0505
         # 'start': [2.0208, -1.3355, 2.3405],
         # 'start': [1.7869, 0.0919, -3.1073], # AIIS-safe-cloth
-        'start' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'start' : [3.1471, 0.1392, -3.0298], # 0505\
+        'start': [5.3575, -0.8901, -1.5689], # 0531
         # 'start': [-1.7020, -1.3990, -3.0880], # AIIS
         # 'start_receptionist': [-1.7020, -1.3990, -3.0880], # AIIS
 
@@ -108,7 +103,9 @@ if AIIS:
         'kitchen_search': [3.2691, 0.3223, -2.1086],
         'living_room_search': [5.932, -0.357, -0.4455],
         'study_search': [5.2668, 1.273, 2.5436],
-        'bedroom_search': [6.4953, 3.4738, -0.6583],
+        # 'bedroom_search': [6.4953, 3.4738, -0.6583],
+        'bedroom_search': [6.9826, 3.0422, -0.6487],
+
 
         # AIIS
         # 'shoe_warning': [1.0093, -2.4509, -1.5534],
@@ -122,15 +119,14 @@ if AIIS:
         'shoe_warning': [3.1471, 0.1392, -3.0298],
         'bin_littering': [2.6641, -1.6283, 3.1113],
         'bar_drink': [2.4819, -2.6883, 0.6981],
-        'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        #'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        'bedroom_doublecheck' : [6.9826, 3.0422, -0.6487],
         # 'study_search_reverse': [-0.0189, 0.2843, 0.0333],
-        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033],
+        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033], #수정필요
 
 
         # gpsr
-
         'kitchen_table': [2.1348, -2.7771, -0.0066], 
-
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
@@ -172,9 +168,6 @@ if AIIS:
 
 
     TABLE_DIMENSION = {
-        # testday용 추가 - mjgu 240504
-        'kitchen_table_testday': [0.8, 0.8, 0.715],
-        'breakfast_table_testday': [0.6, 0.4, 0.625],        
         # width, depth, height
 
         'kitchen_table': [0.55, 0.75, 0.730],

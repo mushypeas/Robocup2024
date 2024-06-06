@@ -12,6 +12,10 @@ def gpsr_test(agent):
         if cmd == "exit":
             break
 
+        if cmd == "pick":
+            item_name = input("What item do you want to pick?: ")
+            g.pick(item_name)
+
         if cmd == "hear":
             userSpoken = g.hear()
             print(f"user said: {userSpoken}")

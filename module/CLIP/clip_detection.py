@@ -38,6 +38,32 @@ def detectTopClothe(img, clip_model, preprocess, tokenizer, device):
     return top_clothe, top_clothe_prob
 
 
+<<<<<<< HEAD
+        # GPU
+        inputs['input_ids'] = inputs['input_ids'].to(self.device)
+        inputs['attention_mask'] = inputs['attention_mask'].to(self.device)
+        inputs['pixel_values'] = inputs['pixel_values'].to(self.device)
+
+        outputs = self.model(**inputs)
+
+        logits_per_image = outputs.logits_per_image  # this is the image-text similarity score
+        # probs = logits_per_image.softmax(dim=1).detach().numpy()  # we can take the softmax to get the label probabilities
+
+        # GPU
+        probs = logits_per_image.softmax(dim=1).detach().cpu().numpy()
+
+        # For testing on the HSR
+        if self.mode == "HSR":
+            prob = probs[0].round(3)
+            positive_prob = np.sum(prob[:self.positive_index], dtype=np.float64).round(3) 
+            negative_prob = np.sum(prob[self.positive_index:self.negative_index], dtype=np.float64).round(3) 
+            neutral_prob = np.sum(prob[self.negative_index:], dtype=np.float64).round(3)
+            # print(f'PROBS: {prob} \n    {"Positive" if (positive_prob + neutral_prob) > negative_prob else "Negative"}')
+            # print(f'Positive prob: {positive_prob.round(3)}    Negative prob: {negative_prob.round(3)}    Neutral prob: {neutral_prob.round(3)}')
+            # return positive_prob, negative_prob, neutral_prob
+            print(prob)
+            return prob
+=======
 def detectTopColor(img, clip_model, preprocess, tokenizer, device):
     color_list = ["blue", "yellow", "black", "white", "red", "orange", "gray"]
     prompt_prefix = "A photo of person who is wearing a top colored "
@@ -50,6 +76,7 @@ def detectTopColor(img, clip_model, preprocess, tokenizer, device):
         text_features = clip_model.encode_text(tokenized_prompt)
         image_features /= image_features.norm(dim=-1, keepdim=True)
         text_features /= text_features.norm(dim=-1, keepdim=True)
+>>>>>>> master
         
         text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
         
