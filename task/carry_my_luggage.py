@@ -499,7 +499,7 @@ class HumanFollowing:
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
-            if (calc_z!=0 and _depth < 1.0 and (_depth< ((calc_z/ 1000.0)-0.8) or self.agent.dist <((calc_z/1000.0)-0.8) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.0 and (_depth< ((calc_z/ 1000.0)-0.6) or self.agent.dist <((calc_z/1000.0)-0.6) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -694,13 +694,23 @@ class HumanFollowing:
         tiny_exist = False
         tiny_loc = None
 
+
+
+        seg_img = human_following.seg_img[:, :]
+
+        # Create a mask for depth values greater than 0 and seg_img equal to 15
+        human_mask = (seg_img == 15)
+
+        human_y, human_x = np.where(human_mask)
+        human_y_max = np.max(human_y)
+
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 400 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 1000 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                if y > 420 and x > 240 and x < 400:
+                if y > human_y_max and y > 440 and x > 240 and x < 400:
                     if x < 320:
                         tiny_loc == 'left'
                     else:
@@ -732,14 +742,13 @@ class HumanFollowing:
 
 
 
-
 # Convert to 3-channel
         
         if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and (((self.human_box_list[0] is not None) and (center[1] > 180 or center[1] < 500)) or (self.human_box_list[0] is None)):
+            if tiny_exist and self.agent.dist > 1.0 :
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
                 self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
@@ -1433,6 +1442,7 @@ def head_map_cb(config):
 #             print(f"Error terminating process {process.pid}: {e}")
 
 
+
 def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
@@ -1573,7 +1583,6 @@ def carry_my_luggage(agent):
     rospy.sleep(3)
     # stop feature extraction
     demotrack_pub.publish(String('off_feature'))
-    byte_process.terminate()
 
 
 
@@ -1598,116 +1607,72 @@ def carry_my_luggage(agent):
     if not map_mode:
         track_queue = human_following.track_queue  # get trace of the robot
 
-        for i in range(len(track_queue)):
-        # len(track_queue):
+        for i in range(len(track_queue)): # 돌아가는 길
             cur_track = track_queue[len(track_queue)-i-1]
-            # coordinate = track_queue.pop()
-
             calc_z= 2000
 
-            human_info_ary = copy.deepcopy(human_following.human_box_list)
             depth = np.asarray(now_d2pc.depth)
-
-            depth_slice = depth[150:330, 280:360]
-            seg_img = human_following.seg_img[150:330, 280:360]
-
-            # Create a mask for depth values greater than 0 and seg_img equal to 15
+            depth_slice = depth[:, :]
+            seg_img = human_following.seg_img[:, :]
             valid_depth_mask = depth_slice > 0
             human_mask = (seg_img == 15) & valid_depth_mask
-
-            # Get the coordinates where both masks are true
             human_y, human_x = np.where(human_mask)
-
-            # Extract the depth values for these coordinates
             human_depth_values = depth_slice[human_y, human_x]
-
-            # Find the index of the minimum depth value
-
-            if human_depth_values.size != 0:
+            if human_depth_values.size != 0: # 사람이 있으면
                 min_index = np.argmin(human_depth_values)
-
-            # if min_index is not None:
-
-                # Get the corresponding coordinates in the original image
-                min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
-
-
-
-
-                # seg_img = human_following.seg_img
-                # seg_img = seg_img[150:330, 280:360]
-                # valid_depth_mask = seg_img > 0
-                # human_mask = seg_img == 15 & valid_depth_mask
-                # human_y, human_x = np.where(human_mask)
-
-                # human_depth_values = depth[150:330, 280:360][human_y, human_x]
-                # min_index = np.argmin(human_depth_values)
-
-                # min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                min_human_y, min_human_x = human_y[min_index], human_x[min_index]
                 human_seg_pos = [min_human_x, min_human_y]
-
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("seg human detected, calc_z : ", calc_z)
 
-                while calc_z < 1700.0:
+                while calc_z < 1700.0: #1.7m내에 사람 있는 동안 일단 정지
                     rospy.sleep(3)
                     
                     human_info_ary = copy.deepcopy(human_following.human_box_list)
                     depth = np.asarray(now_d2pc.depth)
 
-                    depth_slice = depth[150:330, 280:360]
-                    seg_img = human_following.seg_img[150:330, 280:360]
+                    depth_slice = depth[:, :]
+                    seg_img = human_following.seg_img[:, :]
 
-                    # Create a mask for depth values greater than 0 and seg_img equal to 15
                     valid_depth_mask = depth_slice > 0
                     human_mask = (seg_img == 15) & valid_depth_mask
 
-                    # Get the coordinates where both masks are true
                     human_y, human_x = np.where(human_mask)
 
-                    # Extract the depth values for these coordinates
                     human_depth_values = depth_slice[human_y, human_x]
-
-                    if human_depth_values.size == 0:
+                    if human_depth_values.size == 0: #사람 없으면 탈출
                         break
-
-
                     min_index = np.argmin(human_depth_values)
-
-                # if min_index is not None:
-
-                    # Get the corresponding coordinates in the original image
-                    min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
-
-
-
-
-                    # seg_img = human_following.seg_img
-                    # seg_img = seg_img[150:330, 280:360]
-                    # valid_depth_mask = seg_img > 0
-                    # human_mask = seg_img == 15 & valid_depth_mask
-                    # human_y, human_x = np.where(human_mask)
-
-                    # human_depth_values = depth[150:330, 280:360][human_y, human_x]
-                    # min_index = np.argmin(human_depth_values)
-
-                    # min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                    min_human_y, min_human_x = human_y[min_index], human_x[min_index]
                     human_seg_pos = [min_human_x, min_human_y]
                     twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
-            human_following.escape_barrier(calc_z)
+            print("before escape barrier, current calc_z: ", calc_z)
+            human_following.escape_barrier(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
             # human_following.escape_tiny()
             human_following.escape_tiny_canny()
 
 
 
-            while not agent.move_abs_coordinate(cur_track, wait=False):
+            while not agent.move_abs_coordinate(cur_track, wait=False): # 이제 이동, 뭔가 막혀서 못갔다면 while
+                depth = np.asarray(now_d2pc.depth)
+                depth_slice = depth[:, :]
+                seg_img = human_following.seg_img[:, :]
+                valid_depth_mask = depth_slice > 0
+                human_mask = (seg_img == 15) & valid_depth_mask
+                human_y, human_x = np.where(human_mask)
+                human_depth_values = depth_slice[human_y, human_x]
+                if human_depth_values.size == 0:
+                    continue
+                min_index = np.argmin(human_depth_values)
+                min_human_y, min_human_x = human_y[min_index], human_x[min_index]
+                human_seg_pos = [min_human_x, min_human_y]
+                twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 human_following.escape_barrier(calc_z)
                 human_following.escape_tiny_canny()
-                while calc_z < 1700.0:
-                    human_info_ary = copy.deepcopy(human_following.human_box_list)
+                while calc_z < 1700.0: #사람이 다시 1.7m 내에 있다면 정지
                     depth = np.asarray(now_d2pc.depth)
-                    depth_slice = depth[150:330, 280:360]
-                    seg_img = human_following.seg_img[150:330, 280:360]
+                    depth_slice = depth[:, :]
+                    seg_img = human_following.seg_img[:, :]
                     valid_depth_mask = depth_slice > 0
                     human_mask = (seg_img == 15) & valid_depth_mask
                     human_y, human_x = np.where(human_mask)
@@ -1715,7 +1680,7 @@ def carry_my_luggage(agent):
                     if human_depth_values.size == 0:
                         break
                     min_index = np.argmin(human_depth_values)
-                    min_human_y, min_human_x = human_y[min_index] + 150, human_x[min_index] + 280
+                    min_human_y, min_human_x = human_y[min_index], human_x[min_index]
                     human_seg_pos = [min_human_x, min_human_y]
                     twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("retry")
@@ -1741,8 +1706,8 @@ def carry_my_luggage(agent):
                 break
 
     seg_process.terminate()
-    # yolo_process.terminate()
-    # terminate_all_processes()
+    byte_process.terminate()
+
 
 
     agent.say("Finnish carry my luggage", show_display=True)
