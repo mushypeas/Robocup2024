@@ -649,68 +649,68 @@ class DrinkDetection:
         return False
 
     
-    def detect_no_drink_hand(self):
-        self.agent.pose.head_tilt(0)
-        rospy.sleep(0.5)
-        try:
-            for human_hand in self.human_hand_poses:  # 사람별
-                print("human found")
-                l_hand_x, l_hand_y = human_hand[0]
-                r_hand_x, r_hand_y = human_hand[1]
+    # def detect_no_drink_hand(self):
+    #     self.agent.pose.head_tilt(0)
+    #     rospy.sleep(0.5)
+    #     try:
+    #         for human_hand in self.human_hand_poses:  # 사람별
+    #             print("human found")
+    #             l_hand_x, l_hand_y = human_hand[0]
+    #             r_hand_x, r_hand_y = human_hand[1]
 
-                human_coord = [(l_hand_x + r_hand_x) // 2,
-                               (l_hand_y + r_hand_y) // 2]
+    #             human_coord = [(l_hand_x + r_hand_x) // 2,
+    #                            (l_hand_y + r_hand_y) // 2]
 
-                _pc = self.agent.pc.reshape(480, 640)
-                pc_np = np.array(_pc.tolist())[:, :, :3]
-                human_pc = pc_np[human_coord[1], human_coord[0]]
-                human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map',
-                                                                              human_pc)
-                print('test' + str(human_coord_in_map))
-                if not self.agent.arena_check.is_in_arena([human_coord_in_map[0], human_coord_in_map[1]]):
-                    print("[RULE 4] people out of arena")
-                    continue
+    #             _pc = self.agent.pc.reshape(480, 640)
+    #             pc_np = np.array(_pc.tolist())[:, :, :3]
+    #             human_pc = pc_np[human_coord[1], human_coord[0]]
+    #             human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map',
+    #                                                                           human_pc)
+    #             print('test' + str(human_coord_in_map))
+    #             if not self.agent.arena_check.is_in_arena([human_coord_in_map[0], human_coord_in_map[1]]):
+    #                 print("[RULE 4] people out of arena")
+    #                 continue
 
-                drink_check = False
+    #             drink_check = False
 
-                for _ in range(0, 5):
-                    if drink_check:
-                        break
-                    for bbox in self.agent.yolo_module.yolo_bbox:
-                        # drink
-                        if self.agent.yolo_module.find_type_by_id(bbox[4]) in self.drink_list:
-                            cent_x, cent_y = bbox[0], bbox[1]
-                            # print(l_hand_x, l_hand_y, r_hand_x, r_hand_y, cent_x, cent_y)
-                            # left hand check
-                            if (l_hand_x - self.thre <= cent_x <= l_hand_x + self.thre) and (
-                                    l_hand_y - self.thre <= cent_y <= l_hand_y + self.thre):
-                                drink_check = True
-                                print('check')
-                                break
-                            # right hand check
-                            if (r_hand_x - self.thre <= cent_x <= r_hand_x + self.thre) and (
-                                    r_hand_y - self.thre <= cent_y <= r_hand_y + self.thre):
-                                drink_check = True
-                                print('check')
-                                break
-                    rospy.sleep(0.2)
+    #             for _ in range(0, 5):
+    #                 if drink_check:
+    #                     break
+    #                 for bbox in self.agent.yolo_module.yolo_bbox:
+    #                     # drink
+    #                     if self.agent.yolo_module.find_type_by_id(bbox[4]) in self.drink_list:
+    #                         cent_x, cent_y = bbox[0], bbox[1]
+    #                         # print(l_hand_x, l_hand_y, r_hand_x, r_hand_y, cent_x, cent_y)
+    #                         # left hand check
+    #                         if (l_hand_x - self.thre <= cent_x <= l_hand_x + self.thre) and (
+    #                                 l_hand_y - self.thre <= cent_y <= l_hand_y + self.thre):
+    #                             drink_check = True
+    #                             print('check')
+    #                             break
+    #                         # right hand check
+    #                         if (r_hand_x - self.thre <= cent_x <= r_hand_x + self.thre) and (
+    #                                 r_hand_y - self.thre <= cent_y <= r_hand_y + self.thre):
+    #                             drink_check = True
+    #                             print('check')
+    #                             break
+    #                 rospy.sleep(0.2)
 
-                # detect no drink
-                if not drink_check:
-                    print('Found someone not holding a drink!')
-                    # show image (if no drinks)
-                    # self.show_image(l_hand_x, l_hand_y, r_hand_x, r_hand_y)
+    #             # detect no drink
+    #             if not drink_check:
+    #                 print('Found someone not holding a drink!')
+    #                 # show image (if no drinks)
+    #                 # self.show_image(l_hand_x, l_hand_y, r_hand_x, r_hand_y)
 
-                    # self.no_drink_human_coord = [(l_hand_x + r_hand_x)//2, (l_hand_y + r_hand_y)//2]
-                    # modified by lsh... 뎁스로 할때 가끔씩 이상한 위치로 가는 버그가 있어서 베이스링크 기준으로 고쳐봅니다.
-                    self.no_drink_human_coord = human_coord_in_map
+    #                 # self.no_drink_human_coord = [(l_hand_x + r_hand_x)//2, (l_hand_y + r_hand_y)//2]
+    #                 # modified by lsh... 뎁스로 할때 가끔씩 이상한 위치로 가는 버그가 있어서 베이스링크 기준으로 고쳐봅니다.
+    #                 self.no_drink_human_coord = human_coord_in_map
 
-                    return True
-        except:
-            print('error in detect_no_drink_hand')
-            return False
+    #                 return True
+    #     except:
+    #         print('error in detect_no_drink_hand')
+    #         return False
 
-        return False
+    #     return False
 
     def clarify_violated_rule(self):
         # go to the offender
@@ -741,7 +741,8 @@ class DrinkDetection:
         self.agent.pose.head_tilt(5)
         self.agent.say("Hold the drink \ninfront of me to double check", show_display=True)
         rospy.sleep(5)
-        if self.detect_no_drink_hand():
+        # if self.detect_no_drink_hand():
+        if not self.find_drink():
             self.agent.pose.head_tilt(20)
             self.agent.say("You did not pick up a drink", show_display=True)
             rospy.sleep(2)
@@ -767,10 +768,14 @@ def stickler_for_the_rules(agent):
 
     forbidden_search_location = 'bedroom_search'
 
-    break_rule_check_list = {'shoes': False,
-                             'room': False,
-                             'garbage': False,
-                             'drink': False}
+    # break_rule_check_list = {'shoes': False,
+    #                          'room': False,
+    #                          'garbage': False,
+    #                          'drink': False}
+    break_rule_check_list = {'shoes': 0,
+                             'room': 0,
+                             'garbage': 0,
+                             'drink': 0}
 
     ## params for rule 1. No shoes ##
     entrance = 'shoe_warning'
@@ -854,7 +859,8 @@ def stickler_for_the_rules(agent):
                     agent.pose.head_tilt(-15)
                     for pan_degree in [45, 0, -45]:
                         # marking forbidden room violation detection
-                        break_rule_check_list['room'] = True
+                        # break_rule_check_list['room'] = True
+                        break_rule_check_list['room'] += 1
 
                         agent.pose.head_pan(pan_degree)
                         rospy.sleep(1.5)
@@ -877,20 +883,12 @@ def stickler_for_the_rules(agent):
                 agent.pose.head_pan(pan_degree)
 
                 # [RULE 4] Compulsory hydration : tilt 0
-                if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
+                # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
+                if break_rule_check_list['drink'] < 2 and not drink_detection.find_drink():
                     # marking no drink violation detection
-                    break_rule_check_list['drink'] = True
-                # [RULE 4] Compulsory hydration : tilt 0
-                if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
-                    # marking no drink violation detection
-                    break_rule_check_list['drink'] = True
+                    # break_rule_check_list['drink'] = True
+                    break_rule_check_list['drink'] += 1
 
-                    # go to the offender and clarify what rule is being broken
-                    drink_detection.clarify_violated_rule()
-                    # ask offender to grab a drink
-                    drink_detection.ask_to_action(
-                        compulsory_hydration_bar_location)
-                    break
                     # go to the offender and clarify what rule is being broken
                     drink_detection.clarify_violated_rule()
                     # ask offender to grab a drink
@@ -899,9 +897,10 @@ def stickler_for_the_rules(agent):
                     break
 
                 # [RULE 1] No shoes : tilt -20, -40
-                if break_rule_check_list['shoes'] is False and shoe_detection.run():
+                if break_rule_check_list['shoes'] < 2 and shoe_detection.run():
                     # marking whether wearing shoes violation is detected
-                    break_rule_check_list['shoes'] = True
+                    # break_rule_check_list['shoes'] = True
+                    break_rule_check_list['shoes'] += 1
 
                     # go to the offender and clarify what rule is being broken
                     shoe_detection.clarify_violated_rule()
@@ -910,19 +909,11 @@ def stickler_for_the_rules(agent):
                     break
 
                 # [RULE 3] No littering : tilt -40
-                if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
+                if break_rule_check_list['garbage'] < 2 and no_littering.detect_garbage():
                     # marking no littering violation detection
-                    break_rule_check_list['garbage'] = True
-                # [RULE 3] No littering : tilt -40
-                if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
-                    # marking no littering violation detection
-                    break_rule_check_list['garbage'] = True
+                    # break_rule_check_list['garbage'] = True
+                    break_rule_check_list['garbage'] += 1
 
-                    # go to the offender and clarify what rule is being broken
-                    no_littering.clarify_violated_rule()
-                    # ask the offender to pick up and trash the garbage
-                    no_littering.ask_to_action(bin_location)
-                    break
                     # go to the offender and clarify what rule is being broken
                     no_littering.clarify_violated_rule()
                     # ask the offender to pick up and trash the garbage
@@ -941,130 +932,6 @@ def stickler_for_the_rules(agent):
             "If you are in my path,\nplease move to the side.", show_display=True)
         rospy.sleep(6)
 
-
-    #
-    # while True:
-    #     for idx, search_location in enumerate(search_location_list):
-    #         # case 1 : 8 min over
-    #         if time.time() - stickler_start_time > 480:
-    #             forbidden_search_start = True
-    #             break
-    #         # case 2 : 3 rule already detected
-    #         if break_rule_check_list['shoes'] and break_rule_check_list['garbage'] and break_rule_check_list['drink']:
-    #             forbidden_search_start = True
-    #             break
-    #
-    #         # move to the search location
-    #         agent.move_abs_safe(search_location)
-    #
-    #         # agent.say('I want to see you all.')
-    #         # rospy.sleep(2)
-    #
-    #         # If not forbidden scan location >> check RULE 1, 3, 4
-    #         # TODO: adjust living room pan degree & rotation position
-    #         # -> depend on search location which is dependent to Arena map
-    #         pan_degree_list = [-60, -30, 0, 30, 60]
-    #         if search_location == "living_room_search":
-    #             pan_degree_list = [90, 45, 0, -45, -90, -135, -180, -225]
-    #         elif search_location == "study_search":
-    #             pan_degree_list = [-60, -30, 30, 60]
-    #
-    #         for pan_degree in pan_degree_list:
-    #             agent.pose.head_pan(pan_degree)
-    #
-    #             # [RULE 4] Compulsory hydration : tilt 0
-    #             if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
-    #                 # marking no drink violation detection
-    #                 break_rule_check_list['drink'] = True
-    #
-    #                 # go to the offender and clarify what rule is being broken
-    #                 drink_detection.clarify_violated_rule()
-    #                 # ask offender to grab a drink
-    #                 drink_detection.ask_to_action(
-    #                     compulsory_hydration_bar_location)
-    #                 break
-    #
-    #             # [RULE 1] No shoes : tilt -20, -40
-    #             if break_rule_check_list['shoes'] is False and shoe_detection.run():
-    #                 # marking whether wearing shoes violation is detected
-    #                 break_rule_check_list['shoes'] = True
-    #
-    #                 # go to the offender and clarify what rule is being broken
-    #                 shoe_detection.clarify_violated_rule()
-    #                 # take the offender to the entrance & ask to take off their shoes
-    #                 shoe_detection.ask_to_action(entrance)
-    #                 break
-    #
-    #             # [RULE 3] No littering : tilt -40
-    #             if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
-    #                 # marking no littering violation detection
-    #                 break_rule_check_list['garbage'] = True
-    #
-    #                 # go to the offender and clarify what rule is being broken
-    #                 no_littering.clarify_violated_rule()
-    #                 # ask the offender to pick up and trash the garbage
-    #                 no_littering.ask_to_action(bin_location)
-    #                 break
-    #
-    #
-    #         # Move to another room
-    #         agent.pose.head_pan_tilt(0, 0)
-    #         agent.say("Now I'm going to\nmove to another room.",
-    #                   show_display=True)
-    #         rospy.sleep(3)
-    #         agent.say(
-    #             "If you are in my path,\nplease move to the side.", show_display=True)
-    #         rospy.sleep(4)
-    #     if forbidden_search_start:
-    #         break
-    #
-    # # go to the forbidden room
-    # agent.move_abs_safe(forbidden_room_name)
-    # # [RULE 2] Forbidden room
-    # while not break_rule_check_list['room']:
-    #     agent.pose.head_tilt(0)
-    #     rospy.sleep(1)
-    #     for pan_degree in [-60, -30, 0, 30, 60]:
-    #         agent.pose.head_pan(pan_degree)
-    #         rospy.sleep(2)
-    #
-    #         if forbidden_room.detect_forbidden_room():
-    #             # marking forbidden room violation detection
-    #             # go to the offender and clarify what rule is being broken
-    #             forbidden_room.clarify_violated_rule()
-    #
-    #             agent.say('Please leave this room empty',
-    #                       show_display=True)
-    #             rospy.sleep(2)
-    #             agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
-    #
-    #             rospy.sleep(7)
-    #
-    #             agent.say('Checking the room if empty', show_display=True)
-    #
-    #             for pan_degree in [-60, -30, 0, 30, 60]:
-    #                 break_rule_check_list['room'] = True
-    #
-    #                 agent.pose.head_pan(pan_degree)
-    #                 rospy.sleep(2)
-    #
-    #                 if forbidden_room.detect_forbidden_room():
-    #                     agent.say('Oh my god',
-    #                               show_display=True)
-    #                     rospy.sleep(2)
-    #
-    #                     agent.say('You are still here',
-    #                               show_display=True)
-    #
-    #                     rospy.sleep(2)
-    #                     agent.say('Lets leave with me')
-    #                     break
-    #
-    #             # take the offender to the other party guests
-    #             forbidden_room.ask_to_action('kitchen_search')
-    #             break
-
-# FIXME : need to handle when human_infront_coord_in_map overlaps with any furniture
 
 
 def move_human_infront(agent, axis_transform, y, x, coord=False):
