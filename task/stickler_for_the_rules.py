@@ -564,6 +564,13 @@ class DrinkDetection:
                         max(0,top_left_x-hand_thres_person):min(640,bottom_right_x+hand_thres_person)
                     ]
                 
+                human_coord = [(top_left_x + bottom_right_x) // 2,
+                               (top_left_y + bottom_right_y) // 2]
+                _pc = self.agent.pc.reshape(480, 640)
+                pc_np = np.array(_pc.tolist())[:, :, :3]
+                human_pc = pc_np[human_coord[1], human_coord[0]]
+                human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map',
+                                                                              human_pc)
 
                 cv2.imshow('crop_img', crop_img)
                 cv2.waitKey(1)
@@ -594,6 +601,8 @@ class DrinkDetection:
                 if text_probs_percent_np[0][0] > 80:
                     drink_person[human_idx] = True
                     # return True
+                else:
+                    self.no_drink_human_coord = human_coord_in_map
             count += 1
 
         if drink_person.count(False) > 0:
@@ -841,17 +850,17 @@ def stickler_for_the_rules(agent):
             for pan_degree in pan_degree_list:
                 agent.pose.head_pan(pan_degree)
 
-                # # [RULE 4] Compulsory hydration : tilt 0
-                # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
-                #     # marking no drink violation detection
-                #     break_rule_check_list['drink'] = True
+                # [RULE 4] Compulsory hydration : tilt 0
+                if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
+                    # marking no drink violation detection
+                    break_rule_check_list['drink'] = True
 
-                #     # go to the offender and clarify what rule is being broken
-                #     drink_detection.clarify_violated_rule()
-                #     # ask offender to grab a drink
-                #     drink_detection.ask_to_action(
-                #         compulsory_hydration_bar_location)
-                #     break
+                    # go to the offender and clarify what rule is being broken
+                    drink_detection.clarify_violated_rule()
+                    # ask offender to grab a drink
+                    drink_detection.ask_to_action(
+                        compulsory_hydration_bar_location)
+                    break
 
                 # [RULE 1] No shoes : tilt -20, -40
                 if break_rule_check_list['shoes'] is False and shoe_detection.detect():
@@ -864,16 +873,16 @@ def stickler_for_the_rules(agent):
                     shoe_detection.ask_to_action(entrance)
                     break
 
-                # # [RULE 3] No littering : tilt -40
-                # if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
-                #     # marking no littering violation detection
-                #     break_rule_check_list['garbage'] = True
+                # [RULE 3] No littering : tilt -40
+                if break_rule_check_list['garbage'] is False and no_littering.detect_garbage():
+                    # marking no littering violation detection
+                    break_rule_check_list['garbage'] = True
 
-                #     # go to the offender and clarify what rule is being broken
-                #     no_littering.clarify_violated_rule()
-                #     # ask the offender to pick up and trash the garbage
-                #     no_littering.ask_to_action(bin_location)
-                #     break
+                    # go to the offender and clarify what rule is being broken
+                    no_littering.clarify_violated_rule()
+                    # ask the offender to pick up and trash the garbage
+                    no_littering.ask_to_action(bin_location)
+                    break
 
         if sum(break_rule_check_list.values())==4:
             break
