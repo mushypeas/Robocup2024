@@ -55,8 +55,9 @@ if __name__ == '__main__':
         task = StoringGroceries(agent)
         task.run()
     elif task_id == '4':
-        from task.serve_breakfast import serve_breakfast
-        serve_breakfast(agent)
+        from task.serve_breakfast import ServeBreakfast
+        task = ServeBreakfast(agent)
+        task.run()
     elif task_id == '5':
         from task.gpsr import gpsr
         gpsr(agent)
