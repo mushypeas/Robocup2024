@@ -113,6 +113,9 @@ def receptionist(agent):
     # #####################################################3
     ### main scenario ###
     agent.pose.move_pose()
+    agent.pose.head_pan(0)
+    agent.pose.head_tilt(0)
+
     agent.move_abs_safe(start_position)
     agent.say('start receptionist')
     # input('##### Debug 1 #####')
@@ -180,7 +183,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name1, drink1 = '_', '_'
-        for _ in range(2):
+        for _ in range(1):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
@@ -218,6 +221,8 @@ def receptionist(agent):
                 qr_check = False
                 break
             elif 'no' in answer:
+                qr_check=True
+                break
                 continue
             else:
                 agent.say('Answer only by \nyes or no', show_display=True)
@@ -357,7 +362,7 @@ def receptionist(agent):
     rospy.sleep(2.5)
     if not calibration_mode:
         name2, drink2 = '_', '_'
-        for _ in range(2):
+        for _ in range(1):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
             rospy.sleep(4)
 
@@ -395,6 +400,8 @@ def receptionist(agent):
                 qr_check = False
                 break
             elif 'no' in answer:
+                qr_check=True
+                break
                 continue
             else:
                 agent.say('Answer only by \nyes or no', show_display=True)
