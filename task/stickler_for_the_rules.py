@@ -78,7 +78,7 @@ class ShoeDetection:
         print("Labels probabilities in percentage:", formatted_probs)
 
         # Determine if shoes are detected by comparing the numeric value
-        if first_prob_percent > 65:
+        if formatted_probs > 65:
             return True
         return False
 
@@ -94,10 +94,6 @@ class ShoeDetection:
             rospy.sleep(1)
 
         return False
-<<<<<<< HEAD
-=======
-
->>>>>>> ab653a359a51a91539880461d819ede5a840ae3a
 
     def clarify_violated_rule(self):
         _pc = self.agent.pc.reshape(480, 640)
