@@ -98,7 +98,9 @@ if AIIS:
         'kitchen_search': [3.2691, 0.3223, -2.1086],
         'living_room_search': [5.932, -0.357, -0.4455],
         'study_search': [5.2668, 1.273, 2.5436],
-        'bedroom_search': [6.4953, 3.4738, -0.6583],
+        # 'bedroom_search': [6.4953, 3.4738, -0.6583],
+        'bedroom_search': [6.9826, 3.0422, -0.6487],
+
 
         # AIIS
         # 'shoe_warning': [1.0093, -2.4509, -1.5534],
@@ -112,9 +114,10 @@ if AIIS:
         'shoe_warning': [3.1471, 0.1392, -3.0298],
         'bin_littering': [2.6641, -1.6283, 3.1113],
         'bar_drink': [2.4819, -2.6883, 0.6981],
-        'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        #'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        'bedroom_doublecheck' : [6.9826, 3.0422, -0.6487],
         # 'study_search_reverse': [-0.0189, 0.2843, 0.0333],
-        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033],
+        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033], #수정필요
 
 
         # gpsr
