@@ -683,12 +683,12 @@ class HumanFollowing:
             rospy.sleep(1)
 
     def escape_tiny_canny(self):
-
-        x = self.human_box_list[1][0]
-        y = self.human_box_list[1][1]
-        w = self.human_box_list[1][2]
-        h = self.human_box_list[1][3]
-        center = [y + int(h/2), x + int(w/2)] # (y,x)
+        if self.human_box_list[1] is not None:
+            x = self.human_box_list[1][0]
+            y = self.human_box_list[1][1]
+            w = self.human_box_list[1][2]
+            h = self.human_box_list[1][3]
+            center = [y + int(h/2), x + int(w/2)] # (y,x)
         contours = self.contours
 
         tiny_exist = False
@@ -739,7 +739,8 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and last_calc_z > 1000 and center[1] > 180 and center[1] < 500:
+            if tiny_exist and (((self.human_box_list[0] is not None) and (center[1] > 180 or center[1] < 500)) or (self.human_box_list[0] is None)):
+                # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
                 self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if tiny_loc == 'left':
