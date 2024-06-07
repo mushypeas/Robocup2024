@@ -706,7 +706,7 @@ class HumanFollowing:
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 1000 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 800 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
@@ -771,7 +771,10 @@ class HumanFollowing:
     def stt_destination(self, stt_option, calc_z=0):
         cur_pose = self.agent.get_pose(print_option=False)
         # print("in area", [cur_pose[0], cur_pose[1]], "last moved time", time.time() - self.agent.last_moved_time)
-        if (time.time() - self.agent.last_moved_time > 8.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
+        if time.time() - self.agent.last_moved_time > 3.0) and self.human_box_list[0] is None :
+
+
+        if (time.time() - self.agent.last_moved_time > 10.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
             self.start_location[1] - self.goal_radius < cur_pose[1] < self.start_location[1] + self.goal_radius):
 
             print("lmt_if", self.agent.last_moved_time)
@@ -862,7 +865,7 @@ class HumanFollowing:
                 print("lets go to the last human position for just one time")
 
                 target_xyyaw = self.last_human_pos
-                self.agent.move_rel(0, 0, target_xyyaw[2]*1.5, wait=True)
+                self.agent.move_rel(0, 0, target_xyyaw[2]*1.5, wait=False)
                 self.last_chance = 0
             return False
         else:
@@ -1314,11 +1317,10 @@ class BagInspection:
 
             hand_dist_xyz = self.agent.yolo_module.calculate_dist_to_pick(target_base_xyz, 5)
             mov_x, mov_y = hand_dist_xyz[0], hand_dist_xyz[1]
-            
+            mov_x += 0.05
             print("1.7 go to the direction", (mov_x, mov_y))
             print("current position: ", self.agent.get_pose())
             self.marker_maker.pub_marker([mov_x, mov_y, 1], 'base_link')
-            mov_x += 0.05
             self.agent.move_rel(mov_x, mov_y, wait=True)
             print("moved position: ", self.agent.get_pose())
 
