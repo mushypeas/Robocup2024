@@ -404,7 +404,7 @@ class HumanFollowing:
             # elif center[1] > 560:
             #     self.angle_queue.append(1)
             #     return 'rrr'
-            if center[1] < 80:
+            if center[1] < 130:
                 # self.angle_queue.append(-1)
                 return 'lll'
             # elif center[1] < 130:
@@ -419,7 +419,7 @@ class HumanFollowing:
             # elif center[1] > 510:
             #     self.angle_queue.append(1)
                 # return 'rr'
-            elif center[1] > 560:
+            elif center[1] > 500:
                 # self.angle_queue.append(1)
                 return 'rrr'   
 
@@ -696,13 +696,15 @@ class HumanFollowing:
 
 
 
-        seg_img = human_following.seg_img[:, :]
+        seg_img = self.seg_img[:, :]
 
         # Create a mask for depth values greater than 0 and seg_img equal to 15
         human_mask = (seg_img == 15)
-
         human_y, human_x = np.where(human_mask)
-        human_y_max = np.max(human_y)
+        if len(human_y) != 0:
+            human_y_max = np.max(human_y)
+        else:
+            human_y_max = 440
 
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -771,7 +773,7 @@ class HumanFollowing:
     def stt_destination(self, stt_option, calc_z=0):
         cur_pose = self.agent.get_pose(print_option=False)
         # print("in area", [cur_pose[0], cur_pose[1]], "last moved time", time.time() - self.agent.last_moved_time)
-        if time.time() - self.agent.last_moved_time > 3.0) and self.human_box_list[0] is None :
+        # if (time.time() - self.agent.last_moved_time > 3.0) and self.human_box_list[0] is None:
 
 
         if (time.time() - self.agent.last_moved_time > 10.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
@@ -919,7 +921,12 @@ class HumanFollowing:
                 # change angular.z
                 loc = self.check_human_pos(human_info_ary, location=True)
                 if loc == 'lll':
-                    print("left")
+                    print("left!!!!!!")
+                    print("left!!!!!!")
+                    print("left!!!!!!")
+                    print("left!!!!!!")
+                    print("left!!!!!!")
+                    print("left!!!!!!")
                     # twist.angular.z = -self.stop_rotate_velocity
                     # +가 왼쪽으로 돌림
                     self.agent.move_rel(0, 0, self.stop_rotate_velocity*1.5, wait=True)
@@ -945,6 +952,13 @@ class HumanFollowing:
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=True)
                     # rospy.sleep(.5)
                 if loc == 'rrr':
+                    print("right")
+                    print("right")
+                    print("right")
+                    print("right")
+                    print("right")
+                    print("right")
+                    print("right")
                     print("right")
                     # twist.angular.z = +self.stop_rotate_velocity
                     self.agent.move_rel(0, 0, -self.stop_rotate_velocity*1.5, wait=True)
@@ -1627,7 +1641,11 @@ def carry_my_luggage(agent):
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("seg human detected, calc_z : ", calc_z)
 
-                while calc_z < 1700.0: #1.7m내에 사람 있는 동안 일단 정지
+                while calc_z < 1300.0: #1.7m내에 사람 있는 동안 일단 정지
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
                     rospy.sleep(3)
                     
                     human_info_ary = copy.deepcopy(human_following.human_box_list)
@@ -1655,7 +1673,7 @@ def carry_my_luggage(agent):
 
 
 
-            while not agent.move_abs_coordinate(cur_track, wait=False): # 이제 이동, 뭔가 막혀서 못갔다면 while
+            while not agent.move_abs_coordinate(cur_track, wait=True): # 이제 이동, 뭔가 막혀서 못갔다면 while
                 depth = np.asarray(now_d2pc.depth)
                 depth_slice = depth[:, :]
                 seg_img = human_following.seg_img[:, :]
@@ -1671,7 +1689,13 @@ def carry_my_luggage(agent):
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 human_following.escape_barrier(calc_z)
                 human_following.escape_tiny_canny()
-                while calc_z < 1700.0: #사람이 다시 1.7m 내에 있다면 정지
+                while calc_z < 1300.0: #사람이 다시 1.7m 내에 있다면 정지
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+                    print("seg human!!!!!!!!!!!!!!!!!!")
+
                     depth = np.asarray(now_d2pc.depth)
                     depth_slice = depth[:, :]
                     seg_img = human_following.seg_img[:, :]

@@ -55,8 +55,8 @@ def get_iou(boxA, boxB):
 	return iou
 
 def new_get_controls(x,z):
-	linear_max = 1.5 #0.8
-	angular_max = 1.0 #0.5
+	linear_max = 1.0 #0.8
+	angular_max = 0.4 #0.5
 	twist = Twist()
 
 	# linear = (z/1000-0.6)/3
