@@ -57,8 +57,8 @@ if __name__ == '__main__':
             agent.move_abs('breakfast_table')
 
         ### Pose commands
-        elif command == 'holding_pose': #mjgu 240516
-            agent.pose.holding_pose()
+        elif command == 'point_seat_pose':
+            agent.pose.point_seat_pose()
         elif command == 'place_cutlery_pose':
             agent.pose.place_cutlery_pose()
         elif command == 'move_pose':
@@ -415,8 +415,13 @@ if __name__ == '__main__':
         elif command == 'detect_3d_unseen':
             agent.yolo_module.detect_3d_unseen('desk')[0]
 
+        elif command == 'gpsr_test':
+            from task.gpsr_repo.gpsr_test import gpsr_test
+            gpsr_test(agent)
+
         else:
             print('invalid command')
+
 
 # shoe_scan [1.4227, 1.1802, -1.5106]
 # door pose [-2.439925046798405, 3.741186220829006, 1.6161519211842417]

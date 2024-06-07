@@ -15,7 +15,10 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/test_0608.cn'
 
-OBJECT_LIST = make_object_list(yolo_classnames_path)
+try:
+    OBJECT_LIST = make_object_list(yolo_classnames_path)
+except:
+    pass
 
 AIIS = True
 
@@ -44,25 +47,31 @@ if AIIS:
         # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
         # clean the table
-        'dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'dishwasher_rack': [3.4552, -0.6194, -1.5674], #bjkim2
-        'opened_dishwasher': [2.0148, 0.8449, 1.6256], #bjkim2
-        'clean_table_front' : [6.3029, -1.0222, 0.0161], #bjkim2
+
+        'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
+        'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
+        'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
+        'rack_close_position2': [1.6463, -0.9664, -1.5655],
+        'rack_close_position3': [1.6434, -0.9569, -1.9500],
+
 
         # receptionist
         # 'cloth_scan': [1.7869, 0.0919, -3.1073],  # [2.5404, 0.3225, -3.1168] near door
-        'cloth_scan' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'cloth_scan' : [3.1471, 0.1392, -3.0298], # 0505
+        'cloth_scan': [5.3575, -0.8901, -1.5689], # 0531
         # 'cloth_scan' : [1.0330, -2.2140, -1.4835], # AIIS
         # 'handle_front': [1.5502, 0.0104, -3.1301],
         # 'door_bypass': [2.507, 0.1598, 1.535],
         # 'seat_scan': [2.4192, 0.2234, 1.576], #[2.5198, 0.0942, 1.5773],
         # 'seat_scan': [1.3810, 2.2950, 0.0445], # AIIS
-        'seat_scan' : [7.195, -0.8567, -0.9396], # 0505
+        # 'seat_scan' : [7.195, -0.8567, -0.9396], # 0505
+        'seat_scan' : [7.1866, -0.8539, -0.8736], # 0514
         # 'seat_scan_bypass': [1.8008, 0.0949, -2.2551],  # [7.4416, 4.5881, -1.5132] far bypass
         'seat_scan_bypass': [7.1009, -0.8733, 2.8402], # 0505
         # 'start': [2.0208, -1.3355, 2.3405],
         # 'start': [1.7869, 0.0919, -3.1073], # AIIS-safe-cloth
-        'start' : [3.1471, 0.1392, -3.0298], # 0505
+        # 'start' : [3.1471, 0.1392, -3.0298], # 0505\
+        'start': [5.3575, -0.8901, -1.5689], # 0531
         # 'start': [-1.7020, -1.3990, -3.0880], # AIIS
         # 'start_receptionist': [-1.7020, -1.3990, -3.0880], # AIIS
 
@@ -89,7 +98,9 @@ if AIIS:
         'kitchen_search': [3.2691, 0.3223, -2.1086],
         'living_room_search': [5.932, -0.357, -0.4455],
         'study_search': [5.2668, 1.273, 2.5436],
-        'bedroom_search': [6.4953, 3.4738, -0.6583],
+        # 'bedroom_search': [6.4953, 3.4738, -0.6583],
+        'bedroom_search': [6.9826, 3.0422, -0.6487],
+
 
         # AIIS
         # 'shoe_warning': [1.0093, -2.4509, -1.5534],
@@ -103,19 +114,14 @@ if AIIS:
         'shoe_warning': [3.1471, 0.1392, -3.0298],
         'bin_littering': [2.6641, -1.6283, 3.1113],
         'bar_drink': [2.4819, -2.6883, 0.6981],
-        'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        #'bedroom_doublecheck' : [6.4953, 3.4738, -0.6583],
+        'bedroom_doublecheck' : [6.9826, 3.0422, -0.6487],
         # 'study_search_reverse': [-0.0189, 0.2843, 0.0333],
-        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033],
+        'bedroom_search_reverse': [6.4518, 3.4936, 3.1033], #수정필요
 
 
         # gpsr
-        'gpsr_start_point': [1.7869, 0.0919, -3.1073],
-        'gpsr_instruction_point': [2.622, -0.5539, 0.1105],
-        
-        # gpsr_test
-        'desk': [5.5086, 0.1336, 0.0005],
-        'table': [3.8706, -0.7318, -1.5548],
-
+        'kitchen_table': [2.1348, -2.7771, -0.0066], 
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
@@ -158,11 +164,23 @@ if AIIS:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.55, 0.75, 0.735],
-        'breakfast_table': [0.55, 0.75, 0.715],
-        'grocery_table': [0.55, 0.75, 0.715],
+
+        'kitchen_table': [0.55, 0.75, 0.730],
+        'breakfast_table': [0.89, 0.89, 0.715],
+        'grocery_table': [0.65, 1.2, 0.42],
+        'grocery_table_pose': [0.55, 0.75, 0.42 + 0.055], # +055
+        'grocery_table_pose1': [0.55, 0.75, 0.42 + 0.065], # +065
+        'grocery_table_pose2': [0.55, 0.75, 0.42 - 0.02], # -020
+
         'door_handle': [0, 0, 0.96],
         # width, depth, height
+        
+        # clean the table
+        'clean_table' : [0.55,0.75,0.715],
+        'dishwasher_door' : [0.595,0.60,0.165], #height is not precise
+        'dishwasher_rack' : [0.520,0.60,0.400],
+        'dishwasher' : [0.520,0.60,0.830], #height is not precise
+
         'desk': [1.505, 0.705, 0.8],
         'side_table': [0.495, 0.495, 0.395],
         'side-tables': [0.495, 0.495, 0.395],
