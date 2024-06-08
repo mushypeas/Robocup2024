@@ -120,7 +120,30 @@ class GPSR:
         self.say("I will guide you to the location")
         self.agent.move_abs(loc)
 
+    def pickCat(self, cat):
+        yolo_bbox = self.get_yolo_bbox(cat)
+
+        maware_count = 0
+        
+        while yolo_bbox == []:
+            self.move_rel(0, 0, 1)
+            maware_count += 1
+
+            if maware_count > 6:
+                self.say(f"Sorry, I can't find any {cat}, can you give me a {cat}?")
+                rospy.sleep(4)
+                self.agent.gripper_open()
+                rospy.sleep(5)
+                self.agent.grasp()
+
+                return
+        
+        obj_id = yolo_bbox[0][4]
+        obj = self.objIdToName(obj_id)
+        self.pick(obj)
+
     def pick(self, obj):
+        # find object
         # [TODO] Implement how the object can be picked up
         if False:
             self.agent.pose.pick_side_pose('grocery_table_pose2')
@@ -199,7 +222,7 @@ class GPSR:
         if word in arr:
             return word
 
-        prompt = f"What is the closest pronounciation to the {word} between these words? "
+        prompt = f"What is the closest pronounciation to the {word} between these words? Only focus on the pronounciation similarities."
 
         for i, w in enumerate(arr):
             prompt += f"{i+1}. {w} "
@@ -481,6 +504,7 @@ def gpsr(agent):
     # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
     # inputText = "Tell me how many lying persons are in the kitchen" #countPrsInRoom
     # inputText = "Find a drink in the living room then grasp it and put it on the bed" #findObjInRoom
+    #############################  DONE  #############################
     # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
     # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
     # inputText = "Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen" #goToLoc
