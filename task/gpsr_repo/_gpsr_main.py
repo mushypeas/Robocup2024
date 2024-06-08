@@ -6,6 +6,7 @@ from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
 from gpsr_clip import *
+from gpsr_config import *
 
 from PIL import Image
 import cv2
@@ -20,8 +21,21 @@ class GPSR:
         self.agent = agent
         self.task_finished_count = 0
 
-        self.pose_list = ['standing', 'sitting', 'lying']
-        self.gest_list = ['waving', 'pointing to the right', 'pointing to the left', 'raising their left arm', 'raising their right arm']
+        self.gesture_person_list = gesture_person_list
+        self.pose_person_list = pose_person_list
+        self.gesture_person_plural_list = gesture_person_plural_list
+        self.pose_person_plural_list = pose_person_plural_list
+
+        person_info_list = ["name", "pose", "gesture"]
+        object_comp_list = ["biggest", "largest", "smallest", "heaviest", "lightest", "thinnest"]
+
+        talk_list = ["something about yourself", "the time", "what day is today", "what day is tomorrow", "your teams name",
+                        "your teams country", "your teams affiliation", "the day of the week", "the day of the month"]
+        question_list = ["question", "quiz"]
+
+        color_list = ["blue", "yellow", "black", "white", "red", "orange", "gray"]
+        clothe_list = ["t shirt", "shirt", "blouse", "sweater", "coat", "jacket"]
+        clothes_list = ["t shirts", "shirts", "blouses", "sweaters", "coats", "jackets"]
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 

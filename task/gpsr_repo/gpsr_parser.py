@@ -4,6 +4,7 @@ import json
 
 from gpsr_dicts import *
 from gpsr_utils import chat
+from gpsr_config import *
 
 class NoAppropriateVerbError(Exception):
    """
@@ -87,6 +88,7 @@ def ultimateParser(inputText):
     prompt = f'inputText: {inputText}\n'
     prompt += f'Infer verbType of inputText with this dict first. {{verbType: [verb]}}: {verbType2verb}\n'
     prompt += f'Then, infer cmdName of the inputText, and every {{parameters}} surrounded by braces {{cmdName: sentence {{parameter}}}}: {cmdName2cmdStr}\n'
+    prompt += f'you can refer to gesture_person_list => {gesture_person_list}\n, pose_person_list => {pose_person_list}\n, gesture_person_plural_list => {gesture_person_plural_list}\n, pose_person_plural_list => {pose_person_plural_list}\n, person_info_list => {person_info_list}\n, object_comp_list => {object_comp_list}\n, talk_list => {talk_list}\n, question_list => {question_list}\n, color_list => {color_list}\n, clothe_list => {clothe_list}\n, clothes_list => {clothes_list}\n'
     prompt += 'finally, answer which cmdName inputText is, and every {parameters} in the inputText without missing\n'
     prompt += 'you should only write with format: cmdName, {"parameterName": "parameterValue", ...}'
     
