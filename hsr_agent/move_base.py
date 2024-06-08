@@ -62,7 +62,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
 
     # add wait argument by yspark and shlim
@@ -125,7 +125,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
@@ -152,7 +152,7 @@ class MoveBase:
                 rospy.loginfo("Navigation Succeeded.")
                 return True
             else:
-                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 self.base_action_client.cancel_all_goals()
                 return False
 
