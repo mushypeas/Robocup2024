@@ -56,7 +56,7 @@ def make_object_list(yolo_classname_path):
             if grasping_type_undiscovered:   
                 grasping_type = 0
             
-        OBJECT_LIST.append([idx, class_name, 0, grasping_type])
+        OBJECT_LIST.append([class_name, idx, 0, grasping_type])
         
     print('========== Object list ==========')
 

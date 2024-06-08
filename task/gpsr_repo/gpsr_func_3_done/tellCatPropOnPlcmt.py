@@ -9,9 +9,23 @@ def tellCatPropOnPlcmt(g, params):
     print("Start TellCatPropOnPlcmt")
 
     # [0] Extract parameters
-    comp = params['objComp']
-    cat = params['singCat']
-    loc = params['plcmtLoc']
+    try:
+        comp = params['objComp']
+    except KeyError:
+        print("No objComp in params")
+        comp = 'biggest'
+
+    try:
+        cat = params['singCat']
+    except KeyError:
+        print("No singCat in params")
+        cat = 'object'
+
+    try:    
+        loc = params['plcmtLoc']
+    except KeyError:
+        print("No plcmtLoc in params")
+        return
     
     # [1] Move to the specified space
     g.move(loc)
@@ -19,8 +33,15 @@ def tellCatPropOnPlcmt(g, params):
     # [2] Find the objects in the room
     yolo_bbox = g.get_yolo_bbox(cat)
 
+    iter_count = 0
+
     while yolo_bbox == []:
         yolo_bbox = g.get_yolo_bbox(cat)
+        iter_count += 1
+
+        if iter_count > 50:
+            g.say(f"No {cat} found")
+            return
 
     # [3] Find the object with the specified property
     if comp in ['biggest', 'largest']:

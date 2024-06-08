@@ -9,8 +9,12 @@ def bringMeObjFromPlcmt(g, params):
     print("Start BringMeObjFromPlcmt")
     
     # [0] Extract parameters
-    obj = params['obj']
-    plcmtLoc = params['plcmtLoc']
+    try:
+        obj = params['obj']
+        plcmtLoc = params['plcmtLoc']
+    except KeyError:
+        print("No obj or plcmtLoc in params")
+        return
         
     # [1] Move to the specified location
     g.move(plcmtLoc)
