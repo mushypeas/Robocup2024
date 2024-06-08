@@ -254,7 +254,10 @@ class Agent:
         self.move_base.move_abs(position, wait)
 
     def move_abs_coordinate(self, coordinate, wait=True):
-        self.move_base.move_abs_coordinate(coordinate, wait)
+        if self.move_base.move_abs_coordinate(coordinate, wait):
+            return True
+        else:
+            return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)

@@ -372,7 +372,7 @@ class HumanFollowing:
             
 
 
-    def check_human_pos(self, human_box_list, location=True):
+    def check_human_pos(self, human_box_list, location=False):
         x = human_box_list[1][0]
         y = human_box_list[1][1]
         w = human_box_list[1][2]
@@ -404,26 +404,27 @@ class HumanFollowing:
             # elif center[1] > 560:
             #     self.angle_queue.append(1)
             #     return 'rrr'
-            if center[1] < 130:
+            if center[1] < 70:
                 # self.angle_queue.append(-1)
                 return 'lll'
-            # elif center[1] < 130:
-            #     self.angle_queue.append(-1)
-            #     return 'll'
-            # elif center[1] < 180:
-            #     self.angle_queue.append(-1)
-                # return 'l'
-            # elif center[1] > 460:
-            #     self.angle_queue.append(1)
-            #     return 'r'
-            # elif center[1] > 510:
-            #     self.angle_queue.append(1)
-                # return 'rr'
+            elif center[1] < 130:
+                # self.angle_queue.append(-1)
+                return 'll'
+            elif center[1] < 180:
+                # self.angle_queue.append(-1)
+                return 'l'
+            elif center[1] > 450:
+                # self.angle_queue.append(1)
+                return 'r'
             elif center[1] > 500:
+                # self.angle_queue.append(1)
+                return 'rr'
+            elif center[1] > 570:
                 # self.angle_queue.append(1)
                 return 'rrr'   
 
         if center[1] < -40 or center[1] > 680:
+            print("center[1] : ", center[1])
             return True # stop
 
         return False # pass
@@ -582,7 +583,7 @@ class HumanFollowing:
                 #     self.agent.move_rel(0,0.7,0, wait=False) #then, HSR is intended to move right
                 #     rospy.sleep(1)
                 # else: #  HSR has rotated right
-                #     self.agent.move_rel(0,-0.7,0, wait=False)
+                #     self.agent.move_rel(0,o-0.7,0, wait=False)
                 # # self.agent.move_rel(0,0.3,0, wait=False) ## TODO : go left
                 # rospy.sleep(1)
                 ########################################################################
@@ -713,11 +714,9 @@ class HumanFollowing:
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                if y > human_y_max and y > 440 and x > 240 and x < 400:
-                    if x < 320:
-                        tiny_loc == 'left'
-                    else:
-                        tiny_loc == 'right'
+                # if y > human_y_max and y > 440 and x > 240 and x < 400:
+                if y > 420 and x > 240 and x < 400:
+
                     tiny_exist = True
                     print('Tiny object.')
                     # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
@@ -728,13 +727,34 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and self.agent.dist > 1.0 and (center is not None and center[1] > 220 and center[1] < 460)  :
+            if tiny_exist and (center is not None and center[1] > 220 and center[1] < 460)  :
+
+
+
+
+                depth = self.agent.depth_image
+
+                seg_img = self.seg_img
+                height, width = seg_img.shape
+                mid_x = width // 2
+                # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
+                # baack_y, back_x = np.where(background_mask)
+                # print("min_y+100 : ", min_y+100)
+                left_background_count = np.mean(depth[100-20:100+20, :mid_x])
+                print("left_background_count", left_background_count)
+                right_background_count = np.mean(depth[100-20:100+20, mid_x:])
+                print("right_background_count", right_background_count)
+
+
+
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
                 self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                if tiny_loc == 'left':
+                if right_background_count > left_background_count:
                     self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
                     rospy.sleep(3)
+
+                    
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
                 else:
                     self.agent.move_rel(0.3,0.5,0, wait=False)
@@ -744,12 +764,12 @@ class HumanFollowing:
 
 
     def escape_tiny_canny_back(self):
-        if self.human_box_list[1] is not None:
-            x = self.human_box_list[1][0]
-            y = self.human_box_list[1][1]
-            w = self.human_box_list[1][2]
-            h = self.human_box_list[1][3]
-            center = [y + int(h/2), x + int(w/2)] # (y,x)
+        # if self.human_box_list[1] is not None:
+        #     x = self.human_box_list[1][0]
+        #     y = self.human_box_list[1][1]
+        #     w = self.human_box_list[1][2]
+        #     h = self.human_box_list[1][3]
+        #     center = [y + int(h/2), x + int(w/2)] # (y,x)
         contours = self.contours
 
         tiny_exist = False
@@ -757,15 +777,15 @@ class HumanFollowing:
 
 
 
-        seg_img = self.seg_img[:, :]
+        # seg_img = self.seg_img[:, :]
 
-        # Create a mask for depth values greater than 0 and seg_img equal to 15
-        human_mask = (seg_img == 15)
-        human_y, human_x = np.where(human_mask)
-        if len(human_y) != 0:
-            human_y_max = np.max(human_y)
-        else:
-            human_y_max = 440
+        # # Create a mask for depth values greater than 0 and seg_img equal to 15
+        # human_mask = (seg_img == 15)
+        # human_y, human_x = np.where(human_mask)
+        # if len(human_y) != 0:
+        #     human_y_max = np.max(human_y)
+        # else:
+        #     human_y_max = 440
 
         for contour in contours:
             area = cv2.contourArea(contour)
@@ -773,7 +793,7 @@ class HumanFollowing:
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                if y > human_y_max and y > 440 and x > 240 and x < 400:
+                if y > 420 and x > 240 and x < 400:
                     if x < 320:
                         tiny_loc == 'left'
                     else:
@@ -969,28 +989,28 @@ class HumanFollowing:
                 print("left!!!!!!")
                 # twist.angular.z = -self.stop_rotate_velocity
                 # +가 왼쪽으로 돌림
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity*1.5, wait=True)
-                # rospy.sleep(.5)
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                rospy.sleep(.5)
             if loc == 'll':
                 print("left")
                 # twist.angular.z = -self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=True)
-                # rospy.sleep(.5)
-            if loc == 'l':
-                print("left")
-                # twist.angular.z = -self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=True)
-                # rospy.sleep(.5)
-            if loc == 'r':
-                print("right")
-                # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=True)
-                # rospy.sleep(.5)
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                rospy.sleep(.5)
+            # if loc == 'l':
+            #     print("left")
+            #     # twist.angular.z = -self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+            #     rospy.sleep(.5)
+            # if loc == 'r':
+            #     print("right")
+            #     # twist.angular.z = +self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+            #     rospy.sleep(.5)
             if loc == 'rr':
                 print("right")
                 # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=True)
-                # rospy.sleep(.5)
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                rospy.sleep(.5)
             if loc == 'rrr':
                 print("right")
                 print("right")
@@ -1001,8 +1021,8 @@ class HumanFollowing:
                 print("right")
                 print("right")
                 # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity*1.5, wait=True)
-                    # rospy.sleep(.5)
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                rospy.sleep(.5)
             if twist.linear.x == 0 and twist.angular.z == 0:
 
                 if self.stt_destination(self.stt_option, calc_z):
@@ -1037,8 +1057,16 @@ class HumanFollowing:
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
                 if self.save_one_time:
-                    self.track_queue.append((cur_pos[0], cur_pos[1], cur_pos[2]+np.pi))
-                    self.save_one_time = False
+                    if len(self.track_queue) > 0:
+                        last_loc = self.track_queue[-1]
+                        if not( last_loc[0] - self.goal_radius < cur_pos[0] < last_loc[0] + self.goal_radius and \
+                        last_loc[1] - self.goal_radius < cur_pos[1] < last_loc[1] + self.goal_radius):
+
+                            self.track_queue.append((cur_pos[0], cur_pos[1], cur_pos[2]+np.pi))
+                            self.save_one_time = False
+                    else:
+                        self.track_queue.append((cur_pos[0], cur_pos[1], cur_pos[2]+np.pi))
+                        self.save_one_time = False
                     # print('queue_size', len(self.track_queue))
             else:
                 self.save_one_time = True
@@ -1107,7 +1135,7 @@ class HumanFollowing:
         target_xyz_base_link = self.axis_transform.transform_coordinate( \
             'head_rgbd_sensor_rgb_frame', 'base_link', [target_x_rgbd_frame, 0, target_z_rgbd_frame])
         target_yaw_base_link = np.arctan2(target_xyz_base_link[1], target_xyz_base_link[0])
-        while cur_linear < calc_z * .9:
+        while cur_linear < calc_z * .85:
             target_z_rgbd_frame = cur_linear * np.cos(twist.angular.z)
             target_x_rgbd_frame = - cur_linear * np.sin(twist.angular.z)
             target_xyz_base_link = self.axis_transform.transform_coordinate( \
@@ -1122,7 +1150,7 @@ class HumanFollowing:
                 # print("cur_linear", cur_linear, calc_z, self.agent.dynamic_obstacles_with_static[target_y_in_pixel, target_x_in_pixel])
                 return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
 
-        return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
+        return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link) # TODO : expand
 
 class BagInspection:
     def __init__(self, agent):
@@ -1650,7 +1678,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
-    try_bag_picking = True #True
+    try_bag_picking = False #True
     try_bytetrack = False
     map_mode = False
     stt_option = False #True
@@ -1808,6 +1836,7 @@ def carry_my_luggage(agent):
         track_queue = human_following.track_queue  # get trace of the robot
 
         for i in range(len(track_queue)): # 돌아가는 길
+            print("i:", i)
             cur_track = track_queue[len(track_queue)-i-1]
             calc_z= 2000
 
@@ -1853,50 +1882,50 @@ def carry_my_luggage(agent):
             print("before escape barrier, current calc_z: ", calc_z)
             human_following.escape_barrier(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
             # human_following.escape_tiny()
-            human_following.escape_tiny_canny()
+            human_following.escape_tiny_canny_back()
 
 
+            agent.move_abs_coordinate(cur_track, wait=False)
+            # while not agent.move_abs_coordinate(cur_track, wait=False): # 이제 이동, 뭔가 막혀서 못갔다면 while
+            #     depth = np.asarray(now_d2pc.depth)
+            #     depth_slice = depth[:, :]
+            #     seg_img = human_following.seg_img[:, :]
+            #     valid_depth_mask = depth_slice > 0
+            #     human_mask = (seg_img == 15) & valid_depth_mask
+            #     human_y, human_x = np.where(human_mask)
+            #     human_depth_values = depth_slice[human_y, human_x]
+            #     if human_depth_values.size == 0:
+            #         continue
+            #     min_index = np.argmin(human_depth_values)
+            #     min_human_y, min_human_x = human_y[min_index], human_x[min_index]
+            #     human_seg_pos = [min_human_x, min_human_y]
+            #     twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
+            #     human_following.escape_barrier(calc_z)
+            #     human_following.escape_tiny_canny()
+            #     while calc_z < 1300.0: #사람이 다시 1.7m 내에 있다면 정지
+            #         print("seg human!!!!!!!!!!!!!!!!!!")
+            #         print("seg human!!!!!!!!!!!!!!!!!!")
+            #         print("seg human!!!!!!!!!!!!!!!!!!")
+            #         print("seg human!!!!!!!!!!!!!!!!!!")
+            #         print("seg human!!!!!!!!!!!!!!!!!!")
 
-            while not agent.move_abs_coordinate(cur_track, wait=False): # 이제 이동, 뭔가 막혀서 못갔다면 while
-                depth = np.asarray(now_d2pc.depth)
-                depth_slice = depth[:, :]
-                seg_img = human_following.seg_img[:, :]
-                valid_depth_mask = depth_slice > 0
-                human_mask = (seg_img == 15) & valid_depth_mask
-                human_y, human_x = np.where(human_mask)
-                human_depth_values = depth_slice[human_y, human_x]
-                if human_depth_values.size == 0:
-                    continue
-                min_index = np.argmin(human_depth_values)
-                min_human_y, min_human_x = human_y[min_index], human_x[min_index]
-                human_seg_pos = [min_human_x, min_human_y]
-                twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
-                human_following.escape_barrier(calc_z)
-                human_following.escape_tiny_canny()
-                while calc_z < 1300.0: #사람이 다시 1.7m 내에 있다면 정지
-                    print("seg human!!!!!!!!!!!!!!!!!!")
-                    print("seg human!!!!!!!!!!!!!!!!!!")
-                    print("seg human!!!!!!!!!!!!!!!!!!")
-                    print("seg human!!!!!!!!!!!!!!!!!!")
-                    print("seg human!!!!!!!!!!!!!!!!!!")
-
-                    depth = np.asarray(now_d2pc.depth)
-                    depth_slice = depth[:, :]
-                    seg_img = human_following.seg_img[:, :]
-                    valid_depth_mask = depth_slice > 0
-                    human_mask = (seg_img == 15) & valid_depth_mask
-                    human_y, human_x = np.where(human_mask)
-                    human_depth_values = depth_slice[human_y, human_x]
-                    if human_depth_values.size == 0:
-                        break
-                    min_index = np.argmin(human_depth_values)
-                    min_human_y, min_human_x = human_y[min_index], human_x[min_index]
-                    human_seg_pos = [min_human_x, min_human_y]
-                    twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
-                print("retry")
-                rospy.sleep(1)
+            #         depth = np.asarray(now_d2pc.depth)
+            #         depth_slice = depth[:, :]
+            #         seg_img = human_following.seg_img[:, :]
+            #         valid_depth_mask = depth_slice > 0
+            #         human_mask = (seg_img == 15) & valid_depth_mask
+            #         human_y, human_x = np.where(human_mask)
+            #         human_depth_values = depth_slice[human_y, human_x]
+            #         if human_depth_values.size == 0:
+            #             break
+            #         min_index = np.argmin(human_depth_values)
+            #         min_human_y, min_human_x = human_y[min_index], human_x[min_index]
+            #         human_seg_pos = [min_human_x, min_human_y]
+            #         twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
+            #     print("retry")
+            #     rospy.sleep(1)
             # rospy.sleep(0.5)
-            rospy.sleep(3)
+            rospy.sleep(4)
             print('go to arena')
 
 
