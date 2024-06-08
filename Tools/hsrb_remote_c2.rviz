@@ -526,7 +526,7 @@ Visualization Manager:
       Draw Behind: false
       Enabled: true
       Name: CUR_MAP
-      Topic: /static_obstacle_map_ref
+      Topic: //static_obstacle_ros_map
       Unreliable: false
       Use Timestamp: false
       Value: true
