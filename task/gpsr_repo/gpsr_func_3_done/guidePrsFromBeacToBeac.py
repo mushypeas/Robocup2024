@@ -7,19 +7,27 @@ def guidePrsFromBeacToBeac(g, params):
     print("Start guidePrsFromBeacToBeac")
     
     # [0] Extract parameters
-    gestPosePers = params['gestPers_posePers']
-    loc = params['loc']
-    loc2 = params['loc_room']
+    try:
+        gestPosePers = params['gestPers_posePers']
+        loc = params['loc']
+        loc2 = params['loc_room']
+
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+
+    gestPosePers = g.cluster(gestPosePers, g.gesture_person_list + g.pose_person_list)
+    loc = g.cluster(loc, g.loc_list)
+    loc2 = g.cluster(loc2, g.loc_list)
     
     # [1] Move to the specified location
     g.move(loc)
     
     # [2] Find the person in the location
     g.identifyByGestPose(gestPosePers)
-    g.say(f"Please follow me to the {loc2}")
     
     # [3] Make the person to follow HSR to the room
     g.guide(loc2)
-    g.say(f"You have arrived at the {loc2}")
 
     g.task_finished_count += 1

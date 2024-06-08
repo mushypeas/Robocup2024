@@ -7,10 +7,19 @@ def greetNameInRm(g, params):
     print("Start greetNameInRm")
 
     # [0] Extract parameters
-    name = params['name']
-    room = params['room']
-    followup = params['followup']
+    try:
+        name = params['name']
+        room = params['room']
+        followup = params['followup']
     
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+    
+    name = g.cluster(name, g.names_list)
+    room = g.cluster(room, g.rooms_list)
+
     # [1] Move to the specified room
     g.move(room)
 

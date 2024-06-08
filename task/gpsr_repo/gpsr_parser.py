@@ -120,7 +120,9 @@ def ultimateFollowupParser(inputText):
     prompt = f'inputText: {inputText}\n'
     prompt += f'Infer verbType of inputText with this dict first. {{verbType: [verb]}}: {verbType2verb}\n'
     prompt += f'Then, infer followupName of the inputText, and every {{parameters}} surrounded by braces {{followupName: sentence {{parameter}}}}: {followupName2followupStr}\n'
+    prompt += f'you can refer to gesture_person_list => {gesture_person_list}\n, pose_person_list => {pose_person_list}\n, gesture_person_plural_list => {gesture_person_plural_list}\n, pose_person_plural_list => {pose_person_plural_list}\n, person_info_list => {person_info_list}\n, object_comp_list => {object_comp_list}\n, talk_list => {talk_list}\n, question_list => {question_list}\n, color_list => {color_list}\n, clothe_list => {clothe_list}\n, clothes_list => {clothes_list}\n'
     prompt += 'finally, answer which followupName inputText is, and every {parameters} in the inputText without missing\n'
+    prompt += "Answer every {parameters}. If you can't find appropriate parameter, guess it.\n"
     prompt += 'you should only write with format: followupName, {"parameterName": "parameterValue", ...}'
     
     gptAnswer = chat(prompt)

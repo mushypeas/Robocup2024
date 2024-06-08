@@ -10,6 +10,9 @@ def meetPrsAtBeac(g, params):
     name = params['name']
     room = params['room']
     followup = params['followup']
+
+    name = g.cluster(name, g.names_list)
+    room = g.cluster(room, g.rooms_list)
         
     # [1] Move to the specified room
     g.move(room)

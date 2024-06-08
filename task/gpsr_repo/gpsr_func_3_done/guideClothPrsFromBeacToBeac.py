@@ -8,19 +8,31 @@ def guideClothPrsFromBeacToBeac(g, params):
     print("Start guideClothPrsFromBeacToBeac")
 
     # [0] Extract parameters
-    colorClothe = params['colorClothe']
-    loc = params['loc']
-    loc2 = params['loc_room']
+    try:
+        colorClothe = params['colorClothe']
+        loc = params['loc']
+        loc2 = params['loc_room']
+    except:
+        g.cmdError()
+        return
+    
+    colorClothes_list = []
+
+    for color in g.color_list:
+        for clothes in g.clothes_list:
+            colorClothes_list.append(color + " " + clothes)
+
+    colorClothe = g.cluster(colorClothe, colorClothes_list)
+    loc = g.cluster(loc, g.loc_list)
+    loc2 = g.cluster(loc2, g.loc_list)
 
     # [1] Move to the specified location
     g.move(loc)
 
     # [2] Find the person in the location
     g.identifyByClothing(colorClothe)
-    g.say(f"Please follow me to the {loc2}")
 
     # [3] Make the person to follow HSR to the room
     g.guide(loc2)
-    g.say(f"You have arrived at the {loc2}")
 
     g.task_finished_count += 1

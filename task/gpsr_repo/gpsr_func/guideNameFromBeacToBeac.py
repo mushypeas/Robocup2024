@@ -7,9 +7,19 @@ def guideNameFromBeacToBeac(g, params):
     print("Start guideNameFromBeacToBeac")
     
     # [0] Extract parameters
-    name = params['name']
-    loc = params['loc']
-    loc2 = params['loc_room']
+    try:
+        name = params['name']
+        loc = params['loc']
+        loc2 = params['loc_room']
+
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+    
+    name = g.cluster(name, g.names_list)
+    loc = g.cluster(loc, g.loc_list)
+    loc2 = g.cluster(loc2, g.loc_list)
     
     # [1] Move to the specified location
     g.move(loc)
