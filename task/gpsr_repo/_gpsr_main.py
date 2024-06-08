@@ -186,11 +186,17 @@ class GPSR:
         for i, w in enumerate(arr):
             prompt += f"{i+1}. {w} "
 
-        prompt += "Please answer only the one letter, the number of the word."
+        prompt += "you must answer only one number, the number of the word. Do not say the word and alphabet"
 
         ans = chat(prompt)
+        print("chat ans", ans)
 
-        return arr[int(ans)-1]
+        try:
+            return arr[int(ans.split('.')[0])-1]
+        
+        except:
+            print("Error in clustering")
+            return word
             
     # TODO
     def getName(self):
