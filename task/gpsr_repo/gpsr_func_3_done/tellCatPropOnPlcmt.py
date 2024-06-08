@@ -24,24 +24,24 @@ def tellCatPropOnPlcmt(g, params):
 
     # [3] Find the object with the specified property
     if comp in ['biggest', 'largest']:
-        targetObjId = g.findBiggestObj(yolo_bbox)
+        targetObjId = g.findBiggestObjId(yolo_bbox)
         targetObjName = g.objIdToName(targetObjId)
         
     elif comp in ['smallest']:
-        targetObjId = g.findSmallestObj(yolo_bbox)
+        targetObjId = g.findSmallestObjId(yolo_bbox)
         targetObjName = g.objIdToName(targetObjId)
 
     elif comp in ['thinnest']:
-        targetObjId = g.findThinnestObj(yolo_bbox)
+        targetObjId = g.findThinnestObjId(yolo_bbox)
         targetObjName = g.objIdToName(targetObjId)
         
     elif comp in ['heaviest']:
-        targetObjId = g.findHeaviestObj(yolo_bbox)
+        targetObjId = g.findHeaviestObjId(yolo_bbox)
         targetObjName = g.objIdToName(targetObjId)
         
     elif comp in ['lightest']:
-        targetObjId = g.findLightestObj(yolo_bbox)
-        targetObjName = g.objIdToName(targetObjId)
+        targetObjId = g.findLightestObjId(yolo_bbox)
+        targetObjName = g.objIdToNameId(targetObjId)
 
     # [4] Tell the information
     robotOutput = f"The {comp} {cat} is {targetObjName}"

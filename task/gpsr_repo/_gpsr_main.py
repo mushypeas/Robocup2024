@@ -29,7 +29,6 @@ class GPSR:
             "countObjOnPlcmt": countObjOnPlcmt,
             "countPrsInRoom": countPrsInRoom,
             "tellPrsInfoInLoc": tellPrsInfoInLoc,
-            "tellObjPropOnPlcmt": tellObjPropOnPlcmt,
             "talkInfoToGestPrsInRoom": talkInfoToGestPrsInRoom,
             "answerToGestPrsInRoom": answerToGestPrsInRoom,
             "followNameFromBeacToRoom": followNameFromBeacToRoom,
@@ -425,19 +424,10 @@ class GPSR:
 # MAIN
 def gpsr(agent):
     g = GPSR(agent)
-    # TODO : goto the instruction loc
-    g.move('gpsr_instruction_point')
-
-    # Get input with STT
-    agent.say("I'm ready to receive a command")
-    rospy.sleep(3)
-
-    inputText = g.hear(7.)
-    agent.say(f"Given Command is {inputText}")
 
     # inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
     # inputText = "Tell me how many drinks there are on the desk" #countObjOnPlcmt
-    # inputText = "Tell me what is the biggest food on the table" #tellCatPropOnPlcmt
+    # inputText = "Tell me what is the biggest food on the desk" #tellCatPropOnPlcmt
     # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
     # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
     # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
@@ -457,11 +447,23 @@ def gpsr(agent):
     # inputText = "Tell the day of the week to the person pointing to the left in the kitchen" #talkInfoToGestPrsInRoom
     # inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
     # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
-        
-    # parse InputText 
-    cmdName, params = ultimateParser(inputText)
-    
-    cmdFunc = g.cmdNameTocmdFunc[cmdName]
-    cmdFunc(g, params)
 
-    # TODO : repeat 3 times, return to the instruction loc
+    for _ in range(3):
+
+        g.move('gpsr_instruction_point')
+
+        # Get input with STT
+        agent.say("I'm ready to receive a command")
+        rospy.sleep(3)
+
+        inputText = g.hear(7.)
+        agent.say(f"Given Command is {inputText}")
+
+            
+        # parse InputText 
+        cmdName, params = ultimateParser(inputText)
+        
+        cmdFunc = g.cmdNameTocmdFunc[cmdName]
+        cmdFunc(g, params)
+
+        g.move('gpsr_instruction_point')

@@ -24,8 +24,6 @@ OBJECT_LIST = make_object_list(yolo_classnames_path)
 #     print('Skip loading OBJECT_LIST')
 #     pass
 
-print('OBJECT', OBJECT_LIST)
-
 AIIS = True
 
 if AIIS:
