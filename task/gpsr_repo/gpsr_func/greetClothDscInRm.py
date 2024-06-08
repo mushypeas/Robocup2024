@@ -8,9 +8,23 @@ def greetClothDscInRm(g, params):
     print("Start greetClothDscInRm")
 
     # [0] Extract parameters
-    colorClothe = params['colorClothe']
-    room = params['room']
-    followup = params['followup']
+    try:
+        colorClothe = params['colorClothe']
+        room = params['room']
+        followup = params['followup']
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+    
+    colorClothes_list = []
+
+    for color in g.color_list:
+        for clothes in g.clothe_list:
+            colorClothes_list.append(color + " " + clothes)
+
+    colorClothe = g.cluster(colorClothe, colorClothes_list)
+    room = g.cluster(room, g.rooms_list)
 
     # [1] Move to the specified room
     g.move(room)

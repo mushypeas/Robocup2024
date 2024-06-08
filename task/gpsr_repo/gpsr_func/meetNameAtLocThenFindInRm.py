@@ -7,9 +7,18 @@ def meetNameAtLocThenFindInRm(g, params):
     print("Start meetNameAtLocThenFindInRm")
     
     # [0] Extract parameters
-    name = params['name']
-    loc = params['loc']
-    room = params['room']
+    try:
+        name = params['name']
+        loc = params['loc']
+        room = params['room']
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+    
+    name = g.cluster(name, g.names_list)
+    loc = g.cluster(loc, g.loc_list)
+    room = g.cluster(room, g.rooms_list)
         
     # [1] Move to the specified location
     g.move(loc)
