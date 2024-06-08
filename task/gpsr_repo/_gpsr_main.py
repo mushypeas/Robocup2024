@@ -20,6 +20,11 @@ class GPSR:
         self.agent = agent
         self.task_finished_count = 0
 
+        self.loc_list = list(ABS_POSITION.keys())
+        self.rooms_list = rooms_list
+        self.names_list = names_list
+
+
         self.gesture_person_list = gesture_person_list
         self.pose_person_list = pose_person_list
         self.gesture_person_plural_list = gesture_person_plural_list
@@ -31,9 +36,7 @@ class GPSR:
         self.color_list = color_list
         self.clothe_list = clothe_list
         self.clothes_list = clothes_list
-        self.rooms_list = rooms_list
-
-        self.loc_list = list(ABS_POSITION.keys())
+        
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
         
@@ -127,12 +130,13 @@ class GPSR:
         
         while yolo_bbox == []:
             self.move_rel(0, 0, 1)
+            rospy.sleep(1)
             maware_count += 1
 
             if maware_count > 6:
                 self.say(f"Sorry, I can't find any {cat}, can you give me a {cat}?")
                 rospy.sleep(4)
-                self.agent.gripper_open()
+                self.agent.open_gripper()
                 rospy.sleep(5)
                 self.agent.grasp()
 
@@ -503,7 +507,7 @@ def gpsr(agent):
     # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
     # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
     # inputText = "Tell me how many lying persons are in the kitchen" #countPrsInRoom
-    # inputText = "Find a drink in the living room then grasp it and put it on the bed" #findObjInRoom
+    # inputText = "Find a food in the kitchen then grasp it and put it on the bed" #findObjInRoom
     #############################  DONE  #############################
     # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
     # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc

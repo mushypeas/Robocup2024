@@ -5,7 +5,7 @@ def deliverObjToMe(g, params):
     print("followup: deliverObjToMe")
     
     # [1] Move to the instruction location
-    g.move('gpsr_instruction_location')
+    g.move('gpsr_instruction_point')
     
     # [2] Deliver the object to the person
     g.deliver()

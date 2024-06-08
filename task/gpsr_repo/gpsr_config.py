@@ -35,6 +35,11 @@ ABS_POSITION = {
 }
 
 objects_file_path = 'CompetitionTemplate/objects/test.md'
+rooms_list = ["bedroom", "kitchen", "office", "living room", "bathroom"]
+names_list = ['Adel', 'Angel', 'Axel', 'Charlie', 'Jane', 'Jules', 'Morgan', 'Paris', 'Robin', 'Simone']
+
+
+
 
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
@@ -54,4 +59,3 @@ question_list = ["question", "quiz"]
 color_list = ["blue", "yellow", "black", "white", "red", "orange", "gray"]
 clothe_list = ["t shirt", "shirt", "blouse", "sweater", "coat", "jacket"]
 clothes_list = ["t shirts", "shirts", "blouses", "sweaters", "coats", "jackets"]
-rooms_list = ["bedroom", "kitchen", "office", "living room", "bathroom"]

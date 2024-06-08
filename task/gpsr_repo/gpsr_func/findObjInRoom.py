@@ -8,7 +8,7 @@ def findObjInRoom(g, params):
     
     # [0] Extract parameters
     try:
-        obj = params["obj_singCat"]
+        obj_cat = params["obj_singCat"]
         room = params["room"]
         followup = params["followup"]
     
@@ -16,7 +16,7 @@ def findObjInRoom(g, params):
         g.cmdError()
         return
     
-    obj = g.cluster(obj, g.object_names + g.object_categories_singular)
+    obj_cat = g.cluster(obj_cat, g.object_names + g.object_categories_singular)
 
     room = g.cluster(room, g.rooms_list)
     
@@ -24,11 +24,11 @@ def findObjInRoom(g, params):
     g.move(room)
     
     # [2] Find the object in the room and pick it
-    if obj in g.object_categories_singular:
-        g.pickCat(obj)
+    if obj_cat in g.object_categories_singular:
+        g.pickCat(obj_cat)
 
     else:
-        g.pick(obj)
+        g.pick(obj_cat)
     
     # [3] Follow-up command
     g.exeFollowup(followup)
