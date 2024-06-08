@@ -7,8 +7,13 @@ def answerToGestPrsInRoom(g, params):
     print("Start answerToGestPrsInRoom")
 
     # [0] Extract parameters
-    gestPers = params["gestPers"]
-    room = params["room"]
+    try:
+        gestPers = params["gestPers"]
+        room = params["room"]
+
+    except KeyError as e:
+        g.cmdError()
+        return
     
     # [1] Move to the specified room
     g.move(room)

@@ -7,8 +7,15 @@ def countPrsInRoom(g, params):
     print("Start countPrsInRoom")
     
     # [0] Extract parameters
-    gestPosePersPlur = params["gestPersPlur_posePersPlur"]
-    room = params["room"]
+    try:
+        gestPosePersPlur = params["gestPersPlur_posePersPlur"]
+        room = params["room"]
+
+    except KeyError as e:
+        g.cmdError()
+        return
+    
+    g.cluster(gestPosePersPlur, g.gest_list + g.pose_list)
 
     # [1] move to the specified room
     g.move(room)

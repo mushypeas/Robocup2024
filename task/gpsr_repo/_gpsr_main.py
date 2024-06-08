@@ -20,6 +20,9 @@ class GPSR:
         self.agent = agent
         self.task_finished_count = 0
 
+        self.pose_list = ['standing', 'sitting', 'lying']
+        self.gest_list = ['waving', 'pointing to the right', 'pointing to the left', 'raising their left arm', 'raising their right arm']
+
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 
         self.cmdNameTocmdFunc = {
@@ -164,16 +167,30 @@ class GPSR:
         followUpFunc(self, params)
 
     def cmdError(self):
-        self.say("Sorry, I misunderstood.")
-        rospy.sleep(2)
+        self.say("Sorry, Error in the command")
+        rospy.sleep(2.5)
 
     def quiz(self): 
         self.say("Ask question after the ding sound")
         rospy.sleep(3)
         userSpeech = self.hear(7.)
-        robotAns = chat(userSpeech)
+        additionalPrompt = "Answer easy and short as you can, less than 20 words."
+        robotAns = chat(userSpeech + additionalPrompt)
         self.say(robotAns)
+        rospy.sleep(7)
         # [TODO] improve how the quiz can be answered
+
+    def cluster(self, word, arr):
+        prompt = f"What is the closest pronounciation to the {word} between these words? "
+
+        for i, w in enumerate(arr):
+            prompt += f"{i+1}. {w} "
+
+        prompt += "Please answer only the one letter, the number of the word."
+
+        ans = chat(prompt)
+
+        return arr[int(ans)-1]
             
     # TODO
     def getName(self):
@@ -269,7 +286,7 @@ class GPSR:
 
     def identify(self):
         noPersonCount = 0
-        maxPersonCount = 10
+        maxPersonCount = 7
 
         while True:
             self.agent.pose.head_tilt(5)
