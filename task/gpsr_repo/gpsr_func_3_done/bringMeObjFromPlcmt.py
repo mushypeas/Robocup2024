@@ -13,7 +13,7 @@ def bringMeObjFromPlcmt(g, params):
         obj = params['obj']
         plcmtLoc = params['plcmtLoc']
     except KeyError:
-        print("No obj or plcmtLoc in params")
+        g.cmdError()
         return
         
     # [1] Move to the specified location
@@ -25,3 +25,5 @@ def bringMeObjFromPlcmt(g, params):
     # [3] Give the object to the person
     g.move('gpsr_instruction_point')
     g.deliver()
+
+    g.task_finished_count += 1

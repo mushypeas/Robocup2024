@@ -22,3 +22,5 @@ def guideClothPrsFromBeacToBeac(g, params):
     # [3] Make the person to follow HSR to the room
     g.guide(loc2)
     g.say(f"You have arrived at the {loc2}")
+
+    g.task_finished_count += 1

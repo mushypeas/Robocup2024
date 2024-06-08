@@ -18,3 +18,5 @@ def countClothPrsInRoom(g, params):
     # [3] Output the count
     # TODO : Fix the grammar for singular and plural
     g.say(f"There are {count} people in the {room} wearing {colorClothes}")
+
+    g.task_finished_count += 1

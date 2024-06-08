@@ -19,3 +19,5 @@ def meetPrsAtBeac(g, params):
 
     # [3] Generate the followup comman
     g.exeFollowup(followup)
+
+    g.task_finished_count += 1

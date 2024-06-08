@@ -24,3 +24,5 @@ def meetNameAtLocThenFindInRm(g, params):
     # [4] Find the person in the room
     g.identifyByHumanAttribute(humanAttribute)
     g.say("I found you")
+
+    g.task_finished_count += 1

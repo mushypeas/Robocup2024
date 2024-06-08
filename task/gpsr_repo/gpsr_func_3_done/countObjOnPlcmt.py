@@ -11,8 +11,12 @@ def countObjOnPlcmt(g, params):
     print("Start CountObjOnPlcmt")
     
     # [0] Extract parameters
-    plurCat = params['plurCat']
-    plcmtLoc = params['plcmtLoc']
+    try:
+        plurCat = params['plurCat']
+        plcmtLoc = params['plcmtLoc']
+    except KeyError:
+        g.cmdError()
+        return
 
     singCat = g.categoryPlur2Sing[plurCat]
 
@@ -27,11 +31,18 @@ def countObjOnPlcmt(g, params):
     numObj = len(yolo_bbox)
 
     # [2] Tell number of objects
-    if numObj == 0:
-        g.say(f"There's no {singCat} on the {plcmtLoc}")
+    try:
+        if numObj == 0:
+            g.say(f"There's no {singCat} on the {plcmtLoc}")
+        
+        elif numObj == 1:
+            g.say(f"There's a {singCat} on the {plcmtLoc}")
+        
+        else:
+            g.say(f"There are {numObj} {plurCat} on the {plcmtLoc}")
     
-    elif numObj == 1:
-        g.say(f"There's a {singCat} on the {plcmtLoc}")
-    
-    else:
-        g.say(f"There are {numObj} {plurCat} on the {plcmtLoc}")
+    except Exception as e:
+        print(e)
+        g.say(numObj)
+
+    g.task_finished_count += 1

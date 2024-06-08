@@ -19,3 +19,5 @@ def talkInfoToGestPrsInRoom(g, params):
 
     # [3] Talk to the person
     g.talk(talk)
+
+    g.task_finished_count += 1

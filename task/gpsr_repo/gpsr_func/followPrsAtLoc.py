@@ -20,3 +20,5 @@ def followPrsAtLoc(g, params):
 
     # [3] Follow the person
     g.follow()
+
+    g.task_finished_count += 1

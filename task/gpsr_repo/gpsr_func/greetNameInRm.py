@@ -20,3 +20,5 @@ def greetNameInRm(g, params):
 
     # [3] followup
     g.exeFollowup(followup)
+
+    g.task_finished_count += 1

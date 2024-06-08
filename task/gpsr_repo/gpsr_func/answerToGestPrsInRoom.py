@@ -18,3 +18,5 @@ def answerToGestPrsInRoom(g, params):
     
     # [3] Answer the question/quiz?
     g.quiz()
+
+    g.task_finished_count += 1

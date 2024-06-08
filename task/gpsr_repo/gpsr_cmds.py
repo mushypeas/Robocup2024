@@ -1,4 +1,5 @@
 import sys
+sys.path.append('task/gpsr_repo/gpsr_func')
 sys.path.append('task/gpsr_repo/gpsr_func_0_todo')
 sys.path.append('task/gpsr_repo/gpsr_func_1_progress')
 sys.path.append('task/gpsr_repo/gpsr_func_2_pending')

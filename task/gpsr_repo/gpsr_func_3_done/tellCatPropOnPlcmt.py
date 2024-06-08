@@ -10,12 +10,6 @@ def tellCatPropOnPlcmt(g, params):
 
     # [0] Extract parameters
     try:
-        comp = params['objComp']
-    except KeyError:
-        print("No objComp in params")
-        comp = 'biggest'
-
-    try:
         cat = params['singCat']
     except KeyError:
         print("No singCat in params")
@@ -23,8 +17,9 @@ def tellCatPropOnPlcmt(g, params):
 
     try:    
         loc = params['plcmtLoc']
+        comp = params['objComp']
     except KeyError:
-        print("No plcmtLoc in params")
+        g.cmdError()
         return
     
     # [1] Move to the specified space
@@ -65,5 +60,12 @@ def tellCatPropOnPlcmt(g, params):
         targetObjName = g.objIdToNameId(targetObjId)
 
     # [4] Tell the information
-    robotOutput = f"The {comp} {cat} is {targetObjName}"
-    g.say(robotOutput)
+    try:
+        robotOutput = f"The {comp} {cat} is {targetObjName}"
+        g.say(robotOutput)
+    
+    except Exception as e:
+        print(e)
+        g.say(targetObjName)
+
+    g.task_finished_count += 1

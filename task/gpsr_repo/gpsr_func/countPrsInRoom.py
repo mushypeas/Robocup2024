@@ -19,3 +19,5 @@ def countPrsInRoom(g, params):
     # [3] Output the count
     # TODO: Fix the grammar for singular and plural
     g.say(f"There are {count} {gestPosePersPlur} in the {room}")
+
+    g.task_finished_count += 1

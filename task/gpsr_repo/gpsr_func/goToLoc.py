@@ -15,3 +15,5 @@ def goToLoc(g, params):
 
     # [2] Execute followup
     g.exeFollowup(followup)
+
+    g.task_finished_count += 1

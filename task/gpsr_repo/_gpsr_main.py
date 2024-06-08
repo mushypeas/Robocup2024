@@ -18,6 +18,8 @@ objects_data = readData(objects_file_path)
 class GPSR:
     def __init__(self, agent):
         self.agent = agent
+        self.task_finished_count = 0
+
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 
         self.cmdNameTocmdFunc = {
@@ -155,6 +157,15 @@ class GPSR:
         
         elif talk == 'your teams name':
             self.say('My team name is Tidy Boy')
+
+    def exeFollowup(self, followup):
+        followupName, params = ultimateFollowupParser(followup)
+        followUpFunc = self.followupNameTofollowupFunc[followupName]
+        followUpFunc(self, params)
+
+    def cmdError(self):
+        self.say("Sorry, I misunderstood.")
+        rospy.sleep(2)
 
     def quiz(self): 
         self.say("Ask question after the ding sound")
@@ -342,15 +353,6 @@ class GPSR:
 
         self.say(f"I found a person who is {gestPosePers}. Let's go.")
         rospy.sleep(3)
-
-    def getHumanAttribute(self):
-        # [TODO] Implement how the human attributes can be extracted
-        return None
-    
-    # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
-    def identifyByHumanAttribute(self, humanAttribute):
-        # [TODO] Implement how the human attributes can be identified
-        pass
     
     # 옷으로 찾기
     def identifyByClothing(self, Clothes):
@@ -392,6 +394,15 @@ class GPSR:
         # [TODO] Implement how the location can be extracted
         return None
     
+    def getHumanAttribute(self):
+        # [TODO] Implement how the human attributes can be extracted
+        return None
+    
+    # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
+    def identifyByHumanAttribute(self, humanAttribute):
+        # [TODO] Implement how the human attributes can be identified
+        pass
+    
     def objIdToName(self, id):
         return self.agent.yolo_module.find_name_by_id(id)
     
@@ -415,10 +426,6 @@ class GPSR:
         # [TODO] Implement how the lightest object can be found
         return self.findSmallestObjId(yolo_bbox)
     
-    def exeFollowup(self, followup):
-        followupName, params = ultimateFollowupParser(followup)
-        followUpFunc = self.followupNameTofollowupFunc[followupName]
-        followUpFunc(self, params)
     
 
 # MAIN
@@ -431,7 +438,7 @@ def gpsr(agent):
     # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
     # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
     # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
-    # inputText = "Tell me how many lying persons are in the living_room" #countPrsInRoom
+    # inputText = "Tell me how many lying persons are in the kitchen" #countPrsInRoom
     # inputText = "Find a drink in the living room then grasp it and put it on the bed" #findObjInRoom
     # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
     # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
@@ -448,13 +455,13 @@ def gpsr(agent):
     # inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
     # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
 
-    for _ in range(3):
+    while g.task_finished_count < 3:
 
         g.move('gpsr_instruction_point')
 
         # Get input with STT
         agent.say("I'm ready to receive a command")
-        rospy.sleep(3)
+        rospy.sleep(2.5)
 
         inputText = g.hear(7.)
         agent.say(f"Given Command is {inputText}")

@@ -19,3 +19,5 @@ def findObjInRoom(g, params):
     
     # [3] Follow-up command
     g.exeFollowup(followup)
+
+    g.task_finished_count += 1

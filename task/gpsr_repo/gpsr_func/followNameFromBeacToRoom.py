@@ -20,3 +20,5 @@ def followNameFromBeacToRoom(g, params):
 
     # [3] follow the person to the room 
     g.followToLoc(room)
+
+    g.task_finished_count += 1
