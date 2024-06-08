@@ -7,11 +7,11 @@ def tellPrsInfoInLoc(g, params):
     print("Start tellPrsInfoInLoc")
 
     # [0] Extract parameters
-    loc = g.extractLocFrominRoomatLoc(params['inRoom_atLoc'])
+    loc = params['inRoom_atLoc']
     persInfo = params['persInfo']
         
-    if persInfo not in ['name', 'pose', 'gesture']:
-        persInfo = 'name'
+    loc = g.cluster(loc, g.loc_list)
+    persInfo = g.cluster(persInfo, g.person_info_list)
         
     # [1] Move to the specified room
     g.move(loc)

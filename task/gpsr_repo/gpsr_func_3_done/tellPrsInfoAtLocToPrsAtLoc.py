@@ -7,9 +7,18 @@ def tellPrsInfoAtLocToPrsAtLoc(g, params):
     print("Start tellPrsInfoAtLocToPrsAtLoc")
 
     # [0] Extract parameters
-    loc = params['loc']
-    loc2 = params['loc2']
-    persInfo = params['persInfo']
+    try:
+        loc = params['loc']
+        loc2 = params['loc2']
+        persInfo = params['persInfo']
+    except Exception as e:
+        print(e)
+        g.cmdError()
+        return
+
+    loc = g.cluster(loc, g.loc_list)
+    loc2 = g.cluster(loc2, g.loc_list)
+    persInfo = g.cluster(persInfo, g.person_info_list)
         
     # [1] Move to the specified room
     g.move(loc)

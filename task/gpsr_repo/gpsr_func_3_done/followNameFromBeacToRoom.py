@@ -7,9 +7,17 @@ def followNameFromBeacToRoom(g, params):
     print("Start followNameFromBeacToRoom")
 
     # [0] Extract parameters
-    name = params['name']
-    loc = params['loc']
-    room = params['room']
+    try:
+        name = params['name']
+        loc = params['loc']
+        room = params['room']
+    except:
+        g.cmdError()
+        return
+
+    name = g.cluster(name, g.names_list)
+    loc = g.cluster(loc, g.loc_list)
+    room = g.cluster(room, g.rooms_list)
 
     # [1] Move to the specified location
     g.move(loc)

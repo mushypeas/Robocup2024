@@ -7,8 +7,14 @@ def goToLoc(g, params):
     print("Start goToLoc")
     
     # [0] Extract parameters
-    loc = params["loc_room"]
-    followup = params["followup"]
+    try:
+        loc = params["loc_room"]
+        followup = params["followup"]
+    except:
+        g.cmdError()
+        return
+
+    loc = g.cluster(loc, g.loc_list)
     
     # [1] Move to the specified room
     g.move(loc)

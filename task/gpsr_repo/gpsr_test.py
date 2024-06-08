@@ -53,3 +53,6 @@ def gpsr_test(agent):
         if cmd == "pick":
             item_name = input("What item do you want to pick?: ")
             g.pick(item_name)
+
+        if cmd == "follow":
+            g.follow()

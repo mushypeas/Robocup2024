@@ -11,6 +11,10 @@ def talkInfoToGestPrsInRoom(g, params):
     gestPers = params['gestPers']
     room = params['room']
 
+    talk = g.cluster(talk, g.talk_list)
+    gestPers = g.cluster(gestPers, g.gesture_person_list)
+    room = g.cluster(room, g.rooms_list)
+
     # [1] Move to the specified room
     g.move(room)
 

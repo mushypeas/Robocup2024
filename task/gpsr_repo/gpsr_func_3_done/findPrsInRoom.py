@@ -6,9 +6,16 @@ def findPrsInRoom(g, params):
     print("Start findPrsInRoom")
     
     # [0] Extract parameters
-    gestPosePers = params["gestPers_posePers"]
-    room = params["room"]
-    followup = params["followup"]
+    try:
+        gestPosePers = params["gestPers_posePers"]
+        room = params["room"]
+        followup = params["followup"]
+    except:
+        g.cmdError()
+        return
+
+    gestPosePers = g.cluster(gestPosePers, g.gesture_person_list + g.pose_person_list)
+    room = g.cluster(room, g.rooms_list)
 
     # [1] Move to the specified room
     g.move(room)

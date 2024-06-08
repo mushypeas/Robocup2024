@@ -13,6 +13,11 @@ import cv2
 
 from std_msgs.msg import Int16MultiArray
 
+from sensor_msgs.msg import LaserScan
+from geometry_msgs.msg import Twist
+
+
+
 objects_data = readData(objects_file_path)
     
 class GPSR:
@@ -87,13 +92,56 @@ class GPSR:
         
         # CLIP
         self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
-    
+
+        # FOLLOW
+        self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
+        self.following = False
+        self.person_distance = None
+        self.person_angle = None
+
+    # CALLBACKS
     def _knee_pose_callback(self, msg):
         rospy.loginfo(msg.data)
 
+    def scan_callback(self, data):
+        # Simple person detection logic based on the nearest object
+        min_distance = float('inf')
+        min_angle = 0
+        for i, distance in enumerate(data.ranges):
+            if distance < min_distance:
+                min_distance = distance
+                min_angle = i
+
+        # Store the detected person's distance and angle
+        self.person_distance = min_distance
+        self.person_angle = min_angle
+
+        print(self.person_distance, self.person_angle)
+    
     ### HELP Functions ###
         
-    ## TODO : Implement yolo id2name & name2id
+    def follow(self):
+        self.following = True
+        rate = rospy.Rate(10)  # 10 Hz
+        while not rospy.is_shutdown():
+            if self.person_distance is not None:
+                if self.person_distance > 0.5:  # Maintain 0.5 meters distance
+                    self.move_rel(0.5, 0)
+
+                # if self.person_angle < 180:
+                #     self.move_rel(0, 0, yaw=-0.5)  # Turn right
+                # elif self.person_angle > 180:
+                #     self.move_rel(0, 0, yaw=0.5)  # Turn left
+
+                ### TODO : finish the follow function
+                # self.following = False
+
+            rate.sleep()
+
+    def followToLoc(self, loc):
+        # [TODO] Implement how the person can be followed to the location
+        pass
+
     def get_yolo_bbox(self, category=None):
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
@@ -120,8 +168,11 @@ class GPSR:
         
     def guide(self, loc):
         print("GPSR Guide Start")
-        self.say("I will guide you to the location")
+        self.say(f"Please follow me")
+        rospy.sleep(1)
         self.agent.move_abs(loc)
+        self.say("Bye bye.")
+        rospy.sleep(1)
 
     def pickCat(self, cat):
         yolo_bbox = self.get_yolo_bbox(cat)
@@ -248,7 +299,7 @@ class GPSR:
         self.say("Please say your name after ding sound")
         rospy.sleep(3)
         userName = self.hear()
-        # [TODO] improve how the name can be extracted
+        userName = self.cluster(userName, self.names_list)
         return userName
     
     def getPose(self):
@@ -324,7 +375,7 @@ class GPSR:
         
     # 이름을 가진 사람 앞에서 멈추기
     def identifyByName(self, name):
-        self.say(f"{name}, please come to my back.")
+        self.say(f"{name}, please come closer to me.")
         rospy.sleep(3)
         self.say("three")
         rospy.sleep(1)
@@ -449,18 +500,6 @@ class GPSR:
         personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="colorCloth", key=colorClothes)
 
         return personCount
-    
-    def follow(self):
-        # [TODO] Implement how the person can be followed
-        pass
-    
-    def followToLoc(self, loc):
-        # [TODO] Implement how the person can be followed to the location
-        pass
-    
-    def extractLocFrominRoomatLoc(self, inRoom_atLoc):
-        # [TODO] Implement how the location can be extracted
-        return None
     
     def getHumanAttribute(self):
         # [TODO] Implement how the human attributes can be extracted
