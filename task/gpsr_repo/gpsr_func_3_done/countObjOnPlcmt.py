@@ -18,6 +18,9 @@ def countObjOnPlcmt(g, params):
         g.cmdError()
         return
 
+    plurCat = g.cluster(plurCat, g.object_categories_plural)
+    plcmtLoc = g.cluster(plcmtLoc, g.loc_list)
+
     singCat = g.categoryPlur2Sing[plurCat]
 
     # [1] Find the object in the room

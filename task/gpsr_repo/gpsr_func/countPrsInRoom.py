@@ -15,7 +15,8 @@ def countPrsInRoom(g, params):
         g.cmdError()
         return
     
-    g.cluster(gestPosePersPlur, g.gest_list + g.pose_list)
+    gestPosePersPlur = g.cluster(gestPosePersPlur, g.gest_list + g.pose_list)
+    room = g.cluster(room, )
 
     # [1] move to the specified room
     g.move(room)
@@ -25,6 +26,9 @@ def countPrsInRoom(g, params):
     
     # [3] Output the count
     # TODO: Fix the grammar for singular and plural
-    g.say(f"There are {count} {gestPosePersPlur} in the {room}")
+    try:
+        g.say(f"There are {count} {gestPosePersPlur} in the {room}")
+    except:
+        g.say(count)
 
     g.task_finished_count += 1

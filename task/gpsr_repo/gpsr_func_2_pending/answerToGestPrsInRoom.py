@@ -15,6 +15,9 @@ def answerToGestPrsInRoom(g, params):
         g.cmdError()
         return
     
+    gestPers = g.cluster(gestPers, g.gesture_person_list)
+    room = g.cluster(room, g.rooms_list)
+    
     # [1] Move to the specified room
     g.move(room)
 

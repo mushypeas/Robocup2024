@@ -22,6 +22,10 @@ def tellCatPropOnPlcmt(g, params):
         g.cmdError()
         return
     
+    cat = g.cluster(cat, g.object_categories_singular)
+    loc = g.cluster(loc, g.loc_list)
+    comp = g.cluster(comp, g.object_comp_list)
+    
     # [1] Move to the specified space
     g.move(loc)
 

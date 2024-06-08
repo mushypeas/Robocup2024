@@ -31,6 +31,13 @@ class GPSR:
         self.color_list = color_list
         self.clothe_list = clothe_list
         self.clothes_list = clothes_list
+        self.rooms_list = rooms_list
+
+        self.loc_list = list(ABS_POSITION.keys())
+
+        self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
+        
+        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 
@@ -74,10 +81,6 @@ class GPSR:
             "guidePrsToBeacon": guidePrsToBeacon,
             "takeObj": takeObj
         }
-
-        self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
-        
-        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
         
         # CLIP
         self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
@@ -498,7 +501,7 @@ def gpsr(agent):
         g.move('gpsr_instruction_point')
 
         # Get input with STT
-        agent.say("I'm ready to receive a command")
+        agent.say("Give a command after the ding sound.")
         rospy.sleep(2.5)
 
         inputText = g.hear(7.)

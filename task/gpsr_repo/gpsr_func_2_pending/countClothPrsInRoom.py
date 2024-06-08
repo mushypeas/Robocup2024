@@ -19,6 +19,7 @@ def countClothPrsInRoom(g, params):
         for clothes in g.clothes_list:
             colorClothes_list.append(color + " " + clothes)
 
+    room = g.cluster(room, g.rooms_list)
     colorClothes = g.cluster(colorClothes, colorClothes_list)
 
     # [1] Move to the specified room
@@ -29,6 +30,9 @@ def countClothPrsInRoom(g, params):
 
     # [3] Output the count
     # TODO : Fix the grammar for singular and plural
-    g.say(f"There are {count} people in the {room} wearing {colorClothes}")
+    try:
+        g.say(f"There are {count} people in the {room} wearing {colorClothes}")
+    except:
+        g.say(count)
 
     g.task_finished_count += 1
