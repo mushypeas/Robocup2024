@@ -64,6 +64,8 @@ def make_object_list(yolo_classname_path):
         print(OBJECT)
 
     print()
+
+    return OBJECT_LIST
     
 
 if __name__ == '__main__':

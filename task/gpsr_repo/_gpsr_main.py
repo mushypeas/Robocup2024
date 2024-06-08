@@ -432,11 +432,11 @@ def gpsr(agent):
     agent.say("I'm ready to receive a command")
     rospy.sleep(3)
 
-    inputText, _ = agent.stt(10.)
+    inputText = g.hear(7.)
     agent.say(f"Given Command is {inputText}")
 
     # inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
-    # inputText = "Tell me how many drinks there are on the table" #countObjOnPlcmt
+    # inputText = "Tell me how many drinks there are on the desk" #countObjOnPlcmt
     # inputText = "Tell me what is the biggest food on the table" #tellCatPropOnPlcmt
     # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
     # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
