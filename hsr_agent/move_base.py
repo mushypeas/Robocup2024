@@ -87,16 +87,16 @@ class MoveBase:
         goal.target_pose = pose
         # send message to the action server
         self.base_action_client.send_goal(goal)
-        if wait:
             # wait for the action server to complete the order
-            self.base_action_client.wait_for_result()
-            # print result of navigation
-            action_state = self.base_action_client.get_state()
-            if action_state == GoalStatus.SUCCEEDED:
-                rospy.loginfo("Navigation Succeeded.")
-            else:
-                rospy.logerr("Navigation FAILED!!!!")
-                return False
+        self.base_action_client.wait_for_result()
+        # print result of navigation
+        action_state = self.base_action_client.get_state()
+        if action_state == GoalStatus.SUCCEEDED:
+            rospy.loginfo("Navigation Succeeded.")
+            return True
+        else:
+            rospy.logerr("Navigation FAILED!!!!")
+            return False
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
         goal_x, goal_y, goal_yaw = position
