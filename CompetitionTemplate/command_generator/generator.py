@@ -1,7 +1,7 @@
 import random
 import re
 import warnings
-import qrcode
+import qrcode 
 from PIL import Image, ImageDraw, ImageFont
 from gpsr_commands import CommandGenerator
 from egpsr_commands import EgpsrCommandGenerator

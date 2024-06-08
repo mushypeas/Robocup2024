@@ -408,3 +408,9 @@ elif False:
 
     ARENA_EDGES = [[0.96,-2.14], [10,-1.9], [9.93, 5.04], [0.925, 4.73]]
 
+try:
+    sys.path.append('task/gpsr_repo')
+    import gpsr_config
+    ABS_POSITION.update(gpsr_config.ABS_POSITION)
+except:
+    pass

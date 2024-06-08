@@ -16,6 +16,12 @@ class CommandGenerator:
         self.object_categories_plural = object_categories_plural
         self.object_categories_singular = object_categories_singular
 
+        for loc_name in sorted(list(set(self.location_names + self.room_names + self.placement_location_names))):
+            print(f"\"{loc_name}\": ,")
+
+        for object_name in self.object_names:
+            print(f"{object_name}")
+
     verb_dict = {
         "take": ["take", "get", "grasp", "fetch"],
         "place": ["put", "place"],

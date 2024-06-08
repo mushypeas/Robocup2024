@@ -426,15 +426,16 @@ class GPSR:
 def gpsr(agent):
     g = GPSR(agent)
     # TODO : goto the instruction loc
+    g.move('gpsr_instruction_point')
 
-    # # Get input with STT
-    # agent.say("I'm ready to receive a command")
-    # rospy.sleep(4)
+    # Get input with STT
+    agent.say("I'm ready to receive a command")
+    rospy.sleep(3)
 
-    # inputText, _ = agent.stt(10.)
-    # agent.say(f"Given Command is {inputText}")
+    inputText, _ = agent.stt(10.)
+    agent.say(f"Given Command is {inputText}")
 
-    # inputText = "Bring me an apple from the table" #bringMeOjbFromPlcmt
+    # inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
     # inputText = "Tell me how many drinks there are on the table" #countObjOnPlcmt
     # inputText = "Tell me what is the biggest food on the table" #tellCatPropOnPlcmt
     # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
@@ -454,7 +455,7 @@ def gpsr(agent):
     # inputText = "Meet Jules in the living room and follow them" #meetPrsAtBeac
     # inputText = "Take a cola from the desk and put it on the sofa" #takeObjFromPlcmt
     # inputText = "Tell the day of the week to the person pointing to the left in the kitchen" #talkInfoToGestPrsInRoom
-    inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
+    # inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
     # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
         
     # parse InputText 
