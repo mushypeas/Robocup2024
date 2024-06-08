@@ -496,7 +496,7 @@ def gpsr(agent):
     # inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
     # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
 
-    while g.task_finished_count < 3:
+    while g.task_finished_count < task_iteration:
 
         g.move('gpsr_instruction_point')
 

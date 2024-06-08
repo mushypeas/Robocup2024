@@ -1,3 +1,5 @@
+task_iteration = 1
+
 ABS_POSITION = {
     "gpsr_instruction_point": [2.5779, -0.2848, 0.0302],
     "bed": [7.0972, 2.0981, -1.6446],

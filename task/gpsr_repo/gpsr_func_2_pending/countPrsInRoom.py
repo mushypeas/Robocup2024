@@ -15,8 +15,8 @@ def countPrsInRoom(g, params):
         g.cmdError()
         return
     
-    gestPosePersPlur = g.cluster(gestPosePersPlur, g.gest_list + g.pose_list)
-    room = g.cluster(room, )
+    gestPosePersPlur = g.cluster(gestPosePersPlur, g.gesture_person_list + g.pose_person_list)
+    room = g.cluster(room, g.rooms_list)
 
     # [1] move to the specified room
     g.move(room)
