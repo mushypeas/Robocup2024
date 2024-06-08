@@ -13,7 +13,6 @@ import cv2
 
 from std_msgs.msg import Int16MultiArray
 
-objects_file_path = 'CompetitionTemplate/objects/test.md'
 objects_data = readData(objects_file_path)
     
 class GPSR:
@@ -25,17 +24,13 @@ class GPSR:
         self.pose_person_list = pose_person_list
         self.gesture_person_plural_list = gesture_person_plural_list
         self.pose_person_plural_list = pose_person_plural_list
-
-        person_info_list = ["name", "pose", "gesture"]
-        object_comp_list = ["biggest", "largest", "smallest", "heaviest", "lightest", "thinnest"]
-
-        talk_list = ["something about yourself", "the time", "what day is today", "what day is tomorrow", "your teams name",
-                        "your teams country", "your teams affiliation", "the day of the week", "the day of the month"]
-        question_list = ["question", "quiz"]
-
-        color_list = ["blue", "yellow", "black", "white", "red", "orange", "gray"]
-        clothe_list = ["t shirt", "shirt", "blouse", "sweater", "coat", "jacket"]
-        clothes_list = ["t shirts", "shirts", "blouses", "sweaters", "coats", "jackets"]
+        self.person_info_list = person_info_list
+        self.object_comp_list = object_comp_list
+        self.talk_list = talk_list
+        self.question_list = question_list
+        self.color_list = color_list
+        self.clothe_list = clothe_list
+        self.clothes_list = clothes_list
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 
@@ -81,6 +76,7 @@ class GPSR:
         }
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
+        
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
         
         # CLIP
@@ -159,7 +155,9 @@ class GPSR:
         return userSpoken
         
     def talk(self, talk):
-        ### TODO: cluster talk into commands (5)
+        if talk not in self.talk_list:
+            talk = self.cluster(talk, self.talk_list)
+
         if talk == 'something about yourself':
             self.say('I am a robot designed to help people in their daily lives')
             
@@ -195,21 +193,24 @@ class GPSR:
         # [TODO] improve how the quiz can be answered
 
     def cluster(self, word, arr):
+        if word in arr:
+            return word
+
         prompt = f"What is the closest pronounciation to the {word} between these words? "
 
         for i, w in enumerate(arr):
             prompt += f"{i+1}. {w} "
 
         prompt += "you must answer only one number, the number of the word. Do not say the word and alphabet"
-
-        ans = chat(prompt)
-        print("chat ans", ans)
-
         try:
+            ans = chat(prompt)
             return arr[int(ans.split('.')[0])-1]
         
-        except:
+        except Exception as e:
+            print(e)
             print("Error in clustering")
+
+            ## TODO 단어 거리 하드코딩
             return word
             
     # TODO

@@ -32,6 +32,8 @@ ABS_POSITION = {
     "bathroom": [6.725, 3.016, -0.651],
 }
 
+objects_file_path = 'CompetitionTemplate/objects/test.md'
+
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
 pose_person_list = ["sitting person", "standing person", "lying person"]

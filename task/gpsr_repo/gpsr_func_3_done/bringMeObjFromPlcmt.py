@@ -15,6 +15,8 @@ def bringMeObjFromPlcmt(g, params):
     except KeyError:
         g.cmdError()
         return
+    
+    obj = g.cluster(obj, g.object_names)
         
     # [1] Move to the specified location
     g.move(plcmtLoc)

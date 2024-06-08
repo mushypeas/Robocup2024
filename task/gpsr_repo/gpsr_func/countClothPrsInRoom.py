@@ -6,8 +6,20 @@ def countClothPrsInRoom(g, params):
     print("Start countClothPrsInRoom")
 
     # [0] Extract parameters
-    room = params["room"]
-    colorClothes = params["colorClothes"]
+    try:
+        room = params["room"]
+        colorClothes = params["colorClothes"]
+    except KeyError as e:
+        g.cmdError()
+        return
+    
+    colorClothes_list = []
+
+    for color in g.color_list:
+        for clothes in g.clothes_list:
+            colorClothes_list.append(color + " " + clothes)
+
+    colorClothes = g.cluster(colorClothes, colorClothes_list)
 
     # [1] Move to the specified room
     g.move(room)
