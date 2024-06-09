@@ -12,6 +12,7 @@ from hsr_agent.agent import Agent
 #       1) picking, placing place 좌표 -> global_config.py 파일 수정 , 정확한 placing location 확인하기             #
 #       2) object(시리얼, 우유) 높이 측정 -> 이 파일에서 수정.                                                        #
 #       3) Table 별 dimension 측정 후 -> global_config.py 파일 수정                                               #
+#       4) 시차 고려해야 함. 시간 동기화 필수                                                                        #
 #                                                                                                             #
 ###############################################################################################################
 
@@ -37,6 +38,7 @@ from hsr_agent.agent import Agent
 # object detect 100번 초과 시 사람에게 달라고 하기
 # pouring 할 때, 흘리지 않으려면 새로운 포즈 생성해야 함. object height 기준으로 arm_lift_up 설정하기. 올라감과 동시에 wrist_roll이 함께 동작하여 '부으면서 살짝 내려갔다가 다시 살짝 들고' + 두기 로 변경하기.
 # 100번 초과 시 사람에게 달라고 해서 grasp한 상태로 코드 동작하는지 확인 필요.
+
 
 class ServeBreakfast:
 
@@ -64,26 +66,28 @@ class ServeBreakfast:
         self.pick_front_bias = [0.03, 0.00, -0.03]  # [x, y, height]
         self.pick_top_bias = [-0.01, 0.00, -0.015]  # [x, y, height]
         self.pick_bowl_bias = [0.0, 0.00, -0.11]    # [x, y, height]
+        self.pick_cucudas_bias = [0.0, 0.00, -0.6] # [x, y, height]
+        self.pick_spoon_bias = [0.0, 0.00, -0.2]    # [x, y, height]     
         self.pour_offsets = { # [x, y, angle]
             'cucudas': [0.0, 0.07, 110],
             'blue_milk': [0.0, 0.075, 130],
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height]
-            'bowl': [self.dist_to_place_table - 0.60, -0.2, 0],
-            'cucudas': [0.0, 0.18, 0],
-            'blue_milk': [0.02, 0.12, 0],
-            'spoon': [0.25, -0.15, 0.23]
+            'bowl': [self.dist_to_place_table - 0.57, -0.2, 0],
+            'cucudas': [0, 0.3, 0],
+            'blue_milk': [0, 0.15, 0],
+            'spoon': [0.25, -0.3, 0.23]
         }
 
-        self.pick_table = 'breakfast_table' # 240609 기말고사용 수정.  기존 'breakfast_table'
+        self.pick_table = 'breakfast_table' 
         self.pick_table_depth = self.agent.table_dimension[self.pick_table][1] 
         self.pick_table_height = self.agent.table_dimension[self.pick_table][2]
         self.pick_table_head_angle = np.arctan(
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'kitchen_table' # 240609 기말고사용 수정.  기존 'kitchen_table'
+        self.place_table = 'kitchen_table' 
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
 
@@ -101,7 +105,7 @@ class ServeBreakfast:
             
             rospy.sleep(0.2) # give some time for the YOLO to update
             table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
-                table='식탁용식기세척기', # 240609 기말고사용 수정.  기존 'breakfast_table'
+                table='breakfast_table',
                 dist=self.dist_to_pick_table,
                 depth=self.pick_table_depth,
                 item_list=item_list
@@ -142,9 +146,10 @@ class ServeBreakfast:
         if item == 'bowl':
             import pdb; pdb.set_trace()
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
-            self.agent.move_rel(0, table_base_xyz[1], wait=False)
+            self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
             self.agent.open_gripper(wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table) 
+            self.agent.move_rel(table_base_xyz[0]+0.1, 0, wait=True)
             self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp()
@@ -153,21 +158,25 @@ class ServeBreakfast:
 
         elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(0, table_base_xyz[1], wait=False)
-            self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
+            self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
             self.agent.open_gripper(wait=False)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+            # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
+            self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
             self.agent.grasp(wait=False)
             rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.4, 0, wait=False)
+            self.agent.move_rel(-0.7, 0, wait=False)
 
         else:
             if item == 'spoon':
-                self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
+                self.agent.pose.bring_bowl_pose(table=self.pick_table)
+                # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
                 self.agent.open_gripper(wait=False)
                 self.agent.move_rel(0, table_base_xyz[1], wait=True)
                 self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+                self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
                 self.agent.grasp(wait=False)
                 rospy.sleep(0.5) # wait for grasping manually
                 self.agent.pose.arm_flex(-60)
@@ -216,10 +225,13 @@ class ServeBreakfast:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        ### task start ##
-        # agent.door_open()
+        ### task start ##  (Inital location -> agent.move_abs('zero') )
+
+        self.agent.door_open()
         self.agent.say('Hi, I will serve breakfast for you!')
         rospy.sleep(2)
+        self.agent.move_abs('breakfast_table')
+
 
         picked_items = []
 
@@ -231,7 +243,9 @@ class ServeBreakfast:
             while not has_grasped:
                 rospy.logwarn('Go to pick_location...')
                 self.agent.say('I will move to a different location. Please be careful.')
+                self.agent.move_rel(-0.2,0)
                 self.agent.pose.table_search_pose(head_tilt=self.pick_table_head_angle)
+                self.agent.head_tilt(-10)
                 self.agent.move_abs_safe(self.pick_table)
                 rospy.sleep(2)
                 # Search item
@@ -264,6 +278,7 @@ class ServeBreakfast:
             rospy.logwarn('Going to place_location...')
             self.agent.say('I will move to a different location. Please be careful.')
             self.agent.move_abs_safe(self.place_table)
+            self.agent.move_rel(-0.3, 0)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
             if item in ['cucudas', 'blue_milk']:

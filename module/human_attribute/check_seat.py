@@ -39,14 +39,17 @@ class CheckSeat():
         user_face_data_list = []
 
         # left view
-        agent.pose.head_pan(self.head_pan_angle[0])
+        # agent.pose.head_pan(self.head_pan_angle[0])
+        agent.pose.head_pan(45) # 0609
         rospy.sleep(1)
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
-            self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+            # self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+            self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -58,11 +61,18 @@ class CheckSeat():
             #     elif width / 2 <= user[0] < width:
             #         seat_info[1][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 200 <= user[0] < 360:
+            #         seat_info[0][0] = 1
+            #     elif 360 <= user[0] < 560:
+            #         seat_info[1][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 200 <= user[0] < 360:
+                if 180 <= user[0] < 440:
                     seat_info[0][0] = 1
-                elif 360 <= user[0] < 560:
+                elif 440 <= user[0] < 600:
                     seat_info[1][0] = 1
 
         # middle view
@@ -71,9 +81,11 @@ class CheckSeat():
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [130, 580])
-            self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
+            # self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
+            self.check_calibration_mode(agent, self.face_threshold2, [150, 550]) # 0609
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [130, 580])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
+        user_locations, user_face_data = self.check(agent, self.face_threshold2, [150, 550]) # 0609
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -85,11 +97,18 @@ class CheckSeat():
             #     else:
             #         seat_info[3][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 100 <= user[0] < 320:
+            #         seat_info[2][0] = 1
+            #     elif 320 <= user[0] < 500:
+            #         seat_info[3][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 100 <= user[0] < 320:
+                if 150 <= user[0] < 350:
                     seat_info[2][0] = 1
-                elif 320 <= user[0] < 500:
+                elif 350 <= user[0] < 550:
                     seat_info[3][0] = 1
 
                 # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
@@ -105,14 +124,17 @@ class CheckSeat():
 
         # right view
         # agent.pose.head_pan(self.head_pan_angle[-1])
-        agent.pose.head_pan(self.head_pan_angle[-2])
+        # agent.pose.head_pan(self.head_pan_angle[-2])
+        agent.pose.head_pan(-45) # 0609
         rospy.sleep(1)
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
-            self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+            # self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+            self.check_calibration_mode(agent, self.face_threshold, [30, 560])
         # user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
+        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [30, 560])
         if user_locations is not None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -124,13 +146,22 @@ class CheckSeat():
             #     elif width / 2 <= user[0] < width:
             #         seat_info[5][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 80 <= user[0] < 210:
+            #         seat_info[4][0] = 1
+            #     elif 210 <= user[0] < 360:
+            #         seat_info[5][0] = 1
+            #     elif 360 <= user[0] < 560:
+            #         seat_info[6][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 80 <= user[0] < 210:
+                if 30 <= user[0] < 170:
                     seat_info[4][0] = 1
-                elif 210 <= user[0] < 360:
+                elif 170 <= user[0] < 330:
                     seat_info[5][0] = 1
-                elif 360 <= user[0] < 560:
+                elif 330 <= user[0] < 560:
                     seat_info[6][0] = 1
 
         # # save host face image
@@ -217,21 +248,43 @@ class CheckSeat():
             return None, None
 
     def seat_available(self, seat_info):
-        # idx 2, 3
-        sofa_seat_count = 0
-        for i in range(2, 4):
-            if seat_info[i][0] == 1:
-                sofa_seat_count += 1
-        print('check_seat seat_available sofa_seat_count: ', sofa_seat_count)
-        if sofa_seat_count == 2:
-            return 5
-        elif sofa_seat_count == 1:
-            if seat_info[2][0] == 1:
-                return 3
-            else:
-                return 2
-        else:
-            return 2
+        # # idx 2, 3
+        # sofa_seat_count = 0
+        # for i in range(2, 4):
+        #     if seat_info[i][0] == 1:
+        #         sofa_seat_count += 1
+        # print('check_seat seat_available sofa_seat_count: ', sofa_seat_count)
+        # if sofa_seat_count == 2:
+        #     return 5
+        # elif sofa_seat_count == 1:
+        #     if seat_info[2][0] == 1:
+        #         return 3
+        #     else:
+        #         return 2
+        # else:
+        #     return 2
+        
+        # 0609
+        for i in range(len(seat_info)):
+            if seat_info[i][0] == 0:
+                if i == 0:
+                    if seat_info[1][0] == 0:
+                        return i
+                    else:
+                        continue
+                elif i==len(seat_info)-1:
+                    if seat_info[len(seat_info)-2][0] == 0:
+                        return i
+                    else:
+                        continue
+                else:
+                    if seat_info[i-1][0] == 0 and seat_info[i+1][0] == 0:
+                        return i
+                    else:
+                        continue
+        for i in range(len(seat_info)):
+            if seat_info[i][0] == 0:
+                return i
 
     def host_seat(self, seat_info):
         for idx, seat in enumerate(seat_info):
