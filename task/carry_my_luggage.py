@@ -725,7 +725,7 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and (center is not None and center[1] > 200 and center[1] < 440)  :
+            if tiny_exist and (center is not None and center[1] > 160 and center[1] < 480)  :
 
 
 
@@ -751,13 +751,14 @@ class HumanFollowing:
                 if right_background_count > left_background_count:
                     self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                     rospy.sleep(3)
-
-                    
-                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
+                    self.agent.move_rel(0.3,0,0, wait=False)
+                    rospy.sleep(2)
                 else:
                     self.agent.move_rel(0.0,0.8,0, wait=False)
                     rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
+                    self.agent.move_rel(0.3,0,0, wait=False)
+                    rospy.sleep(2)
+
 
 
 
