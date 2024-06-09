@@ -265,20 +265,20 @@ class CheckSeat():
         #     return 2
         
         # 0609
-        for i in range(len(seat_info)):
-            if seat_info[i][0] == 0:
+        for i in [2, 3, 1, 4, 0, 5, 6]:
+            if seat_info[i][0] != 1:
                 if i == 0:
-                    if seat_info[1][0] == 0:
+                    if seat_info[1][0] != 1:
                         return i
                     else:
                         continue
                 elif i==len(seat_info)-1:
-                    if seat_info[len(seat_info)-2][0] == 0:
+                    if seat_info[len(seat_info)-2][0] != 1:
                         return i
                     else:
                         continue
                 else:
-                    if seat_info[i-1][0] == 0 and seat_info[i+1][0] == 0:
+                    if seat_info[i-1][0] != 1 and seat_info[i+1][0] != 1:
                         return i
                     else:
                         continue

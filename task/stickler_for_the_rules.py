@@ -234,11 +234,13 @@ class ForbiddenRoom:
         # rospy.sleep(3)
         self.agent.say('Please follow me!', show_display=True)
         rospy.sleep(1)
+        self.agent.move_pose() # 0609
         self.agent.move_abs_safe('bedroom_search_reverse')
 
         self.agent.move_abs_safe(destination)
 
         self.agent.pose.head_tilt(20)
+        self.agent.pose.head_pan(135) # 0609
         self.agent.say('Thank you!', show_display=True)
         rospy.sleep(1)
         self.agent.say('Now you are in\nan appropriate room!',
@@ -246,6 +248,7 @@ class ForbiddenRoom:
         rospy.sleep(2.5)
         self.agent.say('Enjoy your party', show_display=True)
         rospy.sleep(2)
+        self.agent.pose.head_pan(0) # 0609
 
     def draw_forbidden_room_marker(self, min_points, max_points):
         cube_points = [[min_points[0], min_points[1], min_points[2]],  # 1
@@ -390,17 +393,20 @@ class NoLittering:
     def ask_to_action(self, bin_location):
         self.agent.say(
             "Please pick up\nthe litter in front of me", show_display=True)
-        rospy.sleep(8)
+        # rospy.sleep(8)
+        rospy.sleep(5) # 0609
         # ask the offender to throw the garbage into the bin
         # self.agent.say('Allow me to assist you\nto throw it into the bin.', show_display=True)
         # rospy.sleep(5)
         self.agent.say('Please follow me\nto the bin', show_display=True)
         rospy.sleep(2)
+        self.agent.pose.head_pan(0) # 0609
         self.agent.move_abs_safe(bin_location)
         # rospy.sleep(2)
         # self.agent.pose.head_tilt(-60) # 0609
         self.agent.say("Please throw\nthe garbage\ninto the bin",
                        show_display=True)
+        rospy.sleep(5) # 0609
 
         # confirm_start_time = time.time()
         # while len(self.agent.yolo_module.yolo_bbox) == 0:
@@ -458,7 +464,7 @@ class DrinkDetection:
         cv2.imshow('img', img)
         cv2.waitKey(1)
 
-    def find_drink(self):
+    def find_drink(self, double_check=False):
 
         # self.agent.pose.head_tilt(10)
         # rospy.sleep(0.5)
@@ -468,6 +474,46 @@ class DrinkDetection:
         text_inputs = ["human who is holding drink", "human with empty hand", "human whose hand is not visible"]
         text_inputs = [prompt + " " + t for t in text_inputs]
         tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
+
+        # double check mode
+        if double_check:
+            text_inputs = text_inputs[:2]
+            count = 0
+            while count < 5:
+                image = self.agent.rgb_img
+                crop_img = image[:,80:560]
+
+                cv2.imshow('crop_img', crop_img)
+                cv2.waitKey(1)
+                cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_double_check_{count}.jpg', crop_img)
+
+                # Preprocess image
+                crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+                crop_img = self.clip_preprocess(crop_img)
+                crop_img = crop_img.unsqueeze(0).to(self.device)
+
+                # Encode image and text features
+                with torch.no_grad():
+                    image_features = self.clip_model.encode_image(crop_img)
+                    text_features = self.clip_model.encode_text(tokenized_prompt)
+                    image_features /= image_features.norm(dim=-1, keepdim=True)
+                    text_features /= text_features.norm(dim=-1, keepdim=True)
+
+                    # Calculate text probabilities
+                    text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+                # Convert probabilities to percentages
+                text_probs_percent = text_probs * 100
+                text_probs_percent_np = text_probs_percent.cpu().numpy()
+                formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                print("Labels probabilities in percentage:", formatted_probs)
+                if text_probs_percent_np[0][0] > 50:
+                    return True
+                count += 1
+
+            return False
+            
 
         for head_tilt_angle in [20, 10, 0, -10]:
         
@@ -748,7 +794,7 @@ class DrinkDetection:
         self.agent.say("Hold the drink \ninfront of me to double check", show_display=True)
         rospy.sleep(5)
         # if self.detect_no_drink_hand():
-        if not self.find_drink():
+        if not self.find_drink(double_check=True):
             self.agent.pose.head_tilt(20)
             self.agent.say("You did not pick up a drink", show_display=True)
             rospy.sleep(2)
@@ -861,8 +907,14 @@ def stickler_for_the_rules(agent):
                     agent.say('Please leave this room empty',
                                 show_display=True)
                     rospy.sleep(2)
+
+                    # 0609
+                    agent.move_rel(0, 0, yaw=math.radians(180))
+                    agent.say('You can leave that way', show_display=True)
+                    rospy.sleep(2)
+
                     agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
-                    rospy.sleep(7)
+                    rospy.sleep(5) # 0609
                     agent.move_abs_safe('bedroom_doublecheck')
                     agent.say('Checking the room if empty', show_display=True)
                     agent.pose.head_tilt(-15)
