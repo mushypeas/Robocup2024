@@ -11,8 +11,6 @@ import open_clip
 from PIL import Image
 import torch
 # from module.CLIP.clip_detection import CLIPDetector, CLIPDetectorConfig
-from utils.marker_maker import MarkerMaker
-from utils.axis_transform import Axis_transform
 from std_msgs.msg import Int16MultiArray
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
@@ -24,22 +22,17 @@ import sys
 
 sys.path.append('.')
 
-
 class ShoeDetection:
     def __init__(self, agent):
         self.agent = agent
-        self.axis_transform = axis_transform
+        self.axis_transform = Axis_transform()
+        self.shoe_detected = False
+        self.shoe_position = None
+        # FIXME: return shoe_human_pos when detect guest wearing shoe
+        self.shoe_human_pos = None
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
                          self._knee_pose_callback)
         self.knee_list = None
-
-        # Initialize the CLIP model
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
-        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
-        self.clip_model.load_state_dict(state_dict['CLIP'])
-        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
-        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
@@ -49,37 +42,47 @@ class ShoeDetection:
                 self.min_knee = self.agent.depth_image[y, x]
 
     def find_shoes(self):
-        # Prompt for CLIP model
-        prompt = "a photo of a"
-        text_inputs = ["human who is wearing shoes", "barefoot person"]
-        text_inputs = [prompt + " " + t for t in text_inputs]
-        tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
+        mp_drawing = mp.solutions.drawing_utils
+        mp_objectron = mp.solutions.objectron
 
-        # Preprocess image
-        image = self.agent.rgb_img
-        img = Image.fromarray(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
-        img = self.preprocess(img).unsqueeze(0).to(self.device)
+        # For webcam input:
+        with mp_objectron.Objectron(static_image_mode=False,
+                                    max_num_objects=5,
+                                    min_detection_confidence=0.65,
+                                    min_tracking_confidence=0.99,
+                                    model_name='Shoe') as objectron:
+            image = self.agent.rgb_img
+            # To improve performance, optionally mark the image as not writeable to
+            # pass by reference.
+            image.flags.writeable = False
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+            results = objectron.process(image)
 
-        # Encode image and text features
-        with torch.no_grad():
-            image_features = self.clip_model.encode_image(img)
-            text_features = self.clip_model.encode_text(tokenized_prompt)
-            image_features /= image_features.norm(dim=-1, keepdim=True)
-            text_features /= text_features.norm(dim=-1, keepdim=True)
+            # Draw the box landmarks on the image.
+            image.flags.writeable = True
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            if results.detected_objects is not None:
+                for detected_object in results.detected_objects:
+                    print(detected_object)
+                    mp_drawing.draw_landmarks(
+                        image, detected_object.landmarks_2d, mp_objectron.BOX_CONNECTIONS)
+                    mp_drawing.draw_axis(image, detected_object.rotation,
+                                         detected_object.translation)
 
-            # Calculate text probabilities
-            text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                    shoe_x = 0
+                    shoe_y = 0
+                    for i in detected_object.landmarks_2d.landmark:
+                        shoe_x += i.x / \
+                            len(detected_object.landmarks_2d.landmark)
+                        shoe_y += i.y / \
+                            len(detected_object.landmarks_2d.landmark)
 
-        # Convert probabilities to percentages
-        text_probs_percent = text_probs * 100
-        text_probs_percent_np = text_probs_percent.cpu().numpy()
-        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+                    self.shoe_position = [shoe_x, shoe_y]
 
-        print("Labels probabilities in percentage:", formatted_probs)
-
-        # Determine if shoes are detected by comparing the numeric value
-        if formatted_probs > 65:
-            return True
+                    print("shoes found")
+                    cv2.imshow('MediaPipe Objectron', cv2.flip(image, 1))
+                    cv2.waitKey(1)
+                return True
         return False
 
     def run(self):
@@ -124,6 +127,8 @@ class ShoeDetection:
         else:
             self.agent.say("Please come closer to me")
 
+                
+
     def ask_to_action(self, entrance):
         rospy.sleep(1)
         # take the offender to the entrance
@@ -136,41 +141,32 @@ class ShoeDetection:
 
         # ask to take off their shoes
         self.agent.pose.head_tilt(20)
-        self.agent.say('Please put your shoes\n outside the entrance', show_display=True)
+        self.agent.say('Please take off your shoes\n here at the enterance', show_display=True)
         rospy.sleep(3)
 
-        self.agent.say('seven');
-        rospy.sleep(1)
-        self.agent.say('six');
-        rospy.sleep(1)
-        self.agent.say('five');
-        rospy.sleep(1)
-        self.agent.say('four');
-        rospy.sleep(1)
-        self.agent.say('three')
-        rospy.sleep(1)
-        self.agent.say('two')
-        rospy.sleep(1)
-        self.agent.say('one')
-        rospy.sleep(1)
+        self.agent.say('I will wait ten seconds\nfor you to take off your shoes', show_display=True)
+        rospy.sleep(13)
 
-        # confirming action
-        # lsh 0708 1226 - add comfirming action
-        self.agent.pose.head_tilt(-40)
-        self.agent.say('I am gonna double check \n let me see your feet', show_display=True)
-        rospy.sleep(4)
-        if self.find_shoes():
-            self.agent.pose.head_tilt(20)
-            self.agent.say('shoes are still here!',
-                           show_display=True)
-            rospy.sleep(2)
-            self.agent.say('Please put your shoes\n outside the entrance', show_display=True)
-            rospy.sleep(3)
-        self.agent.pose.head_tilt(-40) # TODO : tilt degree check -40 -30
-        rospy.sleep(5)
+        rebelion_count = 0
+        while rebelion_count < 3:
+            self.agent.pose.head_tilt(-40)
+            self.agent.say('Are you finished?\nLet me see your feet', show_display=True)
+            rospy.sleep(4)
+
+            if self.find_shoes():
+                self.agent.pose.head_tilt(20)
+                self.agent.say('You are still wearing shoes!', show_display=True)
+                rospy.sleep(2)
+                self.agent.say(f'I will wait five more seconds\nfor you to take off your shoes', show_display=True)
+                rospy.sleep(8)
+                rebelion_count += 1
+            else:
+                self.agent.pose.head_tilt(20)
+                self.agent.say('Thank you!\nEnjoy your party', show_display=True)
+                rospy.sleep(2.5)
 
         self.agent.pose.head_tilt(20)
-        self.agent.say('Thank you!\nEnjoy your party', show_display=True)
+        self.agent.say('I give up.\nEnjoy your party', show_display=True)
         rospy.sleep(2.5)
 
 
@@ -461,6 +457,9 @@ class DrinkDetection:
         cv2.waitKey(1)
 
     def find_drink(self):
+
+        self.agent.pose.head_tilt(10)
+        rospy.sleep(0.5)
 
         # Prompt for CLIP model
         prompt = "a photo of a"
@@ -783,8 +782,9 @@ def stickler_for_the_rules(agent):
     # If needed, mark min & max points of all 4 rooms !
     # forbidden_room_min_points = {'bedroom_search': [5.354, -6.1233, 0.03]}
     # forbidden_room_max_points = {'bedroom_search': [9.2773, -3.1132, 2.0]}
-    forbidden_room_min_points = {'bedroom_search': [-2.5636, 0.7627, 0.03]}
-    forbidden_room_max_points = {'bedroom_search': [-1.0000, 3.0000, 2.0]}
+    forbidden_room_min_points = {'bedroom_search': [6.0492, 0.5867, 0.03]}
+    forbidden_room_max_points = {'bedroom_search': [10.3543, 3.6987, 2.0]}
+
     ## params for rule 3. No littering ##
     bin_location = 'bin_littering'
     ## params for rule 4. Compulsory hydration ####
@@ -807,8 +807,10 @@ def stickler_for_the_rules(agent):
     # 'study_search', 'living_room_search', 'kitchen_search', 'living_room_search'
     # search_location_list = ['living_room_search', 'study_search']
     # search_location_list = ['living_room_search'] #todo delete
-    search_location_list = ['bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
-                            'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
+    search_location_list = [
+        'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
+                            'bedroom_search', 
+                            'kitchen_search', 'living_room_search', 'study_search',
                             'kitchen_search', 'living_room_search', 'study_search',
                             'kitchen_search', 'living_room_search', 'study_search']
 
@@ -882,7 +884,7 @@ def stickler_for_the_rules(agent):
             for pan_degree in pan_degree_list:
                 agent.pose.head_pan(pan_degree)
 
-                # [RULE 4] Compulsory hydration : tilt 0
+                ##[RULE 4] Compulsory hydration : tilt 0
                 # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
                 if break_rule_check_list['drink'] < 2 and not drink_detection.find_drink():
                     # marking no drink violation detection
@@ -981,7 +983,7 @@ if __name__ == '__main__':
 
     hand_drink_pixel_dist_threshold = 50
     shoe_detection = ShoeDetection(agent)
-    # drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
+    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
 
     agent.pose.head_tilt(-30)
     agent.pose.head_pan(0)
