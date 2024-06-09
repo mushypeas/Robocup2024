@@ -30,7 +30,8 @@ if FINAL:
     ABS_POSITION = {
 
         #insepction
-        'inspection': [4.8333, 2.7961, 1.6308],
+        'zero': [0.0, 0.0, 0.0],
+        'insp_target': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
         '쉘프': [1.9958, -0.7921, -3.1012],
