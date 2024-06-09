@@ -62,7 +62,7 @@ class ServeBreakfast:
 
         # !!! Hard-Coded Offsets !!!
         self.pick_front_bias = [0.03, 0.00, -0.03]  # [x, y, height]
-        self.pick_top_bias = [-0.03, 0.00, -0.015]  # [x, y, height]
+        self.pick_top_bias = [-0.01, 0.00, -0.015]  # [x, y, height]
         self.pick_bowl_bias = [0.0, 0.00, -0.11]    # [x, y, height]
         self.pour_offsets = { # [x, y, angle]
             'cucudas': [0.0, 0.07, 110],
@@ -76,14 +76,14 @@ class ServeBreakfast:
             'spoon': [0.25, -0.15, 0.23]
         }
 
-        self.pick_table = '식탁용식기세척기' # 240609 기말고사용 수정.  기존 'breakfast_table'
+        self.pick_table = 'breakfast_table' # 240609 기말고사용 수정.  기존 'breakfast_table'
         self.pick_table_depth = self.agent.table_dimension[self.pick_table][1] 
         self.pick_table_height = self.agent.table_dimension[self.pick_table][2]
         self.pick_table_head_angle = np.arctan(
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = '원탁' # 240609 기말고사용 수정.  기존 'kitchen_table'
+        self.place_table = 'kitchen_table' # 240609 기말고사용 수정.  기존 'kitchen_table'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
 
