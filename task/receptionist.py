@@ -288,7 +288,7 @@ def receptionist(agent):
 
     #################### TODO: check seat ####################
     # agent.say('Searching empty seat.')
-    agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
+    agent.say("Hi everyone,\n I am searching an empty seat\n for a new guest", show_display=True)
     rospy.sleep(4)
     agent.say("Please put your face forward\n and look at me", show_display=True)
     rospy.sleep(3.5)
@@ -466,7 +466,7 @@ def receptionist(agent):
 
     # 7-1. check the existing people first
     # agent.say('Searching empty seat.')
-    agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
+    agent.say("Hi everyone,\n I am searching an empty seat\n for a new guest", show_display=True)
     rospy.sleep(4)
     agent.say("Please put your face forward\n and look at me", show_display=True)
     rospy.sleep(3.5)
@@ -480,8 +480,8 @@ def receptionist(agent):
     agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated, first_seated)
-    agent.say('Hi everyone.', show_display=True)
-    rospy.sleep(0.8)
+    agent.say('Hello everyone.', show_display=True)
+    rospy.sleep(1)
     # agent.pose.head_pan(100)
     agent.pose.head_pan(-135)
     agent.say('This is ' + name2 + '.', show_display=True)
@@ -507,7 +507,7 @@ def receptionist(agent):
 
     # cs.gaze_seat(agent, first_seated)
     agent.say(f'and {name1}\'s favorite drink\n is ' + drink1, show_display=True)
-    rospy.sleep(2.2)
+    rospy.sleep(2.5)
 
     # gender, age
     age, clothes = attr.parsing(age[0], clothes)
