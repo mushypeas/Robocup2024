@@ -12,11 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-# yolo_weight_path = 'weight/epoch_299_for_final_not_tiny.pt'
-# yolo_weight_path = 'weight/best_for_final.pt'
 yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-
-
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -24,7 +20,133 @@ try:
 except:
     pass
 
-AIIS = True
+AIIS = False
+FINAL = True
+
+
+if FINAL:
+    print('[GLOBAL CONFIG] FINAL mode')
+    # real robot
+    ABS_POSITION = {
+
+        #insepction
+        'inspection': [4.8333, 2.7961, 1.6308],
+
+        # storing grocery
+        '쉘프': [1.9958, -0.7921, -3.1012],
+        '원탁앞90센치': [2.6643, -1.1615, -0.0232],
+
+        #clean the table
+        '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
+        '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
+
+        # serve breakfast
+        '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
+        '식기세척기닫힘60센치': [1.9481, -1.4913, -3.0755],
+
+        # recptionist
+        'start': [4.7578, -1.6402, -1.5496],
+        'cloth_scan': [4.7578, -1.6402, -1.5496],
+        'seat_scan' : [6.7194, -0.3494, -0.7164],
+        'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+
+        # stickler for the rules
+        'kitchen_search': [3.3146, 0.4319, -2.2959],
+        'living_room_search': [4.9844, 0.2595, -0.8542],
+        'study_search': [5.1834, 1.9487, 2.7205],
+        'bedroom_search': [6.7134, 3.401, -0.6504],
+        'shoe_warning': [5.6829, -2.9312, 2.2687],
+        'bin_littering': [1.9497, -1.9686, 1.8865],
+        'bar_drink': [3.1751, -2.4041, 1.2635],
+        'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
+        'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+    }
+
+
+    TABLE_DIMENSION = {
+        # width, depth, height
+
+        '원탁': [0.89, 0.89, 0.735],
+        '식탁용식기세척기': [0.595, 0.595, 0.845],
+        
+    }
+
+    OBJECT_LIST = [
+        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
+        ['cracker', 0, 5, 0],
+        ['sugar', 1, 2, 0],
+        ['jello_red', 2, 2, 0],
+        ['jello_black', 3, 2, 0],
+        ['coffee_can', 4, 2, 0],
+        ['tuna_can', 5, 2, 0],
+        ['pringles', 6, 5, 0],
+        ['mustard', 7, 2, 0],
+        ['tomato_soup', 8, 2, 0],
+        ['pear', 9, 3, 0],
+        ['peach', 10, 3, 0],
+        ['apple', 11, 3, 0],
+        ['strawberry', 12, 3, 0],
+        ['orange', 13, 3, 0],
+        ['banana', 14, 3, 0],
+        ['plum', 15, 3, 0],
+        ['lemon', 16, 3, 0],
+        ['bowl', 17, 6, 2],
+        ['mug', 18, 6, 0],
+        ['plate', 19, 6, 3],
+        ['knife', 20, 6, 1],
+        ['fork', 21, 6, 1],
+        ['spoon', 22, 6, 1],
+        ['tennis_ball', 23, 4, 0],
+        ['golf_ball', 24, 4, 0],
+        ['base_ball', 25, 4, 0],
+        ['soccer_ball', 26, 4, 0],
+        ['soft_ball', 27, 4, 0],
+        ['cube', 28, 4, 0],
+        ['dice', 29, 4, 0],
+        ['wine', 30, 1, 0],
+        ['ice_tea', 31, 1, 0],
+        ['orange_juice', 32, 1, 0],
+        ['milk', 33, 1, 0],
+        ['tropical_juice', 34, 1, 0],
+        ['juice_pack', 35, 1, 0],
+        ['cereal_red', 36, 1, 0],
+        ['cereal_yellow', 37, 1, 0],
+        ['coke', 38, 1, 0],
+        ['sponge', 39, 0, 1],
+        ['scrub', 40, 0, 0],
+        ['spam', 41, 2, 0],
+        ['shopping_bag_1', 42, 7, 0],
+        ['shopping_bag_2', 43, 7, 0],
+        ['shopping_bag_3', 44, 7, 0],
+        ['cereal_black', 45, 7, 0],
+        ['dishwasher_tablet', 46, 7, 0],
+    ]
+
+    OBJECT_TYPES = [
+        "cleaning",  # 0
+        "drink",  # 1
+        "food",  # 2
+        "fruit",  # 3
+        "toy",  # 4
+        "snack",  # 5
+        "dish",  # 6
+        "bag",  # 7
+    ]
+
+    TINY_OBJECTS = ['spoon', 'fork', 'knife']
+
+    # added by lsh
+    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+
+    # added by sujin
+    # for gpsr
+    LOCATION_MAP = {
+        "bedroom": ['bed', 'bedside_table', 'shelf'],
+        "kitchen": ['pantry', 'trashbin', 'dishwasher', 'potted_plant', 'kitchen_table', 'chairs',
+                    'refrigerator', 'sink'],
+        "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
+        "living_room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
+    }
 
 if AIIS:
     print('[GLOBAL CONFIG] AIIS mode')
@@ -102,7 +224,6 @@ if AIIS:
         'kitchen_search': [3.2691, 0.3223, -2.1086],
         'living_room_search': [5.932, -0.357, -0.4455],
         'study_search': [5.2668, 1.273, 2.5436],
-        # 'bedroom_search': [6.4953, 3.4738, -0.6583],
         'bedroom_search': [6.9826, 3.0422, -0.6487],
 
 
@@ -367,105 +488,5 @@ elif is_sim: # sim mode
     # TODO AREA_EDGES FOR sim_mode must be updated
     ARENA_EDGES = [[1.167, -0.2321], [7.0443, -0.1863], [7.015, 2.5457], [8.2162, 2.6681], [8.2485, 6.0065], \
                    [5.6399, 5.8781], [5.5177, 3.6958], [4.7759, 3.6698], [4.7012, 2.4829], [0.9986, 2.0893]]
-
-
-elif False:
-    print('[WARNING] please stop right now')
-    # RGB_TOPIC = '/snu/rgb_rect_raw'
-    # DEPTH_TOPIC = '/snu/depth_rect_raw'
-    # PC_TOPIC = '/snu/points'
-    PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points_fixed'   #for 73 robot
-    ABS_POSITION = {
-        'arena_out': [0.0, 0.0, 0.0],
-        'zero': [0.0, 0.0, 0.0],
-        'dev_front': [0.0, 0.0, 0.0],
-        'breakfast_table': [6.4844, -0.4418, -1.5614],
-        'table_front': [6.7171, 0.2106, 0.0067],
-
-        'table_side': [1.519, -1.001, 1.615],
-        # serve breakfast
-        'kitchen_entrance' : [4.131, 0.1607, 0.0226],
-        # storing groceries
-        'shelf_front': [2.9903, 3.6003, 1.4964],
-        'grocery_table': [3.4176, 2.7049, 0.0384],
-        'dishwasher' : [9.0737, 2.7295, 1.624],
-
-        'sofa_view': [2.5436, 1.2884, -1.6177],
-        'door_handle': [1.6718, 0.1612, -3.0811],
-        'cloth_scan': [1.6718, 0.1612, -3.0811],
-        'door_bypass': [1.6718, 0.1612, -3.0811],
-        'seat_scan': [2.5646, 0.5886, -1.5718],
-        'seat_scan_bypass': [2.5646, 0.5886, -1.5718],
-        'sofa_front': [2.5646, 0.5886, -1.5718],
-
-        #stickler for the rules
-        'living_room_search': [3.1688, 1.3108, -1.59],
-        'office_search': [3.2534, 2.4367, 1.5922],
-        'kitchen_search': [5.4816, 0.1591, 0.0411],
-        'bedroom_search': [7.5031, 2.81, 1.4711],
-        'stickler_forbidden_room_front': [3.7707, 0.9244, -0.5702],
-        'shoe_warning': [1.4915, 0.7425, -1.6057],
-        'kitchen_table': [6.8759, 0.2216, 0.0326],
-        'bar_drink': [6.4021, 1.101, -3.1054],
-        'bin_littering': [2.5534, 2.4934, 3.0933],
-
-        # receptionist
-        'cloth_scan': [2.1035, 0.1388, -3.0278]  ,  # [2.5404, 0.3225, -3.1168] near door
-        'handle_front': [0.311, -0.009, 0.016],
-        'door_bypass': [-1.2198, 2.6009, 1.698],
-        'seat_scan': [2.6464, 0.2434, -1.6043],
-
-        'seat_scan_1500': [2.4096, 0.4396, -1.4934],
-        'seat_scan_1300': [2.6464, 0.2434, -1.6043],
-
-        'seat_scan_bypass': [2.3973, 1.0645, 3.0917],
-
-        # gpsr
-        # 'breakfast_table': [6.4844, -0.4418, -1.5614],
-        # 'grocery_table': [3.4176, 2.7049, 0.0384],
-        # 'kitchen_table': [6.8759, 0.2216, 0.0326],
-        'shelf': [2.7292, 3.5637, 1.5569],
-        'taxi': [0.0, 0.0, 0.0],
-        'kitchen': [5.4816, 0.1591, 0.0411],
-        'living_room': [3.1688, 1.3108, -1.59],
-        'office': [3.2534, 2.4367, 1.5922],
-        'bedroom': [7.5031, 2.81, 1.4711],
-        'gpsr_start': [2.6054, 0.5917, -1.5534],
-        ## clean the table
-        'clean_table_front': [8.9271, 0.3594, 3.1027],
-        'dishwasher_door': [8.1775, 3.5906, 0.0587]
-
-    }
-    # for gpsr
-    LOCATION_MAP = {
-        "bedroom": ['small_shelf', 'cupboard', 'big_shelf', 'bed'],
-        "kitchen": ['kitchen_shelf', 'pantry', 'dinner_table', 'kitchen_bin', 'fridge', 'washing_machine', 'sink',
-                    'kitchen_table', 'breakfast_table'],
-        "office": ['desk', 'show_rack', 'bin', 'office_shelf'],
-        "living room": ['house_plant', 'coat_rack', 'sola', 'couch_table', 'tv', 'side_table', 'book_shelf']
-    }
     
-
-    '''
-    Insert TABLE_DIMENSION OBJECT_TYPES
-    in hsrb_mode just for compatiability (otherwise it won't run)
-    YOU need to modify it before running
-    '''
-    TABLE_DIMENSION = {
-        # width, depth, height
-        'kitchen_table': [0.73, 0.4, 0.74],
-        'breakfast_table': [0.4, 0.4, 0.615],
-        #'dishwasher': [1dishwa.1, 0.3, 0.91],
-        'dishwasher_handle': [0.55, 0.4, 0.72],
-        'dishwasher': [0.32, 0.41, 0.6],
-        'door_handle': [0, 0, 0.96],
-        'shelf_1f': [0.56, 0.23, 0.78],
-        'shelf_2f': [0.56, 0.23, 1.12],
-        'shelf': [0.56, 0.23, 0.78],
-        'grocery_table': [0.4, 0.4, 0.615],
-    }
-
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
-
-    ARENA_EDGES = [[0.96,-2.14], [10,-1.9], [9.93, 5.04], [0.925, 4.73]]
 
