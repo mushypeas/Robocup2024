@@ -1492,7 +1492,7 @@ def carry_my_luggage(agent):
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("seg human detected, calc_z : ", calc_z)
 
-                while calc_z < 1300.0: #1.7m내에 사람 있는 동안 일단 정지
+                while calc_z < 700.0: #0.7m내에 사람 있는 동안 일단 정지
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     print("seg human!!!!!!!!!!!!!!!!!!")
