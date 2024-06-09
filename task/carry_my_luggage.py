@@ -270,8 +270,8 @@ class HumanFollowing:
         morph = np.uint8(morph)
         canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
         # canny_img_msg.header = self.data_header
-        if canny_img_msg is not None:
-            self.canny_pub.publish(canny_img_msg)
+        # if canny_img_msg is not None:
+        #     self.canny_pub.publish(canny_img_msg)
 
     def _segment_cb(self, data):
 
@@ -642,14 +642,14 @@ class HumanFollowing:
                     print("left side is empty")
                     self.agent.move_rel(0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
                     rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     rospy.sleep(1)
                 elif right_background_count >= left_background_count:
                     print("right side is empty")
                     self.agent.move_rel(0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
                     rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
                     rospy.sleep(1)
@@ -751,14 +751,17 @@ class HumanFollowing:
                 print('Tiny object. I\'ll avoid it.')
                 # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
-                    self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
-                    rospy.sleep(3)
+                    rospy.sleep(2)
+                    self.agent.move_rel(0.0,-0.9,0, wait=False)
+                    rospy.sleep(2)
 
                     
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
                 else:
-                    self.agent.move_rel(0.3,0.5,0, wait=False)
-                    rospy.sleep(3)
+                    rospy.sleep(2)
+                    self.agent.move_rel(0.0,0.9,0, wait=False)
+                    rospy.sleep(2)
+
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
 
 
@@ -830,15 +833,18 @@ class HumanFollowing:
                 print('Tiny object. I\'ll avoid it.')
                 # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
-                    self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
-                    rospy.sleep(3)
+                    rospy.sleep(2)
+                    self.agent.move_rel(0.0,-0.9,0, wait=False)
+                    rospy.sleep(2)
+
+                    
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
                 else:
-                    self.agent.move_rel(0.3,0.5,0, wait=False)
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
+                    rospy.sleep(2)
+                    self.agent.move_rel(0.0,0.9,0, wait=False)
+                    rospy.sleep(2)
 
-
+                    # se
         
 
     def stt_destination(self, stt_option, calc_z=0):

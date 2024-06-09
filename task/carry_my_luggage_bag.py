@@ -26,7 +26,7 @@ class BagInspection:
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
 
         #Subscribe to take a bag
-        self.yolo_bag_list = [6, 7, 8]
+        self.yolo_bag_list = [25, 26]
         self.d2pc = Depth2PC()
 
         yolo_topic = '/snu/yolo_img'
@@ -37,7 +37,7 @@ class BagInspection:
 
         self.axis_transform = Axis_transform()
 
-        self.bag_yolo_data = [6,7,8]
+        self.bag_yolo_data = [25, 26]
         self.conf_threshold = .75 # write in percent
 
     def get_bag_by_x(self, arr):
@@ -163,6 +163,7 @@ class BagInspection:
                     wrist = right_wrist
                     print("[trial] pointing hand is right")
                 else:
+                    self.pointing_dir = 0
                     return None, None, None            
 
             image = cv2.flip(image, 1)
@@ -172,6 +173,7 @@ class BagInspection:
             return image, elbow, wrist
         except Exception as e:
             print('[MediaPipe]', e)
+            self.pointing_dir = 0
             return None, None, None
         
     #calculate 3d point of elbow and wrist
@@ -231,12 +233,12 @@ class BagInspection:
         elif distance < 0.8:
             tilt = -50
         elif distance < 1.2:
-            tilt = -40
+            tilt = -45
         elif distance < 1.5:
-            tilt = -30
+            tilt = -35
         elif distance < 2.0:
-            tilt = -20
-        else: tilt = -25
+            tilt = -30
+        else: tilt = -30
 
         print("yaw, tilt", yaw, tilt)
 
@@ -391,6 +393,7 @@ class BagInspection:
         self.agent.pose.head_pan_tilt(0, tilt)
         if np.isnan(yaw):
             yaw = self.pointing_dir * np.pi / 12
+        
         self.agent.move_rel(0, 0, yaw, wait = True)
 
         for i in range(2):
