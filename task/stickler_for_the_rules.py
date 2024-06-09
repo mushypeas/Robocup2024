@@ -164,6 +164,7 @@ class ShoeDetection:
                 self.agent.pose.head_tilt(20)
                 self.agent.say('Thank you!\nEnjoy your party', show_display=True)
                 rospy.sleep(2.5)
+                return
 
         self.agent.pose.head_tilt(20)
         self.agent.say('I give up.\nEnjoy your party', show_display=True)
@@ -634,12 +635,12 @@ class DrinkDetection:
                         self.no_drink_human_coord = human_coord_in_map
                 count += 1
 
-            if drink_person.count(False) > 0:
-                for person_idx in range(len(drink_person)):
-                    print(f'person {person_idx}: {drink_person[person_idx]}')
-                return False
-            else:
-                return True
+        if drink_person.count(False) > 0:
+            for person_idx in range(len(drink_person)):
+                print(f'person {person_idx}: {drink_person[person_idx]}')
+            return False
+        else:
+            return True
         
         return False
     
@@ -972,6 +973,7 @@ def move_human_infront(agent, axis_transform, y, x, coord=False):
     # self.marker_maker.pub_marker([human_infront_coord_in_map[0], human_infront_coord_in_map[1], 1], 'map')
 
     print(human_infront_coord_in_map)
+    agent.pose.head_pan(0)
     agent.move_abs_coordinate(human_infront_coord_in_map)
 
 
