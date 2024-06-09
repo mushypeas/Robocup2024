@@ -243,7 +243,7 @@ class HumanFollowing:
         # _depth = self.agent.depth_image[:150, 10:630]
 
         if (looking_downside):
-            _depth = self.agent.depth_image[100:340, 200:440] / 1000 # 480, 640
+            _depth = self.agent.depth_image[100:340, 50:590] / 1000 # 480, 640
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
