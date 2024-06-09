@@ -178,8 +178,8 @@ if __name__ == '__main__':
             agent.pose.arm_lift_top_table_down(height=height, table='breakfast_table')
         elif command == 'handle_down':
             agent.pose.door_handle_down_pose()
-        elif command == 'detect_3d':
-             print(agent.yolo_module.detect_3d('final_kitchen_table'))
+        elif command == 'detect_3d_safe':
+             print(agent.yolo_module.detect_3d_safe('식탁용식기세척기'))
         elif command == 'yolo_bbox':
             print(agent.yolo_module.yolo_bbox)
         elif command == 'find_type_by_id':
