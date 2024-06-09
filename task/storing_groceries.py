@@ -216,7 +216,7 @@ class StoringGroceries:
 
         for table_item_id in table_item_list_sorted:
             table_item_name = self.agent.yolo_module.find_name_by_id(table_item_id)
-            table_item_type = self.agent.object_types[self.agent.yolo_module.find_type_by_id(table_item_id)]
+            table_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(table_item_id)]
             grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
 
             # Only grasp items of available categories that have failed less than 3 times

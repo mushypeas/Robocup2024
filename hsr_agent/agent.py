@@ -94,6 +94,7 @@ class Agent:
         self.tts = TTS()
 
         # object
+        self.object_type_list = OBJECT_TYPES
         self.object_list = OBJECT_LIST
         self.location_map = LOCATION_MAP  # for gpsr
         self.table_dimension = TABLE_DIMENSION  # for gpsr
