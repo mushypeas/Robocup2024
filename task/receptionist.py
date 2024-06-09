@@ -154,7 +154,8 @@ def receptionist(agent):
     # 3-1. Get first guest information
     agent.pose.move_pose()
     agent.move_abs_safe(cloth_position)
-    rospy.sleep(8)
+    # rospy.sleep(8)
+    rospy.sleep(4)
 
     agent.pose.head_tilt(10)
     agent.say('Hello, I am tidy boy.\n Please look at my face and\n stand to the guideline', show_display=True)
@@ -288,7 +289,7 @@ def receptionist(agent):
     #################### TODO: check seat ####################
     # agent.say('Searching empty seat.')
     agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
-    rospy.sleep(3.5)
+    rospy.sleep(4)
     agent.say("Please put your face forward\n and look at me", show_display=True)
     rospy.sleep(3.5)
     first_seat_info = cs.check_empty_seat(agent)
@@ -336,7 +337,8 @@ def receptionist(agent):
     # 6-1. go to door position
     agent.pose.move_pose()
     agent.move_abs_safe(cloth_position)
-    rospy.sleep(8)
+    # rospy.sleep(8)
+    rospy.sleep(4)
 
     # if open_door_mode:
     #     # 6-2. open the door
@@ -465,7 +467,7 @@ def receptionist(agent):
     # 7-1. check the existing people first
     # agent.say('Searching empty seat.')
     agent.say("Everybody,\n I am searching an empty seat\n for a new guest", show_display=True)
-    rospy.sleep(3.5)
+    rospy.sleep(4)
     agent.say("Please put your face forward\n and look at me", show_display=True)
     rospy.sleep(3.5)
     
@@ -521,7 +523,8 @@ def receptionist(agent):
     ########################################################################################3
 
 
-    rospy.sleep(10)
+    # rospy.sleep(10)
+    rospy.sleep(8)
 
     cs.point_seat(agent, second_2b_seated)
     agent.say(name2+' Please sit down there', show_display=True)
