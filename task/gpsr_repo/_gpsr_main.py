@@ -7,6 +7,7 @@ from gpsr_parser import *
 from gpsr_utils import *
 from gpsr_clip import *
 from gpsr_config import *
+from gpsr_follow import *
 
 from PIL import Image
 import cv2
@@ -103,26 +104,36 @@ class GPSR:
     def _knee_pose_callback(self, msg):
         rospy.loginfo(msg.data)
 
-    # def scan_callback(self, data):
-    #     # Simple person detection logic based on the nearest object
-    #     min_distance = float('inf')
-    #     min_angle = 0
-    #     for i, distance in enumerate(data.ranges):
-    #         if distance < min_distance:
-    #             min_distance = distance
-    #             min_angle = i
-
-        # Store the detected person's distance and angle
-        self.person_distance = min_distance
-        self.person_angle = min_angle
-
-        print(self.person_distance, self.person_angle)
-    
     ### HELP Functions ###
         
     def follow(self):
+        bag_search_limit_time = 15
+        goal_radius = 0.5
+        pose_save_time_period = 3
+        start_location = self.agent.get_pose(print_option=False)
+        bag_height = 0.25
+        stop_rotate_velocity = 1.2 #1.2
+        try_bag_picking = False #True
+        try_bytetrack = False
+        map_mode = False
+        stt_option = False #True
+        yolo_success = True
+        tilt_angle = 20
+        
+
+        # Capture target
+        demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
+
+        human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
+                                                    frame_shape=(480, 640),
+                                                    stop_thres=.4,
+                                                    linear_max=.3,
+                                                    angular_max=.2,
+                                                    tilt_angle=tilt_angle)
+        human_following = HumanFollowing(self.agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option)
+
         while not rospy.is_shutdown():
-            end_following = human_following.follow_human(start_time, pose_save_time_period)
+            end_following = human_following.follow_human(time.time(), pose_save_time_period)
             if end_following:
                 human_following.show_byte_track_image = False
                 stop_client = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
