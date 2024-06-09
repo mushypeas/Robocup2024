@@ -14,7 +14,7 @@ def answerToGestPrsInRoom(g, params):
     g.move(room)
 
     # [2] Find the person in the room
-    g.identifyByGestPosePers(gestPers)
+    g.identifyByGestPose(gestPers)
     
     # [3] Answer the question/quiz?
     g.quiz()
