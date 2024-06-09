@@ -140,12 +140,13 @@ class ServeBreakfast:
     def pick_item(self, item, table_base_xyz):
 
         if item == 'bowl':
+            import pdb; pdb.set_trace()
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.open_gripper(wait=False)
             self.agent.pose.bring_bowl_pose(table=self.pick_table)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.4, 0, wait=False)
@@ -268,6 +269,6 @@ class ServeBreakfast:
             if item in ['cucudas', 'blue_milk']:
                 self.pour_item(item=item)
 
-
+            self.agent.move_rel(-0.3,0, wait=True)
             rospy.logwarn('Placing item...')
             self.place_item(item=item)
