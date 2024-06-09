@@ -11,7 +11,7 @@ class StoringGroceries:
 
         # Test params
         # Set everything to False for actual task
-        self.ignore_door = True
+        self.ignore_door = False
         self.picking_test_mode = False
         self.place_test_mode = False
         self.place_test_object_name = 'apple'
