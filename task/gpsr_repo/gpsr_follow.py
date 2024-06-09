@@ -912,7 +912,7 @@ class HumanFollowing:
             #     print("seven seconds")
             self.escape_barrier(calc_z)
             # self.escape_tiny()
-            self.escape_tiny_canny()
+            # self.escape_tiny_canny()
 
             # if time.time() - self.agent.last_moved_time > 3.0 and time.time() - self.last_say > 4.0:
                 # if (calc_z < 1.5)

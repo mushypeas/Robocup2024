@@ -107,6 +107,10 @@ class GPSR:
     ### HELP Functions ###
         
     def follow(self):
+        byte_path = "/home/tidy/Robocup2024/byte.sh"
+        byte_command = ['gnome-terminal', '--', 'bash', '-c', f'{byte_path}; exec bash']
+        byte_process = subprocess.Popen(byte_command)
+
         bag_search_limit_time = 15
         goal_radius = 0.5
         pose_save_time_period = 3
