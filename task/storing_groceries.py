@@ -153,7 +153,7 @@ class StoringGroceries:
         object_cnts_by_floor[0] = 0 # [NULL, 1F, 2F, 3F, ...]
         for shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z, shelf_item_class_id in center_list:
             shelf_item_name = self.agent.yolo_module.find_name_by_id(shelf_item_class_id)
-            shelf_item_type = self.agent.object_types[self.agent.yolo_module.find_type_by_id(shelf_item_class_id)]
+            shelf_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(shelf_item_class_id)]
             
             shelf_item_floor = 0
             for i in range(len(self.shelf_height)):
