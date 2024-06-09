@@ -57,8 +57,8 @@ if __name__ == '__main__':
             agent.move_abs('breakfast_table')
 
         ### Pose commands
-        elif command == 'holding_pose': #mjgu 240516
-            agent.pose.holding_pose()
+        elif command == 'point_seat_pose':
+            agent.pose.point_seat_pose()
         elif command == 'place_cutlery_pose':
             agent.pose.place_cutlery_pose()
         elif command == 'move_pose':
