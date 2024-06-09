@@ -45,9 +45,11 @@ class CheckSeat():
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
-            self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+            # self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+            self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -59,11 +61,18 @@ class CheckSeat():
             #     elif width / 2 <= user[0] < width:
             #         seat_info[1][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 200 <= user[0] < 360:
+            #         seat_info[0][0] = 1
+            #     elif 360 <= user[0] < 560:
+            #         seat_info[1][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 200 <= user[0] < 360:
+                if 180 <= user[0] < 440:
                     seat_info[0][0] = 1
-                elif 360 <= user[0] < 560:
+                elif 440 <= user[0] < 600:
                     seat_info[1][0] = 1
 
         # middle view
@@ -72,9 +81,11 @@ class CheckSeat():
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [130, 580])
-            self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
+            # self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
+            self.check_calibration_mode(agent, self.face_threshold2, [150, 550]) # 0609
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [130, 580])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
+        user_locations, user_face_data = self.check(agent, self.face_threshold2, [150, 550]) # 0609
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -86,11 +97,18 @@ class CheckSeat():
             #     else:
             #         seat_info[3][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 100 <= user[0] < 320:
+            #         seat_info[2][0] = 1
+            #     elif 320 <= user[0] < 500:
+            #         seat_info[3][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 100 <= user[0] < 320:
+                if 150 <= user[0] < 350:
                     seat_info[2][0] = 1
-                elif 320 <= user[0] < 500:
+                elif 350 <= user[0] < 550:
                     seat_info[3][0] = 1
 
                 # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
@@ -112,9 +130,11 @@ class CheckSeat():
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
-            self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+            # self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+            self.check_calibration_mode(agent, self.face_threshold, [30, 560])
         # user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
-        user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
+        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [30, 560])
         if user_locations is not None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -126,13 +146,22 @@ class CheckSeat():
             #     elif width / 2 <= user[0] < width:
             #         seat_info[5][0] = 1
 
-            # 0514
+            # # 0514
+            # for user in user_locations:
+            #     if 80 <= user[0] < 210:
+            #         seat_info[4][0] = 1
+            #     elif 210 <= user[0] < 360:
+            #         seat_info[5][0] = 1
+            #     elif 360 <= user[0] < 560:
+            #         seat_info[6][0] = 1
+
+            # 0609
             for user in user_locations:
-                if 80 <= user[0] < 210:
+                if 30 <= user[0] < 170:
                     seat_info[4][0] = 1
-                elif 210 <= user[0] < 360:
+                elif 170 <= user[0] < 330:
                     seat_info[5][0] = 1
-                elif 360 <= user[0] < 560:
+                elif 330 <= user[0] < 560:
                     seat_info[6][0] = 1
 
         # # save host face image
