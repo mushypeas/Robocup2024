@@ -253,6 +253,9 @@ class CheckSeat():
                         return i
                     else:
                         continue
+        for i in range(len(seat_info)):
+            if seat_info[i][0] == 0:
+                return i
 
     def host_seat(self, seat_info):
         for idx, seat in enumerate(seat_info):

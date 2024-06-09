@@ -51,11 +51,14 @@ def receptionist(agent):
     # start_position = 'start_receptionist' # AIIS
 
     open_door_mode = False
-    calibration_mode = False
+    calibration_mode = True
 
     cloth_threshold = 0.15
-    face_threshold = 40 #38
-    face_threshold2 = 48 #38 #35
+    # face_threshold = 40 #38
+    # face_threshold2 = 48 #38 #35
+
+    face_threshold = 30 # middle
+    face_threshold2 = 40 # side
 
     ##TODO
     sofa_range = [130, 580]
@@ -74,7 +77,7 @@ def receptionist(agent):
     sofa_point_angle = 0
     # chair_point_angle = 50
     # head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65] # after mid term
-    head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65] # final term
+    head_pan_angle = [45-5, 25-4, 10-5, -10-5, -25+3, -45+3, -65+5] # final term
     ### seat_scan이 중심 바라보도록 하는게 중요, 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
     # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
 
