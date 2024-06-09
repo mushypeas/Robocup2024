@@ -641,18 +641,16 @@ class HumanFollowing:
                 if left_background_count > right_background_count:
                     print("left side is empty")
                     self.agent.move_rel(0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    rospy.sleep(3)
+                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                    rospy.sleep(1)
                 elif right_background_count >= left_background_count:
                     print("right side is empty")
                     self.agent.move_rel(0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    rospy.sleep(3)
+                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
-                    rospy.sleep(1)
 
 
 
@@ -727,7 +725,7 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and (center is not None and center[1] > 100 and center[1] < 540)  :
+            if tiny_exist and (center is not None and center[1] > 200 and center[1] < 440)  :
 
 
 
