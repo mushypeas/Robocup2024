@@ -55,8 +55,18 @@ def get_iou(boxA, boxB):
 	return iou
 
 def new_get_controls(x,z):
-	# if z < 1400 :
-	linear_max = 0.5#0.8
+	# if z > 1.2: 
+		# linear_max = 2.0#0.8
+		# angular_max = 0.5 #0.5
+		# twist = Twist()
+
+		# # linear = (z/1000-0.6)/3
+		# # linear = z/1000*0.4
+		# angular = (-1/500) * (x-320)
+		# # print('linear: {} ,angular: {}  \n'.format(linear,angular))
+		# linear = z / 1000 * .4
+	# else:
+	linear_max = 0.55#0.8
 	angular_max = 0.5 #0.5
 	twist = Twist()
 
@@ -65,14 +75,9 @@ def new_get_controls(x,z):
 	angular = (-1/500) * (x-320)
 	# print('linear: {} ,angular: {}  \n'.format(linear,angular))
 	linear = z / 1000 * .85
-	# else:
-	# 	linear_max = 0.8
-	# 	angular_max = 0.5
-	# 	twist = Twist()
-	# 	angular = (-1/500) * (x-320)
-	# 	# print('linear: {} ,angular: {}  \n'.format(linear,angular))
-	# 	linear = z / 1000 * .6
-	# # if linear > 0.8:
+
+
+	# if linear > 0.8:
 	# 	linear *= 0.8
 	# else:
 	# 	linear *= 0.4
