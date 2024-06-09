@@ -150,7 +150,7 @@ class StoringGroceries:
 
         # 1. make shelf_item_dict
         object_cnts_by_floor = [0 for i in range(len(self.shelf_height)+1)]
-        object_cnts_by_floor[0] = 0 # [NULL, 1F, 2F, 3F, ...]
+        object_cnts_by_floor[0] = 1000 # [NULL, 1F, 2F, 3F, ...]
         for shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z, shelf_item_class_id in center_list:
             shelf_item_name = self.agent.yolo_module.find_name_by_id(shelf_item_class_id)
             shelf_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(shelf_item_class_id)]
@@ -160,8 +160,8 @@ class StoringGroceries:
                 if shelf_item_cent_z < self.shelf_height[i]:
                     shelf_item_floor = i
                     break
-            if shelf_item_floor == 0:
-                shelf_item_floor = len(self.shelf_height)
+            # if shelf_item_floor == 0:
+            #     shelf_item_floor = len(self.shelf_height)
 
             object_cnts_by_floor[shelf_item_floor] += 1
             self.shelf_item_dict[shelf_item_type] = {
@@ -174,6 +174,7 @@ class StoringGroceries:
 
         # 2. add new category in shelf_item_dict
         new_category_floor = np.argmin(np.array(object_cnts_by_floor))
+        print(new_category_floor)
         for item in self.shelf_item_dict.values():
             if item['floor'] == new_category_floor:
                 shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = item['center']
@@ -370,7 +371,7 @@ class StoringGroceries:
             self.agent.pose.head_tilt(angle=self.shelf_head_angle)
             self.search_shelf()
             has_searched_shelf = True
-            
+
         # Pick & place loop
         while True:
 
