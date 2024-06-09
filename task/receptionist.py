@@ -51,14 +51,14 @@ def receptionist(agent):
     # start_position = 'start_receptionist' # AIIS
 
     open_door_mode = False
-    calibration_mode = True
+    calibration_mode = False
 
     cloth_threshold = 0.15
     # face_threshold = 40 #38
     # face_threshold2 = 48 #38 #35
 
-    face_threshold = 30 # middle
-    face_threshold2 = 40 # side
+    face_threshold = 40 
+    face_threshold2 = 25
 
     ##TODO
     sofa_range = [130, 580]
@@ -182,11 +182,11 @@ def receptionist(agent):
 
     #################### CHECK: stt ####################
     # First guest STT
-    # qr_check = True
-    qr_check = False
+    qr_check = True
+    # qr_check = False
     agent.say('I will ask your \nname and drink.', show_display=True)
     rospy.sleep(2.5)
-    if not calibration_mode:
+    if not calibration_mode and not qr_check:
         name1, drink1 = '_', '_'
         for _ in range(1):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
@@ -362,11 +362,11 @@ def receptionist(agent):
     rospy.sleep(0.8)
 
     # Second guest STT
-    # qr_check = True
-    qr_check = False
+    qr_check = True
+    # qr_check = False
     agent.say('I will ask your \nname and drink.', show_display=True)
     rospy.sleep(2.5)
-    if not calibration_mode:
+    if not calibration_mode and not qr_check:
         name2, drink2 = '_', '_'
         for _ in range(1):
             agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
