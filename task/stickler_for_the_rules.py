@@ -157,9 +157,11 @@ class ShoeDetection:
                 self.agent.pose.head_tilt(20)
                 self.agent.say('You are still wearing shoes!', show_display=True)
                 rospy.sleep(2)
-                self.agent.say(f'I will wait five more seconds\nfor you to take off your shoes', show_display=True)
-                rospy.sleep(8)
-                rebelion_count += 1
+                # 0609
+                # self.agent.say(f'I will wait five more seconds\nfor you to take off your shoes', show_display=True)
+                # rospy.sleep(8)
+                # rebelion_count += 1
+                break
             else:
                 self.agent.pose.head_tilt(20)
                 self.agent.say('Thank you!\nEnjoy your party', show_display=True)
