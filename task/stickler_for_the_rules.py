@@ -903,6 +903,7 @@ def stickler_for_the_rules(agent):
                 rospy.sleep(1)
 
                 if forbidden_room.detect_forbidden_room():
+                    break_rule_check_list['room'] += 1
                     # go to the offender and clarify what rule is being broken
                     forbidden_room.clarify_violated_rule()
 
@@ -924,7 +925,7 @@ def stickler_for_the_rules(agent):
                     for pan_degree in [45, 0, -45]:
                         # marking forbidden room violation detection
                         # break_rule_check_list['room'] = True
-                        break_rule_check_list['room'] += 1
+                        # break_rule_check_list['room'] += 1
 
                         agent.pose.head_pan(pan_degree)
                         rospy.sleep(1.5)
