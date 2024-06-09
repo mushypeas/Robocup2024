@@ -30,16 +30,16 @@ def egpsr(agent):
         agent.say("Give a command after the ding sound.")
         rospy.sleep(2.5)
 
-        inputText = g.hear(7.)
+        inputText = eg.hear(7.)
         agent.say(f"Given Command is {inputText}")
 
             
         # parse InputText 
         cmdName, params = ultimateParser(inputText)
 
-        cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys()
+        cmdName = eg.cluster(cmdName, eg.cmdNameTocmdFunc.keys())
         
-        cmdFunc = g.cmdNameTocmdFunc[cmdName]
-        cmdFunc(g, params)
+        cmdFunc = eg.cmdNameTocmdFunc[cmdName]
+        cmdFunc(eg, params)
 
         g.move('gpsr_instruction_point')
