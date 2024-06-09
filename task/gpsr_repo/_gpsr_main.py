@@ -121,26 +121,17 @@ class GPSR:
     ### HELP Functions ###
         
     def follow(self):
-        # self.following = True
-        # rate = rospy.Rate(10)  # 10 Hz
-        # while not rospy.is_shutdown():
-        #     if self.person_distance is not None:
-        #         if self.person_distance > 0.5:  # Maintain 0.5 meters distance
-        #             self.move_rel(0.5, 0)
-
-        #         # if self.person_angle < 180:
-        #         #     self.move_rel(0, 0, yaw=-0.5)  # Turn right
-        #         # elif self.person_angle > 180:
-        #         #     self.move_rel(0, 0, yaw=0.5)  # Turn left
-
-        #         ### TODO : finish the follow function
-        #         # self.following = False
-
-        #     rate.sleep()
-        pass
+        while not rospy.is_shutdown():
+            end_following = human_following.follow_human(start_time, pose_save_time_period)
+            if end_following:
+                human_following.show_byte_track_image = False
+                stop_client = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
+                print("VIEWPOINT CONTROLLER ON")
+                stop_client.call(EmptyRequest())
+                break
 
     def followToLoc(self, loc):
-        self.move(loc)
+        self.follow()
 
     def get_yolo_bbox(self, category=None):
         yolo_bbox = self.agent.yolo_module.yolo_bbox
