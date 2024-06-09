@@ -384,7 +384,7 @@ class StoringGroceries:
                 # 2-3. Pick item
                 rospy.logwarn('Picking item...')
                 self.pick_item(grasping_type, table_base_xyz)
-                self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=False)
+                self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
 
                 # 2-4. Check if grasping is successful
                 has_grasped = self.check_grasp(grasping_type)
@@ -406,6 +406,7 @@ class StoringGroceries:
             # Search items in shelf only once
             if not has_searched_shelf:
                 rospy.logwarn('Searching items in shelf...')
+                self.agent.pose.head_tilt(angle=self.shelf_head_angle)
                 self.search_shelf()
                 has_searched_shelf = True
 
