@@ -73,7 +73,8 @@ def receptionist(agent):
     #################### 0514 test ####################
     sofa_point_angle = 0
     # chair_point_angle = 50
-    head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65]
+    # head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65] # after mid term
+    head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65] # final term
     ### seat_scan이 중심 바라보도록 하는게 중요, 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
     # head_pan_angle = [sofa_point_angle, -sofa_point_angle]
 
@@ -477,7 +478,7 @@ def receptionist(agent):
     agent.say('Hi everyone.', show_display=True)
     rospy.sleep(0.8)
     # agent.pose.head_pan(100)
-    agent.pose.head_pan(-90)
+    agent.pose.head_pan(-135)
     agent.say('This is ' + name2 + '.', show_display=True)
     rospy.sleep(1.3)
     cs.gaze_seat(agent, host_seated, first_seated)
@@ -485,7 +486,7 @@ def receptionist(agent):
     rospy.sleep(1.8)
 
     # agent.pose.head_pan(100)
-    agent.pose.head_pan(-90)
+    agent.pose.head_pan(-135)
     agent.say(name2)
     rospy.sleep(0.6)
     cs.gaze_seat(agent, host_seated)
@@ -495,7 +496,7 @@ def receptionist(agent):
     agent.say(f'and {name1}.', show_display=True)
     rospy.sleep(0.8)
     # agent.pose.head_pan(100)
-    agent.pose.head_pan(-90)
+    agent.pose.head_pan(-135)
     agent.say(f'{name_host}\'s favorite drink\n is {drink_host}', show_display=True)
     rospy.sleep(2)
 

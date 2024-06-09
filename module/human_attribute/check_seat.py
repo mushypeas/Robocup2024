@@ -39,7 +39,8 @@ class CheckSeat():
         user_face_data_list = []
 
         # left view
-        agent.pose.head_pan(self.head_pan_angle[0])
+        # agent.pose.head_pan(self.head_pan_angle[0])
+        agent.pose.head_pan(45) # 0609
         rospy.sleep(1)
 
         if self.calibration_mode:
@@ -105,7 +106,8 @@ class CheckSeat():
 
         # right view
         # agent.pose.head_pan(self.head_pan_angle[-1])
-        agent.pose.head_pan(self.head_pan_angle[-2])
+        # agent.pose.head_pan(self.head_pan_angle[-2])
+        agent.pose.head_pan(-45) # 0609
         rospy.sleep(1)
 
         if self.calibration_mode:
@@ -217,21 +219,40 @@ class CheckSeat():
             return None, None
 
     def seat_available(self, seat_info):
-        # idx 2, 3
-        sofa_seat_count = 0
-        for i in range(2, 4):
-            if seat_info[i][0] == 1:
-                sofa_seat_count += 1
-        print('check_seat seat_available sofa_seat_count: ', sofa_seat_count)
-        if sofa_seat_count == 2:
-            return 5
-        elif sofa_seat_count == 1:
-            if seat_info[2][0] == 1:
-                return 3
-            else:
-                return 2
-        else:
-            return 2
+        # # idx 2, 3
+        # sofa_seat_count = 0
+        # for i in range(2, 4):
+        #     if seat_info[i][0] == 1:
+        #         sofa_seat_count += 1
+        # print('check_seat seat_available sofa_seat_count: ', sofa_seat_count)
+        # if sofa_seat_count == 2:
+        #     return 5
+        # elif sofa_seat_count == 1:
+        #     if seat_info[2][0] == 1:
+        #         return 3
+        #     else:
+        #         return 2
+        # else:
+        #     return 2
+        
+        # 0609
+        for i in range(len(seat_info)):
+            if seat_info[i][0] == 0:
+                if i == 0:
+                    if seat_info[1][0] == 0:
+                        return i
+                    else:
+                        continue
+                elif i==len(seat_info)-1:
+                    if seat_info[len(seat_info)-2][0] == 0:
+                        return i
+                    else:
+                        continue
+                else:
+                    if seat_info[i-1][0] == 0 and seat_info[i+1][0] == 0:
+                        return i
+                    else:
+                        continue
 
     def host_seat(self, seat_info):
         for idx, seat in enumerate(seat_info):
