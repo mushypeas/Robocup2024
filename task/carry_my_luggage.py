@@ -323,13 +323,13 @@ class HumanFollowing:
                     if left_background_count > right_background_count:
                         print("left side is empty")
                         self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
-                        rospy.sleep(3)
+                        rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     else:
                         print("right side is empty")
                         self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move right (neg)
-                        rospy.sleep(3)
+                        rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
@@ -404,14 +404,14 @@ class HumanFollowing:
                 # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
                     self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
-                    rospy.sleep(3)
-                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     rospy.sleep(2)
+                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    rospy.sleep(1)
                 else:
                     self.agent.move_rel(0.0,0.8,0, wait=False)
-                    rospy.sleep(3)
-                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     rospy.sleep(2)
+                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    rospy.sleep(1)
 
 
 
