@@ -22,8 +22,8 @@ class StoringGroceries:
         self.item_list = None
 
         # !!! Measured Distances !!!
-        self.dist_to_table = 0.85
-        self.dist_to_shelf = 1.22
+        self.dist_to_table = 0.9
+        self.dist_to_shelf = 0.9
         self.place_dist = 0.07
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf_1f'][0] * 0.9
                                 - self.place_dist * 2) / 2
@@ -135,7 +135,14 @@ class StoringGroceries:
         table_search_attempts = 0
         while center_list.size == 0:
             rospy.sleep(0.2) # give some time for the YOLO to update
-            center_list = np.array(self.agent.yolo_module.detect_3d_safe('grocery_table', dist=self.dist_to_table, depth=self.table_depth, item_list=self.item_list))
+            center_list = np.array(
+                self.agent.yolo_module.detect_3d_safe(
+                    table='grocery_table',
+                    dist=self.dist_to_table,
+                    depth=self.table_depth,
+                    item_list=self.item_list
+                )
+            )
             table_search_attempts += 1
             if table_search_attempts == 20:
                 self.agent.say('This is taking a while...')
@@ -157,11 +164,9 @@ class StoringGroceries:
             
             shelf_item_floor = 0
             for i in range(len(self.shelf_height)):
-                if shelf_item_cent_z < self.shelf_height[i]:
+                if shelf_item_cent_z < self.shelf_height[i+1]:
                     shelf_item_floor = i
                     break
-            # if shelf_item_floor == 0:
-            #     shelf_item_floor = len(self.shelf_height)
 
             object_cnts_by_floor[shelf_item_floor] += 1
             self.shelf_item_dict[shelf_item_type] = {
@@ -174,7 +179,7 @@ class StoringGroceries:
 
         # 2. add new category in shelf_item_dict
         new_category_floor = np.argmin(np.array(object_cnts_by_floor))
-        print(new_category_floor)
+        rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         for item in self.shelf_item_dict.values():
             if item['floor'] == new_category_floor:
                 shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = item['center']
@@ -194,12 +199,14 @@ class StoringGroceries:
         table_search_attempts = 0
         while table_item_list.size == 0:
             rospy.sleep(0.2) # give some time for the YOLO to update
-            table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
-                table='grocery_table',
-                dist=self.dist_to_table,
-                depth=self.table_depth,
-                item_list=self.item_list
-            ))
+            table_item_list = np.array(
+                self.agent.yolo_module.detect_3d_safe(
+                    table='grocery_table',
+                    dist=self.dist_to_table,
+                    depth=self.table_depth,
+                    item_list=self.item_list
+                )
+            )
             table_search_attempts += 1
             if table_search_attempts == 20:
                 self.agent.say('Searching is taking a while...')
@@ -361,12 +368,11 @@ class StoringGroceries:
 
         has_searched_shelf = False
         
-        ## 3. Go to place_location
-        rospy.logwarn('Going to place_location...')
-        self.agent.move_abs_safe(self.place_location)
-
         # Search items in shelf only once
         if not has_searched_shelf:
+            rospy.logwarn('Going to place_location...')
+            self.agent.move_abs_safe(self.place_location)
+
             rospy.logwarn('Searching items in shelf...')
             self.agent.pose.head_tilt(angle=self.shelf_head_angle)
             self.search_shelf()
@@ -414,13 +420,6 @@ class StoringGroceries:
             ## 3. Go to place_location
             rospy.logwarn('Going to place_location...')
             self.agent.move_abs_safe(self.place_location)
-
-            # Search items in shelf only once
-            if not has_searched_shelf:
-                rospy.logwarn('Searching items in shelf...')
-                self.agent.pose.head_tilt(angle=self.shelf_head_angle)
-                self.search_shelf()
-                has_searched_shelf = True
 
             ## 4. Place item
             rospy.logwarn('Placing item...')

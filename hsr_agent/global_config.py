@@ -33,8 +33,8 @@ if FINAL:
         'inspection': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
-        'grocery_shelf': [1.9958, -0.7921, -3.1012],
         'grocery_table': [2.6643, -1.1615, -0.0232],
+        'grocery_shelf': [1.9958, -0.7921, -3.1012],
 
         #clean the table
         '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
@@ -74,7 +74,6 @@ if FINAL:
         'grocery_shelf_1f': [0.765, 0.357, 0.805],
         'grocery_shelf_2f': [0.765, 0.357, 1.11],
         'grocery_shelf_3f': [0.765, 0.357, 1.4],
-        'grocery_shelf_4f': [0.765, 0.357, 1.4],
     }
 
     OBJECT_TYPES = [
