@@ -7,6 +7,14 @@ import numpy as np
 from std_srvs.srv import Empty, EmptyRequest
 from hsr_agent.agent import Agent
 
+############################################## 대회 당일 To Do List #############################################
+#                                                                                                             #
+#       1) picking, placing place 좌표 -> global_config.py 파일 수정 , 정확한 placing location 확인하기             #
+#       2) object(시리얼, 우유) 높이 측정 -> 이 파일에서 수정.                                                        #
+#       3) Table 별 dimension 측정 후 -> global_config.py 파일 수정                                               #
+#                                                                                                             #
+###############################################################################################################
+
 ### About this code ###
 # (Task) 아래의 코드는 2024년 Robocup - Stage 1. 'Serve Breakfast' task에 대한 코드임.
 #        총 4개의 object를 사용하며 [bowl,cereal,milk,spoon] 순서로 picking 함. (시간 단축을 위한 순서 배정)
@@ -38,18 +46,18 @@ class ServeBreakfast:
         # !!! Test params !!!
         self.picking_test_mode = False
         self.attemp_pouring = {
-            'spam': True,
-            'mustard': True,
+            'cucudas': True,
+            'blue_milk': True,
         }
 
-        self.item_list = ['bowl','spam','mustard','spoon'] # In order
+        self.item_list = ['bowl','cucudas','blue_milk','spoon'] # In order
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.93
         self.dist_to_place_table = 0.97
         self.item_height = {
-            'spam': 0.073, # pointcloud에서 1cm 잘려서 높이를 기존 높이에서 -1cm 시킴. 
-            'mustard': 0.18, # pointcloud에서 1cm 잘려서 높이를 기존 높이에서 -1cm 시킴. 
+            'cucudas': 0.138,
+            'blue_milk': 0.13, 
         }
 
         # !!! Hard-Coded Offsets !!!
@@ -57,25 +65,25 @@ class ServeBreakfast:
         self.pick_top_bias = [-0.03, 0.00, -0.015]  # [x, y, height]
         self.pick_bowl_bias = [0.0, 0.00, -0.11]    # [x, y, height]
         self.pour_offsets = { # [x, y, angle]
-            'spam': [0.0, 0.07, 110],
-            'mustard': [0.0, 0.075, 130],
+            'cucudas': [0.0, 0.07, 110],
+            'blue_milk': [0.0, 0.075, 130],
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height]
             'bowl': [self.dist_to_place_table - 0.60, -0.2, 0],
-            'spam': [0.0, 0.18, 0],
-            'mustard': [0.02, 0.12, 0],
+            'cucudas': [0.0, 0.18, 0],
+            'blue_milk': [0.02, 0.12, 0],
             'spoon': [0.25, -0.15, 0.23]
         }
 
-        self.pick_table = 'breakfast_table'
+        self.pick_table = '식탁용식기세척기' # 240609 기말고사용 수정.  기존 'breakfast_table'
         self.pick_table_depth = self.agent.table_dimension[self.pick_table][1] 
         self.pick_table_height = self.agent.table_dimension[self.pick_table][2]
         self.pick_table_head_angle = np.arctan(
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'kitchen_table'
+        self.place_table = '원탁' # 240609 기말고사용 수정.  기존 'kitchen_table'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
 
@@ -93,7 +101,7 @@ class ServeBreakfast:
             
             rospy.sleep(0.2) # give some time for the YOLO to update
             table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
-                table='grocery_table',
+                table='식탁용식기세척기', # 240609 기말고사용 수정.  기존 'breakfast_table'
                 dist=self.dist_to_pick_table,
                 depth=self.pick_table_depth,
                 item_list=item_list
@@ -142,7 +150,7 @@ class ServeBreakfast:
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.4, 0, wait=False)
 
-        elif item in ['spam', 'mustard']:
+        elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
@@ -179,7 +187,7 @@ class ServeBreakfast:
             self.agent.pose.place_bowl_pose()
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
 
-        elif item in ['spam', 'mustard']:
+        elif item in ['cucudas', 'blue_milk']:
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
             self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
         
@@ -257,7 +265,7 @@ class ServeBreakfast:
             self.agent.move_abs_safe(self.place_table)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
-            if item in ['spam', 'mustard']:
+            if item in ['cucudas', 'blue_milk']:
                 self.pour_item(item=item)
 
 
