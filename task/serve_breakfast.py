@@ -73,9 +73,9 @@ class ServeBreakfast:
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height]
             'bowl': [self.dist_to_place_table - 0.60, -0.2, 0],
-            'cucudas': [0.0, 0.18, 0],
-            'blue_milk': [0.02, 0.12, 0],
-            'spoon': [0.25, -0.15, 0.23]
+            'cucudas': [0.0, 0.2, 0],
+            'blue_milk': [0.02, 0, 0],
+            'spoon': [0.25, -0.3, 0.23]
         }
 
         self.pick_table = 'breakfast_table' 
@@ -154,7 +154,7 @@ class ServeBreakfast:
 
         elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(0, table_base_xyz[1], wait=False)
+            self.agent.move_rel(-0.3, table_base_xyz[1], wait=False)
             self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
             self.agent.open_gripper(wait=False)
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
@@ -236,6 +236,7 @@ class ServeBreakfast:
                 rospy.logwarn('Go to pick_location...')
                 self.agent.say('I will move to a different location. Please be careful.')
                 self.agent.pose.table_search_pose(head_tilt=self.pick_table_head_angle)
+                self.agent.head_tilt(-10)
                 self.agent.move_abs_safe(self.pick_table)
                 rospy.sleep(2)
                 # Search item
