@@ -630,26 +630,28 @@ class HumanFollowing:
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
                 left_background_count = np.mean(depth[min_y+100-20:min_y+100+20, :mid_x])
+                left_edge_background_count = np.mean(depth[min_y+100-20:min_y+100+20, :mid_x//2])
                 print("left_background_count", left_background_count)
                 right_background_count = np.mean(depth[min_y+100-20:min_y+100+20, mid_x:])
+                right_edge_background_count = np.mean(depth[min_y+100-20:min_y+100+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
                 # # _depth = np.mean(_depth)
                 # _depth = _depth[_depth != 0]
                 # _depth = np.mean(_depth)
-
-                if left_background_count > right_background_count:
-                    print("left side is empty")
-                    self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
-                    # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                else:
-                    print("right side is empty")
-                    self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
-                    # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
+                if left_edge_background_count > 1000 or right_edge_background_count > 1000:
+                    if left_background_count > right_background_count:
+                        print("left side is empty")
+                        self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
+                        rospy.sleep(3)
+                        # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                        # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
+                    else:
+                        print("right side is empty")
+                        self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move right (neg)
+                        rospy.sleep(3)
+                        # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                        # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
 
 
