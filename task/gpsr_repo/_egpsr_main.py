@@ -1,4 +1,5 @@
 import sys
+import rospy
 sys.path.append("task/gpsr_repo/")
 from gpsr_config import *
 from gpsr_parser import ultimateParser
