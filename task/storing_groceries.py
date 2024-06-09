@@ -17,7 +17,8 @@ class StoringGroceries:
         self.place_test_object_name = 'apple'
         self.place_test_object_type = 'fruit'
 
-        self.prior_categories = ['fruit', 'food', 'snack']
+        self.prior_categories = ['fruit', 'food', 'dish']
+        self.ignore_items = ['dish', 'plate']
         # self.item_list = ['tomato_soup', 'plum', 'apple', 'spam', 'mustard', 'knife', 'spoon', 'tennis_ball']
         self.item_list = None
 
@@ -29,7 +30,7 @@ class StoringGroceries:
                                 - self.place_dist * 2) / 2
 
         # !!! Hard-Coded Offsets !!!
-        self.pick_front_bias = [0.03, 0.00, -0.03] # [x, y, height]
+        self.pick_front_bias = [0.03, 0.00, -0.04] # [x, y, height]
         self.pick_top_bias = [0.03, 0, -0.015]
         self.pick_bowl_bias = [0.15, 0.04, -0.13]
         self.place_x_bias = [None, -0.20, -0.10, 0.0]
@@ -178,18 +179,15 @@ class StoringGroceries:
             rospy.loginfo(f"Item center: {shelf_item_cent_x}, {shelf_item_cent_y}, {shelf_item_cent_z}")
 
         # 2. add new category in shelf_item_dict
-        new_category_floor = np.argmin(np.array(object_cnts_by_floor))
         rospy.loginfo(f"New Category Floor: {new_category_floor}F")
-        for item in self.shelf_item_dict.values():
-            if item['floor'] == new_category_floor:
-                shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = item['center']
-                shelf_item_cent_y = shelf_item_cent_y - self.new_category_dist if shelf_item_cent_y > 0 else shelf_item_cent_y + self.new_category_dist
-                self.shelf_item_dict['new'] = {
-                    'name': '-',
-                    'center': [shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z],
-                    'floor': new_category_floor,
-                }
-                break
+        shelf_item_dict_keys = list(self.shelf_item_dict.keys())
+        shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = self.shelf_item_dict[shelf_item_dict_keys[0]]['center']
+        new_category_floor = self.shelf_item_dict[shelf_item_dict_keys[0]]['floor']
+        self.shelf_item_dict['new'] = {
+            'name': '-',
+            'center': [shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z],
+            'floor': new_category_floor,
+        }
 
         print(f'shelf_item_dict: {self.shelf_item_dict}')
 
@@ -229,7 +227,8 @@ class StoringGroceries:
 
             # Only grasp items of available categories that have failed less than 3 times
             if self.grasp_failure_count[table_item_id] <= 2 and\
-                table_item_type in self.prior_categories:
+                table_item_type in self.prior_categories and\
+                table_item_name not in self.ignore_items:
                 break
 
         rospy.loginfo(f"Table item :      {table_item_name}")
