@@ -17,12 +17,12 @@ yolo_weight_path = 'weight/best_0704.pt'
 yolo_classnames_path = 'weight/test.cn'
 
 # YOLO classnames load
-# try:
-OBJECT_LIST = make_object_list(yolo_classnames_path)
-# except Exception as e:
-#     print(e)
-#     print('Skip loading OBJECT_LIST')
-#     pass
+try:
+    OBJECT_LIST = make_object_list(yolo_classnames_path)
+except Exception as e:
+    print(e)
+    print('Skip loading OBJECT_LIST')
+    pass
 
 AIIS = True
 
