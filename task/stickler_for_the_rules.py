@@ -234,7 +234,7 @@ class ForbiddenRoom:
         # rospy.sleep(3)
         self.agent.say('Please follow me!', show_display=True)
         rospy.sleep(1)
-        self.agent.move_pose() # 0609
+        self.agent.pose.move_pose() # 0609
         self.agent.move_abs_safe('bedroom_search_reverse')
 
         self.agent.move_abs_safe(destination)
@@ -862,13 +862,13 @@ def stickler_for_the_rules(agent):
     # search_location_list = ['living_room_search'] #todo delete
     search_location_list = [
         'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
-                            'bedroom_search', 
+                            # 'bedroom_search', 
                             'kitchen_search', 'living_room_search', 'study_search',
                             'kitchen_search', 'living_room_search', 'study_search',
                             'kitchen_search', 'living_room_search', 'study_search']
 
     agent.pose.head_pan_tilt(0, 0)
-    forbidden_search_start = False
+    # forbidden_search_start = False
 
     agent.pose.move_pose()
 
@@ -910,11 +910,12 @@ def stickler_for_the_rules(agent):
 
                     # 0609
                     agent.move_rel(0, 0, yaw=math.radians(180))
+                    rospy.sleep(3)
                     agent.say('You can leave that way', show_display=True)
-                    rospy.sleep(2)
+                    rospy.sleep(3)
 
                     agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
-                    rospy.sleep(5) # 0609
+                    rospy.sleep(8) # 0609
                     agent.move_abs_safe('bedroom_doublecheck')
                     agent.say('Checking the room if empty', show_display=True)
                     agent.pose.head_tilt(-15)
