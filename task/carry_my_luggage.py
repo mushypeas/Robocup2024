@@ -640,13 +640,13 @@ class HumanFollowing:
 
                 if left_background_count > right_background_count:
                     print("left side is empty")
-                    self.agent.move_rel(0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
+                    self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                elif right_background_count >= left_background_count:
+                else:
                     print("right side is empty")
-                    self.agent.move_rel(0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
+                    self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move right (neg)
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -751,12 +751,12 @@ class HumanFollowing:
                 if right_background_count > left_background_count:
                     self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                     rospy.sleep(3)
-                    self.agent.move_rel(0.3,0,0, wait=False)
+                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     rospy.sleep(2)
                 else:
                     self.agent.move_rel(0.0,0.8,0, wait=False)
                     rospy.sleep(3)
-                    self.agent.move_rel(0.3,0,0, wait=False)
+                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     rospy.sleep(2)
 
 
@@ -1690,7 +1690,7 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.3
-    pose_save_time_period = 3
+    pose_save_time_period = 4
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
@@ -1941,7 +1941,7 @@ def carry_my_luggage(agent):
             #     print("retry")
             #     rospy.sleep(1)
             # rospy.sleep(0.5)
-            rospy.sleep(4)
+            rospy.sleep(5)
             print('go to arena')
 
 
