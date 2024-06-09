@@ -1689,7 +1689,7 @@ def head_map_cb(config):
 def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
-    goal_radius = 0.5
+    goal_radius = 0.3
     pose_save_time_period = 3
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
