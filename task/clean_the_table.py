@@ -35,7 +35,7 @@ def clean_the_table(agent: Agent):
 
     
     tab_name = 'dishwasher_tablet'
-    item_list = ['mug', 'bowl', 'plate', 'fork', 'spoon', 'knife']
+    item_list = ['mug', 'fork', 'spoon', 'knife', 'bowl', 'plate' ]
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
