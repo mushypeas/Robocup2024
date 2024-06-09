@@ -508,7 +508,7 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                self.agent.say('Barrier checking....', show_display=True)
+                # self.agent.say('Barrier checking....', show_display=True)
                 print("Barrier checking....")
                 # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
 
@@ -727,7 +727,7 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and (center is not None and center[1] > 220 and center[1] < 460)  :
+            if tiny_exist and (center is not None and center[1] > 100 and center[1] < 540)  :
 
 
 
@@ -749,7 +749,7 @@ class HumanFollowing:
 
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
-                self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
                     self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
                     rospy.sleep(3)
@@ -809,10 +809,27 @@ class HumanFollowing:
             print("canny last calc_z: ", last_calc_z)
 
             if tiny_exist and self.agent.dist > 1.0 :
+                
+
+                depth = self.agent.depth_image
+
+                seg_img = self.seg_img
+                height, width = seg_img.shape
+                mid_x = width // 2
+                # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
+                # baack_y, back_x = np.where(background_mask)
+                # print("min_y+100 : ", min_y+100)
+                left_background_count = np.mean(depth[100-20:100+20, :mid_x])
+                print("left_background_count", left_background_count)
+                right_background_count = np.mean(depth[100-20:100+20, mid_x:])
+                print("right_background_count", right_background_count)
+
+
+
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
-                self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                if tiny_loc == 'left':
+                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                if right_background_count > left_background_count:
                     self.agent.move_rel(0.3,-0.5,0, wait=False) ## move right is neg
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
