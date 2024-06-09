@@ -66,7 +66,7 @@ def new_get_controls(x,z):
 		# # print('linear: {} ,angular: {}  \n'.format(linear,angular))
 		# linear = z / 1000 * .4
 	# else:
-	linear_max = 0.55#0.8
+	linear_max = 0.6#0.8
 	angular_max = 0.5 #0.5
 	twist = Twist()
 
