@@ -9,15 +9,15 @@ def clean_the_table(agent: Agent):
 
     ### task params #############################################
     # ABS_POSITIONS #
-    pick_position = 'clean_table_front'
-    place_position = 'dishwasher_front'
+    pick_position = '원탁앞90센치'
+    place_position = '식기세척기앞60센치'
     close_position1 = 'rack_close_position1'
     close_position2 = 'rack_close_position2'
     close_position3 = 'rack_close_position3'
     open_position1 = 'rack_open_position1'
 
     # TABLE_DIMENSIONS #
-    pick_table = 'breakfast_table'
+    pick_table = '원탁'
     dishwasher_door = 'dishwasher_door'
     dishwasher_rack = 'dishwasher_rack'
     dishwasher = 'dishwasher'
@@ -145,7 +145,7 @@ def clean_the_table(agent: Agent):
                 # agent.move_rel(0, base_xyz[1] + 0.04, wait=True)
                 # agent.move_rel(base_xyz[0] + 0.16, 0, wait=True)
 
-                agent.move_rel(base_xyz[0] + 0.16, base_xyz[1] + 0.04, wait=True)
+                agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.05, wait=True)
 
                 agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
                 agent.grasp()
@@ -400,9 +400,6 @@ def clean_the_table(agent: Agent):
             num_gripped_items += 1
             agent.pose.move_pose()      
             agent.move_abs(place_position)
-            rospy.sleep(short_move)
-            agent.pose.move_pose()
-
             # dishwasher_x = distancing(agent.yolo_module.pc, dishwasher, dist=0.85)
 
 
@@ -410,9 +407,11 @@ def clean_the_table(agent: Agent):
 
             # dishwasher_y = distancing_horizontal(agent.yolo_module.pc, dishwasher_table)
 
+            agent.move_rel(-0.2, 0, wait=True)
+            
             agent.move_rel(0, place_position_dict[item][1], wait=True)
             rospy.sleep(short_move)
-            if agent.move_rel(place_position_dict[item][0], 0, wait=True)==False:
+            while agent.move_rel(place_position_dict[item][0], 0, wait=True)==False:
                 agent.say('Hold on.')
                 rospy.sleep(0.5)
                 agent.move_rel(place_position_dict[item][0]-0.02, 0, wait=True)

@@ -12,8 +12,8 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-yolo_classnames_path = 'weight/best_for_final.cn'
+yolo_weight_path = 'weight/best_0704.pt'
+yolo_classnames_path = 'weight/best_0704.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
@@ -68,6 +68,10 @@ if FINAL:
 
         '원탁': [0.89, 0.89, 0.735],
         '식탁용식기세척기': [0.595, 0.595, 0.845],
+
+        # clean the table
+        'dishwasher_rack' : [0.520,0.60,0.400],
+        'dishwasher' : [0.520,0.60,0.830] #height is not precise
         
     }
 
@@ -156,10 +160,6 @@ if AIIS:
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],
-<<<<<<< HEAD
-        'breakfast_table': [3.4552,-0.6194,-1.5674],
-=======
->>>>>>> 2a62367d6630d6cfcd26ba2f2291ab2f06ecc5f9
         'table_front': [6.6449, 0.3005, 0.0422],
         'table_side': [7.3455, -1.0624, 1.551],
         'table_back': [8.6478, 0.0623, 3.1025],
@@ -258,13 +258,7 @@ if AIIS:
 
 
         # gpsr
-<<<<<<< HEAD
-
         'kitchen_table': [2.1348, -2.7771, -0.0066], 
-
-=======
-        'kitchen_table': [2.1348, -2.7771, -0.0066], 
->>>>>>> 2a62367d6630d6cfcd26ba2f2291ab2f06ecc5f9
         'taxi': [6.2415, 3.3874, 1.5591],
         'side_table': [2.5619, -0.0344, 1.5821],
         'side_tables': [2.5619, -0.0344, 1.5821],
