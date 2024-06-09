@@ -683,7 +683,7 @@ class HumanFollowing:
 
     def escape_tiny_canny(self):
         center = None
-        if self.human_box_list[1] is not None:
+        if self.human_box_list[0] is not None:
             x = self.human_box_list[1][0]
             y = self.human_box_list[1][1]
             w = self.human_box_list[1][2]
