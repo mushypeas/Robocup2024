@@ -15,31 +15,29 @@ class EGPSR(GPSR):
         self.room_cycle = cycle(self.rooms_list)
 
 def egpsr(agent):
-    eg = EGPSR(agent)
+    g = EGPSR(agent)
     
     g.move('gpsr_instruction_point')
 
-    for cur_room in eg.room_cycle:
-        if eg.task_finished_count >= task_iteration:
+    for cur_room in g.room_cycle:
+        if g.task_finished_count >= task_iteration:
             break
 
-        eg.move(cur_room)
+        g.move(cur_room)
 
-        eg.identify()
+        g.identify()
 
         agent.say("Give a command after the ding sound.")
         rospy.sleep(2.5)
 
-        inputText = eg.hear(7.)
+        inputText = g.hear(7.)
         agent.say(f"Given Command is {inputText}")
 
             
         # parse InputText 
         cmdName, params = ultimateParser(inputText)
 
-        cmdName = eg.cluster(cmdName, eg.cmdNameTocmdFunc.keys())
+        cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
         
-        cmdFunc = eg.cmdNameTocmdFunc[cmdName]
-        cmdFunc(eg, params)
-
-        g.move('gpsr_instruction_point')
+        cmdFunc = g.cmdNameTocmdFunc[cmdName]
+        cmdFunc(g, params)
