@@ -12,8 +12,8 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_0704.pt'
-yolo_classnames_path = 'weight/best_0704.cn'
+yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
+yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
@@ -39,6 +39,10 @@ if FINAL:
         #clean the table
         '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
         '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
+        'rack_close_position1': [2.0321, -0.9474, -1.5822], #bjkim 0512
+        'rack_close_position2': [1.6463, -0.9464, -1.5655],
+        'rack_close_position3': [1.6434, -0.9469, -1.9500],
+        'rack_open_position1': [2.6089, -1.6472, 3.039],
 
         # serve breakfast
         '원탁앞60센치' : [2.9768, -1.1441, -0.0054],

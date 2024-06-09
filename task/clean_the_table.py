@@ -35,13 +35,13 @@ def clean_the_table(agent: Agent):
 
     
     tab_name = 'dishwasher_tablet'
-    item_list = ['mug', 'fork', 'spoon', 'knife', 'bowl', 'plate' ]
+    item_list = ['fork', 'spoon', 'knife','mug',  'bowl', 'plate' ]
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
     short_move = 2.0
 
-    cutlery_box_position = [0.15, 0]
+    cutlery_box_position = [0.20, 0]
     place_position_dict = {'mug': [0, -0.24], 'bowl': [0.12, 0], 'plate': [0.1, -0.24], 'fork': cutlery_box_position,
                     'knife': cutlery_box_position, 'spoon': cutlery_box_position, tab_name: [0.05, 0.0]}
 
@@ -64,8 +64,8 @@ def clean_the_table(agent: Agent):
     agent.grasp()
     agent.pose.move_pose()
 
-    # agent.door_open()
-    # agent.move_rel(2.0, 0, wait=True)
+    agent.door_open()
+    agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
 
     while True:
