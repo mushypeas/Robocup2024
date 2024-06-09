@@ -115,6 +115,7 @@ class LabelTool():
         self.parent.bind("<Right>", self.nextImage) # press 'right' to select next image
         self.parent.bind("<Up>", self.prevClass) # press 'up' to select previous class
         self.parent.bind("<Down>", self.nextClass) # press 'down' to select 2 class
+        self.parent.bind("d", self.delBBox)
         #self.parent.bind("<Down>", self.nextClass) # press 'down' to select 2 class
 
 
@@ -460,7 +461,7 @@ class LabelTool():
                 self.bboxId = None
                 self.STATE['click'] = 0
 
-    def delBBox(self):
+    def delBBox(self, event=None):
         sel = self.listbox.curselection()
         if len(sel) != 1 :
             return
