@@ -319,7 +319,7 @@ class HumanFollowing:
                 # # _depth = np.mean(_depth)
                 # _depth = _depth[_depth != 0]
                 # _depth = np.mean(_depth)
-                if left_edge_background_count > 1000 or right_edge_background_count > 1000:
+                if left_edge_background_count > 1500 or right_edge_background_count > 1500:
                     if left_background_count > right_background_count:
                         print("left side is empty")
                         self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
