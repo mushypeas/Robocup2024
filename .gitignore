@@ -1,6 +1,7 @@
 .idea/
 *.pyc
 *.pt
+*.cn
 token.txt
 tokens.txt
 Tools/BoundingBox_Tool/Images/storing_groceries/
@@ -17,3 +18,4 @@ Tools/xtioncam_capture/image/*
 *.caffemodel
 *.pbmm
 .DS_Store
+Tools/BoundingBox_Tool/Labels/*
