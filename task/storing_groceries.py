@@ -360,6 +360,17 @@ class StoringGroceries:
 
         has_searched_shelf = False
         
+        ## 3. Go to place_location
+        rospy.logwarn('Going to place_location...')
+        self.agent.move_abs_safe(self.place_location)
+
+        # Search items in shelf only once
+        if not has_searched_shelf:
+            rospy.logwarn('Searching items in shelf...')
+            self.agent.pose.head_tilt(angle=self.shelf_head_angle)
+            self.search_shelf()
+            has_searched_shelf = True
+            
         # Pick & place loop
         while True:
 
