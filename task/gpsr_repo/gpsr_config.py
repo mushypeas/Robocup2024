@@ -35,7 +35,7 @@ ABS_POSITION = {
 }
 
 objects_file_path = 'CompetitionTemplate/objects/test.md'
-rooms_list = ["bedroom", "kitchen", "office", "living room", "bathroom"]
+rooms_list = ["living room", "bedroom", "kitchen", "office", "bathroom"]
 names_list = ['Adel', 'Angel', 'Axel', 'Charlie', 'Jane', 'Jules', 'Morgan', 'Paris', 'Robin', 'Simone']
 
 
