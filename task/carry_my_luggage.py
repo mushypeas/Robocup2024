@@ -326,13 +326,13 @@ class HumanFollowing:
                 if left_edge_background_count > 1500 or right_edge_background_count > 1500:
                     if left_background_count > right_background_count:
                         print("left side is empty")
-                        self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move left (pos)
+                        self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//12, wait=False) #then, HSR is intended to move left (pos)
                         rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     else:
                         print("right side is empty")
-                        self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//8, wait=False) #then, HSR is intended to move right (neg)
+                        self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//12, wait=False) #then, HSR is intended to move right (neg)
                         rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -416,12 +416,12 @@ class HumanFollowing:
                     if right_background_count > left_background_count:
                         self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                         rospy.sleep(2)
-                        self.agent.move_rel(0.3,0,self.stop_rotate_velocity//10, wait=False)
+                        self.agent.move_rel(0.3,0,self.stop_rotate_velocity//12, wait=False)
                         rospy.sleep(1)
                     else:
                         self.agent.move_rel(0.0,0.8,0, wait=False)
                         rospy.sleep(2)
-                        self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//10, wait=False)
+                        self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//12, wait=False)
                         rospy.sleep(1)
 
 
