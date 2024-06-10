@@ -1263,8 +1263,8 @@ class BagInspection:
                 self.agent.grasp()
                 self.agent.pose.head_tilt(-30)
                 self.agent.pose.bag_inspection_pose()
-                self.agent.say("Let's check.")
-                rospy.sleep(3)
+                # self.agent.say("Let's check.")
+                # rospy.sleep(3)
                 # 잡아서 눈앞에 들었을 때 있는지 확인
                 # TODO:  Bag check아직 완벽하지 않은 알고리즘
                 if self.bag_grasping_check():
@@ -1288,9 +1288,9 @@ class BagInspection:
             self.agent.pose.move_to_go()
             # self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
             #self.agent.move_abs_coordinate(before_pick_pose, wait=True)
-            self.agent.move_rel(0, 0, -yaw, wait=True)
-        self.agent.say("I am ready to follow you", show_display=True)
-        rospy.sleep(2)
+            self.agent.move_rel(0, 0, -yaw, wait=False)
+        # self.agent.say("I am ready to follow you", show_display=True)
+        # rospy.sleep(2)
 
 processes = []
 
@@ -1339,7 +1339,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.4,
+                                                   stop_thres=.2,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -1429,10 +1429,10 @@ def carry_my_luggage(agent):
     agent.pose.head_pan_tilt(0, 0)
     agent.say("If you are arrived at the destination", show_display=True)
     rospy.sleep(3)
-    agent.say("Please stand still, over 7 seconds", show_display=True)
-    rospy.sleep(3)
+    agent.say("Please stand still.", show_display=True)
+    rospy.sleep(2)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
-    agent.say("Please keep the one meter between us!", show_display=True)
+    agent.say("Please Keep the one meter between us!", show_display=True)
     rospy.sleep(3)
     human_following.freeze_for_humanfollowing()
     rospy.loginfo("start human following")
