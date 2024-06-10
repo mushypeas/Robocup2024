@@ -46,7 +46,7 @@ class HumanFollowing:
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
         self.human_box_list = [None] # for human_reid_and_follower
         self.bridge = CvBridge()
-        self.show_byte_track_image = False
+        self.show_byte_track_image = True
         self.byte_img = None
         self.track_queue = deque()
         # self.angle_queue = deque(maxlen=20)
@@ -109,6 +109,9 @@ class HumanFollowing:
         self.image_size = h * w
         self.image_shape = (h, w)
         if self.show_byte_track_image:
+            bar_width = w // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
+            img[:, :bar_width] = 0
+            img[:, -bar_width:] = 0
             self.agent.head_display_image_pubish(img)
 
     def head_circle_cb(self, config):
@@ -243,7 +246,7 @@ class HumanFollowing:
         # _depth = self.agent.depth_image[:150, 10:630]
 
         if (looking_downside):
-            _depth = self.agent.depth_image[100:240, 150:490] / 1000 # 480, 640, [0:340, 50:590]
+            _depth = self.agent.depth_image[100:240, 180:460] / 1000 # 480, 640, [0:340, 50:590]
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -265,8 +268,8 @@ class HumanFollowing:
         print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
             _depth = np.partition(_depth, 1000)
-            # _depth = np.mean(_depth[100:1000])
-            _depth = np.mean(_depth)
+            _depth = np.mean(_depth[100:1000])
+            # _depth = np.mean(_depth)
 
             # _depth = np.min(_depth)
             masked_depth = np.ma.masked_equal(origin_depth, 0)
@@ -494,7 +497,7 @@ class HumanFollowing:
 
             print("lmt_if", self.agent.last_moved_time)
 
-            self.show_byte_track_image = False
+            self.show_byte_track_image = True
             self.agent.move_base.base_action_client.cancel_all_goals()
             if stt_option:
                 self.agent.say('Is this your destination?\nsay yes or no after a ding sound', show_display=True)
@@ -1444,7 +1447,7 @@ def carry_my_luggage(agent):
     while not rospy.is_shutdown():
         end_following = human_following.follow_human(start_time, pose_save_time_period)
         if end_following:
-            human_following.show_byte_track_image = False
+            human_following.show_byte_track_image = True
             stop_client = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
             print("VIEWPOINT CONTROLLER ON")
             stop_client.call(EmptyRequest())
