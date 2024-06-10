@@ -79,7 +79,7 @@ class HumanFollowing:
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
         self.image_pub = rospy.Publisher('/human_segmentation_with_point', Image, queue_size=10)
-        self.cann
+        
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
         # self.agent.pose.head_pan_tilt(0, -self.tilt_angle*0.5)
@@ -243,7 +243,7 @@ class HumanFollowing:
         # _depth = self.agent.depth_image[:150, 10:630]
 
         if (looking_downside):
-            _depth = self.agent.depth_image[100:340, 50:590] / 1000 # 480, 640
+            _depth = self.agent.depth_image[100:240, 150:490] / 1000 # 480, 640, [0:340, 50:590]
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -264,7 +264,8 @@ class HumanFollowing:
         _depth = _depth[_depth != 0]
         print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
-            _depth = np.partition(_depth, 20)
+            _depth = np.partition(_depth, 1000)
+            # _depth = np.mean(_depth[100:1000])
             _depth = np.mean(_depth)
 
             # _depth = np.min(_depth)
@@ -287,7 +288,7 @@ class HumanFollowing:
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
-            if (calc_z!=0 and _depth < 1.4 and (_depth< ((calc_z/ 1000.0)-0.6) or self.agent.dist <((calc_z/1000.0)-0.6) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.4 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -1323,7 +1324,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
-    try_bag_picking = True #True
+    try_bag_picking = False #True
     try_bytetrack = False
     map_mode = False
     stt_option = False #True
