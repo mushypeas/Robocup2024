@@ -398,20 +398,27 @@ class HumanFollowing:
                 print("right_background_count", right_background_count)
 
 
+                left_edge_background_count = np.mean(depth[100-20:100+20, :mid_x//2])
+                right_edge_background_count = np.mean(depth[100-20:100+20, (mid_x*3//2):])
+                # _depth = self.barrier_check()
+                # # _depth = np.mean(_depth)
+                # _depth = _depth[_depth != 0]
+                # _depth = np.mean(_depth)
+                if left_edge_background_count > 1500 or right_edge_background_count > 1500:
 
-                # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
-                print('Tiny object. I\'ll avoid it.')
-                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                if right_background_count > left_background_count:
-                    self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
-                    rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
-                    rospy.sleep(1)
-                else:
-                    self.agent.move_rel(0.0,0.8,0, wait=False)
-                    rospy.sleep(2)
-                    self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
-                    rospy.sleep(1)
+                    # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
+                    print('Tiny object. I\'ll avoid it.')
+                    # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                    if right_background_count > left_background_count:
+                        self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
+                        rospy.sleep(2)
+                        self.agent.move_rel(0.3,0,self.stop_rotate_velocity//10, wait=False)
+                        rospy.sleep(1)
+                    else:
+                        self.agent.move_rel(0.0,0.8,0, wait=False)
+                        rospy.sleep(2)
+                        self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//10, wait=False)
+                        rospy.sleep(1)
 
 
 
@@ -481,7 +488,7 @@ class HumanFollowing:
         # if (time.time() - self.agent.last_moved_time > 3.0) and self.human_box_list[0] is None:
 
 
-        if (time.time() - self.agent.last_moved_time > 10.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
+        if (time.time() - self.agent.last_moved_time > 7.0) and not (self.start_location[0] - self.goal_radius < cur_pose[0] < self.start_location[0] + self.goal_radius and \
             self.start_location[1] - self.goal_radius < cur_pose[1] < self.start_location[1] + self.goal_radius):
 
             print("lmt_if", self.agent.last_moved_time)
@@ -1216,9 +1223,9 @@ class BagInspection:
             self.agent.say("Please Hand me bag", show_display=True)
             self.agent.pose.neutral_pose()
             rospy.sleep(1)
-            for i in range(5, 0, -1):
-                self.agent.say(str(i))
-                rospy.sleep(1)
+            # for i in range(1, 0, -1):
+            #     self.agent.say(str(i))
+            #     rospy.sleep(1)
             self.agent.grasp()
             self.agent.pose.move_to_go()
         else:
@@ -1422,7 +1429,7 @@ def carry_my_luggage(agent):
     agent.pose.head_pan_tilt(0, 0)
     agent.say("If you are arrived at the destination", show_display=True)
     rospy.sleep(3)
-    agent.say("Please stand still, over 10 seconds", show_display=True)
+    agent.say("Please stand still, over 7 seconds", show_display=True)
     rospy.sleep(3)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
     agent.say("Please keep the one meter between us!", show_display=True)
@@ -1455,9 +1462,9 @@ def carry_my_luggage(agent):
     agent.say("Take your bag", show_display=True)
     agent.pose.hand_me_bag()
     rospy.sleep(3)
-    for i in range(1, 0, -1): # TODO :5
-        agent.say(str(i))
-        rospy.sleep(1)
+    # for i in range(1, 0, -1): # TODO :5
+    #     agent.say(str(i))
+    #     rospy.sleep(1)
     agent.open_gripper()
     rospy.sleep(1)
     agent.pose.move_pose()
