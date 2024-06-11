@@ -242,11 +242,11 @@ class HumanFollowing:
 
         return False # pass
     
-    def barrier_check(self, looking_downside=True):
+    def barrier_check(self, looking_downside=True, y_top=50):
         # _depth = self.agent.depth_image[:150, 10:630]
 
         if (looking_downside):
-            _depth = self.agent.depth_image[100:240, 180:460] / 1000 # 480, 640, [0:340, 50:590]
+            _depth = self.agent.depth_image[y_top:360, 300:340] / 1000 # 480, 640, [0:340, 50:590]
         else: # no tilt
             _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -260,15 +260,16 @@ class HumanFollowing:
         cur_pose = self.agent.get_pose(print_option=False)
  
         _num_rotate=0
-        _depth = self.barrier_check()
+        y_top= 20
+        _depth = self.barrier_check(y_top=y_top)
         print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
         _depth = _depth[_depth != 0]
         print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
-            _depth = np.partition(_depth, 1000)
-            _depth = np.mean(_depth[100:1000])
+            _depth = np.partition(_depth, min(1000, len(_depth)+1))
+            _depth = np.mean(_depth[min(100, len(_depth)):min(1000, len(_depth)+1)])
             # _depth = np.mean(_depth)
 
             # _depth = np.min(_depth)
@@ -291,7 +292,7 @@ class HumanFollowing:
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
-            if (calc_z!=0 and _depth < 0.7 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.3 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -313,11 +314,11 @@ class HumanFollowing:
                 # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
-                left_background_count = np.mean(depth[min_y+100-20:min_y+100+20, :mid_x])
-                left_edge_background_count = np.mean(depth[min_y+100-20:min_y+100+20, :mid_x//2])
+                left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
+                left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[min_y+100-20:min_y+100+20, mid_x:])
-                right_edge_background_count = np.mean(depth[min_y+100-20:min_y+100+20, (mid_x*3//2):])
+                right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
+                right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
                 # # _depth = np.mean(_depth)
@@ -326,13 +327,13 @@ class HumanFollowing:
                 if left_edge_background_count > 1500 or right_edge_background_count > 1500:
                     if left_background_count > right_background_count:
                         print("left side is empty")
-                        self.agent.move_rel(0,0.8,-self.stop_rotate_velocity//12, wait=False) #then, HSR is intended to move left (pos)
+                        self.agent.move_rel(0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
                         rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     else:
                         print("right side is empty")
-                        self.agent.move_rel(0,-0.8,self.stop_rotate_velocity//12, wait=False) #then, HSR is intended to move right (neg)
+                        self.agent.move_rel(0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
                         rospy.sleep(2)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -412,6 +413,24 @@ class HumanFollowing:
 
                     # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                     print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
+                    print('Tiny object. I\'ll avoid it.')
                     # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
                         self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
@@ -471,6 +490,16 @@ class HumanFollowing:
 
 
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
+                print('Tiny object. I\'ll avoid it.')              
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
                 print('Tiny object. I\'ll avoid it.')
                 # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
