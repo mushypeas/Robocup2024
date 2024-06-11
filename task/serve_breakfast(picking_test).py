@@ -226,11 +226,8 @@ class ServeBreakfast:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        ### task start ##  (Inital location -> agent.move_abs('zero') )
+        ### task start ##  
 
-        self.agent.door_open()
-        self.agent.say('Hi, I will serve breakfast for you!')
-        rospy.sleep(2)
         self.agent.move_abs('breakfast_table')
 
 
@@ -243,7 +240,7 @@ class ServeBreakfast:
             ## Try picking until an item is grasped
             while not has_grasped:
                 rospy.logwarn('Go to pick_location...')
-                self.agent.say('I will move to a different location. Please be careful.')
+                self.agent.say('I will move to a picking location. Please be careful.')
                 self.agent.move_rel(-0.2,0)
                 self.agent.pose.table_search_pose(head_tilt=self.pick_table_head_angle)
                 self.agent.head_tilt(-10)
