@@ -1,90 +1,41 @@
-from std_msgs.msg import Float32
-from playsound import playsound
-import pyaudio
 import whisper
-import wave
-from .codebook_parser import parser
-
-name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
-drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
-yesno_list = ['yes', 'no']
-
-def record(sec=5, filename="temp_recording.wav"):
-    # Parameters for audio recording
-    FORMAT = pyaudio.paInt16  # Audio format (16-bit PCM)
-    CHANNELS = 1  # Number of channels
-    RATE = 16000  # Sample rate, Whisper models often use 16kHz
-    CHUNK = 1024  # Chunk size
-
-    # Initialize pyaudio
-    audio = pyaudio.PyAudio()
-
-    # Open stream
-    stream = audio.open(format=FORMAT,
-                        channels=CHANNELS,
-                        rate=RATE,
-                        input=True,
-                        frames_per_buffer=CHUNK)
-
-    print("Recording...")
-
-    frames = []
-
-    # Record audio
-    for _ in range(int(RATE / CHUNK * sec)):
-        data = stream.read(CHUNK)
-        frames.append(data)
-
-    print("Finished recording.")
-
-    # Stop and close the stream
-    stream.stop_stream()
-    stream.close()
-    audio.terminate()
-
-    # Save to a temporary WAV file
-    with wave.open(filename, 'wb') as wf:
-        wf.setnchannels(CHANNELS)
-        wf.setsampwidth(audio.get_sample_size(FORMAT))
-        wf.setframerate(RATE)
-        wf.writeframes(b''.join(frames))
-
-    return filename
+import rospy, pydub, pyaudio
+import numpy as np
+from std_msgs.msg import Float32MultiArray, String
+# from .codebook_parser import parser
 
 
-def whisper_stt(sec=5, mode=None):
-    topic = Float32(); topic.data = sec
-    playsound('./Tools/xtioncam_capture/ding_3x.mp3')
-    print('Record start')
-    
-    wave_file = record(sec)
-    
-    print('Record end')
-    
-    model = whisper.load_model("base.en")
-    result = model.transcribe(audio=wave_file, verbose=True)
+class WhisperSTT:
 
-    print('whisper_stt result: ', result)
+    def __init__(self):
+        self.model = whisper.load_model("small.en", device="cpu")
+        self.portaudio = pyaudio.PyAudio()
+        self.pub_result = rospy.Publisher('/stt_result', String, queue_size=10)
 
-    answer=result["text"]
+        self.name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
+        self.drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
+        self.yesno_list = ['yes', 'no']
 
-    if mode:
-        if mode=='name':
-            parse_list = name_list
-        elif mode=='drink':
-            parse_list = drink_list
-        elif mode=='yesno':
-            parse_list = yesno_list
-        answer = parser(result["text"], parse_list)
-        print('whiper_stt parser answer: ', answer)
-    
-    return answer, None
+        self.filename = 'recording'
+        self.chunk = 1024
+
+
+    def listen(self):
+        stream = rospy.wait_for_message('/mic_record', Float32MultiArray)
+        content = np.array(stream.data, dtype=np.float32)   
+        data = np.int16(content).tobytes()
+        audio = pydub.AudioSegment(data=data, frame_rate=44100, sample_width=2, channels=1)
+        audio.export(f"{self.filename}.mp3", format="mp3", bitrate="320k")
+        result = self.model.transcribe(audio=f"{self.filename}.mp3", verbose=True)
+        print(f"\nSTT Result: {result['text']}\n")
+        return result
 
 
 if __name__=="__main__":
-    while True:
-        mode=input('mode: ')
-        if mode=='':
-            mode = None
-        result = whisper_stt(3, mode)
-        print(result)
+    rospy.init_node('stt_server_mic', anonymous=False, disable_signals=True)
+    stt = WhisperSTT()
+
+    while not rospy.is_shutdown():
+        rospy.loginfo('Ready to listen...')
+        result = stt.listen()
+        stt.pub_result.publish(result["text"])

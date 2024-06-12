@@ -25,7 +25,7 @@ from open3d import geometry
 # stt
 # from module.stt.stt_client import stt_client
 from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
-from module.stt.whisper_stt import whisper_stt
+from module.stt.stt_client import stt_client
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -95,6 +95,7 @@ class Agent:
         self.tts = TTS()
 
         # object
+        self.object_type_list = OBJECT_TYPES
         self.object_list = OBJECT_LIST
         self.location_map = LOCATION_MAP  # for gpsr
         self.table_dimension = TABLE_DIMENSION  # for gpsr
@@ -417,9 +418,7 @@ class Agent:
     # stt
     def stt(self, sec=5., mode=None):
         # return stt_client_hsr_mic(sec=sec, mode=mode)
-        return whisper_stt(sec=sec, mode=mode) # 0612
-        # return stt_client(sec=sec)
-        pass
+        return stt_client(sec=sec)
 
     # gripper
     def open_gripper(self, wait=True):

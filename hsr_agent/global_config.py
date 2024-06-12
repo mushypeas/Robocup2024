@@ -12,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
+yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -30,11 +30,12 @@ if FINAL:
     ABS_POSITION = {
 
         #insepction
-        'inspection': [4.8333, 2.7961, 1.6308],
+        'zero': [0.0, 0.0, 0.0],
+        'insp_target': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
-        '쉘프': [1.9958, -0.7921, -3.1012],
-        '원탁앞90센치': [2.6643, -1.1615, -0.0232],
+        'grocery_table': [2.6643, -1.1615, -0.0232],
+        'grocery_shelf': [1.9958, -0.7921, -3.1012],
 
         #clean the table
         '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
@@ -69,58 +70,12 @@ if FINAL:
         '원탁': [0.89, 0.89, 0.735],
         '식탁용식기세척기': [0.595, 0.595, 0.845],
         
+        # Storing Groceries
+        'grocery_table': [0.89, 0.89, 0.735],
+        'grocery_shelf_1f': [0.765, 0.357, 0.805],
+        'grocery_shelf_2f': [0.765, 0.357, 1.11],
+        'grocery_shelf_3f': [0.765, 0.357, 1.4],
     }
-
-    OBJECT_LIST = [
-        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
-        ['cracker', 0, 5, 0],
-        ['sugar', 1, 2, 0],
-        ['jello_red', 2, 2, 0],
-        ['jello_black', 3, 2, 0],
-        ['coffee_can', 4, 2, 0],
-        ['tuna_can', 5, 2, 0],
-        ['pringles', 6, 5, 0],
-        ['mustard', 7, 2, 0],
-        ['tomato_soup', 8, 2, 0],
-        ['pear', 9, 3, 0],
-        ['peach', 10, 3, 0],
-        ['apple', 11, 3, 0],
-        ['strawberry', 12, 3, 0],
-        ['orange', 13, 3, 0],
-        ['banana', 14, 3, 0],
-        ['plum', 15, 3, 0],
-        ['lemon', 16, 3, 0],
-        ['bowl', 17, 6, 2],
-        ['mug', 18, 6, 0],
-        ['plate', 19, 6, 3],
-        ['knife', 20, 6, 1],
-        ['fork', 21, 6, 1],
-        ['spoon', 22, 6, 1],
-        ['tennis_ball', 23, 4, 0],
-        ['golf_ball', 24, 4, 0],
-        ['base_ball', 25, 4, 0],
-        ['soccer_ball', 26, 4, 0],
-        ['soft_ball', 27, 4, 0],
-        ['cube', 28, 4, 0],
-        ['dice', 29, 4, 0],
-        ['wine', 30, 1, 0],
-        ['ice_tea', 31, 1, 0],
-        ['orange_juice', 32, 1, 0],
-        ['milk', 33, 1, 0],
-        ['tropical_juice', 34, 1, 0],
-        ['juice_pack', 35, 1, 0],
-        ['cereal_red', 36, 1, 0],
-        ['cereal_yellow', 37, 1, 0],
-        ['coke', 38, 1, 0],
-        ['sponge', 39, 0, 1],
-        ['scrub', 40, 0, 0],
-        ['spam', 41, 2, 0],
-        ['shopping_bag_1', 42, 7, 0],
-        ['shopping_bag_2', 43, 7, 0],
-        ['shopping_bag_3', 44, 7, 0],
-        ['cereal_black', 45, 7, 0],
-        ['dishwasher_tablet', 46, 7, 0],
-    ]
 
     OBJECT_TYPES = [
         "cleaning",  # 0
@@ -148,7 +103,7 @@ if FINAL:
         "living_room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
     }
 
-if AIIS:
+elif AIIS:
     print('[GLOBAL CONFIG] AIIS mode')
     # real robot
     ABS_POSITION = {
@@ -335,56 +290,56 @@ if AIIS:
         'final_kitchen_table': [1.505, 0.705, 0.8],
     }
 
-    OBJECT_LIST = [
-        # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
-        ['cracker', 0, 5, 0],
-        ['sugar', 1, 2, 0],
-        ['jello_red', 2, 2, 0],
-        ['jello_black', 3, 2, 0],
-        ['coffee_can', 4, 2, 0],
-        ['tuna_can', 5, 2, 0],
-        ['pringles', 6, 5, 0],
-        ['mustard', 7, 2, 0],
-        ['tomato_soup', 8, 2, 0],
-        ['pear', 9, 3, 0],
-        ['peach', 10, 3, 0],
-        ['apple', 11, 3, 0],
-        ['strawberry', 12, 3, 0],
-        ['orange', 13, 3, 0],
-        ['banana', 14, 3, 0],
-        ['plum', 15, 3, 0],
-        ['lemon', 16, 3, 0],
-        ['bowl', 17, 6, 2],
-        ['mug', 18, 6, 0],
-        ['plate', 19, 6, 3],
-        ['knife', 20, 6, 1],
-        ['fork', 21, 6, 1],
-        ['spoon', 22, 6, 1],
-        ['tennis_ball', 23, 4, 0],
-        ['golf_ball', 24, 4, 0],
-        ['base_ball', 25, 4, 0],
-        ['soccer_ball', 26, 4, 0],
-        ['soft_ball', 27, 4, 0],
-        ['cube', 28, 4, 0],
-        ['dice', 29, 4, 0],
-        ['wine', 30, 1, 0],
-        ['ice_tea', 31, 1, 0],
-        ['orange_juice', 32, 1, 0],
-        ['milk', 33, 1, 0],
-        ['tropical_juice', 34, 1, 0],
-        ['juice_pack', 35, 1, 0],
-        ['cereal_red', 36, 1, 0],
-        ['cereal_yellow', 37, 1, 0],
-        ['coke', 38, 1, 0],
-        ['sponge', 39, 0, 1],
-        ['scrub', 40, 0, 0],
-        ['spam', 41, 2, 0],
-        ['shopping_bag_1', 42, 7, 0],
-        ['shopping_bag_2', 43, 7, 0],
-        ['shopping_bag_3', 44, 7, 0],
-        ['cereal_black', 45, 7, 0],
-        ['dishwasher_tablet', 46, 7, 0],
-    ]
+    # OBJECT_LIST = [
+    #     # name, item_id, itemtype, grasping_type[front:0, top:1, bowl:2, plate:3]  2: 'spoon', 3: 'fork', 4: 'plate', 5: 'bowl', 0: 'mug', 1: 'knife', 
+    #     ['cracker', 0, 5, 0],
+    #     ['sugar', 1, 2, 0],
+    #     ['jello_red', 2, 2, 0],
+    #     ['jello_black', 3, 2, 0],
+    #     ['coffee_can', 4, 2, 0],
+    #     ['tuna_can', 5, 2, 0],
+    #     ['pringles', 6, 5, 0],
+    #     ['mustard', 7, 2, 0],
+    #     ['tomato_soup', 8, 2, 0],
+    #     ['pear', 9, 3, 0],
+    #     ['peach', 10, 3, 0],
+    #     ['apple', 11, 3, 0],
+    #     ['strawberry', 12, 3, 0],
+    #     ['orange', 13, 3, 0],
+    #     ['banana', 14, 3, 0],
+    #     ['plum', 15, 3, 0],
+    #     ['lemon', 16, 3, 0],
+    #     ['bowl', 17, 6, 2],
+    #     ['mug', 18, 6, 0],
+    #     ['plate', 19, 6, 3],
+    #     ['knife', 20, 6, 1],
+    #     ['fork', 21, 6, 1],
+    #     ['spoon', 22, 6, 1],
+    #     ['tennis_ball', 23, 4, 0],
+    #     ['golf_ball', 24, 4, 0],
+    #     ['base_ball', 25, 4, 0],
+    #     ['soccer_ball', 26, 4, 0],
+    #     ['soft_ball', 27, 4, 0],
+    #     ['cube', 28, 4, 0],
+    #     ['dice', 29, 4, 0],
+    #     ['wine', 30, 1, 0],
+    #     ['ice_tea', 31, 1, 0],
+    #     ['orange_juice', 32, 1, 0],
+    #     ['milk', 33, 1, 0],
+    #     ['tropical_juice', 34, 1, 0],
+    #     ['juice_pack', 35, 1, 0],
+    #     ['cereal_red', 36, 1, 0],
+    #     ['cereal_yellow', 37, 1, 0],
+    #     ['coke', 38, 1, 0],
+    #     ['sponge', 39, 0, 1],
+    #     ['scrub', 40, 0, 0],
+    #     ['spam', 41, 2, 0],
+    #     ['shopping_bag_1', 42, 7, 0],
+    #     ['shopping_bag_2', 43, 7, 0],
+    #     ['shopping_bag_3', 44, 7, 0],
+    #     ['cereal_black', 45, 7, 0],
+    #     ['dishwasher_tablet', 46, 7, 0],
+    # ]
 
     OBJECT_TYPES = [
         "cleaning",  # 0
