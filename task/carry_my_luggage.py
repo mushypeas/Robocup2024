@@ -254,7 +254,7 @@ class HumanFollowing:
             #     center_x = center[1]
 
             if (looking_downside):
-                _depth = self.agent.depth_image[y_top:200, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
+                _depth = self.agent.depth_image[y_top:150, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
             else: # no tilt
                 _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -271,8 +271,8 @@ class HumanFollowing:
         cur_pose = self.agent.get_pose(print_option=False)
  
         _num_rotate=0
-        y_top= 20
-        _depth = self.barrier_check(y_top=y_top)
+        y_top= 0
+        _depth = self.barrier_check(y_top=y_top, var=320)
         print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
@@ -306,7 +306,8 @@ class HumanFollowing:
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
-            if (calc_z!=0 and _depth < 1.3 and _depth< ((calc_z/ 1000.0)-0.4) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
+            if (calc_z!=0 and _depth < 0.7 and _depth< ((calc_z/ 1000.0)-0.4) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -316,7 +317,10 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
 
                 # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+                
 
+                # self.agent.move_rel(-1.0,0.0,0, wait=False) #then, HSR is intended to move left (pos)
+                # rospy.sleep(2.0)
 
 
                 depth = self.agent.depth_image
@@ -340,103 +344,105 @@ class HumanFollowing:
                 if left_edge_background_count > 2000 or right_edge_background_count > 2000:
                     self.agent.say('Barrier checking....', show_display=True)
                     print("Barrier checking....")
+                    
                     if left_background_count > right_background_count:
                         print("left side is empty")
-                        self.agent.move_rel(1.0,1.0,0, wait=False) #then, HSR is intended to move left (pos)
-                        rospy.sleep(4.0)
+                        self.agent.move_rel(0.0,1.0,0, wait=False) #then, HSR is intended to move left (pos)
+                        rospy.sleep(0.5)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     else:
                         print("right side is empty")
-                        self.agent.move_rel(1.0,-1.0,0, wait=False) #then, HSR is intended to move right (neg)
-                        rospy.sleep(4.0)
+                        self.agent.move_rel(0.0,-1.0,0, wait=False) #then, HSR is intended to move right (neg)
+                        rospy.sleep(0.5)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
 
        ################################################################
 
-                    #barrier post processing
-                    _depth = self.barrier_check(y_top=y_top, x_var=100)
-                    print("_depth shape: ", _depth.shape)
-                    origin_depth = _depth
-                    # _depth = np.mean(_depth)
-                    _depth = _depth[_depth != 0]
-                    print("_depth shape: ", _depth.shape)
-                    if len(_depth) != 0:
-                        _depth = np.partition(_depth, min(1000, len(_depth)))
-                        if len(_depth) < 500:
-                            _depth = np.mean(_depth[100:min(1000, len(_depth))])
-                        else:
-                            _depth = np.mean(_depth[:500])
-                        # _depth = np.mean(_depth)
+                    # #barrier post processing
+                    # _depth = self.barrier_check(y_top=y_top, x_var=100)
+                    # print("_depth shape: ", _depth.shape)
+                    # origin_depth = _depth
+                    # # _depth = np.mean(_depth)
+                    # _depth = _depth[_depth != 0]
+                    # print("_depth shape: ", _depth.shape)
+                    # if len(_depth) != 0:
+                    #     _depth = np.partition(_depth, min(10, len(_depth)))
+                    #     # if len(_depth) < 500:
+                    #     #     _depth = np.mean(_depth[50:min(1000, len(_depth))])
+                    #     # else:
+                    #     #     _depth = np.mean(_depth[:500])
+                    #     _depth = np.mean(_depth[:min(10, len(_depth))])
+                    #     # _depth = np.mean(_depth)
 
-                        # _depth = np.min(_depth)
-                        masked_depth = np.ma.masked_equal(origin_depth, 0)
-                        min_index = np.argmin(masked_depth)
-                        print("min_index : ", min_index)
-                        # 1차원 인덱스를 2차원 인덱스로 변환
-                        t = np.unravel_index(min_index, origin_depth.shape)
-                        print("unravel_index(min_index, origin_depth.shape) :", t)
-                        min_y, min_x = t
-                        # _depth = np.mean(self._depth)
-                        escape_radius = 0.2
-                        # if self.human_box_list[0] is not None:
-                        #     human_info_ary = copy.deepcopy(self.human_box_list)
-                        #     depth = np.asarray(self.d2pc.depth)
-                        #     twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+                    #     # _depth = np.min(_depth)
+                    #     masked_depth = np.ma.masked_equal(origin_depth, 0)
+                    #     min_index = np.argmin(masked_depth)
+                    #     print("min_index : ", min_index)
+                    #     # 1차원 인덱스를 2차원 인덱스로 변환
+                    #     t = np.unravel_index(min_index, origin_depth.shape)
+                    #     print("unravel_index(min_index, origin_depth.shape) :", t)
+                    #     min_y, min_x = t
+                    #     # _depth = np.mean(self._depth)
+                    #     escape_radius = 0.2
+                    #     # if self.human_box_list[0] is not None:
+                    #     #     human_info_ary = copy.deepcopy(self.human_box_list)
+                    #     #     depth = np.asarray(self.d2pc.depth)
+                    #     #     twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
 
-                        rospy.loginfo(f"rect depth min : {_depth}")
-                        # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
-                        rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
-                        #and np.mean(_depth)< (calc_z-100)
-                        #and self.image_size * human_box_thres > human_box_size
-                        if (calc_z!=0 and _depth < 0.9 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
-                        self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
-                            _num_rotate = _num_rotate + 1
-                            # rospy.sleep(1)
-                            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                            print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                    #     rospy.loginfo(f"rect depth min : {_depth}")
+                    #     # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
+                    #     rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
+                    #     #and np.mean(_depth)< (calc_z-100)
+                    #     #and self.image_size * human_box_thres > human_box_size
+                    #     if (calc_z!=0 and _depth < 0.9 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+                    #     self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
+                    #         _num_rotate = _num_rotate + 1
+                    #         # rospy.sleep(1)
+                    #         print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                    #         print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                    #         print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                    #         print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
 
-                            # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
+                    #         # self.agent.pose.head_pan_tilt(0, -self.tilt_angle)
 
 
 
-                            depth = self.agent.depth_image
+                    #         depth = self.agent.depth_image
 
-                            seg_img = self.seg_img
-                            height, width = seg_img.shape
-                            mid_x = width // 2
-                            # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
-                            # baack_y, back_x = np.where(background_mask)
-                            print("min_y+100 : ", min_y+100)
-                            left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
-                            left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
-                            print("left_background_count", left_background_count)
-                            right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
-                            right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
-                            print("right_background_count", right_background_count)
-                            # _depth = self.barrier_check()
-                            # # _depth = np.mean(_depth)
-                            # _depth = _depth[_depth != 0]
-                            # _depth = np.mean(_depth)
-                            if left_edge_background_count > 2000 or right_edge_background_count > 2000:
-                                self.agent.say('Barrier checking 2....', show_display=True)
-                                print("Barrier checking....")
-                                if left_background_count > right_background_count:
-                                    print("left side is empty")
-                                    self.agent.move_rel(0,0.6,0, wait=False) #then, HSR is intended to move left (pos)
-                                    rospy.sleep(2)
-                                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
-                                    # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                                else:
-                                    print("right side is empty")
-                                    self.agent.move_rel(0,-0.6,0, wait=False) #then, HSR is intended to move right (neg)
-                                    rospy.sleep(2)
-                                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
-                                    # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
+                    #         seg_img = self.seg_img
+                    #         height, width = seg_img.shape
+                    #         mid_x = width // 2
+                    #         # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
+                    #         # baack_y, back_x = np.where(background_mask)
+                    #         print("min_y+100 : ", min_y+100)
+                    #         left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
+                    #         left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
+                    #         print("left_background_count", left_background_count)
+                    #         right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
+                    #         right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
+                    #         print("right_background_count", right_background_count)
+                    #         # _depth = self.barrier_check()
+                    #         # # _depth = np.mean(_depth)
+                    #         # _depth = _depth[_depth != 0]
+                    #         # _depth = np.mean(_depth)
+                    #         if left_edge_background_count > 2000 or right_edge_background_count > 2000:
+                    #             self.agent.say('Barrier checking 2....', show_display=True)
+                    #             print("Barrier checking....")
+                    #             if left_background_count > right_background_count:
+                    #                 print("left side is empty")
+                    #                 self.agent.move_rel(0,0.6,0, wait=False) #then, HSR is intended to move left (pos)
+                    #                 rospy.sleep(2)
+                    #                 # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    #                 # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
+                    #             else:
+                    #                 print("right side is empty")
+                    #                 self.agent.move_rel(0,-0.6,0, wait=False) #then, HSR is intended to move right (neg)
+                    #                 rospy.sleep(2)
+                    #                 # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    #                 # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
 
 
                 ########################################################################
@@ -1729,7 +1735,7 @@ def carry_my_luggage(agent):
                 twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
                 print("seg human detected, calc_z : ", calc_z)
 
-                while calc_z < 700.0: #0.7m내에 사람 있는 동안 일단 정지
+                while calc_z < 650.0: #0.7m내에 사람 있는 동안 일단 정지
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     print("seg human!!!!!!!!!!!!!!!!!!")
