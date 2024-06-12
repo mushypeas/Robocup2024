@@ -19,7 +19,7 @@ rsoundex = RefinedSoundex()
 
 def parser(input, word_list=None):
     if len(input) == 0: return ""
-    split = input.split('and')
+    split = input.split('and') # 왜 and split? ex) my name is charlie and my favourite drink is cola 뭐 이런건가
     
     # lst = ['red wine', 'cola','juice pack','tropical juice','milk','iced tea','orange juice','tuna','tomato soup','spam','mustard','strawberry jello','chocolate jello','coffee grounds','sugar','pear','plum','peach','lemon','orange','strawberry','banana','apple','pringles','cornflakes','cheezit', 'yes','no']
     # lst.extend(['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone'])
@@ -45,7 +45,7 @@ def parser(input, word_list=None):
                 if distance(item, i) < distance(item, minstring):
                     minstring = i
         order_list.append(minstring)
-        print('parser item,distmin: ', item, distmin)
+        print('parser item, distmin: ', item, distmin)
         #rospy.loginfo(i, distmin)
     print('parser order_list', order_list)
     order = ""

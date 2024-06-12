@@ -182,8 +182,8 @@ def receptionist(agent):
 
     #################### CHECK: stt ####################
     # First guest STT
-    qr_check = True
-    # qr_check = False
+    # qr_check = True
+    qr_check = False
     agent.say('I will ask your \nname and drink.', show_display=True)
     rospy.sleep(2.5)
     if not calibration_mode and not qr_check:
@@ -362,8 +362,8 @@ def receptionist(agent):
     rospy.sleep(0.8)
 
     # Second guest STT
-    qr_check = True
-    # qr_check = False
+    # qr_check = True
+    qr_check = False
     agent.say('I will ask your \nname and drink.', show_display=True)
     rospy.sleep(2.5)
     if not calibration_mode and not qr_check:
