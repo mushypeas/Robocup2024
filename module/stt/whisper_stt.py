@@ -36,6 +36,6 @@ if __name__=="__main__":
     stt = WhisperSTT()
 
     while not rospy.is_shutdown():
-        rospy.loginfo('Recording...')
+        rospy.loginfo('Ready to listen...')
         result = stt.listen()
         stt.pub_result.publish(result["text"])
