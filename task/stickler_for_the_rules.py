@@ -434,18 +434,19 @@ class DrinkDetection:
                           Int16MultiArray, self._openpose_cb)
         # self.thre = hand_drink_pixel_dist_threshold
         self.axis_transform = axis_transform
-        self.drink_check = False
-        self.drink_list = [0, 1, 2, 3, 4, 5]
+        # self.drink_check = False
+        # self.drink_list = [0, 1, 2, 3, 4, 5]
         # self.marker_maker = MarkerMaker('/snu/human_location') # ?? 
         self.no_drink_human_coord = None # 이건 필요함
         # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
+        self.image_save_index = 0
 
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
         self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
         self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
         self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
-        print(self.clip_preprocess)
+        # print(self.clip_preprocess)
 
     def _openpose_cb(self, data):
         data_list = data.data
@@ -517,27 +518,47 @@ class DrinkDetection:
             return False
             
 
+        # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
+        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel)
+
+        # 고개 0도로 설정
+        self.agent.pose.head_tilt(0)
+        rospy.sleep(0.5)
+        # 사람 없으면 return
+        if len(self.human_bbox_with_hand) == 0:
+            return None
+        # 일단 openpose 기준으로 사람 리스트 생성
+        drink_person = [False for _ in range(len(self.human_bbox_with_hand))]
+        # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
+        for human_idx, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
+            top_left_x, top_left_y = human_bbox_with_hand[0]
+            bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
+            if top_left_x >= 640-160 or bottom_right_x <= 160:
+                drink_person[human_idx] = True
+
         for head_tilt_angle in [20, 10, 0, -10]:
         
             self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(0.5)
+            rospy.sleep(1)
 
             count = 0
             while count < 5:
-                image = self.agent.rgb_img
+                # image = self.agent.rgb_img
                 # msg_hand = rospy.wait_for_message('/snu/openpose/hand', Int16MultiArray)
                 # msg_human_bbox = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
                 # human_bboxes = np.reshape(msg_human_bbox.data, (-1, 2, 2))
                 # hands = np.reshape(msg_hand.data, (-1, 2))
                 
-                if len(self.human_bbox_with_hand) == 0:
-                    return None
-                
-                drink_person = [False for _ in range(len(self.human_bbox_with_hand))]
+                image = self.agent.rgb_img
 
                 for human_idx, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
                     top_left_x, top_left_y = human_bbox_with_hand[0]
                     bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
+
+                    if top_left_x >= 640-160 or bottom_right_x <= 160:
+                        continue
+                    if drink_person[human_idx]:
+                        continue
 
                     hand_thres_person = int((100-int(50*min(top_left_y,240)/240))*1.5)
 
@@ -647,12 +668,12 @@ class DrinkDetection:
                     _pc = self.agent.pc.reshape(480, 640)
                     pc_np = np.array(_pc.tolist())[:, :, :3]
                     human_pc = pc_np[human_coord[1], human_coord[0]]
-                    human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map',
-                                                                                human_pc)
+                    human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
 
                     cv2.imshow('crop_img', crop_img)
                     cv2.waitKey(1)
-                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{count}_{human_idx}.jpg', crop_img)
+                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{self.image_save_index}.jpg', crop_img)
+                    self.image_save_index += 1
 
                     # Preprocess image
                     crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
