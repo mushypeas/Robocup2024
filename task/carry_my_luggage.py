@@ -49,6 +49,7 @@ class HumanFollowing:
         self.show_byte_track_image = True
         self.byte_img = None
         self.track_queue = deque()
+        self.start_time = time.time()
         # self.angle_queue = deque(maxlen=20)
         self.calcz_queue = deque(maxlen=10)
         self.obstacle_offset = 0.0
@@ -242,7 +243,7 @@ class HumanFollowing:
 
         return False # pass
     
-    def barrier_check(self, looking_downside=True, check_human=True, y_top=50,x_var=10):
+    def barrier_check(self, looking_downside=True, check_human=True, y_top=50,x_var=30):
         # _depth = self.agent.depth_image[:150, 10:630]
         if check_human:
             # if self.human_box_list[0] is not None:
@@ -254,7 +255,7 @@ class HumanFollowing:
             #     center_x = center[1]
 
             if (looking_downside):
-                _depth = self.agent.depth_image[y_top:150, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
+                _depth = self.agent.depth_image[y_top:240, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
             else: # no tilt
                 _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -272,7 +273,7 @@ class HumanFollowing:
  
         _num_rotate=0
         y_top= 0
-        _depth = self.barrier_check(y_top=y_top, var=320)
+        _depth = self.barrier_check(y_top=y_top, x_var=320)
         print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
@@ -307,7 +308,7 @@ class HumanFollowing:
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
-            if (calc_z!=0 and _depth < 0.7 and _depth< ((calc_z/ 1000.0)-0.4) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.0 and _depth< ((calc_z/ 1000.0)-0.2) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -634,7 +635,7 @@ class HumanFollowing:
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
-                    # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                    self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
                         self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                         rospy.sleep(2)
@@ -704,7 +705,7 @@ class HumanFollowing:
                 print('Tiny object. I\'ll avoid it.')
                 print('Tiny object. I\'ll avoid it.')
                 print('Tiny object. I\'ll avoid it.')
-                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                 if right_background_count > left_background_count:
                     self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                     rospy.sleep(3)
@@ -797,7 +798,7 @@ class HumanFollowing:
 
         ##########24.3.26
         _num_rotate = 0
-
+        self.start_time = start_time
         # self.escape_barrier(calc_z)
         # if self.human_box_list[0] is None: # no human detected
 
@@ -806,7 +807,7 @@ class HumanFollowing:
         # depth = np.asarray(self.d2pc.depth)
         # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
         # self.escape_barrier(calc_z)
-        if self.human_box_list[0] is None: # no human detected
+        if self.human_box_list[0] is None : # no human detected
             # rospy.loginfo("no human")
             if self.stt_destination(self.stt_option):
                 return True
@@ -827,6 +828,7 @@ class HumanFollowing:
             return False
         else:
             self.last_chance = 1
+        
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
@@ -850,6 +852,7 @@ class HumanFollowing:
         # print(f"calc_z = {calc_z}")
         # if calc_z > 1000:
         #     calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+
 
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
             print("2.1 go to center!")
