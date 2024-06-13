@@ -13,18 +13,19 @@ import math
 
 
 class CheckSeat():
-    def __init__(self, face_threshold, face_threshold2, sofa_range, door_range, head_pan_angle, point_seat_angle, calibration_mode):
+    # def __init__(self, face_threshold, face_threshold2, sofa_range, door_range, head_pan_angle, point_seat_angle, calibration_mode):
+    def __init__(self, face_threshold, face_threshold2, head_pan_angle, calibration_mode):
 
         self.fc = FaceCropper()
         self.face_id = FaceId()
         self.face_threshold = face_threshold
         self.face_threshold2 = face_threshold2
-        self.sofa_range = sofa_range
-        self.door_range = door_range
+        # self.sofa_range = sofa_range
+        # self.door_range = door_range
 
-        self.sofa_width = self.sofa_range[1] - self.sofa_range[0]
+        # self.sofa_width = self.sofa_range[1] - self.sofa_range[0]
         self.head_pan_angle = head_pan_angle
-        self.point_seat_angle = point_seat_angle
+        # self.point_seat_angle = point_seat_angle
         self.host_face_data = None
         self.calibration_mode = calibration_mode
 
@@ -34,7 +35,7 @@ class CheckSeat():
         # seat_info = np.full((6, 2), -1)  # [if seated, who]
         seat_info = np.full((len(self.head_pan_angle), 2), -1)
 
-        width = agent.rgb_img.shape[1]
+        # width = agent.rgb_img.shape[1]
         user_location_list = []
         user_face_data_list = []
 
@@ -54,7 +55,7 @@ class CheckSeat():
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            # # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
+            # 기존코드 # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
             # for user in user_locations:
             #     if self.door_range <= user[0] < width / 2:
             #         seat_info[0][0] = 1
@@ -139,7 +140,7 @@ class CheckSeat():
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            # 기존 코드
+            # 기존코드
             # for user in user_locations:
             #     if 0 <= user[0] < width / 2:
             #         seat_info[4][0] = 1
@@ -200,7 +201,7 @@ class CheckSeat():
 
         face_candidate, locations_candidate = [], []
         if len(faces) != 0:
-            # 그냥 tts 지워버릴까?
+            # 그냥 tts 지워버릴까? ㅇㅇ 지워버림 -> 그냥 시나리오를 바꿈
             # agent.say("Person detected.\n Put your face forward\n and look at me.", show_display=True)
             rospy.sleep(2.5)
             for i in range(6):
@@ -265,6 +266,7 @@ class CheckSeat():
         #     return 2
         
         # 0609
+        # 일단 가운데부터, 양 옆 사람 없는 자리 고름
         for i in [2, 3, 1, 4, 0, 5, 6]:
             if seat_info[i][0] != 1:
                 if i == 0:
@@ -282,6 +284,7 @@ class CheckSeat():
                         return i
                     else:
                         continue
+        # 안되면 그냥 왼쪽부터 빈자리로
         for i in range(len(seat_info)):
             if seat_info[i][0] == 0:
                 return i
@@ -422,11 +425,11 @@ class CheckSeat():
                 depth_list.append(agent.depth_image[guest_locations[idx][1], guest_locations[idx][0]])
             print("crop face box size:", face_crop_box_list, "Threshold:", self.face_threshold, "|| Depth:", depth_list)
 
-            cv2.line(img, (self.sofa_range[0], 0), (self.sofa_range[0], 479), (0, 255, 0), 2)
-            cv2.line(img, (self.sofa_range[1], 0), (self.sofa_range[1], 479), (0, 255, 0), 2)
+            # cv2.line(img, (self.sofa_range[0], 0), (self.sofa_range[0], 479), (0, 255, 0), 2)
+            # cv2.line(img, (self.sofa_range[1], 0), (self.sofa_range[1], 479), (0, 255, 0), 2)
 
             # sofa seat (sofa half line)
-            cv2.line(img, (int(self.sofa_width / 2) + self.sofa_range[0], 0), (int(self.sofa_width / 2) + self.sofa_range[0], 479), (255, 255, 0), 2)
+            # cv2.line(img, (int(self.sofa_width / 2) + self.sofa_range[0], 0), (int(self.sofa_width / 2) + self.sofa_range[0], 479), (255, 255, 0), 2)
 
             # cv2.line(img, (int(self.sofa_width / 5) + self.sofa_range[0], 0),
             #          (int(self.sofa_width / 5) + self.sofa_range[0], 479), (255, 255, 0), 2)
