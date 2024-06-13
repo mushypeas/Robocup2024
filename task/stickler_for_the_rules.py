@@ -36,13 +36,19 @@ class ShoeDetection:
                          self._ankle_pose_callback)
         self.knee_list = None
         self.ankle_list = None
+        self.image_save_index = 0
 
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B/32')
         state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
         self.clip_model.load_state_dict(state_dict['CLIP'])
         self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
         self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
+        # self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
+        # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        # self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
@@ -58,7 +64,8 @@ class ShoeDetection:
 
         # Prompt for CLIP model
         prompt = "a photo of a"
-        text_inputs = ["shoes", "socks", "feet"]
+        # text_inputs = ["shoes", "socks", "barefoot"]
+        text_inputs = ["shoes", "socks"] 
         text_inputs = [prompt + " " + t for t in text_inputs]
         tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
@@ -95,7 +102,7 @@ class ShoeDetection:
                 formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                 print("Labels probabilities in percentage:", formatted_probs)
-                if text_probs_percent_np[0][0] > 50:
+                if text_probs_percent_np[0][0] > 90:
                     return True
                 count += 1
 
@@ -105,33 +112,31 @@ class ShoeDetection:
         # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
         # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
 
-        # 고개 0도로 설정
-        self.agent.pose.head_tilt(-20)
-        rospy.sleep(0.5)
+        # 고개 -10도로 설정
+        self.agent.pose.head_tilt(-10)
+        rospy.sleep(5)
         # 사람 없으면 return
-        if len(self.ankle_list) == 0:
-            return None
+        print('knee_list:', self.knee_list)
+        if len(self.knee_list) == 0:
+            print('shoe detection no person')
+            return True
         # 일단 openpose 기준으로 사람 리스트 생성
-        no_shoes_person = [False for _ in range(len(self.ankle_list)//2)]
+        no_shoes_person = [False for _ in range(len(self.knee_list)//2)]
         # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
-        for human_idx in range(len(self.ankle_list)//2):
-            left_x, left_y = self.ankle_list[human_idx*2]
-            right_x, right_y = self.ankle_list[human_idx*2+1]
+        for human_idx in range(len(self.knee_list)//2):
+            left_x, left_y = self.knee_list[human_idx*2]
+            right_x, right_y = self.knee_list[human_idx*2+1]
             if left_x >= 640-160 or right_x <= 160:
                 no_shoes_person[human_idx] = True
+        print(f'no_shoes_person: {no_shoes_person}')
 
-        for head_tilt_angle in [-20, -40]:
+        for head_tilt_angle in [-20, -30]:
         
             self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(1)
+            rospy.sleep(2)
 
             count = 0
             while count < 5:
-                # image = self.agent.rgb_img
-                # msg_hand = rospy.wait_for_message('/snu/openpose/hand', Int16MultiArray)
-                # msg_human_bbox = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
-                # human_bboxes = np.reshape(msg_human_bbox.data, (-1, 2, 2))
-                # hands = np.reshape(msg_hand.data, (-1, 2))
                 
                 image = self.agent.rgb_img
 
@@ -141,31 +146,29 @@ class ShoeDetection:
 
                     if left_x >= 640-160 or right_x <= 160:
                         continue
+                    if human_idx >= len(no_shoes_person):
+                        break
                     if no_shoes_person[human_idx]:
                         continue
 
-                    # hand_thres_person = int((100-int(50*min(top_left_y,240)/240))*1.5)
+                    print(f'shoe idx: {human_idx}, ankle: {left_x, left_y, right_x, right_y}')
 
-                    print(f'idx: {human_idx}, ankle: {left_x, left_y, right_x, right_y}')
-
-                    # 3. no hand visible
-                    y_max = max(left_y, right_y)
+                    y_min = min(left_y, right_y)
 
                     crop_img = image[
-                        max(0,y_max-224):min(480,y_max+max(0,224-y_max)), 
-                        max(0,(left_x+right_x-224)//2):min(640,(left_x+right_x+224)//2)
+                        max(0,(left_y+right_y-224)//2):min(480-1,(left_y+right_y+224)//2), 
+                        max(0,(left_x+right_x-224)//2):min(640-1,(left_x+right_x+224)//2)
                     ]
                     
-                    # human_coord = [(top_left_x + bottom_right_x) // 2,
-                    #             (top_left_y + bottom_right_y) // 2]
-                    # _pc = self.agent.pc.reshape(480, 640)
-                    # pc_np = np.array(_pc.tolist())[:, :, :3]
-                    # human_pc = pc_np[human_coord[1], human_coord[0]]
-                    # human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+                    human_coord = [left_x, left_y]
+                    _pc = self.agent.pc.reshape(480, 640)
+                    pc_np = np.array(_pc.tolist())[:, :, :3]
+                    human_pc = pc_np[human_coord[1], human_coord[0]]
+                    human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
 
                     cv2.imshow('crop_img', crop_img)
                     cv2.waitKey(1)
-                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{self.image_save_index}.jpg', crop_img)
+                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/shoe_crop_img_{self.image_save_index}.jpg', crop_img)
                     self.image_save_index += 1
 
                     # Preprocess image
@@ -182,7 +185,8 @@ class ShoeDetection:
                         text_features /= text_features.norm(dim=-1, keepdim=True)
 
                         # Calculate text probabilities
-                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        text_probs = (100.0 * image_features @ text_features.T)
 
                     # Convert probabilities to percentages
                     text_probs_percent = text_probs * 100
@@ -190,10 +194,13 @@ class ShoeDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 80:
-                        no_shoes_person[human_idx] = True
+                    if text_probs_percent_np[0][0] > 90:
+                        # no_shoes_person[human_idx] = False
+                        self.shoe_position = human_coord_in_map
                     else:
-                        self.shoe_position = [left_x, left_y]
+                        # self.shoe_position = [left_x, left_y]
+                        no_shoes_person[human_idx] = True
+                        
                 count += 1
 
         if no_shoes_person.count(False) > 0:
@@ -261,33 +268,35 @@ class ShoeDetection:
     #     return False
 
     def clarify_violated_rule(self):
-        _pc = self.agent.pc.reshape(480, 640)
-        pc_np = np.array(_pc.tolist())[:, :, :3]
-        shoe_x = self.shoe_position[0]
-        shoe_y = self.shoe_position[1]
-        human_pc = pc_np[max(0, min(480, int(shoe_y*480))),
-                         max(0, min(640, int(shoe_x*640)))]  # Shoe Position!
-        closest_ppos = self.axis_transform.transform_coordinate(
-            'head_rgbd_sensor_rgb_frame', 'map', human_pc)
+        # _pc = self.agent.pc.reshape(480, 640)
+        # pc_np = np.array(_pc.tolist())[:, :, :3]
+        # shoe_x = self.shoe_position[0]
+        # shoe_y = self.shoe_position[1]
+        # human_pc = pc_np[max(0, min(480-1, int(shoe_y*480))),
+        #                  max(0, min(640-1, int(shoe_x*640)))]  # Shoe Position!
+        # closest_ppos = self.axis_transform.transform_coordinate(
+        #     'head_rgbd_sensor_rgb_frame', 'map', human_pc)
 
-        if len(closest_ppos) != 0:
+        # if len(closest_ppos) != 0:
             # go to the offender
-            print("CLOSEST PPOS SHOES", closest_ppos)
-            move_human_infront(self.agent, self.axis_transform,
-                               closest_ppos[1], closest_ppos[0], coord=True)
+            # print("CLOSEST PPOS SHOES", closest_ppos)
+            # move_human_infront(self.agent, self.axis_transform,
+            #                    closest_ppos[1], closest_ppos[0], coord=True)
 
-            # clarify what rule is being broken
-            self.agent.pose.head_tilt(20)
-            self.agent.say('Hello!', show_display=True)
-            rospy.sleep(1)
-            # self.agent.say('I apologize for\nany inconvenience,\nbut unfortunately,', show_display=True)
-            # rospy.sleep(4.5)
-            self.agent.say(
-                'Sorry but\n all guests should take off\n their shoes outside the entrance.', show_display=True)
-            rospy.sleep(5)
+        move_human_infront(self.agent, self.axis_transform, self.shoe_position[1], self.shoe_position[0], coord=True)
 
-        else:
-            self.agent.say("Please come closer to me")
+        # clarify what rule is being broken
+        self.agent.pose.head_tilt(20)
+        self.agent.say('Hello!', show_display=True)
+        rospy.sleep(1)
+        # self.agent.say('I apologize for\nany inconvenience,\nbut unfortunately,', show_display=True)
+        # rospy.sleep(4.5)
+        self.agent.say(
+            'Sorry but\n all guests should take off\n their shoes outside the entrance.', show_display=True)
+        rospy.sleep(5)
+
+        # else:
+            # self.agent.say("Please come closer to me")
 
                 
 
@@ -315,7 +324,8 @@ class ShoeDetection:
             self.agent.say('Are you finished?\nLet me see your feet', show_display=True)
             rospy.sleep(4)
 
-            if self.find_shoes():
+            # if self.find_shoes():
+            if not self.find_shoes_clip(double_check=True):
                 self.agent.pose.head_tilt(20)
                 self.agent.say('You are still wearing shoes!', show_display=True)
                 rospy.sleep(2)
@@ -594,12 +604,14 @@ class DrinkDetection:
         #                  Int16MultiArray, self._openpose_bbox_cb)
         rospy.Subscriber('/snu/openpose/human_bbox_with_pub',
                           Int16MultiArray, self._openpose_cb)
+        rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
+                         self._knee_pose_callback)
         # self.thre = hand_drink_pixel_dist_threshold
         self.axis_transform = axis_transform
         # self.drink_check = False
         # self.drink_list = [0, 1, 2, 3, 4, 5]
         # self.marker_maker = MarkerMaker('/snu/human_location') # ?? 
-        self.no_drink_human_coord = None # 이건 필요함
+        self.no_drink_human_coord = None # 이건 필요
         # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
         self.image_save_index = 0
 
@@ -615,6 +627,9 @@ class DrinkDetection:
         # self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
         # self.human_hand_poses = np.reshape(data_list, (-1, 2))
         self.human_bbox_with_hand = np.reshape(data_list, (-1, 4, 2))
+
+    def _knee_pose_callback(self, data):
+        self.knee_list = np.reshape(data.data, (-1, 2))
 
     def show_image(self, l_hand_x, l_hand_y, r_hand_x, r_hand_y):
         img = self.agent.rgb_img
@@ -684,24 +699,30 @@ class DrinkDetection:
         # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
 
         # 고개 0도로 설정
-        self.agent.pose.head_tilt(0)
-        rospy.sleep(0.5)
+        # openpose 성능 이슈 -> 움직인 뒤 충분히 sleep 해줘야 함... 안그러면 움직이는 도중의 blurry한 사진이 들어가고, openpose에서는 아무것도 뱉지 않음
+        self.agent.pose.head_tilt(-10)
+        rospy.sleep(5)
         # 사람 없으면 return
-        if len(self.human_bbox_with_hand) == 0:
-            return None
+        print('knee_list:', self.knee_list)
+        if len(self.knee_list) == 0:
+            return True
         # 일단 openpose 기준으로 사람 리스트 생성
-        drink_person = [False for _ in range(len(self.human_bbox_with_hand))]
+        print('human_bbox_with_hand', self.human_bbox_with_hand)
+        drink_person = [False for _ in range(len(self.knee_list)//2)]
         # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
-        for human_idx, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
-            top_left_x, top_left_y = human_bbox_with_hand[0]
-            bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
-            if top_left_x >= 640-160 or bottom_right_x <= 160:
+        for human_idx in range(len(self.knee_list)//2):
+            left_x, left_y = self.knee_list[human_idx*2]
+            right_x, right_y = self.knee_list[human_idx*2+1]
+            if left_x >= 640-160 or right_x <= 160:
                 drink_person[human_idx] = True
+        print(f'drink_person: {drink_person}')
+        if drink_person.count(False) == 0:
+            return True
 
-        for head_tilt_angle in [20, 10, 0, -10]:
+        for head_tilt_angle in [-10, 5, 20]:
         
             self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(1)
+            rospy.sleep(2)
 
             count = 0
             while count < 5:
@@ -717,15 +738,18 @@ class DrinkDetection:
                     top_left_x, top_left_y = human_bbox_with_hand[0]
                     bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
 
+                    print(f'drink idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
+
                     if top_left_x >= 640-160 or bottom_right_x <= 160:
+                        continue
+                    if human_idx>=len(drink_person):
                         continue
                     if drink_person[human_idx]:
                         continue
 
                     hand_thres_person = int((100-int(50*min(top_left_y,240)/240))*1.5)
 
-                    print(f'idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
-
+                    
                     l_hand = None
                     r_hand = None
                     for hand_coord in human_bbox_with_hand[2:]:
@@ -756,21 +780,21 @@ class DrinkDetection:
                         if square_len < 224:
                             square_len = 224
                         crop_y_coord_0 = max(0, center_hand_y - int(square_len // 2))
-                        crop_y_coord_1 = min(480, center_hand_y + int(square_len // 2))
+                        crop_y_coord_1 = min(480-1, center_hand_y + int(square_len // 2))
                         crop_x_coord_0 = max(0, center_hand_x - int(square_len // 2))
-                        crop_x_coord_1 = min(640, center_hand_x + int(square_len // 2))
+                        crop_x_coord_1 = min(640-1, center_hand_x + int(square_len // 2))
                         square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
                         calib_cnt = 2
                         while square_xy_diff != 0 and calib_cnt > 0:
                             # print('square_xy_diff', square_xy_diff)
                             if square_xy_diff < 0:
                                 if crop_y_coord_0 == 0:
-                                    crop_y_coord_1 = min(480, crop_y_coord_1 + int(abs(square_xy_diff)))
+                                    crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
                                 else:
                                     crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
                             elif square_xy_diff > 0:
                                 if crop_x_coord_0 == 0:
-                                    crop_x_coord_1 = min(640, crop_x_coord_1 + int(abs(square_xy_diff)))
+                                    crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
                                 else:
                                     crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
                             else:
@@ -785,26 +809,26 @@ class DrinkDetection:
                     elif l_hand is not None:
                         l_hand_x, l_hand_y = l_hand
                         crop_y_coord_0 = 0
-                        crop_y_coord_1 = 480
+                        crop_y_coord_1 = 480-1
                         crop_x_coord_0 = 0
-                        crop_x_coord_1 = 640
+                        crop_x_coord_1 = 640-1
                         square_len = 224
                         crop_y_coord_0 = max(0, l_hand_y - int(square_len // 2))
-                        crop_y_coord_1 = min(480, l_hand_y + int(square_len // 2))
+                        crop_y_coord_1 = min(480-1, l_hand_y + int(square_len // 2))
                         crop_x_coord_0 = max(0, l_hand_x - int(square_len // 2))
-                        crop_x_coord_1 = min(640, l_hand_x + int(square_len // 2))
+                        crop_x_coord_1 = min(640-1, l_hand_x + int(square_len // 2))
                         square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
                         calib_cnt = 2
                         while square_xy_diff != 0 and calib_cnt > 0:
                             # print('square_xy_diff', square_xy_diff)
                             if square_xy_diff < 0:
                                 if crop_y_coord_0 == 0:
-                                    crop_y_coord_1 = min(480, crop_y_coord_1 + int(abs(square_xy_diff)))
+                                    crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
                                 else:
                                     crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
                             elif square_xy_diff > 0:
                                 if crop_x_coord_0 == 0:
-                                    crop_x_coord_1 = min(640, crop_x_coord_1 + int(abs(square_xy_diff)))
+                                    crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
                                 else:
                                     crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
                             else:
@@ -821,8 +845,8 @@ class DrinkDetection:
                         #     max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
                         # ]
                         crop_img = image[
-                            max(0,top_left_y-hand_thres_person):min(480,bottom_right_y+hand_thres_person), 
-                            max(0,top_left_x-hand_thres_person):min(640,bottom_right_x+hand_thres_person)
+                            max(0,top_left_y-hand_thres_person):min(480-1,bottom_right_y+hand_thres_person), 
+                            max(0,top_left_x-hand_thres_person):min(640-1,bottom_right_x+hand_thres_person)
                         ]
                     
                     human_coord = [(top_left_x + bottom_right_x) // 2,
@@ -859,13 +883,16 @@ class DrinkDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 80:
+                    if text_probs_percent_np[0][0] > 90:
                         drink_person[human_idx] = True
                         # return True
                     else:
                         self.no_drink_human_coord = human_coord_in_map
                 count += 1
 
+            if drink_person.count(False) == 0:
+                return True
+            
         if drink_person.count(False) > 0:
             for person_idx in range(len(drink_person)):
                 print(f'person {person_idx}: {drink_person[person_idx]}')
@@ -1046,11 +1073,13 @@ def stickler_for_the_rules(agent):
     # search_location_list = ['living_room_search', 'study_search']
     # search_location_list = ['living_room_search'] #todo delete
     search_location_list = [
-        'bedroom_search', 'kitchen_search', 'living_room_search', 'study_search',
-                            # 'bedroom_search', 
-                            'kitchen_search', 'living_room_search', 'study_search',
-                            'kitchen_search', 'living_room_search', 'study_search',
-                            'kitchen_search', 'living_room_search', 'study_search']
+        # 'bedroom_search',
+        # 'kitchen_search', 
+        'living_room_search', 'study_search',
+        # 'bedroom_search', 
+        'kitchen_search', 'living_room_search', 'study_search',
+        'kitchen_search', 'living_room_search', 'study_search',
+        'kitchen_search', 'living_room_search', 'study_search']
 
     agent.pose.head_pan_tilt(0, 0)
     # forbidden_search_start = False
@@ -1136,6 +1165,7 @@ def stickler_for_the_rules(agent):
                     # marking no drink violation detection
                     # break_rule_check_list['drink'] = True
                     break_rule_check_list['drink'] += 1
+                    print('drink detection')
 
                     # go to the offender and clarify what rule is being broken
                     drink_detection.clarify_violated_rule()
@@ -1150,6 +1180,7 @@ def stickler_for_the_rules(agent):
                     # marking whether wearing shoes violation is detected
                     # break_rule_check_list['shoes'] = True
                     break_rule_check_list['shoes'] += 1
+                    print('shoe detection')
 
                     # go to the offender and clarify what rule is being broken
                     shoe_detection.clarify_violated_rule()
@@ -1162,6 +1193,7 @@ def stickler_for_the_rules(agent):
                     # marking no littering violation detection
                     # break_rule_check_list['garbage'] = True
                     break_rule_check_list['garbage'] += 1
+                    print('garbage detection')
 
                     # go to the offender and clarify what rule is being broken
                     no_littering.clarify_violated_rule()

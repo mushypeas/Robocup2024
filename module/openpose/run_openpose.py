@@ -11,7 +11,7 @@ from sensor_msgs.msg import Image
 from std_msgs.msg import Int16MultiArray
 
 from config import POSE_PAIRS, MAP_IDX, COLORS
-from humanpose_process import get_hand_points, get_knee_points
+from humanpose_process import get_hand_points, get_knee_points, get_ankle_points
 
 import sys
 sys.path.append('../../../robocup2024')
@@ -102,6 +102,8 @@ class OpenPoseWrapper:
             # hand_coord = np.int32(np.array(hand_coord).reshape(-1, 2) * self.ratio)
         if 'knee' in self.detect_option:
             get_knee_points(detected_keypoints, self.knee_pose_pub, self.ratio)
+        if 'ankle' in self.detect_option:
+            get_ankle_points(detected_keypoints, self.ankle_pose_pub, self.ratio)
         # todo -> move to humanpose_process.py
         # handup_bbox_list = self.personwise_handup(keypoints_list, personwise_keypoints) # handup deactivated
 
