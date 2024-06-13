@@ -139,9 +139,10 @@ class Agent:
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
-        data_np[np.isnan(data_np)] = 5.0  # remove nans
+        data_np[np.isnan(data_np)] = 1.0  # remove nans
         self.ranges = data_np # jykim: save ranges data from LiDAR
         center_idx = data_np.shape[0] // 2
+        self.center_idx = center_idx
         self.dist = np.mean(data_np[center_idx - 15: center_idx + 15])
 
     def _depth_callback(self, data):

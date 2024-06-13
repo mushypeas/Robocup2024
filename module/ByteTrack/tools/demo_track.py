@@ -95,7 +95,7 @@ def make_parser():
         "--aspect_ratio_thresh", type=float, default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value."
     )
-    parser.add_argument('--min_box_area', type=float, default=1000, help='filter out tiny boxes')
+    parser.add_argument('--min_box_area', type=float, default=100, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
     return parser
 
