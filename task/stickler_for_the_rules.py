@@ -26,13 +26,23 @@ class ShoeDetection:
     def __init__(self, agent):
         self.agent = agent
         self.axis_transform = Axis_transform()
-        self.shoe_detected = False
+        # self.shoe_detected = False
         self.shoe_position = None
         # FIXME: return shoe_human_pos when detect guest wearing shoe
-        self.shoe_human_pos = None
+        # self.shoe_human_pos = None
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray,
                          self._knee_pose_callback)
+        rospy.Subscriber('/snu/openpose/ankle', Int16MultiArray,
+                         self._ankle_pose_callback)
         self.knee_list = None
+        self.ankle_list = None
+
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
+        self.clip_model.load_state_dict(state_dict['CLIP'])
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
@@ -41,62 +51,214 @@ class ShoeDetection:
             if self.agent.depth_image[y, x] < self.min_knee:
                 self.min_knee = self.agent.depth_image[y, x]
 
-    def find_shoes(self):
-        mp_drawing = mp.solutions.drawing_utils
-        mp_objectron = mp.solutions.objectron
+    def _ankle_pose_callback(self, data):
+        self.ankle_list = np.reshape(data.data, (-1, 2))
 
-        # For webcam input:
-        with mp_objectron.Objectron(static_image_mode=False,
-                                    max_num_objects=5,
-                                    min_detection_confidence=0.65,
-                                    min_tracking_confidence=0.99,
-                                    model_name='Shoe') as objectron:
-            image = self.agent.rgb_img
-            # To improve performance, optionally mark the image as not writeable to
-            # pass by reference.
-            image.flags.writeable = False
-            image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-            results = objectron.process(image)
+    def find_shoes_clip(self, double_check=False):
 
-            # Draw the box landmarks on the image.
-            image.flags.writeable = True
-            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-            if results.detected_objects is not None:
-                for detected_object in results.detected_objects:
-                    print(detected_object)
-                    mp_drawing.draw_landmarks(
-                        image, detected_object.landmarks_2d, mp_objectron.BOX_CONNECTIONS)
-                    mp_drawing.draw_axis(image, detected_object.rotation,
-                                         detected_object.translation)
+        # Prompt for CLIP model
+        prompt = "a photo of a"
+        text_inputs = ["shoes", "socks", "feet"]
+        text_inputs = [prompt + " " + t for t in text_inputs]
+        tokenized_prompt = self.tokenizer(text_inputs).to(self.device)
 
-                    shoe_x = 0
-                    shoe_y = 0
-                    for i in detected_object.landmarks_2d.landmark:
-                        shoe_x += i.x / \
-                            len(detected_object.landmarks_2d.landmark)
-                        shoe_y += i.y / \
-                            len(detected_object.landmarks_2d.landmark)
+        # double check mode
+        if double_check:
+            text_inputs = text_inputs[:2]
+            count = 0
+            while count < 5:
+                image = self.agent.rgb_img
+                crop_img = image[:,80:560]
 
-                    self.shoe_position = [shoe_x, shoe_y]
+                cv2.imshow('crop_img', crop_img)
+                cv2.waitKey(1)
+                cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/shoe_crop_img_double_check_{count}.jpg', crop_img)
 
-                    print("shoes found")
-                    cv2.imshow('MediaPipe Objectron', cv2.flip(image, 1))
-                    cv2.waitKey(1)
-                return True
-        return False
+                # Preprocess image
+                crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+                crop_img = self.clip_preprocess(crop_img)
+                crop_img = crop_img.unsqueeze(0).to(self.device)
 
-    def run(self):
-        rospy.sleep(1)
-        # head_tilt_list = [-30]
-        head_tilt_list = [-20, -40]
+                # Encode image and text features
+                with torch.no_grad():
+                    image_features = self.clip_model.encode_image(crop_img)
+                    text_features = self.clip_model.encode_text(tokenized_prompt)
+                    image_features /= image_features.norm(dim=-1, keepdim=True)
+                    text_features /= text_features.norm(dim=-1, keepdim=True)
 
-        for tilt in head_tilt_list:
-            self.agent.pose.head_tilt(tilt)
-            if self.find_shoes():
-                return True
+                    # Calculate text probabilities
+                    text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+                # Convert probabilities to percentages
+                text_probs_percent = text_probs * 100
+                text_probs_percent_np = text_probs_percent.cpu().numpy()
+                formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                print("Labels probabilities in percentage:", formatted_probs)
+                if text_probs_percent_np[0][0] > 50:
+                    return True
+                count += 1
+
+            return False
+            
+
+        # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
+        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
+
+        # 고개 0도로 설정
+        self.agent.pose.head_tilt(-20)
+        rospy.sleep(0.5)
+        # 사람 없으면 return
+        if len(self.ankle_list) == 0:
+            return None
+        # 일단 openpose 기준으로 사람 리스트 생성
+        no_shoes_person = [False for _ in range(len(self.ankle_list)//2)]
+        # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
+        for human_idx in range(len(self.ankle_list)//2):
+            left_x, left_y = self.ankle_list[human_idx*2]
+            right_x, right_y = self.ankle_list[human_idx*2+1]
+            if left_x >= 640-160 or right_x <= 160:
+                no_shoes_person[human_idx] = True
+
+        for head_tilt_angle in [-20, -40]:
+        
+            self.agent.pose.head_tilt(head_tilt_angle)
             rospy.sleep(1)
 
-        return False
+            count = 0
+            while count < 5:
+                # image = self.agent.rgb_img
+                # msg_hand = rospy.wait_for_message('/snu/openpose/hand', Int16MultiArray)
+                # msg_human_bbox = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
+                # human_bboxes = np.reshape(msg_human_bbox.data, (-1, 2, 2))
+                # hands = np.reshape(msg_hand.data, (-1, 2))
+                
+                image = self.agent.rgb_img
+
+                for human_idx in range(len(self.ankle_list)//2):
+                    left_x, left_y = self.ankle_list[human_idx*2]
+                    right_x, right_y = self.ankle_list[human_idx*2+1]
+
+                    if left_x >= 640-160 or right_x <= 160:
+                        continue
+                    if no_shoes_person[human_idx]:
+                        continue
+
+                    # hand_thres_person = int((100-int(50*min(top_left_y,240)/240))*1.5)
+
+                    print(f'idx: {human_idx}, ankle: {left_x, left_y, right_x, right_y}')
+
+                    # 3. no hand visible
+                    y_max = max(left_y, right_y)
+
+                    crop_img = image[
+                        max(0,y_max-224):min(480,y_max+max(0,224-y_max)), 
+                        max(0,(left_x+right_x-224)//2):min(640,(left_x+right_x+224)//2)
+                    ]
+                    
+                    # human_coord = [(top_left_x + bottom_right_x) // 2,
+                    #             (top_left_y + bottom_right_y) // 2]
+                    # _pc = self.agent.pc.reshape(480, 640)
+                    # pc_np = np.array(_pc.tolist())[:, :, :3]
+                    # human_pc = pc_np[human_coord[1], human_coord[0]]
+                    # human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+
+                    cv2.imshow('crop_img', crop_img)
+                    cv2.waitKey(1)
+                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{self.image_save_index}.jpg', crop_img)
+                    self.image_save_index += 1
+
+                    # Preprocess image
+                    crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+                    crop_img = self.clip_preprocess(crop_img)
+                    crop_img = crop_img.unsqueeze(0).to(self.device)
+                    # print(crop_img.size())
+
+                    # Encode image and text features
+                    with torch.no_grad():
+                        image_features = self.clip_model.encode_image(crop_img)
+                        text_features = self.clip_model.encode_text(tokenized_prompt)
+                        image_features /= image_features.norm(dim=-1, keepdim=True)
+                        text_features /= text_features.norm(dim=-1, keepdim=True)
+
+                        # Calculate text probabilities
+                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+                    # Convert probabilities to percentages
+                    text_probs_percent = text_probs * 100
+                    text_probs_percent_np = text_probs_percent.cpu().numpy()
+                    formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                    print("Labels probabilities in percentage:", formatted_probs)
+                    if text_probs_percent_np[0][0] > 80:
+                        no_shoes_person[human_idx] = True
+                    else:
+                        self.shoe_position = [left_x, left_y]
+                count += 1
+
+        if no_shoes_person.count(False) > 0:
+            for person_idx in range(len(no_shoes_person)):
+                print(f'person {person_idx}: {no_shoes_person[person_idx]}')
+            return False
+        else:
+            return True
+
+    # def find_shoes(self):
+    #     mp_drawing = mp.solutions.drawing_utils
+    #     mp_objectron = mp.solutions.objectron
+
+    #     # For webcam input:
+    #     with mp_objectron.Objectron(static_image_mode=False,
+    #                                 max_num_objects=5,
+    #                                 min_detection_confidence=0.65,
+    #                                 min_tracking_confidence=0.99,
+    #                                 model_name='Shoe') as objectron:
+    #         image = self.agent.rgb_img
+    #         # To improve performance, optionally mark the image as not writeable to
+    #         # pass by reference.
+    #         image.flags.writeable = False
+    #         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+    #         results = objectron.process(image)
+
+    #         # Draw the box landmarks on the image.
+    #         image.flags.writeable = True
+    #         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+    #         if results.detected_objects is not None:
+    #             for detected_object in results.detected_objects:
+    #                 print(detected_object)
+    #                 mp_drawing.draw_landmarks(
+    #                     image, detected_object.landmarks_2d, mp_objectron.BOX_CONNECTIONS)
+    #                 mp_drawing.draw_axis(image, detected_object.rotation,
+    #                                      detected_object.translation)
+
+    #                 shoe_x = 0
+    #                 shoe_y = 0
+    #                 for i in detected_object.landmarks_2d.landmark:
+    #                     shoe_x += i.x / \
+    #                         len(detected_object.landmarks_2d.landmark)
+    #                     shoe_y += i.y / \
+    #                         len(detected_object.landmarks_2d.landmark)
+
+    #                 self.shoe_position = [shoe_x, shoe_y]
+
+    #                 print("shoes found")
+    #                 cv2.imshow('MediaPipe Objectron', cv2.flip(image, 1))
+    #                 cv2.waitKey(1)
+    #             return True
+    #     return False
+
+    # def run(self):
+    #     rospy.sleep(1)
+    #     # head_tilt_list = [-30]
+    #     head_tilt_list = [-20, -40]
+
+    #     for tilt in head_tilt_list:
+    #         self.agent.pose.head_tilt(tilt)
+    #         if self.find_shoes():
+    #             return True
+    #         rospy.sleep(1)
+
+    #     return False
 
     def clarify_violated_rule(self):
         _pc = self.agent.pc.reshape(480, 640)
@@ -519,7 +681,7 @@ class DrinkDetection:
             
 
         # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
-        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel)
+        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
 
         # 고개 0도로 설정
         self.agent.pose.head_tilt(0)
@@ -713,15 +875,15 @@ class DrinkDetection:
         
         return False
     
-    def detect(self):
-        self.agent.pose.head_tilt(0)
-        rospy.sleep(0.5)
+    # def detect(self):
+    #     self.agent.pose.head_tilt(0)
+    #     rospy.sleep(0.5)
 
-        if self.find_drink():
-            return True
-        rospy.sleep(1)
+    #     if self.find_drink():
+    #         return True
+    #     rospy.sleep(1)
 
-        return False
+    #     return False
 
     
     # def detect_no_drink_hand(self):
@@ -983,7 +1145,8 @@ def stickler_for_the_rules(agent):
                     break
 
                 # [RULE 1] No shoes : tilt -20, -40
-                if break_rule_check_list['shoes'] < 2 and shoe_detection.run():
+                # if break_rule_check_list['shoes'] < 2 and shoe_detection.run():
+                if break_rule_check_list['shoes'] < 2 and not shoe_detection.find_shoes_clip():
                     # marking whether wearing shoes violation is detected
                     # break_rule_check_list['shoes'] = True
                     break_rule_check_list['shoes'] += 1

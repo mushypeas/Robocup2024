@@ -43,4 +43,16 @@ def get_knee_points(detected_keypoints, knee_pose_pub, ratio):
     knee_pose_pub.publish(ret)
 
 
+def get_ankle_points(detected_keypoints, ankle_pose_pub, ratio):
 
+    ret = Int16MultiArray()
+    if len(detected_keypoints[10]) == 0 and len(detected_keypoints[13]) == 0:
+        ankle_pose_pub.publish(ret)
+        return
+    for _ankle in detected_keypoints[10]:
+        ret.data += [int(_a*(1.0/ratio)) for _a in _ankle[:2]]
+    for _ankle in detected_keypoints[13]:
+        ret.data += [int(_a*(1.0/ratio)) for _a in _ankle[:2]]
+
+    rospy.loginfo(f'ankle {ret.data}')
+    ankle_pose_pub.publish(ret)

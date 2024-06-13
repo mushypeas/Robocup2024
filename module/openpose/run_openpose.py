@@ -43,6 +43,8 @@ class OpenPoseWrapper:
             self.pose_hand_pub = rospy.Publisher('/snu/openpose/hand', Int16MultiArray, queue_size=10)
         if 'knee' in self.detect_option:
             self.knee_pose_pub = rospy.Publisher('/snu/openpose/knee', Int16MultiArray, queue_size=10)
+        if 'ankle' in self.detect_option:
+            self.ankle_pose_pub = rospy.Publisher('/snu/openpose/ankle', Int16MultiArray, queue_size=10)
         self.bbox_pub = rospy.Publisher('/snu/openpose/bbox', Int16MultiArray, queue_size=10)
         # self.human_bbox_pub = rospy.Publisher('/snu/openpose/human_bbox', Int16MultiArray, queue_size=10)
         self.human_bbox_with_hand_pub = rospy.Publisher('/snu/openpose/human_bbox_with_pub', Int16MultiArray, queue_size=10)
@@ -408,7 +410,7 @@ if __name__ == '__main__':
     rospy.init_node('run_snu_openpose', anonymous=False, disable_signals=True)
     BASE_DIR = './models/'
     # detect_option = ['handup', 'hands', 'knee']
-    detect_option = [ 'knee']
+    detect_option = [ 'knee', 'ankle']
     openpose = OpenPoseWrapper(BASE_DIR, detect_option, size_ratio=0.4, enable_viz=True)
     while not rospy.is_shutdown():
         # start_time = time.time()
