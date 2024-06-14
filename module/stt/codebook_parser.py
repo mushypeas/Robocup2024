@@ -6,9 +6,12 @@ from pyphonetics import MatchingRatingApproach
 from pyphonetics import RefinedSoundex
 from pyphonetics.distance_metrics import levenshtein_distance as distance
 import numpy as np
-import rospy
-import os
-import yaml
+# import rospy
+# import os
+# import yaml
+
+import spacy
+import re
 
 soundex = Soundex()
 fuzzy_soundex = FuzzySoundex()
@@ -21,8 +24,6 @@ def parser(input, word_list=None):
     if len(input) == 0: return ""
     split = input.split('and') # 왜 and split? ex) my name is charlie and my favourite drink is cola 뭐 이런건가
     
-    # lst = ['red wine', 'cola','juice pack','tropical juice','milk','iced tea','orange juice','tuna','tomato soup','spam','mustard','strawberry jello','chocolate jello','coffee grounds','sugar','pear','plum','peach','lemon','orange','strawberry','banana','apple','pringles','cornflakes','cheezit', 'yes','no']
-    # lst.extend(['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone'])
     lst = word_list
 
     order_list =[]
@@ -54,6 +55,136 @@ def parser(input, word_list=None):
         if i < len(order_list)-1:
             order += " and "
     return order
+
+
+def parser_single(input, word_list=None, normalize=False):
+    if len(input) == 0: 
+        return input, 0
+
+    item = input.strip().lower()
+    if item in word_list:
+        return item, 0
+    
+    distmin = np.infty
+    minstring = ''
+
+    for word in word_list:
+        current = 2 * fuzzy_soundex.distance(word, item) + 0.2 * metaphone.distance(word, item) + 0.1 * lein.distance(word, item)
+        if normalize:
+            current /= len(word)
+        print(word, current)
+        if distmin > current:
+            distmin = current
+            minstring = word
+        elif distmin == current:
+            if distance(item, word) < distance(item, minstring):
+                minstring = word
+
+    return minstring, distmin
+
+
+def parser_sentence(input, mode=None, word_list=None):
+
+    lower_input = input.strip().lower()
+
+    sentence_parse_result = ''
+    word_parse_result = ''
+
+    candidate_remove_list = ['my', 'is', 'i', 'name', 'favorite', 'drink', 'it']
+    
+    patterns = []
+    if mode == 'name':
+        patterns = [
+            r"my name is (\w+)[.,]?",
+            r"i'm (\w+)[.,]?",
+            r"i am (\w+)[.,]?",
+            r"call me (\w+)[.,]?",
+            r"(\w+) is my name[.,]?",
+        ]
+        label='PERSON'
+    elif mode == 'drink':
+        patterns = [
+            r"my favorite drink is ([\w\s]+)[.,]?",
+            r"my favourite drink is ([\w\s]+)[.,]?",
+            r"i like ([\w\s]+)[.,]?",
+            r"i prefer ([\w\s]+)[.,]?",
+            r"([\w\s]+) is my favorite drink[.,]?",
+            r"([\w\s]+) is my favourite drink[.,]?",
+            r"([\w\s]+) is my favorite[.,]?",
+            r"([\w\s]+) is my favourite[.,]?",
+            r"it's ([\w\s]+)[.,]?",
+            r"it is ([\w\s]+)[.,]?",
+        ]
+        label='PRODUCT'
+
+    for pattern in patterns:
+        print('pattern: ', pattern)
+        match = re.search(pattern, lower_input, re.IGNORECASE)
+        print('match: ', match)
+        if match:
+            print('match.group(1): ', match.group(1))
+            sentence_parse_result = match.group(1).strip("., ")
+            
+    print('sentence_parse_result: ', sentence_parse_result)
+    print()
+
+    if sentence_parse_result == '':
+        
+        # spacy
+        nlp = spacy.load("en_core_web_sm")
+        doc = nlp(input)
+        print('doc: ', doc)
+        print('doc.ents: ', doc.ents)
+        for ent in doc.ents:
+            print('ent: ', ent)
+            if ent.label_ == label:
+                print('ent.text: ', ent.text)
+                sentence_parse_result = ent.text
+            
+        if sentence_parse_result == '':
+            sentence_split = list(lower_input.split())
+            candidate_idx = []
+            candidate_parse_list = []
+            candidate_dist_list = []
+            for i, w in enumerate(doc):
+                print(w.text, w.pos_)
+                if w.pos_ == 'NOUN' or w.pos_ == 'PROPN':
+                    print(w.text)
+                    if w.text in candidate_remove_list:
+                        continue
+                    # sentence_parse_result = w.text
+                    candidate_idx.append(i)
+            print('candidate_idx: ', candidate_idx)
+            for i in candidate_idx:
+                print(sentence_split[i])
+                parse, dist = parser_single(sentence_split[i], word_list, normalize=True)
+                candidate_parse_list.append(parse)
+                candidate_dist_list.append(dist)
+                if i>0:
+                    if sentence_split[i-1] not in candidate_remove_list:
+                        print(sentence_split[i-1]+' '+sentence_split[i])
+                        parse, dist = parser_single(sentence_split[i-1]+' '+sentence_split[i], word_list, normalize=True)
+                        candidate_parse_list.append(parse)
+                        candidate_dist_list.append(dist)
+                if i<len(sentence_split)-1:
+                    if sentence_split[i+1] not in candidate_remove_list:
+                        print(sentence_split[i]+' '+sentence_split[i+1])
+                        parse, dist = parser_single(sentence_split[i]+' '+sentence_split[i+1], word_list, normalize=True)
+                        candidate_parse_list.append(parse)
+                        candidate_dist_list.append(dist)
+            print('candidate_parse_dist_list: ', list(zip(candidate_parse_list, candidate_dist_list)))
+            sentence_parse_result = candidate_parse_list[np.argmin(candidate_dist_list)]
+            word_parse_result = sentence_parse_result
+            print('word_parse_result: ', word_parse_result)
+                                           
+    print('sentence_parse_result: ', sentence_parse_result)
+    print()
+
+    if word_parse_result == '':
+        word_parse_result = parser_single(sentence_parse_result, word_list)
+    
+    return word_parse_result
+
 
 '''
 
