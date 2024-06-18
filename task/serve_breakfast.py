@@ -32,10 +32,7 @@ from hsr_agent.agent import Agent
 # 현 위치 반환 함수 : self.move_base.get_pose(), return self.move_base.get_pose()
 # Head display 관련 : HSR에 직접 키보드 연결 후 "python3 /hsr_head_display/hsr_head_monitor.py" 실행
 
-# 아래는 재문님이 수정 및 재작성해주신 코드. 깔끔함에 감사 (-_-)(_ _) 꾸벅.
-# object detect 횟수 100번
-# spoon만 따로 list 두고 제일 마지막에 spoon만 pick and place?
-# object detect 100번 초과 시 사람에게 달라고 하기
+
 # pouring 할 때, 흘리지 않으려면 새로운 포즈 생성해야 함. object height 기준으로 arm_lift_up 설정하기. 올라감과 동시에 wrist_roll이 함께 동작하여 '부으면서 살짝 내려갔다가 다시 살짝 들고' + 두기 로 변경하기.
 # 100번 초과 시 사람에게 달라고 해서 grasp한 상태로 코드 동작하는지 확인 필요.
 
@@ -53,6 +50,7 @@ class ServeBreakfast:
         }
 
         self.item_list = ['bowl','cucudas','blue_milk','spoon'] # In order
+        # ['bowl', 'cucudas', 'cheezit', 'blue_milk', 'spoon', 'knife', 'fork]
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.93
@@ -179,6 +177,44 @@ class ServeBreakfast:
                 rospy.sleep(0.5) # wait for grasping manually
                 self.agent.pose.arm_flex(-60)
 
+    def pick_higher_item(self, item, table_base_xyz):
+
+        if item == 'bowl':
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
+            self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
+            self.agent.open_gripper(wait=False)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table) 
+            self.agent.move_rel(table_base_xyz[0]+0.1, 0, wait=True)
+            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
+            self.agent.grasp()
+            self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
+            self.agent.move_rel(-0.4, 0, wait=False)
+
+        elif item in ['cucudas', 'blue_milk']:
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+            self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
+            self.agent.open_gripper(wait=False)
+            # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
+            self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
+            self.agent.grasp(wait=False)
+            rospy.sleep(0.5) # wait for grasping manually
+            self.agent.move_rel(-0.7, 0, wait=False)
+
+        else:
+            if item == 'spoon':
+                self.agent.pose.bring_bowl_pose(table=self.pick_table)
+                # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
+                table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
+                self.agent.open_gripper(wait=False)
+                self.agent.move_rel(0, table_base_xyz[1], wait=True)
+                self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+                self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
+                self.agent.grasp(wait=False)
+                rospy.sleep(0.5) # wait for grasping manually
+                self.agent.pose.arm_flex(-60)
+
 
     def pour_item(self, item):
 
@@ -225,11 +261,10 @@ class ServeBreakfast:
 
         ### task start ##  (Inital location -> agent.move_abs('zero') )
 
-        self.agent.door_open()
+        # self.agent.door_open()
         self.agent.say('Hi, I will serve breakfast for you!')
         rospy.sleep(2)
         self.agent.move_abs('breakfast_table')
-
 
         picked_items = []
 

@@ -367,7 +367,7 @@ class JointPose:
                        'arm_flex_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, 0, -1.57, -1.57, 1.57]) # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609
+                      [arm_lift_joint, 0, -1.0472, -1.57, 1.57]) # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609
 
     def pick_side_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
