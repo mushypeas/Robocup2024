@@ -591,7 +591,7 @@ class HumanFollowing:
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
 
-            if tiny_exist and (center is not None and center[1] > 160 and center[1] < 480)  :
+            if tiny_exist and (center is not None and center[1] > 100 and center[1] < 540)  :
 
 
                 depth = self.agent.depth_image
@@ -634,7 +634,7 @@ class HumanFollowing:
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
-                    # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                    self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
                         self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                         rospy.sleep(2)
