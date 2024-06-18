@@ -523,7 +523,7 @@ class HumanFollowing:
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
-            if (calc_z!=0 and _depth < 1.9 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.2 and (_depth< ((calc_z/ 1000.0)-0.4) or self.agent.dist <((calc_z/1000.0)-0.4) )and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -627,7 +627,7 @@ class HumanFollowing:
             # yolo_item_y_largest_idx = self.yolo_item_y_largest_idx
 
             yolo_x, yolo_y = self.tiny_object_yolo
-            if tiny_exist and abs(yolo_x - x) < 20 and abs(yolo_y - y) < 20 :
+            if tiny_exist and abs(yolo_x - x) < 30 and abs(yolo_y - y) < 30 :
 
                 depth = self.agent.depth_image
 
