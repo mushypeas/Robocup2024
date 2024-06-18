@@ -49,12 +49,14 @@ class HumanFollowing:
         self.show_byte_track_image = True
         self.byte_img = None
         self.track_queue = deque()
+        self.start_time = time.time()
         # self.angle_queue = deque(maxlen=20)
         self.calcz_queue = deque(maxlen=10)
         self.obstacle_offset = 0.0
         self.last_say = time.time()
         self.tilt_angle = tilt_angle
         self.stt_option = stt_option
+        self.tiny_object_yolo = None
         self.save_one_time = False
         self.last_human_pos = None
         self.image_size = None
@@ -78,7 +80,7 @@ class HumanFollowing:
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
-        self.image_pub = rospy.Publisher('/human_segmentation_with_point', Image, queue_size=10)
+        self.image_pub = rospy.Publisher('/canny_result', Image, queue_size=10)
         
     def freeze_for_humanfollowing(self):
         self.show_byte_track_image = True
@@ -129,10 +131,26 @@ class HumanFollowing:
             return None
         
         grouped_data = [arr[i:i+6] for i in range(0, len(arr), 6)]
-        filtered_data = [group for group in grouped_data if (group[5] >= .90 )]
+        filtered_data = [group for group in grouped_data if (group[5] >= .40 )]
         sorted_data = sorted(filtered_data, key = lambda x: x[0])
         sorted_arr = [item for sublist in sorted_data for item in sublist]
-        self.tiny_object_list = sorted_arr
+
+        yolo_x_list = []
+        yolo_y_list = []
+
+
+        for idx in range(len(sorted_arr) // 6):
+            item = sorted_arr[6 * idx: 6 * (idx + 1)]
+            x, y, w, h, class_id, conf_percent = item
+            yolo_x_list.append(x)
+            yolo_y_list.append(y)
+
+
+        if len(yolo_y_list) != 0:
+            yolo_item_y_largest_idx = np.argmax(yolo_y_list)
+            self.tiny_object_yolo = (yolo_x_list[yolo_item_y_largest_idx], yolo_y_list[yolo_item_y_largest_idx])
+
+
 
     def _human_yolo_cb(self, data):
         '''
@@ -194,6 +212,7 @@ class HumanFollowing:
 
         morph = np.uint8(morph)
         canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        self.image_pub.publish(canny_img_msg)
 
 
     def _segment_cb(self, data):
@@ -242,7 +261,7 @@ class HumanFollowing:
 
         return False # pass
     
-    def barrier_check(self, looking_downside=True, check_human=True, y_top=50,x_var=10):
+    def barrier_check(self, looking_downside=True, check_human=True, y_top=50,x_var=30):
         # _depth = self.agent.depth_image[:150, 10:630]
         if check_human:
             # if self.human_box_list[0] is not None:
@@ -254,7 +273,7 @@ class HumanFollowing:
             #     center_x = center[1]
 
             if (looking_downside):
-                _depth = self.agent.depth_image[y_top:150, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
+                _depth = self.agent.depth_image[y_top:240, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
             else: # no tilt
                 _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -272,7 +291,7 @@ class HumanFollowing:
  
         _num_rotate=0
         y_top= 0
-        _depth = self.barrier_check(y_top=y_top, var=320)
+        _depth = self.barrier_check(y_top=y_top, x_var=320)
         print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
@@ -307,7 +326,7 @@ class HumanFollowing:
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
-            if (calc_z!=0 and _depth < 0.5 and _depth< ((calc_z/ 1000.0)-0.4) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.0 and _depth< ((calc_z/ 1000.0)-0.3) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -341,22 +360,32 @@ class HumanFollowing:
                 # # _depth = np.mean(_depth)
                 # _depth = _depth[_depth != 0]
                 # _depth = np.mean(_depth)
+                # left_edge = np.mean(self.agent.ranges[self.agent.center_idx - 90: self.agent.center_idx - 0])
+                # right_edge = np.mean(self.agent.ranges[self.agent.center_idx + 0: self.agent.center_idx + 90])
+
                 if left_edge_background_count > 2000 or right_edge_background_count > 2000:
-                    self.agent.say('Barrier checking....', show_display=True)
+                    self.agent.say('Barrier checking....', show_display=False)
                     print("Barrier checking....")
                     
-                    if left_background_count > right_background_count:
+                    if left_background_count > right_background_count + 30:
                         print("left side is empty")
-                        self.agent.move_rel(0.0,1.0,0, wait=False) #then, HSR is intended to move left (pos)
+                        self.agent.move_rel(0.0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
                         rospy.sleep(0.5)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                    else:
+                    elif left_background_count + 30 < right_background_count:
                         print("right side is empty")
-                        self.agent.move_rel(0.0,-1.0,0, wait=False) #then, HSR is intended to move right (neg)
+                        self.agent.move_rel(0.0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
                         rospy.sleep(0.5)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
+                    else: # ambigous
+                        rospy.sleep(1.0)
+                        self.agent.say('ambigous....', show_display=False)
+                        print("ambigous")
+                        self.agent.move_rel(-1.0,0,0, wait=False)
+                        rospy.sleep(1.0)
+
 
 
        ################################################################
@@ -516,16 +545,19 @@ class HumanFollowing:
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
                 left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
-                left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
+                # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y +y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
                 right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
-                right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
+                # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
                 # # _depth = np.mean(_depth)
                 # _depth = _depth[_depth != 0]
                 # _depth = np.mean(_depth)
-                if left_edge_background_count > 1500 or right_edge_background_count > 1500:
+                left_edge = np.mean(self.agent.ranges[self.agent.center_idx - 55: self.agent.center_idx - 35])
+                right_edge = np.mean(self.agent.ranges[self.agent.center_idx + 35: self.agent.center_idx + 55])
+
+                if left_edge > 1.0 or right_edge > 1.0:
                     self.agent.say('Barrier checking....', show_display=True)
                     print("Barrier checking....")
                     if left_background_count > right_background_count:
@@ -548,13 +580,13 @@ class HumanFollowing:
 
 
     def escape_tiny_canny(self):
-        center = None
-        if self.human_box_list[0] is not None:
-            x = self.human_box_list[1][0]
-            y = self.human_box_list[1][1]
-            w = self.human_box_list[1][2]
-            h = self.human_box_list[1][3]
-            center = [y + int(h/2), x + int(w/2)] # (y,x)
+        # center = None
+        # if self.human_box_list[0] is not None:
+        #     x = self.human_box_list[1][0]
+        #     y = self.human_box_list[1][1]
+        #     w = self.human_box_list[1][2]
+        #     h = self.human_box_list[1][3]
+        #     center = [y + int(h/2), x + int(w/2)] # (y,x)
         contours = self.contours
 
         tiny_exist = False
@@ -565,21 +597,21 @@ class HumanFollowing:
         seg_img = self.seg_img[:, :]
 
         # Create a mask for depth values greater than 0 and seg_img equal to 15
-        human_mask = (seg_img == 15)
-        human_y, human_x = np.where(human_mask)
-        if len(human_y) != 0:
-            human_y_max = np.max(human_y)
-        else:
-            human_y_max = 440
+        # human_mask = (seg_img == 15)
+        # human_y, human_x = np.where(human_mask)
+        # if len(human_y) != 0:
+        #     human_y_max = np.max(human_y)
+        # else:
+        #     human_y_max = 440
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 800 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 200 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
                 # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
                 # if y > human_y_max and y > 440 and x > 240 and x < 400:
-                if y > 420 and x > 240 and x < 400:
+                if y+h//2 > 300 and y+h//2 < 450 and x+w//2 > 230 and x+w//2 < 410:
 
                     tiny_exist = True
                     print('Tiny object.')
@@ -587,12 +619,15 @@ class HumanFollowing:
                     break
 
 
-        if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None:
+        if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None and self.tiny_object_yolo is not None :
             last_calc_z = self.calcz_queue[-1]
             print("canny last calc_z: ", last_calc_z)
+            # self.dist = np.min(self.agent.ranges[self.agent.center_idx - 90: self.agent.center_idx + 90])
 
-            if tiny_exist and (center is not None and center[1] > 100 and center[1] < 540)  :
+            # yolo_item_y_largest_idx = self.yolo_item_y_largest_idx
 
+            yolo_x, yolo_y = self.tiny_object_yolo
+            if tiny_exist and abs(yolo_x - x) < 20 and abs(yolo_y - y) < 20 :
 
                 depth = self.agent.depth_image
 
@@ -600,9 +635,9 @@ class HumanFollowing:
                 height, width = seg_img.shape
                 mid_x = width // 2
 
-                left_background_count = np.mean(depth[100-20:100+20, :mid_x])
+                left_background_count = np.mean(depth[100-20:100+20, :x])
                 print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[100-20:100+20, mid_x:])
+                right_background_count = np.mean(depth[100-20:100+20, x+w:])
                 print("right_background_count", right_background_count)
 
 
@@ -612,7 +647,7 @@ class HumanFollowing:
                 # # _depth = np.mean(_depth)
                 # _depth = _depth[_depth != 0]
                 # _depth = np.mean(_depth)
-                if left_edge_background_count > 1500 or right_edge_background_count > 1500:
+                if left_edge_background_count > 2000 or right_edge_background_count > 2000:
 
                     # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                     print('Tiny object. I\'ll avoid it.')
@@ -659,60 +694,56 @@ class HumanFollowing:
 
         for contour in contours:
             area = cv2.contourArea(contour)
-            if 800 < area < 3000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+            if 200 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
                 # print(area)
                 x, y, w, h = cv2.boundingRect(contour)
-                if y > 420 and x > 240 and x < 400:
-                    if x < 320:
-                        tiny_loc == 'left'
-                    else:
-                        tiny_loc == 'right'
+                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+                # if y > human_y_max and y > 440 and x > 240 and x < 400:
+                if y+h//2 > 300 and y+h//2 < 450 and x+w//2 > 230 and x+w//2 < 410:
+
                     tiny_exist = True
                     print('Tiny object.')
+                    # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
                     break
 
 
-        if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None:
-            last_calc_z = self.calcz_queue[-1]
-            print("canny last calc_z: ", last_calc_z)
+        if tiny_exist and self.agent.dist > 1.0 :
+            
 
-            if tiny_exist and self.agent.dist > 1.0 :
-                
+            depth = self.agent.depth_image
 
-                depth = self.agent.depth_image
+            seg_img = self.seg_img
+            height, width = seg_img.shape
+            mid_x = width // 2
 
-                seg_img = self.seg_img
-                height, width = seg_img.shape
-                mid_x = width // 2
-
-                left_background_count = np.mean(depth[100-20:100+20, :mid_x])
-                print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[100-20:100+20, mid_x:])
-                print("right_background_count", right_background_count)
+            left_background_count = np.mean(depth[100-20:100+20, :mid_x])
+            print("left_background_count", left_background_count)
+            right_background_count = np.mean(depth[100-20:100+20, mid_x:])
+            print("right_background_count", right_background_count)
 
 
 
-                # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
-                print('Tiny object. I\'ll avoid it.')              
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                print('Tiny object. I\'ll avoid it.')
-                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                if right_background_count > left_background_count:
-                    self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
-                else:
-                    self.agent.move_rel(0.0,0.8,0, wait=False)
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
+            # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
+            print('Tiny object. I\'ll avoid it.')              
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            print('Tiny object. I\'ll avoid it.')
+            self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+            if right_background_count > left_background_count:
+                self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
+                rospy.sleep(3)
+                # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//6, wait=False)
+            else:
+                self.agent.move_rel(0.0,0.8,0, wait=False)
+                rospy.sleep(3)
+                # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//6, wait=False)
 
 
                     # se
@@ -797,7 +828,7 @@ class HumanFollowing:
 
         ##########24.3.26
         _num_rotate = 0
-
+        self.start_time = start_time
         # self.escape_barrier(calc_z)
         # if self.human_box_list[0] is None: # no human detected
 
@@ -806,7 +837,7 @@ class HumanFollowing:
         # depth = np.asarray(self.d2pc.depth)
         # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
         # self.escape_barrier(calc_z)
-        if self.human_box_list[0] is None: # no human detected
+        if self.human_box_list[0] is None : # no human detected
             # rospy.loginfo("no human")
             if self.stt_destination(self.stt_option):
                 return True
@@ -827,6 +858,7 @@ class HumanFollowing:
             return False
         else:
             self.last_chance = 1
+        
         human_info_ary = copy.deepcopy(self.human_box_list)
         depth = np.asarray(self.d2pc.depth)
         twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
@@ -850,6 +882,7 @@ class HumanFollowing:
         # print(f"calc_z = {calc_z}")
         # if calc_z > 1000:
         #     calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+
 
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
             print("2.1 go to center!")
