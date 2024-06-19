@@ -1,9 +1,10 @@
 import rospy
 import numpy as np
 
+from sensor_msgs.msg import LaserScan
+
 class Restaurant:
     def __init__(self, dist_thres, angular_range):
-
         #####jnpahk lidar callback#####
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
         self.dist_thres = dist_thres
@@ -39,8 +40,7 @@ class Restaurant:
         ang_range = self.angular_range
         dist = np.mean(data_np[center_idx - ang_range: center_idx + ang_range])
         pathpoint = [dist > self.dist_thres]
-        self.path_list = find_segments(path_list)
-
+        self.path_list = self.find_segments(pathpoint)
 
 def restaurant(agent):
     pass
