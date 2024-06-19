@@ -7,17 +7,23 @@ import numpy as np
 from geometry_msgs.msg import Twist
 import math
 
-
+from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
+from module.person_following_bot.follow import HumanReidAndFollower
+from hsr_agent.agent import Agent
 
 class Restaurant:
     def __init__(self, agent):
         #####jnpahk lidar callback#####
         self.agent = agent
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
+        self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
         self.dist_thres = dist_thres
         self.unit_angle = 0.25 * ( math.pi / 180 )
         self.center_index = 481
+        self.twist = Twist()
+        self.axis_transform = Axis_transform()
+        self.agent = Agent()
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -26,11 +32,115 @@ class Restaurant:
         pathpoint = np.where(dist < self.dist_thres)[0].tolist()
         self.path_list = self.find_segments(pathpoint)
 
+
+    def _human_yolo_callback(self, data):
+
+        data_list = data.data
+        if data_list[0] == -1:
+            self.human_box_list = [None]
+        else:
+            self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
+                                  np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
+                                  data_list[5]]
+
+            x = data_list[1]
+            y = data_list[2]
+            w = data_list[3]
+            h = data_list[4]
+            self.center = [y + int(h/2), x + int(w/2)]
+
+
+            twist, calc_z = self.follow(self.human_box_list, self.center)
+            target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+            self.haman_yaw = target_xyyaw[2]
+
     def _destination_callback(self, data):
         self.destination_angle = None
         ## TODO ##
         pass
-        
+
+
+	def follow(self, human_info_ary, seg_human_point): # yolo box: list of bbox , frame : img
+		twist = Twist()
+		human_id, target_tlwh, target_score = human_info_ary
+		(self.x, self.y, self.w, self.h) = [int(v) for v in target_tlwh]
+		if self.y < 0:
+			self.y = 0
+		if self.y >= self.H:
+			self.y = self.H-1
+		if self.x < 0:
+			self.x = 0
+		if self.x >= self.W:
+			self.x = self.W-1
+
+		# cv2.rectangle(frame, (x, y), (x + w, y + h),(0, 255, 0), 2)
+		calc_z = 0.0
+		try:
+			# if self.tilt_angle < math.radians(10):
+			cropped_y = max(min(self.y + self.h//4, self.H-1), 0)
+			cropped_x = max(min(self.x + self.w//2, self.W-1), 0)
+			# else:
+			# cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
+			# cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
+			calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
+			if seg_human_point is not None : 
+				calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
+				if calc_z == 0:
+					calc_z = depth_frame[cropped_y, cropped_x]
+			calc_z *= np.cos(self.tilt_angle)
+			self.calc_z_prev = calc_z
+			# twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
+			# 					 linear_max=self.linear_max, angular_max=self.angular_max)
+			twist = self.twist
+            # twist = new_get_controls(calc_x,calc_z)
+            angular = (-1/500) * (calc_x-320)
+            # print('linear: {} ,angular: {}  \n'.format(linear,angular))
+            linear = calc_z / 1000 * .4
+
+            
+            twist.linear.x = linear
+            twist.linear.y = 0
+            twist.linear.z = 0
+            twist.angular.x = 0
+            twist.angular.y = 0
+            twist.angular.z = angular
+
+		return twist, calc_z
+		
+
+    def calculate_twist_to_human(self, twist, calc_z):
+        ######TODO#################
+        #calc_z is mm
+        calc_z /= 1000.0
+        cur_linear = twist.linear.x
+        # cur_linear = calc_z * .8
+        if twist.linear.x == 0 and twist.angular.z == 0:
+            return [0, 0, 0]
+
+        target_z_rgbd_frame = cur_linear * np.cos(twist.angular.z)
+        target_x_rgbd_frame = - cur_linear * np.sin(twist.angular.z)
+        target_xyz_base_link = self.axis_transform.transform_coordinate( \
+            'head_rgbd_sensor_rgb_frame', 'base_link', [target_x_rgbd_frame, 0, target_z_rgbd_frame])
+        target_yaw_base_link = np.arctan2(target_xyz_base_link[1], target_xyz_base_link[0])
+        while cur_linear < calc_z * .8:
+            target_z_rgbd_frame = cur_linear * np.cos(twist.angular.z)
+            target_x_rgbd_frame = - cur_linear * np.sin(twist.angular.z)
+            target_xyz_base_link = self.axis_transform.transform_coordinate( \
+                'head_rgbd_sensor_rgb_frame', 'base_link', [target_x_rgbd_frame, 0, target_z_rgbd_frame])
+            h, w = self.agent.dynamic_obstacles_with_static.shape
+            target_x_in_pixel =max(min(h - 1, h // 2 - int(target_xyz_base_link[0] / 0.05)), 0)
+            target_y_in_pixel = max(min(w - 1, w // 2 - int(target_xyz_base_link[1] / 0.05)), 0)
+            target_yaw_base_link = np.arctan2(target_xyz_base_link[1], target_xyz_base_link[0])
+            if self.agent.dynamic_obstacles_with_static[target_y_in_pixel, target_x_in_pixel] > 30:
+                cur_linear += .1
+            else:
+                # print("cur_linear", cur_linear, calc_z, self.agent.dynamic_obstacles_with_static[target_y_in_pixel, target_x_in_pixel])
+                return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
+
+        return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
+
+
+
     def index_to_angle(self, idx):
         return (idx - self.center_index) * self.unit_angle
 
