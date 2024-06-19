@@ -7,6 +7,7 @@ import numpy as np
 from geometry_msgs.msg import Twist
 import math
 
+from utils.depth_to_pc import Depth2PC
 from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
 from module.person_following_bot.follow import HumanReidAndFollower
@@ -24,6 +25,7 @@ class Restaurant:
         self.twist = Twist()
         self.axis_transform = Axis_transform()
         self.agent = Agent()
+        self.d2pc = Depth2PC() # to depth
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -49,10 +51,12 @@ class Restaurant:
             h = data_list[4]
             self.center = [y + int(h/2), x + int(w/2)]
 
+            depth = np.asarray(self.d2pc.depth)
 
-            twist, calc_z = self.follow(self.human_box_list, self.center)
+            twist, calc_z = self.follow(self.human_box_list, depth, self.center)
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             self.haman_yaw = target_xyyaw[2]
+            
 
     def _destination_callback(self, data):
         self.destination_angle = None
@@ -60,7 +64,7 @@ class Restaurant:
         pass
 
 
-	def follow(self, human_info_ary, seg_human_point): # yolo box: list of bbox , frame : img
+	def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
 		twist = Twist()
 		human_id, target_tlwh, target_score = human_info_ary
 		(self.x, self.y, self.w, self.h) = [int(v) for v in target_tlwh]
@@ -75,35 +79,34 @@ class Restaurant:
 
 		# cv2.rectangle(frame, (x, y), (x + w, y + h),(0, 255, 0), 2)
 		calc_z = 0.0
-		try:
-			# if self.tilt_angle < math.radians(10):
-			cropped_y = max(min(self.y + self.h//4, self.H-1), 0)
-			cropped_x = max(min(self.x + self.w//2, self.W-1), 0)
-			# else:
-			# cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
-			# cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
-			calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
-			if seg_human_point is not None : 
-				calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
-				if calc_z == 0:
-					calc_z = depth_frame[cropped_y, cropped_x]
-			calc_z *= np.cos(self.tilt_angle)
-			self.calc_z_prev = calc_z
-			# twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
-			# 					 linear_max=self.linear_max, angular_max=self.angular_max)
-			twist = self.twist
-            # twist = new_get_controls(calc_x,calc_z)
-            angular = (-1/500) * (calc_x-320)
-            # print('linear: {} ,angular: {}  \n'.format(linear,angular))
-            linear = calc_z / 1000 * .4
+        # if self.tilt_angle < math.radians(10):
+        cropped_y = max(min(self.y + self.h//4, self.H-1), 0)
+        cropped_x = max(min(self.x + self.w//2, self.W-1), 0)
+        # else:
+        # cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
+        # cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
+        calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
+        if seg_human_point is not None : 
+            calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
+            if calc_z == 0:
+                calc_z = depth_frame[cropped_y, cropped_x]
+        calc_z *= np.cos(self.tilt_angle)
+        self.calc_z_prev = calc_z
+        # twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
+        # 					 linear_max=self.linear_max, angular_max=self.angular_max)
+        twist = self.twist
+        # twist = new_get_controls(calc_x,calc_z)
+        angular = (-1/500) * (calc_x-320)
+        # print('linear: {} ,angular: {}  \n'.format(linear,angular))
+        linear = calc_z / 1000 * .4
 
-            
-            twist.linear.x = linear
-            twist.linear.y = 0
-            twist.linear.z = 0
-            twist.angular.x = 0
-            twist.angular.y = 0
-            twist.angular.z = angular
+        
+        twist.linear.x = linear
+        twist.linear.y = 0
+        twist.linear.z = 0
+        twist.angular.x = 0
+        twist.angular.y = 0
+        twist.angular.z = angular
 
 		return twist, calc_z
 		
