@@ -55,7 +55,10 @@ class Restaurant:
 
             twist, calc_z = self.follow(self.human_box_list, depth, self.center)
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
-            self.haman_yaw = target_xyyaw[2]
+            
+            self.haman_yaw = target_xyyaw[2] * 180 / math.pi
+
+            self.agent.pose.head_pan(self.haman_yaw)
             
 
     def _destination_callback(self, data):
