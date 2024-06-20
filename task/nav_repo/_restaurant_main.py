@@ -53,16 +53,16 @@ class Restaurant:
             
         else:
             human_id = yolo_data[0]
-            x = yolo_data[1]
-            y = yolo_data[2]
-            w = yolo_data[3]
-            h = yolo_data[4]
+            human_x = yolo_data[1]
+            human_y = yolo_data[2]
+            human_w = yolo_data[3]
+            human_h = yolo_data[4]
             target_score = yolo_data[5]
             
-            self.human_box_list = [human_id, np.asarray([x, y, w, h], dtype=np.int64), target_score]
+            self.human_box_list = [human_id, np.asarray([human_x, human_y, human_w, human_h], dtype=np.int64), target_score]
             
-            human_center = [y + h // 2, x + w // 2]
-            human_rad_in_cam = calculate_human_rad(human_center[1], self.yolo_img_width)
+            human_center_x = human_x + human_w // 2
+            human_rad_in_cam = calculate_human_rad(human_center_x, self.yolo_img_width)
             print("self.human_rad_in_cam: ", human_rad_in_cam)
             
             self.human_rad = human_rad_in_cam + self.get_head_pan()
@@ -164,6 +164,8 @@ def restaurant(agent):
         if not candidates:
             continue
             ## TODO ##
+            ### If there is no candidate, what should we do? ###
+            ### go back, turn around, etc... ###
 
         best_interval = r.get_best_candidate(candidates)
 
