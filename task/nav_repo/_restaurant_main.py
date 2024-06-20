@@ -12,27 +12,24 @@ from std_msgs.msg import Int16MultiArray
 from utils.depth_to_pc import Depth2PC
 from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
-from module.person_following_bot.follow import HumanReidAndFollower
-from hsr_agent.agent import Agent
 from std_srvs.srv import Empty, EmptyRequest
 
 import math
 
 class Restaurant:
     def __init__(self, agent):
-        #####jnpahk lidar callback#####
         self.agent = agent
+        self.twist = Twist()
+        self.axis_transform = Axis_transform()
+        self.d2pc = Depth2PC() 
+        
         self.dist_thres = dist_thres
         self.unit_angle = unit_angle
         self.center_index = center_index
-        self.H = 480
-        self.W = 640
-        self.twist = Twist()
-        self.axis_transform = Axis_transform()
-        self.agent = Agent()
-        self.d2pc = Depth2PC() 
+        self.yolo_img_height = yolo_img_height
+        self.yolo_img_width = yolo_img_width
         
-        self.human_yaw = None
+        self.human_rad = None
 
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
         self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
@@ -47,29 +44,27 @@ class Restaurant:
         self.path_list = self.find_angles()
 
     def _human_yolo_callback(self, data):
-        # ByteTrack
         data_list = data.data
         
         if data_list[0] == -1:
             self.human_box_list = [None]
-            self.human_yaw = None
+            self.human_rad = None
             
         else:
-            self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
-                                  np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
-                                  data_list[5]]
-
+            human_id = data_list[0]
             x = data_list[1]
             y = data_list[2]
             w = data_list[3]
             h = data_list[4]
-            self.center = [y + int(h/2), x + int(w/2)]
-
-            human_rad_in_cam = (self.center[1] - self.W / 2) / 640
-            self.human_yaw = human_rad_in_cam + self.get_head_pan()
-
-            print("self.human_yaw: ", self.human_yaw)
-            self.head_pan(self.human_yaw)
+            target_score = data_list[5]
+            
+            self.human_box_list = [human_id, np.asarray([x, y, w, h], dtype=np.int64), target_score]
+            
+            human_center = [y + h // 2, x + w // 2]
+            human_rad_in_cam = calculate_human_rad(human_center[1], self.yolo_img_width)
+            
+            self.human_rad = human_rad_in_cam + self.get_head_pan()
+            self.head_pan(self.human_rad)
 
     def find_angles(self):
         lst = self.pathpoint
@@ -121,11 +116,12 @@ class Restaurant:
     def heuristic(self, start, end):
         avg_angle = (start + end) / 2
         
-        if self.human_yaw:
-            return -abs(avg_angle - self.human_yaw)
+        if self.human_rad:
+            return -abs(avg_angle - self.human_rad)
         
         else:
             ### TODO: heuristic function when human_yaw is None ###
+            ### Momentum + past human_yaw ###
             return 0
 
     def find_best_move(self, candidates):
