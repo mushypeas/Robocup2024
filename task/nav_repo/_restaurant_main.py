@@ -88,7 +88,6 @@ class Restaurant:
                 end_rad = self.index_to_rad(end_idx)
                 avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
         
-                # l = r * theta
                 if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
                     segments.append([start_rad, end_rad, avg_dist])
 
@@ -118,30 +117,35 @@ class Restaurant:
     def index_to_rad(self, idx):
         return (idx - self.center_index) * self.unit_rad
 
-    def heuristic(self, start, end, avg_dist):
-        avg_angle = (start + end) / 2
+    def heuristic(self, start_rad, end_rad, avg_dist):
+        avg_rad = (start_rad + end_rad) / 2
         
         if self.human_rad:
-            return -abs(avg_angle - self.human_rad)
+            return -abs(avg_rad - self.human_rad)
         
         else:
             ### TODO: heuristic function when human_yaw is None ###
             ### Momentum + past human_yaw ###
             return 0
 
-    def find_best_move(self, candidates):
+    def get_best_candidate(self, candidates):
         heuristic_values = [self.heuristic(start, end, avg_dist) for start, end, avg_dist in candidates]
         if not heuristic_values:
             return None
         best_idx = np.argmax(heuristic_values)
         return candidates[best_idx]
     
-    def move_based_on_interval(self, interval):
-        move_dis = 0.3
-        avg_angle = (interval[0] + interval[1]) / 2
-        move_x = move_dis * math.cos(avg_angle)
-        move_y = move_dis * math.sin(avg_angle)
-        move_yaw = avg_angle
+    def move_best_interval(self, interval):
+        start_rad = interval[0]
+        end_rad = interval[1]
+        avg_dist = interval[2]
+        
+        move_dist = avg_dist / avg_dist_move_dist_ratio
+        avg_rad = (start_rad + end_rad) / 2
+        
+        move_x = move_dist * math.cos(avg_rad)
+        move_y = move_dist * math.sin(avg_rad)
+        move_yaw = avg_rad
         self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
@@ -161,14 +165,14 @@ def restaurant(agent):
             continue
             ## TODO ##
 
-        best_interval = r.find_best_move(candidates)
+        best_interval = r.get_best_candidate(candidates)
 
         while not best_interval:
-            best_interval = r.find_best_move(candidates)
+            best_interval = r.get_best_candidate(candidates)
 
         print("best_interval", best_interval)
         
-        r.move_based_on_interval(best_interval)
+        r.move_best_interval(best_interval)
 
         moved_time = time.time()
 

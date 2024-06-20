@@ -13,6 +13,7 @@ center_index = lidar_index // 2
 
 min_interval_arc_len = 0.7
 unit_rad = 0.25 * ( math.pi / 180 )
+avg_dist_move_dist_ratio = 5
 
 yolo_img_height = 480
 yolo_img_width = 640
