@@ -107,8 +107,7 @@ class Restaurant:
         self.agent.pose.head_pan(head_pan_deg)
         
     def get_head_pan(self):
-        ### TODO ###
-        return self.agent.pose.joint_value
+        return self.agent.pose.joint_value['head_pan_joint']
         
     def index_to_angle(self, idx):
         return (idx - self.center_index) * self.unit_angle
