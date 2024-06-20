@@ -21,34 +21,37 @@ class Restaurant:
         #####jnpahk lidar callback#####
         self.agent = agent
         self.dist_thres = dist_thres
-        self.unit_angle = 0.25 * ( math.pi / 180 )
-        self.center_index = 481
+        self.unit_angle = unit_angle
+        self.center_index = center_index
         self.H = 480
         self.W = 640
         self.twist = Twist()
         self.axis_transform = Axis_transform()
         self.agent = Agent()
-        self.d2pc = Depth2PC() # to depth
-        self.human_yaw = 0
+        self.d2pc = Depth2PC() 
+        
+        self.human_yaw = None
 
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
         self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
         rest_clinet = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
         rest_clinet.call(EmptyRequest())
 
-
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
-        data_np[np.isnan(data_np)] = 5.0  # remove nans
+        data_np[np.isnan(data_np)] = max_lidar_range  # remove nans
         dist = data_np
         self.pathpoint = np.where(dist > self.dist_thres)[0].tolist()
         self.path_list = self.find_angles()
 
     def _human_yolo_callback(self, data):
-
+        # ByteTrack
         data_list = data.data
+        
         if data_list[0] == -1:
             self.human_box_list = [None]
+            self.human_yaw = None
+            
         else:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
                                   np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
@@ -72,8 +75,7 @@ class Restaurant:
             # human_yaw_60 = target_xyyaw[2] * 180 / math.pi
             print("self.human_yaw: ", head_yaw_60)
             self.agent.pose.head_pan(head_yaw_60)
-            
-
+        
     def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
         twist = Twist()
         human_id, target_tlwh, target_score = human_info_ary
@@ -110,7 +112,6 @@ class Restaurant:
         # print('linear: {} ,angular: {}  \n'.format(linear,angular))
         linear = calc_z / 1000 * .4
 
-        
         twist.linear.x = linear
         twist.linear.y = 0
         twist.linear.z = 0
@@ -119,7 +120,6 @@ class Restaurant:
         twist.angular.z = angular
 
         return twist, calc_z
-        
 
     def calculate_twist_to_human(self, twist, calc_z):
         ######TODO#################
@@ -141,7 +141,7 @@ class Restaurant:
             target_xyz_base_link = self.axis_transform.transform_coordinate( \
                 'head_rgbd_sensor_rgb_frame', 'base_link', [target_x_rgbd_frame, 0, target_z_rgbd_frame])
             h, w = self.agent.dynamic_obstacles_with_static.shape
-            target_x_in_pixel =max(min(h - 1, h // 2 - int(target_xyz_base_link[0] / 0.05)), 0)
+            target_x_in_pixel = max(min(h - 1, h // 2 - int(target_xyz_base_link[0] / 0.05)), 0)
             target_y_in_pixel = max(min(w - 1, w // 2 - int(target_xyz_base_link[1] / 0.05)), 0)
             target_yaw_base_link = np.arctan2(target_xyz_base_link[1], target_xyz_base_link[0])
             if self.agent.dynamic_obstacles_with_static[target_y_in_pixel, target_x_in_pixel] > 30:
@@ -151,11 +151,6 @@ class Restaurant:
                 return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
 
         return (target_xyz_base_link[0], target_xyz_base_link[1], target_yaw_base_link)
-
-
-
-    def index_to_angle(self, idx):
-        return (idx - self.center_index) * self.unit_angle
 
     def find_angles(self):
         lst = self.pathpoint
@@ -192,10 +187,19 @@ class Restaurant:
     ## HELP Function 
     def move_rel(self, x, y, yaw=0):
         self.agent.move_rel(x, y, yaw=yaw)
+        
+    def index_to_angle(self, idx):
+        return (idx - self.center_index) * self.unit_angle
 
     def heuristic(self, start, end):
         avg_angle = (start + end) / 2
-        return -abs(avg_angle - self.human_yaw)
+        
+        if self.human_yaw:
+            return -abs(avg_angle - self.human_yaw)
+        
+        else:
+            ### TODO: heuristic function when human_yaw is None ###
+            return 0
 
     def find_best_move(self, candidates):
         heuristic_values = [self.heuristic(start, end) for start, end in candidates]
