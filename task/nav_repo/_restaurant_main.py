@@ -1,23 +1,25 @@
 import sys
 sys.path.append('task/nav_repo')
-from restaurant_config import *
 
-import rospy
+import time
+import os
 import numpy as np
 import math
 
+import rospy
+import roslaunch
 from std_msgs.msg import Int16MultiArray
-
 from sensor_msgs.msg import LaserScan
 from std_srvs.srv import Empty, EmptyRequest
 
-import math
-import time
-import os
+from restaurant_config import *
+from utils.marker_maker import MarkerMaker
+from move_base_restaurant import MoveBaseRestaurant
 
 class Restaurant:
     def __init__(self, agent):
         self.agent = agent
+        self.move = MoveBaseRestaurant()
         
         self.human_rad = None
 
@@ -53,10 +55,8 @@ class Restaurant:
             human_center_x = human_x + human_w // 2
             human_rad_in_cam = calculate_human_rad(human_center_x, yolo_img_width)
             
-            # self.human_rad = human_rad_in_cam + self.get_head_pan()
             self.human_rad = human_rad_in_cam
             print("self.human_rad: ",self.human_rad)
-            # self.head_pan(self.human_rad)
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -95,13 +95,6 @@ class Restaurant:
     ## HELP Function 
     def move_rel(self, x, y, yaw=0):
         self.agent.move_rel(x, y, yaw=yaw)
-        
-    # def head_pan(self, head_pan_rad):
-    #     head_pan_deg = math.degrees(head_pan_rad)
-    #     self.agent.pose.head_pan(head_pan_deg)
-        
-    # def get_head_pan(self):
-    #     return self.agent.pose.joint_value['head_pan_joint']
 
     def heuristic(self, start_rad, end_rad, avg_dist):
         avg_rad = (start_rad + end_rad) / 2
@@ -138,7 +131,36 @@ class Restaurant:
         self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
+    rospy.loginfo('Initialize Hector SLAM')
+    # Kill existing nodes and replace them with others
+    os.system('rosnode kill /pose_integrator')
+    os.system('rosnode kill /move_base')
+    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    roslaunch.configure_logging(uuid)
+
+    slam_args = ['tidyboy_nav_stack', 'hector.launch']
+    nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
+    slam_launch_file = roslaunch.rlutil.resolve_launch_arguments(slam_args)
+    nav_launch_file  = roslaunch.rlutil.resolve_launch_arguments(nav_args)
+    slam = roslaunch.parent.ROSLaunchParent(uuid,
+                                            slam_launch_file,
+                                            sigint_timeout=10.0,
+                                            sigterm_timeout=5.0)
+    nav  = roslaunch.parent.ROSLaunchParent(uuid,
+                                            nav_launch_file,
+                                            sigint_timeout=10.0,
+                                            sigterm_timeout=5.0)
+    slam.start()
+    nav.start()
+    rospy.sleep(3.)
+    
+    agent.say('start restaurant')
+    marker_maker = MarkerMaker('/snu/robot_path_visu')
+    
+    ############################
+    
     r = Restaurant(agent)
+    
     moved_time = time.time()
 
     while not rospy.is_shutdown():
