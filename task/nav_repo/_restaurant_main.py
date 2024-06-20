@@ -24,8 +24,8 @@ class Restaurant:
         self.axis_transform = Axis_transform()
         self.d2pc = Depth2PC() 
         
-        self.dist_thres = dist_thres
-        self.unit_angle = unit_angle
+        self.min_dist = min_dist
+        self.unit_rad = unit_rad
         self.center_index = center_index
         self.yolo_img_height = yolo_img_height
         self.yolo_img_width = yolo_img_width
@@ -39,27 +39,25 @@ class Restaurant:
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
-        data_np[np.isnan(data_np)] = max_lidar_range  # remove nans
-        dist = data_np
-        self.pathpoint = np.where(dist > self.dist_thres)[0].tolist()
-        self.path_list = self.find_angles()
+        data_np[np.isnan(data_np)] = max_dist  # remove nans
+        self.dists = data_np
+        self.indices_in_range = np.where(self.dists > self.min_dist)[0].tolist()
+        self.candidates = self.find_candidates()
 
     def _human_yolo_callback(self, data):
-        data_list = data.data
-
-        print("byte", data_list)
+        yolo_data = data.data
         
-        if data_list[0] == -1:
+        if yolo_data[0] == -1:
             self.human_box_list = [None]
             self.human_rad = None
             
         else:
-            human_id = data_list[0]
-            x = data_list[1]
-            y = data_list[2]
-            w = data_list[3]
-            h = data_list[4]
-            target_score = data_list[5]
+            human_id = yolo_data[0]
+            x = yolo_data[1]
+            y = yolo_data[2]
+            w = yolo_data[3]
+            h = yolo_data[4]
+            target_score = yolo_data[5]
             
             self.human_box_list = [human_id, np.asarray([x, y, w, h], dtype=np.int64), target_score]
             
@@ -71,35 +69,38 @@ class Restaurant:
             print("self.human_rad: ",self.human_rad)
             self.head_pan(self.human_rad)
 
-    def find_angles(self):
-        lst = self.pathpoint
+    def find_candidates(self):
+        indices_in_range = self.indices_in_range
 
-        if not lst:
+        if not indices_in_range:
             return []
 
         segments = []
-        start_idx = lst[0]
-        end_idx = lst[0]
+        start_idx = indices_in_range[0]
+        end_idx = indices_in_range[0]
 
-        for i in range(1, len(lst)):
-            if lst[i] == lst[i - 1] +1:
-                end_idx = lst[i]
-            else:
-
-                start_angle = self.index_to_angle(start_idx)
-                end_angle = self.index_to_angle(end_idx)
+        for i in range(1, len(indices_in_range)):
+            if indices_in_range[i] == indices_in_range[i - 1] + 1:
+                end_idx = indices_in_range[i]
                 
-                if end_angle - start_angle > interval_min_angle:
-                    segments.append([start_angle, end_angle])
+            else:
+                start_rad = self.index_to_rad(start_idx)
+                end_rad = self.index_to_rad(end_idx)
+                avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
+        
+                # l = r * theta
+                if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
+                    segments.append([start_rad, end_rad, avg_dist])
 
-                start_idx = lst[i]
-                end_idx = lst[i]
+                start_idx = indices_in_range[i]
+                end_idx = indices_in_range[i]
 
-        start_angle = self.index_to_angle(start_idx)
-        end_angle = self.index_to_angle(end_idx)
+        start_rad = self.index_to_rad(start_idx)
+        end_rad = self.index_to_rad(end_idx)
+        avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
 
-        if end_angle - start_angle > interval_min_angle:
-            segments.append([start_angle, end_angle])
+        if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
+            segments.append([start_rad, end_rad, avg_dist])
 
         return segments
 
@@ -114,10 +115,10 @@ class Restaurant:
     def get_head_pan(self):
         return self.agent.pose.joint_value['head_pan_joint']
         
-    def index_to_angle(self, idx):
-        return (idx - self.center_index) * self.unit_angle
+    def index_to_rad(self, idx):
+        return (idx - self.center_index) * self.unit_rad
 
-    def heuristic(self, start, end):
+    def heuristic(self, start, end, avg_dist):
         avg_angle = (start + end) / 2
         
         if self.human_rad:
@@ -129,7 +130,7 @@ class Restaurant:
             return 0
 
     def find_best_move(self, candidates):
-        heuristic_values = [self.heuristic(start, end) for start, end in candidates]
+        heuristic_values = [self.heuristic(start, end, avg_dist) for start, end, avg_dist in candidates]
         if not heuristic_values:
             return None
         best_idx = np.argmax(heuristic_values)
@@ -148,11 +149,11 @@ def restaurant(agent):
     moved_time = time.time()
 
     while not rospy.is_shutdown():
-        if time.time() - moved_time < 1:
+        if time.time() - moved_time < main_period:
             continue
 
         try:
-            candidates = r.path_list
+            candidates = r.candidates
         except AttributeError:
             continue
 

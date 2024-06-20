@@ -1,13 +1,18 @@
 import math
 
-dist_thres = 1.0
-max_lidar_range = 5.0
+## main frequency
+main_freq = 0.5
+main_period = 1.0 / main_freq
+
+## LiDAR
+min_dist = 1.0
+max_dist = 5.0
 
 lidar_index = 963
 center_index = lidar_index // 2
 
-interval_min_angle = 0.3
-unit_angle = 0.25 * ( math.pi / 180 )
+min_interval_arc_len = 0.7
+unit_rad = 0.25 * ( math.pi / 180 )
 
 yolo_img_height = 480
 yolo_img_width = 640
