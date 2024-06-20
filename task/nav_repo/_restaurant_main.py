@@ -4,13 +4,10 @@ from restaurant_config import *
 
 import rospy
 import numpy as np
-from geometry_msgs.msg import Twist
 import math
 
 from std_msgs.msg import Int16MultiArray
 
-from utils.depth_to_pc import Depth2PC
-from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
 from std_srvs.srv import Empty, EmptyRequest
 
@@ -20,15 +17,6 @@ import time
 class Restaurant:
     def __init__(self, agent):
         self.agent = agent
-        self.twist = Twist()
-        self.axis_transform = Axis_transform()
-        self.d2pc = Depth2PC() 
-        
-        self.min_dist = min_dist
-        self.unit_rad = unit_rad
-        self.center_index = center_index
-        self.yolo_img_height = yolo_img_height
-        self.yolo_img_width = yolo_img_width
         
         self.human_rad = None
 
@@ -41,7 +29,7 @@ class Restaurant:
         data_np = np.asarray(data.ranges)
         data_np[np.isnan(data_np)] = max_dist  # remove nans
         self.dists = data_np
-        self.indices_in_range = np.where(self.dists > self.min_dist)[0].tolist()
+        self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
 
     def _human_yolo_callback(self, data):
@@ -62,12 +50,13 @@ class Restaurant:
             self.human_box_list = [human_id, np.asarray([human_x, human_y, human_w, human_h], dtype=np.int64), target_score]
             
             human_center_x = human_x + human_w // 2
-            human_rad_in_cam = calculate_human_rad(human_center_x, self.yolo_img_width)
+            human_rad_in_cam = calculate_human_rad(human_center_x, yolo_img_width)
             print("self.human_rad_in_cam: ", human_rad_in_cam)
             
-            self.human_rad = human_rad_in_cam + self.get_head_pan()
+            # self.human_rad = human_rad_in_cam + self.get_head_pan()
+            self.human_rad = human_rad_in_cam
             print("self.human_rad: ",self.human_rad)
-            self.head_pan(self.human_rad)
+            # self.head_pan(self.human_rad)
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -84,8 +73,8 @@ class Restaurant:
                 end_idx = indices_in_range[i]
                 
             else:
-                start_rad = self.index_to_rad(start_idx)
-                end_rad = self.index_to_rad(end_idx)
+                start_rad = index_to_rad(start_idx)
+                end_rad = index_to_rad(end_idx)
                 avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
         
                 if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
@@ -94,8 +83,8 @@ class Restaurant:
                 start_idx = indices_in_range[i]
                 end_idx = indices_in_range[i]
 
-        start_rad = self.index_to_rad(start_idx)
-        end_rad = self.index_to_rad(end_idx)
+        start_rad = index_to_rad(start_idx)
+        end_rad = index_to_rad(end_idx)
         avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
 
         if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
@@ -107,15 +96,12 @@ class Restaurant:
     def move_rel(self, x, y, yaw=0):
         self.agent.move_rel(x, y, yaw=yaw)
         
-    def head_pan(self, head_pan_rad):
-        head_pan_deg = math.degrees(head_pan_rad)
-        self.agent.pose.head_pan(head_pan_deg)
+    # def head_pan(self, head_pan_rad):
+    #     head_pan_deg = math.degrees(head_pan_rad)
+    #     self.agent.pose.head_pan(head_pan_deg)
         
-    def get_head_pan(self):
-        return self.agent.pose.joint_value['head_pan_joint']
-        
-    def index_to_rad(self, idx):
-        return (idx - self.center_index) * self.unit_rad
+    # def get_head_pan(self):
+    #     return self.agent.pose.joint_value['head_pan_joint']
 
     def heuristic(self, start_rad, end_rad, avg_dist):
         avg_rad = (start_rad + end_rad) / 2
@@ -145,7 +131,7 @@ class Restaurant:
         
         move_x = move_dist * math.cos(avg_rad)
         move_y = move_dist * math.sin(avg_rad)
-        move_yaw = avg_rad
+        move_yaw = self.human_rad
         self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
@@ -162,6 +148,8 @@ def restaurant(agent):
             continue
 
         if not candidates:
+            r.move_rel(0, 0, yaw=math.pi)
+            moved_time = time.time()
             continue
             ## TODO ##
             ### If there is no candidate, what should we do? ###
