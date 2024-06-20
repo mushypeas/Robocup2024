@@ -41,6 +41,10 @@ class JointPose:
                 self.joint_value['wrist_flex_joint'] = data.position[i]
             if name == 'wrist_roll_joint':
                 self.joint_value['wrist_roll_joint'] = data.position[i]
+            if name == 'head_pan_joint':
+                self.joint_value['head_pan_joint'] = data.position[i]
+            if name == 'head_tilt_joint':
+                self.joint_value['head_tilt_joint'] = data.position[i]
 
     def check_grasp(self, threshold=-1.74):
         print('gripper_radian', self.gripper_radian)
@@ -720,7 +724,6 @@ class JointPose:
 
 
     def bag_inspection_pose(self):
-
         self.set_pose(['arm_lift_joint',
                        'arm_roll_joint',
                        'arm_flex_joint',

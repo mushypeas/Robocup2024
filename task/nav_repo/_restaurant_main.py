@@ -16,6 +16,8 @@ from module.person_following_bot.follow import HumanReidAndFollower
 from hsr_agent.agent import Agent
 from std_srvs.srv import Empty, EmptyRequest
 
+import math
+
 class Restaurant:
     def __init__(self, agent):
         #####jnpahk lidar callback#####
@@ -62,19 +64,12 @@ class Restaurant:
             w = data_list[3]
             h = data_list[4]
             self.center = [y + int(h/2), x + int(w/2)]
-            print(self.center)
-            head_yaw_60 = (self.center[1] - 320) * 60 / 640
-            self.human_yaw = head_yaw_60 * math.pi / 180
 
-            # depth = np.asarray(self.d2pc.depth)
+            human_rad_in_cam = (self.center[1] - self.W / 2) / 640
+            self.human_yaw = human_rad_in_cam + self.get_head_pan()
 
-            # twist, calc_z = self.follow(self.human_box_list, depth, self.center)
-            # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
-            
-            # self.human_yaw = target_xyyaw[2]
-            # human_yaw_60 = target_xyyaw[2] * 180 / math.pi
-            print("self.human_yaw: ", head_yaw_60)
-            self.agent.pose.head_pan(head_yaw_60)
+            print("self.human_yaw: ", self.human_yaw)
+            self.head_pan(self.human_yaw)
         
     def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
         twist = Twist()
@@ -97,7 +92,7 @@ class Restaurant:
         # else:
         # cropped_y = max(min(self.y + self.h // 3, self.H - 1), 0)
         # cropped_x = max(min(self.x + self.w // 2, self.W - 1), 0)
-        calc_x, calc_z = (self.x + self.w / 2), depth_frame[cropped_y, cropped_x]
+        calc_x, calc_z = (self.x + self.w // 2), depth_frame[cropped_y, cropped_x]
         if seg_human_point is not None : 
             calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
             if calc_z == 0:
@@ -187,6 +182,14 @@ class Restaurant:
     ## HELP Function 
     def move_rel(self, x, y, yaw=0):
         self.agent.move_rel(x, y, yaw=yaw)
+        
+    def head_pan(self, head_pan_rad):
+        head_pan_deg = math.degrees(head_pan_rad)
+        self.agent.pose.head_pan(head_pan_deg)
+        
+    def get_head_pan(self):
+        ### TODO ###
+        return self.agent.pose.joint_value
         
     def index_to_angle(self, idx):
         return (idx - self.center_index) * self.unit_angle
