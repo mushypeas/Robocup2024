@@ -11,19 +11,19 @@ class StoringGroceries:
 
         # Test params
         # Set everything to False for actual task
-        self.ignore_door = False
+        self.ignore_door = True
         self.picking_test_mode = False
         self.place_test_mode = False
         self.place_test_object_name = 'apple'
         self.place_test_object_type = 'fruit'
 
         self.prior_categories = ['fruit', 'food', 'dish']
-        self.ignore_items = ['dish', 'plate']
-        # self.item_list = ['tomato_soup', 'plum', 'apple', 'spam', 'mustard', 'knife', 'spoon', 'tennis_ball']
-        self.item_list = None
+        self.ignore_items = ['dish', 'plate', 'yello_bag', 'blue_bag']
+        self.item_list = ['mustard', 'apple', 'orange', 'blue_mug', 'blue_milk', 'pear', 'bowl']
+        # self.item_list = None
 
         # !!! Measured Distances !!!
-        self.dist_to_table = 0.9
+        self.dist_to_table = 0.865
         self.dist_to_shelf = 0.9
         self.place_dist = 0.07
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf_1f'][0] * 0.9
@@ -33,7 +33,7 @@ class StoringGroceries:
         self.pick_front_bias = [0.03, 0.00, -0.04] # [x, y, height]
         self.pick_top_bias = [0.03, 0, -0.015]
         self.pick_bowl_bias = [0.15, 0.04, -0.13]
-        self.place_x_bias = [None, -0.20, -0.10, 0.0]
+        self.place_x_bias = [None, -0.40, -0.20, 0.0]
 
         self.pick_table = 'grocery_table'
         self.table_height = self.agent.table_dimension[self.pick_table][2]
@@ -55,6 +55,7 @@ class StoringGroceries:
         self.shelf_head_angle = np.arctan(
             ((self.shelf_height[0] + self.shelf_height[1]) / 2 - 1.1) / self.dist_to_shelf # 1.1: HSR height
         )
+        print(f"shelf_head_angle: {self.shelf_head_angle}")
         self.shelf_item_dict = {}
 
         # [BONUS] shelf_open
@@ -179,10 +180,10 @@ class StoringGroceries:
             rospy.loginfo(f"Item center: {shelf_item_cent_x}, {shelf_item_cent_y}, {shelf_item_cent_z}")
 
         # 2. add new category in shelf_item_dict
-        rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         shelf_item_dict_keys = list(self.shelf_item_dict.keys())
         shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = self.shelf_item_dict[shelf_item_dict_keys[0]]['center']
         new_category_floor = self.shelf_item_dict[shelf_item_dict_keys[0]]['floor']
+        rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         self.shelf_item_dict['new'] = {
             'name': '-',
             'center': [shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z],

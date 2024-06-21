@@ -170,6 +170,7 @@ class YoloModule:
             class_name = self.find_name_by_id(class_id)
             if item_list is not None and class_name not in item_list:
                 rospy.logwarn(f"Ignoring {class_name}...")
+                pass
             start_x = cent_x - (width // 2)
             start_y = cent_y - (height // 2)
             object_pc = pc_np[start_y:start_y+height, start_x:start_x+width]
