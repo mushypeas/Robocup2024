@@ -1696,7 +1696,9 @@ def carry_my_luggage(agent):
 
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
-    agent.say("If you are arrived at the destination", show_display=True)
+    rospy.sleep(15)
+    agent.say("If you are arrived at the destination", 
+    show_display=True)
     rospy.sleep(3)
     agent.say("Please stand still.", show_display=True)
     rospy.sleep(2)

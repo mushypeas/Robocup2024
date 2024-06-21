@@ -104,7 +104,7 @@ class Agent:
         if is_sim:
             static_topic_name = '/static_obstacle_ros_map'
         else:
-            static_topic_name = '//static_obstacle_ros_map'
+            static_topic_name = '/static_obstacle_map_ref'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=3.0)
         # map meta-info
@@ -410,7 +410,7 @@ class Agent:
 
     # tts
     def say(self, sentence, show_display=False):
-        self.tts.say(sentence)
+        # self.tts.say(sentence)
         if show_display:
             self.head_show_text(sentence)
 
