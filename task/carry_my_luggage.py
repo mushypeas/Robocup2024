@@ -212,7 +212,7 @@ class HumanFollowing:
 
         morph = np.uint8(morph)
         canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
-        self.image_pub.publish(canny_img_msg)
+        # self.image_pub.publish(canny_img_msg)
 
 
     def _segment_cb(self, data):
@@ -232,7 +232,7 @@ class HumanFollowing:
         center = [y + int(h/2), x + int(w/2)] # (y,x)
 
 
-        print("center", center)
+        # print("center", center)
         # human_location = 'c'
         if location:
           
@@ -292,11 +292,11 @@ class HumanFollowing:
         _num_rotate=0
         y_top= 0
         _depth = self.barrier_check(y_top=y_top, x_var=320)
-        print("_depth shape: ", _depth.shape)
+        # print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
         _depth = _depth[_depth != 0]
-        print("_depth shape: ", _depth.shape)
+        # print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
             _depth = np.partition(_depth, min(10, len(_depth)))
             # if len(_depth) < 500:
@@ -308,10 +308,10 @@ class HumanFollowing:
             # _depth = np.min(_depth)
             masked_depth = np.ma.masked_equal(origin_depth, 0)
             min_index = np.argmin(masked_depth)
-            print("min_index : ", min_index)
+            # print("min_index : ", min_index)
             # 1차원 인덱스를 2차원 인덱스로 변환
             t = np.unravel_index(min_index, origin_depth.shape)
-            print("unravel_index(min_index, origin_depth.shape) :", t)
+            # print("unravel_index(min_index, origin_depth.shape) :", t)
             min_y, min_x = t
             # _depth = np.mean(self._depth)
             escape_radius = 0.2
@@ -352,10 +352,10 @@ class HumanFollowing:
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
                 left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
-                left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
+                # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
                 right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
-                right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
+                # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
                 # # _depth = np.mean(_depth)
@@ -364,41 +364,44 @@ class HumanFollowing:
                 # left_edge = np.mean(self.agent.ranges[self.agent.center_idx - 90: self.agent.center_idx - 0])
                 # right_edge = np.mean(self.agent.ranges[self.agent.center_idx + 0: self.agent.center_idx + 90])
 
-                if left_edge_background_count > 2000 or right_edge_background_count > 2000:
-                    self.agent.say('Barrier checking....', show_display=False)
-                    print("Barrier checking....")
-                    
-                    if left_background_count > right_background_count + 30:
-                        print("left side is empty")
-                        self.agent.move_rel(0.0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
-                        rospy.sleep(0.5)
-                        # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
-                        # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                    elif left_background_count + 30 < right_background_count:
-                        print("right side is empty")
-                        self.agent.move_rel(0.0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
-                        rospy.sleep(0.5)
-                        # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
-                        # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
-                    else: # ambigous
-                        rospy.sleep(1.0)
-                        self.agent.say('ambigous....', show_display=False)
-                        print("ambigous")
-                        self.agent.move_rel(-1.0,0,0, wait=False)
-                        rospy.sleep(1.0)
+                # if left_edge_background_count > 2000 or right_edge_background_count > 2000:
+                self.agent.say('Barrier checking....', show_display=False)
+                print("Barrier checking....")
+                
+                if left_background_count > right_background_count :
+                    print("left side is empty")
+                    self.agent.move_rel(0.0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
+                    rospy.sleep(0.5)
+                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
+                elif left_background_count  < right_background_count:
+                    print("right side is empty")
+                    self.agent.move_rel(0.0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
+                    rospy.sleep(0.5)
+                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
+                # else: # ambigous
+                #     rospy.sleep(1.0)
+                #     self.agent.say('ambigous....', show_display=False)
+                #     print("ambigous")
+                #     self.agent.move_rel(-1.0,0,0, wait=False)
+                #     rospy.sleep(1.0)
 
             
-            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 240 : self.agent.center_dix - 100])
-            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 100 : self.agent.center_dix + 240])
-            if (np.mean(left_lidar + right_lidar) < thres ) and \
-            (self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
+            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 360 : self.agent.center_idx ])
+            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx : self.agent.center_idx + 360])
+            print("left_lidar : ", left_lidar)
+            print("right_lidar : ", right_lidar)
+            print("thres : ", thres)
+            if (left_lidar < thres or right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
                 
                 print("Lidar BARRIER")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if left_lidar > 2 or right_lidar > 2 :
+                if left_lidar > 1 or right_lidar > 1 :
                     if left_lidar > right_lidar : 
                         self.agent.move_rel(0.0,0.8,0, wait=False)
                         rospy.sleep(0.5)
@@ -510,11 +513,11 @@ class HumanFollowing:
         _num_rotate=0
         y_top= 40
         _depth = self.barrier_check(check_human=False, y_top=y_top)
-        print("_depth shape: ", _depth.shape)
+        # print("_depth shape: ", _depth.shape)
         origin_depth = _depth
         # _depth = np.mean(_depth)
         _depth = _depth[_depth != 0]
-        print("_depth shape: ", _depth.shape)
+        # print("_depth shape: ", _depth.shape)
         if len(_depth) != 0:
             _depth = np.partition(_depth, min(1000, len(_depth)))
             if len(_depth) < 500:
@@ -526,10 +529,10 @@ class HumanFollowing:
             # _depth = np.min(_depth)
             masked_depth = np.ma.masked_equal(origin_depth, 0)
             min_index = np.argmin(masked_depth)
-            print("min_index : ", min_index)
+            # print("min_index : ", min_index)
             # 1차원 인덱스를 2차원 인덱스로 변환
             t = np.unravel_index(min_index, origin_depth.shape)
-            print("unravel_index(min_index, origin_depth.shape) :", t)
+            # print("unravel_index(min_index, origin_depth.shape) :", t)
             min_y, min_x = t
             # _depth = np.mean(self._depth)
             escape_radius = 0.2
@@ -538,7 +541,7 @@ class HumanFollowing:
             #     depth = np.asarray(self.d2pc.depth)
             #     twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
 
-            rospy.loginfo(f"rect depth min : {_depth}")
+            # rospy.loginfo(f"rect depth min : {_depth}")
             # rospy.loginfo(f"rect depth excetp 0 min : {_depth_value_except_0.min}")
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
             #and np.mean(_depth)< (calc_z-100)
@@ -558,9 +561,9 @@ class HumanFollowing:
 
                 depth = self.agent.depth_image
 
-                seg_img = self.seg_img
-                height, width = seg_img.shape
-                mid_x = width // 2
+                # seg_img = self.seg_img
+                # height, width = seg_img.shape
+                mid_x = 320
                 # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
@@ -641,7 +644,7 @@ class HumanFollowing:
 
         if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None and self.tiny_object_yolo is not None :
             last_calc_z = self.calcz_queue[-1]
-            print("canny last calc_z: ", last_calc_z)
+            # print("canny last calc_z: ", last_calc_z)
             # self.dist = np.min(self.agent.ranges[self.agent.center_idx - 90: self.agent.center_idx + 90])
 
             # yolo_item_y_largest_idx = self.yolo_item_y_largest_idx
@@ -651,9 +654,9 @@ class HumanFollowing:
 
                 depth = self.agent.depth_image
 
-                seg_img = self.seg_img
-                height, width = seg_img.shape
-                mid_x = width // 2
+                # seg_img = self.seg_img
+                # height, width = seg_img.shape
+                mid_x = 320
 
                 left_background_count = np.mean(depth[100-20:100+20, :x])
                 print("left_background_count", left_background_count)
@@ -732,10 +735,9 @@ class HumanFollowing:
 
             depth = self.agent.depth_image
 
-            seg_img = self.seg_img
-            height, width = seg_img.shape
-            mid_x = width // 2
-
+            # seg_img = self.seg_img
+            # height, width = seg_img.shape
+            mid_x = 320
             left_background_count = np.mean(depth[100-20:100+20, :mid_x])
             print("left_background_count", left_background_count)
             right_background_count = np.mean(depth[100-20:100+20, mid_x:])
@@ -890,8 +892,8 @@ class HumanFollowing:
         # if calc_z > _depth * 1000 + 100:
         #     calc_z = _depth * 1000 + 100
         # print("np.mean(self.calcz_queue)", np.mean(self.calcz_queue))
-        print("calc_z", calc_z)
-        print("calcz_queue : ", self.calcz_queue)
+        # print("calc_z", calc_z)
+        # print("calcz_queue : ", self.calcz_queue)
         if calc_z > np.mean(self.calcz_queue) + 500:
             calc_z = _depth * 1000
             self.calcz_queue.append(calc_z)
@@ -1716,7 +1718,7 @@ def carry_my_luggage(agent):
 
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
-    rospy.sleep(15)
+    # rospy.sleep(15)
     agent.say("If you are arrived at the destination", 
     show_display=True)
     rospy.sleep(3)

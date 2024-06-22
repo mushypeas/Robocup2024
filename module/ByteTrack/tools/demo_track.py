@@ -164,11 +164,12 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
     print('human_id: ', human_id)
     # tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
-    if frame_id < 10000 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
+    if frame_id < 1000 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
         height, width, _ = ros_img.shape
         bar_width = width // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
-        ros_img[:120, :bar_width] = 0
-        ros_img[:120, -bar_width:] = 0
+        ros_img[:, :bar_width] = 0
+        ros_img[:, -bar_width:] = 0
+        ros_img[:120, :] = 0
 
     outputs, img_info = predictor.inference(ros_img, timer)
     found_prev_human = False
