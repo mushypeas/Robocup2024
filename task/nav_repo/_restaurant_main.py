@@ -14,6 +14,7 @@ from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
 from module.person_following_bot.follow import HumanReidAndFollower
 from hsr_agent.agent import Agent
+from std_srvs.srv import Empty, EmptyRequest
 
 class Restaurant:
     def __init__(self, agent):
@@ -22,22 +23,26 @@ class Restaurant:
         self.dist_thres = dist_thres
         self.unit_angle = 0.25 * ( math.pi / 180 )
         self.center_index = 481
+        self.H = 480
+        self.W = 640
         self.twist = Twist()
         self.axis_transform = Axis_transform()
         self.agent = Agent()
         self.d2pc = Depth2PC() # to depth
+        self.human_yaw = 0
 
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
         self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
+        rest_clinet = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
+        rest_clinet.call(EmptyRequest())
+
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
         data_np[np.isnan(data_np)] = 5.0  # remove nans
         dist = data_np
         self.pathpoint = np.where(dist > self.dist_thres)[0].tolist()
-        print("Pathpoint: ", self.pathpoint)
         self.path_list = self.find_angles()
-        print("Path List: ", self.path_list)
 
     def _human_yolo_callback(self, data):
 
@@ -54,15 +59,19 @@ class Restaurant:
             w = data_list[3]
             h = data_list[4]
             self.center = [y + int(h/2), x + int(w/2)]
+            print(self.center)
+            head_yaw_60 = (self.center[1] - 320) * 60 / 640
+            self.human_yaw = head_yaw_60 * math.pi / 180
 
-            depth = np.asarray(self.d2pc.depth)
+            # depth = np.asarray(self.d2pc.depth)
 
-            twist, calc_z = self.follow(self.human_box_list, depth, self.center)
-            target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+            # twist, calc_z = self.follow(self.human_box_list, depth, self.center)
+            # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             
-            self.human_yaw = target_xyyaw[2] * 180 / math.pi
-
-            self.agent.pose.head_pan(self.human_yaw)
+            # self.human_yaw = target_xyyaw[2]
+            # human_yaw_60 = target_xyyaw[2] * 180 / math.pi
+            print("self.human_yaw: ", head_yaw_60)
+            self.agent.pose.head_pan(head_yaw_60)
             
 
     def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
@@ -91,7 +100,7 @@ class Restaurant:
             calc_z = depth_frame[seg_human_point[1], seg_human_point[0]]
             if calc_z == 0:
                 calc_z = depth_frame[cropped_y, cropped_x]
-        calc_z *= np.cos(self.tilt_angle)
+        # calc_z *= np.cos(self.tilt_angle)
         self.calc_z_prev = calc_z
         # twist = get_controls(calc_x, calc_z, Kp_l=1/5, Ki_l=0, Kd_l=0.1, Kp_a=-1/500, Ki_a=0, Kd_a=0,
         # 					 linear_max=self.linear_max, angular_max=self.angular_max)
@@ -165,21 +174,24 @@ class Restaurant:
 
                 start_angle = self.index_to_angle(start_idx)
                 end_angle = self.index_to_angle(end_idx)
+                
+                if end_angle - start_angle > interval_min_angle:
+                    segments.append([start_angle, end_angle])
 
-                segments.append([start_angle, end_angle])
                 start_idx = lst[i]
                 end_idx = lst[i]
 
         start_angle = self.index_to_angle(start_idx)
         end_angle = self.index_to_angle(end_idx)
 
-        segments.append([start_angle, end_angle])
+        if end_angle - start_angle > interval_min_angle:
+            segments.append([start_angle, end_angle])
 
         return segments
 
     ## HELP Function 
-    def move_abs(self, x, y, yaw=0):
-        self.agent.move_abs(x, y, yaw)
+    def move_rel(self, x, y, yaw=0):
+        self.agent.move_rel(x, y, yaw=yaw)
 
     def heuristic(self, start, end):
         avg_angle = (start + end) / 2
@@ -197,7 +209,8 @@ class Restaurant:
         avg_angle = (interval[0] + interval[1]) / 2
         move_x = move_dis * math.cos(avg_angle)
         move_y = move_dis * math.sin(avg_angle)
-        self.move_abs(move_x, move_y)
+        move_yaw = avg_angle
+        self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
     r = Restaurant(agent)
@@ -208,7 +221,7 @@ def restaurant(agent):
         except AttributeError:
             continue
 
-        print("Candidates: ", candidates)
+        print("candidates: ", candidates)
 
         if not candidates:
             continue
@@ -219,9 +232,10 @@ def restaurant(agent):
         while not best_interval:
             best_interval = r.find_best_move(candidates)
 
-        print("Best Interval: ", best_interval)
-
         r.move_based_on_interval(best_interval)
+        rospy.sleep(2.)
+
+    
 
 
     
