@@ -1,32 +1,47 @@
-import rospy
-from std_msgs.msg import Int16MultiArray, String
-from cv_bridge import CvBridge
-from message_filters import ApproximateTimeSynchronizer  
-from message_filters import Subscriber as sub
-
 import sys
+import time
+import copy
+import subprocess
+import cv2
+import mediapipe as mp
+import numpy as np
+from collections import deque
+from sklearn.preprocessing import StandardScaler
+
+import rospy
+from std_msgs.msg import Int16MultiArray, String, ColorRGBA
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+from message_filters import ApproximateTimeSynchronizer
+from message_filters import Subscriber as sub
+from visualization_msgs.msg import Marker
+from geometry_msgs.msg import Point
+from std_srvs.srv import Empty, EmptyRequest
+import dynamic_reconfigure.client
+
 sys.path.append('.')
 from utils.depth_to_pc import Depth2PC
 from utils.axis_transform import Axis_transform
 from hsr_agent.agent import Agent
 from utils.marker_maker import MarkerMaker
 from module.person_following_bot.follow import HumanReidAndFollower
-import time
-from std_srvs.srv import Empty, EmptyRequest
-from sensor_msgs.msg import Image
-import copy
-import dynamic_reconfigure.client
-import cv2
-import mediapipe as mp
-import numpy as np
-from collections import deque
-from visualization_msgs.msg import Marker
-from geometry_msgs.msg import Point
-from std_msgs.msg import ColorRGBA
-import time
-from sklearn.preprocessing import StandardScaler
-import subprocess
 
+#################
+
+# - 기본적으로 bytetrack에서 계산한 사람 bbox 중심까지의 depth를 보고 내분점을 따라감
+
+# - Baginspection : bag 2회 grasp 시도, 실패하면 직접 pass 요청
+
+# - barrier, unseen object : 두가지로 구분, depth camera로 봤을 때 사람보다 가까운 pc mass가 있거나, lidar로 봤을 때 사람보다 가까운 wide wall이 있거나
+#     - detph mass는 해당 지점 x축을 봤을 때 왼쪽 / 오른쪽 중 평균 depth가 더 먼 곳으로 base_link y방향 직선 상 회피 
+#     - lidar wall은 lidar 중심 기준 평균 depth가 더 먼 각도 방향으로 base_link y방향 직선 상 회피
+
+# - tiny object : canny edge detection 결과와 yolo detection 결과가 중첩되면 tiny object로 판단 후 회피 
+
+# - 복귀는 path queue를 그대로 역주행, segmentation 모델을 보고 사람(value=15)이 가까이 있으면 일단 정지 후 대기
+
+
+#################
 
 class HumanFollowing:
     def __init__(self, agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option):
@@ -101,7 +116,7 @@ class HumanFollowing:
         #                                                 "obstacle_radius": 0.25,
         #                                                 "obstacle_occupancy": 80
         #                                                 })
-        stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
+        stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty) ## 주행 시 head 고정, 어차피 말 안들으니 head pan 쓰지 않음
         stop_client.call(EmptyRequest())
 
     def _byte_cb(self, data):
@@ -110,8 +125,8 @@ class HumanFollowing:
         h, w, c = img.shape
         self.image_size = h * w
         self.image_shape = (h, w)
-        if self.show_byte_track_image:
-            bar_width = w // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
+        if self.show_byte_track_image: # 
+            bar_width = w // 4 ## jnpahk head_display 상에서 사람 중앙으로 유도하기 위함
             img[:, :bar_width] = 0
             img[:, -bar_width:] = 0
             self.agent.head_display_image_pubish(img)
@@ -135,18 +150,11 @@ class HumanFollowing:
         sorted_data = sorted(filtered_data, key = lambda x: x[0])
         sorted_arr = [item for sublist in sorted_data for item in sublist]
 
-        yolo_x_list = []
-        yolo_y_list = []
+        yolo_x_list = [sorted_arr[6 * idx] for idx in range(len(sorted_arr) // 6)]
+        yolo_y_list = [sorted_arr[6 * idx + 1] for idx in range(len(sorted_arr) // 6)]
 
 
-        for idx in range(len(sorted_arr) // 6):
-            item = sorted_arr[6 * idx: 6 * (idx + 1)]
-            x, y, w, h, class_id, conf_percent = item
-            yolo_x_list.append(x)
-            yolo_y_list.append(y)
-
-
-        if len(yolo_y_list) != 0:
+        if yolo_y_list:
             yolo_item_y_largest_idx = np.argmax(yolo_y_list)
             self.tiny_object_yolo = (yolo_x_list[yolo_item_y_largest_idx], yolo_y_list[yolo_item_y_largest_idx])
 
@@ -160,19 +168,16 @@ class HumanFollowing:
         data_list = data.data
         if data_list[0] == -1:
             self.human_box_list = [None]
-            print("There is no human box")
-            print("There is no human box")
-            print("There is no human box")
-            print("There is no human box")
-            print("There is no human box")
+            rospy.loginfo("There is no human box")
+
 
         else:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
-                                  np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
+                                  np.asarray(data_list[1:5], dtype=np.int64),
                                   data_list[5]]
 
 
-    def _rgb_callback(self, data): ## tiny_object_edge 검출 용
+    def _rgb_callback(self, data): ## jnpahk tiny_object_edge 검출 용
         frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         edges = cv2.Canny(gray, 100, 150)
@@ -207,15 +212,16 @@ class HumanFollowing:
 
         self.contours = contours
 
-        morph = cv2.bitwise_not(morph)
+        ###########확인용 publish#########
+        # morph = cv2.bitwise_not(morph)
 
 
-        morph = np.uint8(morph)
-        canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        # morph = np.uint8(morph)
+        # canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
         # self.image_pub.publish(canny_img_msg)
 
 
-    def _segment_cb(self, data):
+    def _segment_cb(self, data): #jnpahk
 
         #######################seg는 back때만 사용
         depth = np.asarray(self.agent.depth_image)
@@ -225,10 +231,7 @@ class HumanFollowing:
 
 
     def check_human_pos(self, human_box_list, location=False):
-        x = human_box_list[1][0]
-        y = human_box_list[1][1]
-        w = human_box_list[1][2]
-        h = human_box_list[1][3]
+        x, y, w, h = human_box_list[1]
         center = [y + int(h/2), x + int(w/2)] # (y,x)
 
 
@@ -390,9 +393,9 @@ class HumanFollowing:
             
             right_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 360 : self.agent.center_idx ])
             left_lidar = np.mean(self.agent.ranges[self.agent.center_idx : self.agent.center_idx + 360])
-            print("left_lidar : ", left_lidar)
-            print("right_lidar : ", right_lidar)
-            print("thres : ", thres)
+            # print("left_lidar : ", left_lidar)
+            # print("right_lidar : ", right_lidar)
+            # print("thres : ", thres)
             if (left_lidar < thres or right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
                 
@@ -409,7 +412,9 @@ class HumanFollowing:
                         self.agent.move_rel(0.0,-0.4,0, wait=False)
                         rospy.sleep(0.5)
 
-    
+        else:
+            self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=False)
+            rospy.sleep(3)
 
        ################################################################
 
