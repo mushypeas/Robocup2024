@@ -7,6 +7,8 @@ import numpy as np
 from geometry_msgs.msg import Twist
 import math
 
+from std_msgs.msg import Int16MultiArray
+
 from utils.depth_to_pc import Depth2PC
 from utils.axis_transform import Axis_transform
 from sensor_msgs.msg import LaserScan
@@ -67,21 +69,21 @@ class Restaurant:
         pass
 
 
-	def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
-		twist = Twist()
-		human_id, target_tlwh, target_score = human_info_ary
-		(self.x, self.y, self.w, self.h) = [int(v) for v in target_tlwh]
-		if self.y < 0:
-			self.y = 0
-		if self.y >= self.H:
-			self.y = self.H-1
-		if self.x < 0:
-			self.x = 0
-		if self.x >= self.W:
-			self.x = self.W-1
+    def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
+        twist = Twist()
+        human_id, target_tlwh, target_score = human_info_ary
+        (self.x, self.y, self.w, self.h) = [int(v) for v in target_tlwh]
+        if self.y < 0:
+            self.y = 0
+        if self.y >= self.H:
+            self.y = self.H-1
+        if self.x < 0:
+            self.x = 0
+        if self.x >= self.W:
+            self.x = self.W-1
 
-		# cv2.rectangle(frame, (x, y), (x + w, y + h),(0, 255, 0), 2)
-		calc_z = 0.0
+        # cv2.rectangle(frame, (x, y), (x + w, y + h),(0, 255, 0), 2)
+        calc_z = 0.0
         # if self.tilt_angle < math.radians(10):
         cropped_y = max(min(self.y + self.h//4, self.H-1), 0)
         cropped_x = max(min(self.x + self.w//2, self.W-1), 0)
@@ -111,8 +113,8 @@ class Restaurant:
         twist.angular.y = 0
         twist.angular.z = angular
 
-		return twist, calc_z
-		
+        return twist, calc_z
+        
 
     def calculate_twist_to_human(self, twist, calc_z):
         ######TODO#################
