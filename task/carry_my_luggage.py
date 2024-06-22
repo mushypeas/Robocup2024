@@ -327,7 +327,7 @@ class HumanFollowing:
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
             thres = calc_z/ 1000.0 -0.4
-            if (calc_z!=0 and _depth < 1.0 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 0.5 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -370,13 +370,13 @@ class HumanFollowing:
                 
                 if left_background_count > right_background_count :
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.8,0, wait=False) #then, HSR is intended to move left (pos)
+                    self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
                     rospy.sleep(0.5)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                 elif left_background_count  < right_background_count:
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.8,0, wait=False) #then, HSR is intended to move right (neg)
+                    self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
                     rospy.sleep(0.5)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -388,8 +388,8 @@ class HumanFollowing:
                 #     rospy.sleep(1.0)
 
             
-            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 360 : self.agent.center_idx ])
-            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx : self.agent.center_idx + 360])
+            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 360 : self.agent.center_idx ])
+            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx : self.agent.center_idx + 360])
             print("left_lidar : ", left_lidar)
             print("right_lidar : ", right_lidar)
             print("thres : ", thres)
@@ -401,12 +401,12 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if left_lidar > 1 or right_lidar > 1 :
+                if left_lidar > 0.5 or right_lidar > 0.5 :
                     if left_lidar > right_lidar : 
-                        self.agent.move_rel(0.0,0.8,0, wait=False)
+                        self.agent.move_rel(0.0,0.4,0, wait=False)
                         rospy.sleep(0.5)
                     else:
-                        self.agent.move_rel(0.0,-0.8,0, wait=False)
+                        self.agent.move_rel(0.0,-0.4,0, wait=False)
                         rospy.sleep(0.5)
 
     
@@ -617,7 +617,7 @@ class HumanFollowing:
 
 
 
-        seg_img = self.seg_img[:, :]
+        # seg_img = self.seg_img[:, :]
 
         # Create a mask for depth values greater than 0 and seg_img equal to 15
         # human_mask = (seg_img == 15)
