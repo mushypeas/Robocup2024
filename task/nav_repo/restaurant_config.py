@@ -7,7 +7,7 @@ avg_dist_move_dist_ratio = 5
 
 def calculate_human_rad(human_center_x, yolo_img_width):
     human_center_bias = human_center_x - yolo_img_width / 2
-    return human_center_bias / 640
+    return -human_center_bias / 640
 
 def index_to_rad(idx):
     return (idx - center_index) * unit_rad

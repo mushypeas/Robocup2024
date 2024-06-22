@@ -51,7 +51,6 @@ class Restaurant:
             
             human_center_x = human_x + human_w // 2
             human_rad_in_cam = calculate_human_rad(human_center_x, yolo_img_width)
-            print("self.human_rad_in_cam: ", human_rad_in_cam)
             
             # self.human_rad = human_rad_in_cam + self.get_head_pan()
             self.human_rad = human_rad_in_cam
@@ -75,20 +74,20 @@ class Restaurant:
             else:
                 start_rad = index_to_rad(start_idx)
                 end_rad = index_to_rad(end_idx)
-                avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
+                min_dist = min(self.dists[start_idx:end_idx + 1])
         
-                if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
-                    segments.append([start_rad, end_rad, avg_dist])
+                if (end_rad - start_rad) * min_dist > min_interval_arc_len:
+                    segments.append([start_rad, end_rad, min_dist])
 
                 start_idx = indices_in_range[i]
                 end_idx = indices_in_range[i]
 
         start_rad = index_to_rad(start_idx)
         end_rad = index_to_rad(end_idx)
-        avg_dist = (self.dists[start_idx] + self.dists[end_idx]) / 2
+        min_dist = min(self.dists[start_idx:end_idx + 1])
 
-        if (end_rad - start_rad) * avg_dist > min_interval_arc_len:
-            segments.append([start_rad, end_rad, avg_dist])
+        if (end_rad - start_rad) * min_dist > min_interval_arc_len:
+            segments.append([start_rad, end_rad, min_dist])
 
         return segments
 
@@ -162,8 +161,6 @@ def restaurant(agent):
 
         while not best_interval:
             best_interval = r.get_best_candidate(candidates)
-
-        print("best_interval", best_interval)
         
         r.move_best_interval(best_interval)
 
