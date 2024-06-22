@@ -13,6 +13,7 @@ from std_srvs.srv import Empty, EmptyRequest
 
 import math
 import time
+import os
 
 class Restaurant:
     def __init__(self, agent):
