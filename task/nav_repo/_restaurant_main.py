@@ -19,8 +19,6 @@ class Restaurant:
     def __init__(self, agent):
         #####jnpahk lidar callback#####
         self.agent = agent
-        self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
         self.dist_thres = dist_thres
         self.unit_angle = 0.25 * ( math.pi / 180 )
         self.center_index = 481
@@ -29,13 +27,17 @@ class Restaurant:
         self.agent = Agent()
         self.d2pc = Depth2PC() # to depth
 
+        self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
+        self.byte_sub = rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_callback)
+
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
         data_np[np.isnan(data_np)] = 5.0  # remove nans
         dist = data_np
-        pathpoint = np.where(dist < self.dist_thres)[0].tolist()
-        self.path_list = self.find_segments(pathpoint)
-
+        self.pathpoint = np.where(dist > self.dist_thres)[0].tolist()
+        print("Pathpoint: ", self.pathpoint)
+        self.path_list = self.find_angles()
+        print("Path List: ", self.path_list)
 
     def _human_yolo_callback(self, data):
 
@@ -58,16 +60,10 @@ class Restaurant:
             twist, calc_z = self.follow(self.human_box_list, depth, self.center)
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             
-            self.haman_yaw = target_xyyaw[2] * 180 / math.pi
+            self.human_yaw = target_xyyaw[2] * 180 / math.pi
 
-            self.agent.pose.head_pan(self.haman_yaw)
+            self.agent.pose.head_pan(self.human_yaw)
             
-
-    def _destination_callback(self, data):
-        self.destination_angle = None
-        ## TODO ##
-        pass
-
 
     def follow(self, human_info_ary, depth_frame, seg_human_point): # yolo box: list of bbox , frame : img
         twist = Twist()
@@ -153,7 +149,7 @@ class Restaurant:
         return (idx - self.center_index) * self.unit_angle
 
     def find_angles(self):
-        lst = self.path_list
+        lst = self.pathpoint
 
         if not lst:
             return []
@@ -170,16 +166,14 @@ class Restaurant:
                 start_angle = self.index_to_angle(start_idx)
                 end_angle = self.index_to_angle(end_idx)
 
-                segments.append(start_angle)
-                segments.append(end_angle)
+                segments.append([start_angle, end_angle])
                 start_idx = lst[i]
                 end_idx = lst[i]
 
         start_angle = self.index_to_angle(start_idx)
         end_angle = self.index_to_angle(end_idx)
 
-        segments.append(start_angle)
-        segments.append(end_angle)
+        segments.append([start_angle, end_angle])
 
         return segments
 
@@ -189,10 +183,12 @@ class Restaurant:
 
     def heuristic(self, start, end):
         avg_angle = (start + end) / 2
-        return -abs(avg_angle - self.destination_angle)
+        return -abs(avg_angle - self.human_yaw)
 
     def find_best_move(self, candidates):
         heuristic_values = [self.heuristic(start, end) for start, end in candidates]
+        if not heuristic_values:
+            return None
         best_idx = np.argmax(heuristic_values)
         return candidates[best_idx]
     
@@ -204,16 +200,26 @@ class Restaurant:
         self.move_abs(move_x, move_y)
 
 def restaurant(agent):
-    r = Restaurant()
+    r = Restaurant(agent)
 
     while not rospy.is_shutdown():
-        candidates = r.find_angles()
+        try:
+            candidates = r.path_list
+        except AttributeError:
+            continue
+
+        print("Candidates: ", candidates)
 
         if not candidates:
-            pass
+            continue
             ## TODO ##
 
         best_interval = r.find_best_move(candidates)
+
+        while not best_interval:
+            best_interval = r.find_best_move(candidates)
+
+        print("Best Interval: ", best_interval)
 
         r.move_based_on_interval(best_interval)
 
