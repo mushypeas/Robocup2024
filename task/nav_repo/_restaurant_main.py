@@ -15,6 +15,7 @@ from sensor_msgs.msg import LaserScan
 from std_srvs.srv import Empty, EmptyRequest
 
 import math
+import time
 
 class Restaurant:
     def __init__(self, agent):
@@ -45,6 +46,8 @@ class Restaurant:
 
     def _human_yolo_callback(self, data):
         data_list = data.data
+
+        print("byte", data_list)
         
         if data_list[0] == -1:
             self.human_box_list = [None]
@@ -62,8 +65,10 @@ class Restaurant:
             
             human_center = [y + h // 2, x + w // 2]
             human_rad_in_cam = calculate_human_rad(human_center[1], self.yolo_img_width)
+            print("self.human_rad_in_cam: ", human_rad_in_cam)
             
             self.human_rad = human_rad_in_cam + self.get_head_pan()
+            print("self.human_rad: ",self.human_rad)
             self.head_pan(self.human_rad)
 
     def find_angles(self):
@@ -140,14 +145,16 @@ class Restaurant:
 
 def restaurant(agent):
     r = Restaurant(agent)
+    moved_time = time.time()
 
     while not rospy.is_shutdown():
+        if time.time() - moved_time < 1:
+            continue
+
         try:
             candidates = r.path_list
         except AttributeError:
             continue
-
-        print("candidates: ", candidates)
 
         if not candidates:
             continue
@@ -158,8 +165,11 @@ def restaurant(agent):
         while not best_interval:
             best_interval = r.find_best_move(candidates)
 
+        print("best_interval", best_interval)
+        
         r.move_based_on_interval(best_interval)
-        rospy.sleep(2.)
+
+        moved_time = time.time()
 
     
 
