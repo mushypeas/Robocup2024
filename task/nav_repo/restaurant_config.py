@@ -1,2 +1,1 @@
-dist_thres = 2
-angular_range = 135
+dist_thres = 1
