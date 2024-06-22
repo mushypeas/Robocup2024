@@ -131,7 +131,10 @@ class Restaurant:
         
         move_x = move_dist * math.cos(avg_rad)
         move_y = move_dist * math.sin(avg_rad)
-        move_yaw = self.human_rad
+        if self.human_rad:
+            move_yaw = self.human_rad
+        else:
+            move_yaw = 0
         self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
