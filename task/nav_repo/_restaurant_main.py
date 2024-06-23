@@ -94,7 +94,7 @@ class Restaurant:
 
     ## HELP Function 
     def move_rel(self, x, y, yaw=0):
-        self.agent.move_rel(x, y, yaw=yaw)
+        self.move.move_rel(x, y, yaw=yaw)
 
     def heuristic(self, start_rad, end_rad, avg_dist):
         avg_rad = (start_rad + end_rad) / 2
@@ -171,6 +171,8 @@ def restaurant(agent):
             candidates = r.candidates
         except AttributeError:
             continue
+
+        print("candidates: ", candidates)
 
         if not candidates:
             r.move_rel(0, 0, yaw=math.pi)
