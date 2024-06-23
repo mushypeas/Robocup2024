@@ -35,7 +35,7 @@ class MoveBaseStandalone:
         # rospy.wait_for_service('/reset_map')
 
     def move_zero(self, agent):
-        self.base_action_client.wait_for_server()
+        self.base_action_client.wait_for_server(timeout=2)
         goal = MoveBaseGoal()
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()
@@ -281,20 +281,22 @@ def restaurant(agent):
                 agent.say('Please say items you like to order in proper format after the ding sound')
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
-                result = agent.stt(5.)
-                raw, item_parsed = result
+                # result = agent.stt(5.)
+                # raw, item_parsed = result
+                item_parsed = 'apple'
                 if len(item_parsed) == 0:
                     agent.say('I am sorry that I could not recognize what you said. Please answer me again.')
                     agent.head_show_image('STT Fail')
                     rospy.sleep(6.)
                     continue
-                rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
+                # rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
                 agent.head_show_text(f'{item_parsed}')
                 rospy.sleep(1.)
                 agent.say('Is this your order? Please say Yes or No to confirm after the ding sound')
 
                 rospy.sleep(6.)
-                _, confirm_parsed = agent.stt(3.)
+                # _, confirm_parsed = agent.stt(3.)
+                confirm_parsed = 'yes'
                 if confirm_parsed != 'yes':
                     agent.say('I am sorry that I misunderstand your order. Please answer me again.')
                     agent.head_show_text('Speech Recognition Failed!')
