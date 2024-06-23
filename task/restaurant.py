@@ -38,7 +38,7 @@ class MoveBaseStandalone:
         self.base_action_client.wait_for_server(timeout=2)
         goal = MoveBaseGoal()
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        pose.headegir.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(0, 0, 0)
         pose.pose.orientation = Quaternion(0, 0, 0, 1)
