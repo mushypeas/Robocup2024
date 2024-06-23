@@ -326,8 +326,8 @@ class HumanFollowing:
             #and np.mean(_depth)< (calc_z-100)
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
-            thres = calc_z/ 1000.0 -0.4
-            if (calc_z!=0 and _depth < 0.5 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            thres = calc_z/ 1000.0 -0.3
+            if (calc_z!=0 and _depth < 0.7 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -401,7 +401,7 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if left_lidar > 0.5 or right_lidar > 0.5 :
+                if left_lidar > 0.7 or right_lidar > 0.7 :
                     if left_lidar > right_lidar : 
                         self.agent.move_rel(0.0,0.4,0, wait=False)
                         rospy.sleep(0.5)
