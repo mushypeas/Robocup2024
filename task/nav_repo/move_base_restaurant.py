@@ -11,6 +11,7 @@ class MoveBaseRestaurant:
         self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
         self.base_action_client.wait_for_server(timeout=2)
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
+        self.listener = tf.TransformListener()
         
     def get_pose(self):
         while not rospy.is_shutdown():

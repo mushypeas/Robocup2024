@@ -19,7 +19,6 @@ from move_base_restaurant import MoveBaseRestaurant
 class Restaurant:
     def __init__(self, agent):
         self.agent = agent
-        self.move = MoveBaseRestaurant()
         
         self.human_rad = None
 
@@ -56,7 +55,6 @@ class Restaurant:
             human_rad_in_cam = calculate_human_rad(human_center_x, yolo_img_width)
             
             self.human_rad = human_rad_in_cam
-            print("self.human_rad: ",self.human_rad)
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -77,8 +75,20 @@ class Restaurant:
                 end_rad = index_to_rad(end_idx)
                 min_dist = min(self.dists[start_idx:end_idx + 1])
         
-                if (end_rad - start_rad) * min_dist > min_interval_arc_len:
-                    segments.append([start_rad, end_rad, min_dist])
+                interval_arc_len = (end_rad - start_rad) * min_dist
+
+                if interval_arc_len > min_interval_arc_len:
+                    number_seg = int(interval_arc_len / min_interval_arc_len)
+                    idx_len = end_idx - start_idx
+
+                    for j in range(number_seg):
+                        new_start_idx = start_idx + int(idx_len * j / number_seg)
+                        new_end_idx = start_idx + int(idx_len * (j + 1) / number_seg)
+                        new_min_dist = min(self.dists[new_start_idx:new_end_idx + 1])
+                        new_start_rad = index_to_rad(new_start_idx)
+                        new_end_rad = index_to_rad(new_end_idx)
+
+                        segments.append([new_start_rad, new_end_rad, new_min_dist])
 
                 start_idx = indices_in_range[i]
                 end_idx = indices_in_range[i]
@@ -87,14 +97,27 @@ class Restaurant:
         end_rad = index_to_rad(end_idx)
         min_dist = min(self.dists[start_idx:end_idx + 1])
 
-        if (end_rad - start_rad) * min_dist > min_interval_arc_len:
-            segments.append([start_rad, end_rad, min_dist])
+        interval_arc_len = (end_rad - start_rad) * min_dist
+
+        if interval_arc_len > min_interval_arc_len:
+            number_seg = int(interval_arc_len / min_interval_arc_len)
+            idx_len = end_idx - start_idx
+
+            for j in range(number_seg):
+                new_start_idx = start_idx + int(idx_len * j / number_seg)
+                new_end_idx = start_idx + int(idx_len * (j + 1) / number_seg)
+                new_min_dist = min(self.dists[new_start_idx:new_end_idx + 1])
+                
+                new_start_rad = index_to_rad(new_start_idx)
+                new_end_rad = index_to_rad(new_end_idx)
+
+                segments.append([new_start_rad, new_end_rad, new_min_dist])
 
         return segments
 
     ## HELP Function 
     def move_rel(self, x, y, yaw=0):
-        self.move.move_rel(x, y, yaw=yaw)
+        self.agent.move_rel(x, y, yaw=yaw)
 
     def heuristic(self, start_rad, end_rad, avg_dist):
         avg_rad = (start_rad + end_rad) / 2
@@ -131,31 +154,31 @@ class Restaurant:
         self.move_rel(move_x, move_y, yaw=move_yaw)
 
 def restaurant(agent):
-    rospy.loginfo('Initialize Hector SLAM')
-    # Kill existing nodes and replace them with others
-    os.system('rosnode kill /pose_integrator')
-    os.system('rosnode kill /move_base')
-    uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
-    roslaunch.configure_logging(uuid)
+    # rospy.loginfo('Initialize Hector SLAM')
+    # # Kill existing nodes and replace them with others
+    # os.system('rosnode kill /pose_integrator')
+    # os.system('rosnode kill /move_base')
+    # uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
+    # roslaunch.configure_logging(uuid)
 
-    slam_args = ['tidyboy_nav_stack', 'hector.launch']
-    nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
-    slam_launch_file = roslaunch.rlutil.resolve_launch_arguments(slam_args)
-    nav_launch_file  = roslaunch.rlutil.resolve_launch_arguments(nav_args)
-    slam = roslaunch.parent.ROSLaunchParent(uuid,
-                                            slam_launch_file,
-                                            sigint_timeout=10.0,
-                                            sigterm_timeout=5.0)
-    nav  = roslaunch.parent.ROSLaunchParent(uuid,
-                                            nav_launch_file,
-                                            sigint_timeout=10.0,
-                                            sigterm_timeout=5.0)
-    slam.start()
-    nav.start()
-    rospy.sleep(3.)
+    # slam_args = ['tidyboy_nav_stack', 'hector.launch']
+    # nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
+    # slam_launch_file = roslaunch.rlutil.resolve_launch_arguments(slam_args)
+    # nav_launch_file  = roslaunch.rlutil.resolve_launch_arguments(nav_args)
+    # slam = roslaunch.parent.ROSLaunchParent(uuid,
+    #                                         slam_launch_file,
+    #                                         sigint_timeout=10.0,
+    #                                         sigterm_timeout=5.0)
+    # nav  = roslaunch.parent.ROSLaunchParent(uuid,
+    #                                         nav_launch_file,
+    #                                         sigint_timeout=10.0,
+    #                                         sigterm_timeout=5.0)
+    # slam.start()
+    # nav.start()
+    # rospy.sleep(3.)
     
-    agent.say('start restaurant')
-    marker_maker = MarkerMaker('/snu/robot_path_visu')
+    # agent.say('start restaurant')
+    # marker_maker = MarkerMaker('/snu/robot_path_visu')
     
     ############################
     
@@ -175,7 +198,7 @@ def restaurant(agent):
         print("candidates: ", candidates)
 
         if not candidates:
-            r.move_rel(0, 0, yaw=math.pi)
+            r.move_rel(0, 0, yaw=math.pi / 2)
             moved_time = time.time()
             continue
             ## TODO ##

@@ -1,7 +1,7 @@
 import math
 
 
-min_interval_arc_len = 0.7
+min_interval_arc_len = 1.0
 unit_rad = 0.25 * ( math.pi / 180 )
 avg_dist_move_dist_ratio = 5
 
@@ -15,7 +15,7 @@ def index_to_rad(idx):
 ################ Maybe Constant? ################
 
 ## main frequency
-main_freq = 0.5
+main_freq = 1
 main_period = 1.0 / main_freq
 
 ## LiDAR dist
