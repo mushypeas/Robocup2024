@@ -382,24 +382,36 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, -0.5, 0, -1.07, -1.57])
-    def open_shelf_pose1_by_height(self, height=0.69):
-        arm_lift_joint = height
+        
 
+    def reach_shelf_door_pose(self, shelf, side):
+        arm_lift_joint = self.table_dimension[shelf][2] - 0.45 # 0.45 is the loosely max distance from the base to the gripper
+        self.gripper.grasp(0.1, wait=False)
+        if side == 'left':
+            arm_roll_joint = 1.57
+        elif side == 'right':
+            arm_roll_joint = -1.57
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, -1.57, 1.57, 0, 0])
-    def open_shelf_pose2_by_height(self, height=0.69):
-        arm_lift_joint = height
+                      [arm_lift_joint, -1.57, arm_roll_joint, 0, 0])
+        
 
+    def cling_shelf_door_pose(self, shelf, side):
+        arm_lift_joint = self.table_dimension[shelf][2] - 0.45 # 0.45 is the loosely max distance from the base to the gripper
+        self.gripper.grasp(0.1, wait=False)
+        if side == 'left':
+            arm_roll_joint = 1.57
+        elif side == 'right':
+            arm_roll_joint = -1.57
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, -1.57, 1.57, -1.57, 0])
+                      [arm_lift_joint, -1.57, arm_roll_joint, -1.57, 0])
 
 
 

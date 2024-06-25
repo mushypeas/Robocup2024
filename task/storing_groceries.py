@@ -9,22 +9,23 @@ class StoringGroceries:
     def __init__(self, agent: Agent):
         self.agent = agent
 
-        # Test params
+        # !!! Mode params !!!
         # Set everything to False for actual task
-        self.ignore_door = True
-        self.picking_test_mode = False
-        self.place_test_mode = False
-        self.place_test_object_name = 'apple'
-        self.place_test_object_type = 'fruit'
-
+        self.ignore_arena_door = True
+        self.ignore_shelf_door = False
+        self.picking_only_mode = False
+        self.place_only_mode = False
+        
+        # !!! Environment params !!!
+        self.shelf_closed_door_side = 'left' # ['right', 'left']
         self.prior_categories = ['fruit', 'food', 'dish']
         self.ignore_items = ['dish', 'plate', 'yello_bag', 'blue_bag']
         self.item_list = ['mustard', 'apple', 'orange', 'blue_mug', 'blue_milk', 'pear', 'bowl']
-        # self.item_list = None
 
         # !!! Measured Distances !!!
         self.dist_to_table = 0.865
         self.dist_to_shelf = 0.9
+        # self.dist_to_shelf = 0.82
         self.place_dist = 0.07
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf_1f'][0] * 0.9
                                 - self.place_dist * 2) / 2
@@ -34,6 +35,8 @@ class StoringGroceries:
         self.pick_top_bias = [0.03, 0, -0.015]
         self.pick_bowl_bias = [0.15, 0.04, -0.13]
         self.place_x_bias = [None, -0.40, -0.20, 0.0]
+
+        self.open_shelf_location = 'grocery_shelf_door'
 
         self.pick_table = 'grocery_table'
         self.table_height = self.agent.table_dimension[self.pick_table][2]
@@ -46,88 +49,80 @@ class StoringGroceries:
         self.place_shelf = 'grocery_shelf_1f'
         self.shelf_depth = self.agent.table_dimension['grocery_shelf_1f'][1]
         self.shelf_width = self.agent.table_dimension['grocery_shelf_1f'][0]
-        self.shelf_height = [ # [NULL, 1F height, 2F height, 3F height, ...]
+        self.shelf_heights = [ # [NULL, 1F height, 2F height, 3F height, ...]
             0,
             self.agent.table_dimension['grocery_shelf_1f'][2],
             self.agent.table_dimension['grocery_shelf_2f'][2],
             self.agent.table_dimension['grocery_shelf_3f'][2],
         ]
+        for i in range(1, len(self.shelf_heights)):
+            if 0.5 <= self.shelf_heights[i] <= 1.1:
+                self.open_shelf_floor = f'grocery_shelf_{i}f'
+                rospy.loginfo(f"open_shelf_floor: {self.open_shelf_floor}")
+
         self.shelf_head_angle = np.arctan(
-            ((self.shelf_height[0] + self.shelf_height[1]) / 2 - 1.1) / self.dist_to_shelf # 1.1: HSR height
+            ((self.shelf_heights[0] + self.shelf_heights[1]) / 2 - 1.1) / self.dist_to_shelf # 1.1: HSR height
         )
         print(f"shelf_head_angle: {self.shelf_head_angle}")
+
         self.shelf_item_dict = {}
-
-        # [BONUS] shelf_open
-        self.shelf_open = False
-        self.shelf_arm_height = 0.59
-
         self.grasp_failure_count = np.zeros(1000, dtype=int)  # 1000 is an arbitraty large number
 
 
-    def detect_shelf_open_point(self):
+    # def detect_closed_shelf(self):
 
-        # params for scanning shelf
+    #     x_pixel_range = [240, 400]
+    #     _pc = self.agent.yolo_module.pc.reshape(480, 640)
+    #     pc_np = np.array(_pc.tolist())[:, :, :3]
+    #     pc_filtered = pc_np[:, x_pixel_range[0]:x_pixel_range[1], :]
 
-        y_pixel_range = [150, 450] # show width pixel between 100~450 only.
-        z_range = [self.shelf_height[1] - 0.05, self.shelf_height[1] + 0.05]
-        cv2.imwrite('shelf.jpg', self.agent.rgb_img[:, y_pixel_range[0]:y_pixel_range[1]])
-        ###########################
-        try:
-            _pc = self.agent.yolo_module.pc.reshape(480, 640)
-            pc_np = np.array(_pc.tolist())[:, :, :3]
-            # 1. filtering y. using 2D image pixel
-            pc_y_filtered = pc_np[:, y_pixel_range[0]:y_pixel_range[1], :]
-            pc_y_filtered = pc_y_filtered.reshape(-1, 3)
+    #     pc_left = pc_filtered[:, :80, :].reshape(-1, 3)
+    #     pc_left = self.agent.axis_transform.tf_camera_to_base(pc_left, multi_dimention=True)
+    #     pc_left = pc_left[np.where((self.dist_to_shelf - 0.05 <= pc_left[:, 0] <= self.dist_to_shelf + 0.05))][:, :1]
+    #     print(len(pc_left))
+    #     depth_left = np.mean(pc_left)
 
-            base_pc = self.agent.axis_transform.tf_camera_to_base(pc_y_filtered, multi_dimention=True)
-            # 2. filtering z(height). using z_range
-            z_filtered_pc = base_pc[np.where((z_range[0] <= base_pc[:, 2])
-                                        & (z_range[1] >= base_pc[:, 2]))]
-            min_x_dist = np.nanmin(z_filtered_pc[:, 0])
-            print('min_x_dist', min_x_dist)
-            # 3. filtering x(front). min_x +0.1 ~ min_x + 0.5 == background of shelf
-            xz_filtered_pc = z_filtered_pc[np.where((min_x_dist+0.1 <= z_filtered_pc[:, 0])
-                                            & (min_x_dist+0.5 >= z_filtered_pc[:, 0]))]
-            min_y_dist = np.nanmax(xz_filtered_pc[:, 1])
-            print('min_y_dist', min_y_dist)
-            print('xyz', (min_x_dist, min_y_dist, self.shelf_height[1]))
-        except:
-            return None
+    #     pc_right = pc_filtered[:, 80:, :].reshape(-1, 3)
+    #     pc_right = self.agent.axis_transform.tf_camera_to_base(pc_right, multi_dimention=True)
+    #     pc_right = pc_right[np.where((self.dist_to_shelf - 0.05 <= pc_right[:, 0] <= self.dist_to_shelf + 0.05))][:, :1]
+    #     print(len(pc_right))
+    #     depth_right = np.mean(pc_right)
 
-        return (min_x_dist, min_y_dist)
+    #     rospy.loginfo(f"depth_left: {depth_left}, depth_right: {depth_right}")
+    #     if depth_left < depth_right:
+    #         return 'left'
+    #     else:
+    #         return 'right'
 
+    
+    def open_shelf(self, side=None):
 
-    def open_shelf(self):
+        if side is None:
+            side = self.shelf_closed_door_side
+        self.agent.say(f'I will attept to open the {side} door.')
 
-        # self.agent.move_rel(0.2, 0)
-        self.agent.grasp()
-        base_axis = self.detect_shelf_open_point(self.shelf_height[1])
+        # 1. reach into door
+        self.agent.pose.reach_shelf_door_pose(shelf=self.open_shelf_floor, side=side)
+        reach_move_x = self.dist_to_shelf - 0.5 # 0.5 is the min distance from base to gripper when in cling_shelf_door_pose
+        if side == 'left':
+            reach_move_y = -0.10
+        elif side == 'right':
+            reach_move_y = 0.10
+        self.agent.move_rel(0.0, reach_move_y, wait=True)
+        self.agent.move_rel(reach_move_x, 0.0, wait=True)
 
-        # HSR is able to open the shelf 
-        if base_axis is not None:
-            self.agent.move_rel(0, base_axis[1] - 0.25, wait=True)
-            self.agent.pose.pick_side_pose_by_height(height=self.shelf_arm_geight)
-            self.agent.move_rel(base_axis[0] - 0.53, 0, wait=True)            # tuning
-            self.agent.pose.open_shelf_pose1_by_height(height=self.shelf_arm_geight)
-            self.agent.pose.open_shelf_pose2_by_height(height=self.shelf_arm_geight)
+        # 2. open door
+        self.agent.pose.cling_shelf_door_pose(shelf=self.open_shelf_floor, side=side)
+        open_move_x = - self.shelf_width / 2
+        if side == 'left':
+            open_move_y = max(0, self.shelf_width / 2 - 0.12)
+        elif side == 'right':
+            open_move_y = -max(0, self.shelf_width / 2 - 0.12)
+        self.agent.move_rel(open_move_x / 3, 0.0, wait=True)
+        self.agent.move_rel(open_move_x / 3 * 2, open_move_y, wait=True)
 
-            self.agent.move_rel(-0.1, 0, wait=True)
-            self.agent.move_rel(-0.1, 0.23, wait=True)
-        # HSR is not able to open the shelf 
-        else:
-            self.agent.move_rel(-0.1, 0, wait=True)
-            self.agent.say('please open the shelf.')
-            rospy.sleep(2)
-            self.agent.say('five');  rospy.sleep(1)
-            self.agent.say('four');  rospy.sleep(1)
-            self.agent.say('three'); rospy.sleep(1)
-            self.agent.say('two');   rospy.sleep(1)
-            self.agent.say('one');   rospy.sleep(1)
-
-        # move back to searcing position
-        self.agent.move_abs_safe(self.place_location)
-        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle)
+        # 3. move back to searcing position
+        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=False)
 
 
     def search_shelf(self):
@@ -158,15 +153,15 @@ class StoringGroceries:
         rospy.loginfo(f"Shelf item center list:\n{center_list}")
 
         # 1. make shelf_item_dict
-        object_cnts_by_floor = [0 for i in range(len(self.shelf_height)+1)]
+        object_cnts_by_floor = [0 for i in range(len(self.shelf_heights)+1)]
         object_cnts_by_floor[0] = 1000 # [NULL, 1F, 2F, 3F, ...]
         for shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z, shelf_item_class_id in center_list:
             shelf_item_name = self.agent.yolo_module.find_name_by_id(shelf_item_class_id)
             shelf_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(shelf_item_class_id)]
             
             shelf_item_floor = 0
-            for i in range(len(self.shelf_height)):
-                if shelf_item_cent_z < self.shelf_height[i+1]:
+            for i in range(len(self.shelf_heights)):
+                if shelf_item_cent_z < self.shelf_heights[i+1]:
                     shelf_item_floor = i
                     break
 
@@ -340,15 +335,26 @@ class StoringGroceries:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        if not self.ignore_door:
-            self.agent.door_open()
-
-        rospy.logwarn('Start Storing Groceries')
-        self.agent.say('Start Storing Groceries')
-
         self.agent.pose.table_search_pose(head_tilt=self.table_head_angle, wait_gripper=False)
+
+        if not self.ignore_arena_door:
+            self.agent.door_open()
+            rospy.logwarn('Start Storing Groceries')
+            self.agent.say('Start Storing Groceries')
+            self.agent.move_rel(2.0, 0, wait=True) # to prevent arena door collision
+        else:
+            rospy.logwarn('Start Storing Groceries')
+            self.agent.say('Start Storing Groceries')
+            
+
+        if not self.ignore_shelf_door:
+            self.agent.move_abs_safe(self.place_location)
+            closed_shelf_side = self.detect_closed_shelf()
+
+            self.agent.move_abs_safe(self.open_shelf_location)
+            self.open_shelf(side=closed_shelf_side)
         
-        if self.place_test_mode:
+        if self.place_only_mode: # TODO: Implement recurring placing
             self.agent.move_abs_safe(self.place_location)
             self.search_shelf()
             
@@ -413,7 +419,7 @@ class StoringGroceries:
                     rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
                     self.grasp_failure_count[table_item_id] += 1
 
-            if self.picking_test_mode:
+            if self.picking_only_mode:
                 self.agent.open_gripper()
                 continue
 
