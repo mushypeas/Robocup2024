@@ -330,7 +330,7 @@ class HumanFollowing:
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
             thres = calc_z/ 1000.0 -0.3
-            if (calc_z!=0 and _depth < 0.7 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 1.0 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -354,10 +354,10 @@ class HumanFollowing:
                 # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
-                left_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x])
+                left_background_count = np.mean(depth[max(min_y+y_top, 0):min_y+y_top+20, :mid_x])
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, mid_x:])
+                right_background_count = np.mean(depth[max(min_y+y_top, 0):min_y+y_top+20, mid_x:])
                 # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
@@ -373,14 +373,14 @@ class HumanFollowing:
                 
                 if left_background_count > right_background_count :
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(0.5)
+                    self.agent.move_rel(0.0,0.3,0, wait=False) #then, HSR is intended to move left (pos)
+                    rospy.sleep(0.3)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                 elif left_background_count  < right_background_count:
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(0.5)
+                    self.agent.move_rel(0.0,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
+                    rospy.sleep(0.3)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
                 # else: # ambigous
