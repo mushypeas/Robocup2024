@@ -11,13 +11,16 @@ class StoringGroceries:
 
         # !!! Mode params !!!
         # Set everything to False for actual task
+        self.cheating_mode = False
+
         self.ignore_arena_door = True
         self.ignore_shelf_door = False
+        
         self.picking_only_mode = False
         self.place_only_mode = False
         
         # !!! Environment params !!!
-        self.shelf_closed_door_side = 'left' # ['right', 'left']
+        self.closed_shelf_side = 'left' # ['right', 'left']
         self.prior_categories = ['fruit', 'food', 'dish']
         self.ignore_items = ['dish', 'plate', 'yello_bag', 'blue_bag']
         self.item_list = ['mustard', 'apple', 'orange', 'blue_mug', 'blue_milk', 'pear', 'bowl']
@@ -68,37 +71,11 @@ class StoringGroceries:
         self.shelf_item_dict = {}
         self.grasp_failure_count = np.zeros(1000, dtype=int)  # 1000 is an arbitraty large number
 
-
-    # def detect_closed_shelf(self):
-
-    #     x_pixel_range = [240, 400]
-    #     _pc = self.agent.yolo_module.pc.reshape(480, 640)
-    #     pc_np = np.array(_pc.tolist())[:, :, :3]
-    #     pc_filtered = pc_np[:, x_pixel_range[0]:x_pixel_range[1], :]
-
-    #     pc_left = pc_filtered[:, :80, :].reshape(-1, 3)
-    #     pc_left = self.agent.axis_transform.tf_camera_to_base(pc_left, multi_dimention=True)
-    #     pc_left = pc_left[np.where((self.dist_to_shelf - 0.05 <= pc_left[:, 0] <= self.dist_to_shelf + 0.05))][:, :1]
-    #     print(len(pc_left))
-    #     depth_left = np.mean(pc_left)
-
-    #     pc_right = pc_filtered[:, 80:, :].reshape(-1, 3)
-    #     pc_right = self.agent.axis_transform.tf_camera_to_base(pc_right, multi_dimention=True)
-    #     pc_right = pc_right[np.where((self.dist_to_shelf - 0.05 <= pc_right[:, 0] <= self.dist_to_shelf + 0.05))][:, :1]
-    #     print(len(pc_right))
-    #     depth_right = np.mean(pc_right)
-
-    #     rospy.loginfo(f"depth_left: {depth_left}, depth_right: {depth_right}")
-    #     if depth_left < depth_right:
-    #         return 'left'
-    #     else:
-    #         return 'right'
-
     
     def open_shelf(self, side=None):
 
         if side is None:
-            side = self.shelf_closed_door_side
+            side = self.closed_shelf_side
         self.agent.say(f'I will attept to open the {side} door.')
 
         # 1. reach into door
@@ -188,6 +165,10 @@ class StoringGroceries:
         print(f'shelf_item_dict: {self.shelf_item_dict}')
 
 
+    def visualize_item(self):
+        pass
+
+
     def search_item(self):
         table_item_list = np.zeros(0)
         table_search_attempts = 0
@@ -227,7 +208,7 @@ class StoringGroceries:
                 table_item_name not in self.ignore_items:
                 break
 
-        rospy.loginfo(f"Table item :      {table_item_name}")
+        rospy.loginfo(f"Table item name:  {table_item_name}")
         rospy.loginfo(f"Table item type : {table_item_type}")
         rospy.loginfo(f"Grasping type :   {grasping_type}")
         rospy.loginfo(f"grasp_failure_count: {self.grasp_failure_count[table_item_id]}")
@@ -241,6 +222,60 @@ class StoringGroceries:
         except Exception as e:
             rospy.logerr(f'[ERROR] table_base_to_object_xyz: {table_base_to_object_xyz}\n{e}')
             return None
+        
+
+    def search_all_items(self):
+        table_item_list = np.zeros(0)
+        table_search_attempts = 0
+        while table_item_list.size == 0:
+            rospy.sleep(0.2) # give some time for the YOLO to update
+            table_item_list = np.array(
+                self.agent.yolo_module.detect_3d_safe(
+                    table='grocery_table',
+                    dist=self.dist_to_table,
+                    depth=self.table_depth
+                )
+            )
+            table_search_attempts += 1
+            if table_search_attempts == 20:
+                self.agent.say('Searching is taking a while...')
+            if table_search_attempts == 40:
+                self.agent.say('Still searching...')
+            if table_search_attempts == 80:
+                self.agent.say('The search never ends...')
+            if table_search_attempts == 120:
+                self.agent.say('No more available items... Finnish Storing Groceries.')
+                rospy.logwarn('Finish Storing Groeceries.')
+                return
+
+        table_item_list_sorted = table_item_list[table_item_list[:, 0].argsort()]
+        table_item_list_sorted = [int(i) for i in table_item_list_sorted[:, 3]]
+
+        item_list = []
+        tiny_object_list = []
+        num_items = len(table_item_list_sorted)
+        for i in range(num_items):
+            table_item_id = table_item_list_sorted[i]
+            table_item_name = self.agent.yolo_module.find_name_by_id(table_item_id)
+            table_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(table_item_id)]
+            item_info = {
+                'id': table_item_id,
+                'name': table_item_name,
+                'type': table_item_type
+            }
+            rospy.loginfo(f"Table item name : {table_item_name}")
+            rospy.loginfo(f"Table item type : {table_item_type}")
+            self.visualize_item()
+            self.agent.say(f'{"I spy a" if i == 0 else "and a" if i == num_items-1 else "a"} {table_item_name}, which is a {table_item_type}...')
+            rospy.sleep(3)
+            if table_item_name in self.agent.tiny_object_list:
+                tiny_object_list.append(item_info)
+            else:
+                item_list.append(item_info)
+        
+            item_list = tiny_object_list[1:] + item_list + tiny_object_list[1:]
+
+        return item_list
 
 
     def pick_item(self, grasping_type, table_base_xyz):
@@ -291,11 +326,11 @@ class StoringGroceries:
                 self.prior_categories.append(item_type)
             rospy.loginfo(f'New category : {item_type} (Current item: {item_name})')
             item_floor = self.shelf_item_dict[item_type]['floor']
-            self.agent.say(f'Placing a new category object, {item_name}, which is a {item_type}, on shelf floor {item_floor}...')
+            self.agent.say(f'Placing a new category object, {item_name}, on shelf floor {item_floor}...')
         else:  # for known category objects
             item_floor = self.shelf_item_dict[item_type]['floor']
             rospy.loginfo(f'Known category : {item_type} (Current item: {item_name})')
-            self.agent.say(f'Placing {item_name}, which is a {item_type}, next to {self.shelf_item_dict[item_type]["name"]}...')
+            self.agent.say(f'Placing {item_name}, next to {self.shelf_item_dict[item_type]["name"]}, on shelf floor {item_floor}...')
 
         print(f'Type of item to place: {item_type}')
         print(f'shelf_item_dict: {self.shelf_item_dict[item_type]}')
@@ -345,88 +380,119 @@ class StoringGroceries:
         else:
             rospy.logwarn('Start Storing Groceries')
             self.agent.say('Start Storing Groceries')
-            
 
-        if not self.ignore_shelf_door:
-            self.agent.move_abs_safe(self.place_location)
-            closed_shelf_side = self.detect_closed_shelf()
+        ## OPTION 1: Run Storing Groceries by exploiting the rulebook as much as possible
+        if self.cheating_mode:
 
+            # Inspect items on pick_table
+            rospy.logwarn('Going to pick_location...')
+            self.agent.move_abs_safe(self.pick_table)
+            item_info_list = self.search_all_items()
+
+            # Open shelf door
+            rospy.logwarn('Going to open_shelf_location...')
             self.agent.move_abs_safe(self.open_shelf_location)
-            self.open_shelf(side=closed_shelf_side)
-        
-        if self.place_only_mode: # TODO: Implement recurring placing
-            self.agent.move_abs_safe(self.place_location)
-            self.search_shelf()
-            
-            self.agent.pose.pick_side_pose_by_height(height=1.0)
-            self.agent.open_gripper(wait=False)
+            self.open_shelf(side=self.closed_shelf_side)
 
-            self.agent.say('Please hand me an item.')
-            rospy.sleep(3)
-            self.agent.say('three'); rospy.sleep(1)
-            self.agent.say('two');   rospy.sleep(1)
-            self.agent.say('one');   rospy.sleep(1)
-            self.agent.grasp(wait=True)
-
-            # place
-            self.place_item(self.place_test_object_name, self.place_test_object_type)
-            return
-
-        has_searched_shelf = False
-        
-        # Search items in shelf only once
-        if not has_searched_shelf:
-            rospy.logwarn('Going to place_location...')
-            self.agent.move_abs_safe(self.place_location)
-
+            # Search shelf items
             rospy.logwarn('Searching items in shelf...')
             self.agent.pose.head_tilt(angle=self.shelf_head_angle)
             self.search_shelf()
-            has_searched_shelf = True
 
-        # Pick & place loop
-        while True:
+            # Place items in shelf
+            for item_info in item_info_list:
+                self.agent.pose.pick_side_pose_by_height(height=1.0)
+                self.agent.open_gripper(wait=False)
 
-            has_grasped = False
+                self.agent.say(f'Please hand me the {item_info['name']}.')
+                rospy.sleep(2)
+                self.agent.say('three'); rospy.sleep(1)
+                self.agent.say('two');   rospy.sleep(1)
+                self.agent.say('one');   rospy.sleep(1)
+                self.agent.grasp(wait=True)
 
-            ## 2. Try picking until an item is grasped
-            while not has_grasped:
-                # 2-1. Go to pick_location
-                rospy.logwarn('Go to pick_location...')
-                self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
-                self.agent.move_abs_safe(self.pick_table)
+                self.place_item(self.place_test_object_name, self.place_test_object_type)
+                self.agent.move_abs_safe(self.place_location)
 
-                # 2-2. Select item to pick
-                rospy.logwarn('Searching for item to pick...')
-                self.agent.say('Searching for item to pick.')
-                item_info = self.search_item()
-                if item_info is None:
-                    rospy.logwarn('Failed to find item to pick. Retrying...')
-                else:
-                    grasping_type, table_item_id, table_item_name, table_item_type, table_base_xyz = item_info
+        ## OPTION 2: Run Storing Groceries without any gimmicky approaches
+        else:
+            if not self.ignore_shelf_door:
+                self.agent.move_abs_safe(self.open_shelf_location)
+                self.open_shelf(side=self.closed_shelf_side)
+            
+            if self.place_only_mode:
+                self.agent.move_abs_safe(self.place_location)
+                self.search_shelf()
 
-                # 2-3. Pick item
-                rospy.logwarn('Picking item...')
-                self.pick_item(grasping_type, table_base_xyz)
-                self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
+                while True:
+                    self.agent.pose.pick_side_pose_by_height(height=1.0)
+                    self.agent.open_gripper(wait=False)
 
-                # 2-4. Check if grasping is successful
-                has_grasped = self.check_grasp(grasping_type)
-                if has_grasped:
-                    rospy.loginfo(f'Successfuly grasped {table_item_name}!')
-                    self.agent.say(f'Grasped a {table_item_name}, which is a {table_item_type}!')
-                else:
-                    rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
-                    self.grasp_failure_count[table_item_id] += 1
+                    self.agent.say('Please hand me an item.')
+                    rospy.sleep(2)
+                    self.agent.say('three'); rospy.sleep(1)
+                    self.agent.say('two');   rospy.sleep(1)
+                    self.agent.say('one');   rospy.sleep(1)
+                    self.agent.grasp(wait=True)
 
-            if self.picking_only_mode:
-                self.agent.open_gripper()
-                continue
+                    self.place_item(self.place_test_object_name, self.place_test_object_type)
+                    self.agent.move_abs_safe(self.place_location)
 
-            ## 3. Go to place_location
-            rospy.logwarn('Going to place_location...')
-            self.agent.move_abs_safe(self.place_location)
+            has_searched_shelf = False
+            
+            # Search items in shelf only once
+            if not has_searched_shelf:
+                rospy.logwarn('Going to place_location...')
+                self.agent.move_abs_safe(self.place_location)
 
-            ## 4. Place item
-            rospy.logwarn('Placing item...')
-            self.place_item(table_item_name, table_item_type)
+                rospy.logwarn('Searching items in shelf...')
+                self.agent.pose.head_tilt(angle=self.shelf_head_angle)
+                self.search_shelf()
+                has_searched_shelf = True
+
+            # Pick & place loop
+            while True:
+
+                has_grasped = False
+
+                ## 2. Try picking until an item is grasped
+                while not has_grasped:
+                    # 2-1. Go to pick_location
+                    rospy.logwarn('Going to pick_location...')
+                    self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
+                    self.agent.move_abs_safe(self.pick_table)
+
+                    # 2-2. Select item to pick
+                    rospy.logwarn('Searching for item to pick...')
+                    self.agent.say('Searching for item to pick.')
+                    item_info = self.search_item()
+                    if item_info is None:
+                        rospy.logwarn('Failed to find item to pick. Retrying...')
+                    else:
+                        grasping_type, table_item_id, table_item_name, table_item_type, table_base_xyz = item_info
+
+                    # 2-3. Pick item
+                    rospy.logwarn('Picking item...')
+                    self.pick_item(grasping_type, table_base_xyz)
+                    self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
+
+                    # 2-4. Check if grasping is successful
+                    has_grasped = self.check_grasp(grasping_type)
+                    if has_grasped:
+                        rospy.loginfo(f'Successfuly grasped {table_item_name}!')
+                        self.agent.say(f'Grasped a {table_item_name}, which is a {table_item_type}!')
+                    else:
+                        rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
+                        self.grasp_failure_count[table_item_id] += 1
+
+                if self.picking_only_mode:
+                    self.agent.open_gripper()
+                    continue
+
+                ## 3. Go to place_location
+                rospy.logwarn('Going to place_location...')
+                self.agent.move_abs_safe(self.place_location)
+
+                ## 4. Place item
+                rospy.logwarn('Placing item...')
+                self.place_item(table_item_name, table_item_type)

@@ -85,6 +85,8 @@ if mode == 'PNU':
 
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
+    HEAVY_OBJECTS = ['cheezit']
+
     # added by lsh
     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
 
