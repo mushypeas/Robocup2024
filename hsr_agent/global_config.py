@@ -27,7 +27,7 @@ PNU = True # 240630 mjgu 추가
 if PNU: # 240630 mjgu 추가
     print('[GLOBAL CONFIG] PNU mode')
     # real robot
-    ABS_POSITION = {
+    ABS_POSITION_PNU = {
 
         #insepction
         'inspection': [4.8333, 2.7961, 1.6308],
@@ -42,9 +42,9 @@ if PNU: # 240630 mjgu 추가
 
         # serve breakfast
         'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
-        'picking_location_pnu': [4.424, -1.663, -0.0057], # (kitchen_table 근처) 240630 mjgu 추가
-        'kitchen_table_pnu' : [3.0768, -1.1441, -0.0054], # 240630 mjgu 추가
-        'breakfast_table_pnu': [2.4481, -1.4913, -3.0755], # 240630 mjgu 추가
+        'picking_location_pnu': [4.3083, -1.5883, 0.0044], # (kitchen_table 근처) 240630 mjgu 추가
+        'kitchen_table_pnu' : [6.4447, -3.1643, -1.5709], # 240630 mjgu 추가
+        'breakfast_table_pnu': [5.2475, -1.5543, 0.0143], # 240630 mjgu 추가
 
         # recptionist
         'start': [4.7578, -1.6402, -1.5496],

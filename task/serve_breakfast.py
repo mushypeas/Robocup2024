@@ -4,6 +4,7 @@ from std_srvs.srv import Empty, EmptyRequest
 from hsr_agent.agent import Agent
  
 #  부산대학교 실험실 (10208 , 10동 208호) # 
+# picking_place_pnu 좌표 : [4.3083, -1.5883, 0.0044]
 # kitchen_table_pnu 좌표 : [5.254, -1.5046, -0.0351]
 # breakfast_table_pnu 좌표 : [6.0959, -1.7321, 1.591]
 # kitchen_table_pnu : 흰색 테이블 , dimension : [40, 80.2, 60.2] * 낮음 -> (head_tilt -15~-20으로 조정)
@@ -201,10 +202,9 @@ class ServeBreakfast:
         # self.agent.door_open()
         # self.agent.say('Hi, I will serve breakfast for you!')
         # rospy.sleep(2)
-        self.agent.move_abs('picking_location_pnu')
-        self.agent.say('I will move to picking location')
-
-
+        # self.agent.move_abs('picking_location_pnu')
+        # self.agent.say('I will move to picking location')
+ 
         picked_items = []
 
         for item in self.item_list:
@@ -217,11 +217,12 @@ class ServeBreakfast:
                 self.agent.say('I will move to a different location. Please be careful.')
                 self.agent.move_abs(self.pick_table)
                 self.agent.move_rel(-0.2,0)
-                self.agent.pose.table_search_pose_low(head_tilt=self.pick_table_head_angle)
+                self.agent.pose.table_search_pose_low()
                 # self.agent.pose.table_search_pose_low(head_tilt=self.pick_table_head_angle)
                 # self.agent.head_tilt(-10) / head_tilt 추가 조정 시 필요 코드
-                self.agent.move_abs_safe(self.pick_table)
-                rospy.sleep(2)
+                # self.agent.move_abs_safe(self.pick_table)
+                # rospy.sleep(2)
+
                 # Search item
                 item_info = self.search_item(item, picked_items)
                 if item_info is None:
