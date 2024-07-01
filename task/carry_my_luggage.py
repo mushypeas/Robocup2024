@@ -7,6 +7,7 @@ import mediapipe as mp
 import numpy as np
 from collections import deque
 from sklearn.preprocessing import StandardScaler
+import random
 
 import rospy
 from std_msgs.msg import Int16MultiArray, String, ColorRGBA
@@ -332,9 +333,9 @@ class HumanFollowing:
 
 
                         
-            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 100 : self.agent.center_idx - 50 ]) # 원래 self.agent.center_idx - 360 : self.agent.center_idx
+            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 180 : self.agent.center_idx - 50 ]) # 원래 self.agent.center_idx - 360 : self.agent.center_idx
             right_edge_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 240 : self.agent.center_idx - 180]) # 원래 self.agent.center_idx : self.agent.center_idx + 360
-            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 100]) # 원래 self.agent.center_idx : self.agent.center_idx + 360
+            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 180]) # 원래 self.agent.center_idx : self.agent.center_idx + 360
             left_edge_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 180 : self.agent.center_idx + 240]) # 원래 self.agent.center_idx - 360 : self.agent.center_idx
             thres = calc_z/ 1000.0 -0.2
 
@@ -343,6 +344,8 @@ class HumanFollowing:
             print("right_edge_lidar : ", right_edge_lidar)
             print("left_edge_lidar : ", left_edge_lidar)
             print("thres : ", thres)
+
+            random_forward = random.uniform(-1, 1)
 
             if (calc_z!=0 and _depth < 1.0 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
@@ -389,13 +392,13 @@ class HumanFollowing:
                     
                     if left_background_count > right_background_count :
                         print("left side is empty")
-                        self.agent.move_rel(0.0,0.3,0, wait=False) #then, HSR is intended to move left (pos)
+                        self.agent.move_rel(random_forward,0.3,0, wait=False) #then, HSR is intended to move left (pos)
                         rospy.sleep(0.3)
                         # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                     elif left_background_count  < right_background_count:
                         print("right side is empty")
-                        self.agent.move_rel(0.0,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
+                        self.agent.move_rel(random_forward,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
                         rospy.sleep(0.3)
                         # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                         # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -420,10 +423,10 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 if left_edge_lidar > 1.3 or right_edge_lidar > 1.3:
                     if left_lidar > right_lidar : 
-                        self.agent.move_rel(0.0,0.3,0, wait=False)
+                        self.agent.move_rel(random_forward,0.3,0, wait=False)
                         rospy.sleep(0.3)
                     else:
-                        self.agent.move_rel(0.0,-0.3,0, wait=False)
+                        self.agent.move_rel(random_forward,-0.3,0, wait=False)
                         rospy.sleep(0.3)
 
         else:
