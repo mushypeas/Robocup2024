@@ -13,7 +13,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
+yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -103,7 +103,8 @@ elif mode == 'FINAL':
     ABS_POSITION = {
 
         #insepction
-        'inspection': [4.8333, 2.7961, 1.6308],
+        'zero': [0.0, 0.0, 0.0],
+        'insp_target': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
         'grocery_table': [2.6643, -1.1615, -0.0232],

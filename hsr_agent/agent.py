@@ -23,13 +23,10 @@ from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
 # stt
-# from module.stt.stt_client import stt_client
-from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 from module.stt.stt_client import stt_client
 import numpy as np
 from utils.distancing import distancing
 import copy
-from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
 from utils.simple_action_client import SimpleActionClient
 import control_msgs.msg
 import controller_manager_msgs.srv
