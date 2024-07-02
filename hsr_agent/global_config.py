@@ -67,9 +67,12 @@ if mode == 'PNU':
         
         # Storing Groceries
         'grocery_table': [0.736, 1.10, 0.73],
-        'grocery_shelf_1f': [0.76, 0.36, 0.44],
-        'grocery_shelf_2f': [0.76, 0.36, 0.804],
-        'grocery_shelf_3f': [0.76, 0.36, 1.174],
+        'grocery_shelf': [
+            [0.76, 0.36, 0],
+            [0.76, 0.36, 0.44],
+            [0.76, 0.36, 0.804],
+            [0.76, 0.36, 1.174],
+        ],
     }
 
     OBJECT_TYPES = [

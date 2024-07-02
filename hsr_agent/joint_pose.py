@@ -595,11 +595,11 @@ class JointPose:
             self.set_pose(['wrist_flex_joint'], [1.57])
             self.set_pose(['arm_lift_joint'], [0.69-(0.97 - 0.13 - 0.34)])   # arm_lift_joint - (robot_pointer - object_radius - dishwasher_height)
 
-    def place_shelf_pose(self, table):
-        target_table_height = self.table_dimension[table][2]
+    def place_shelf_pose(self, shelf, floor):
+        target_table_height = self.table_dimension[shelf][floor][2]
 
         if target_table_height < 0.9:
-            self.place_side_pose(table=table)
+            self.place_side_pose(table=shelf)
         else:
             offset = 0.15
             robot_default_height = 0.7
