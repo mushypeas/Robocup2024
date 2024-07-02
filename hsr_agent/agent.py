@@ -22,9 +22,6 @@ from hsr_agent.tts import TTS
 from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
-# stt
-# from module.stt.stt_client import stt_client
-from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
