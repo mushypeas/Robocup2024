@@ -95,7 +95,7 @@ def make_parser():
         "--aspect_ratio_thresh", type=float, default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value."
     )
-    parser.add_argument('--min_box_area', type=float, default=100, help='filter out tiny boxes')
+    parser.add_argument('--min_box_area', type=float, default=10000, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
     return parser
 
@@ -171,6 +171,7 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
         ros_img[:, -bar_width:] = 0
         ros_img[:120, :] = 0
 
+
     outputs, img_info = predictor.inference(ros_img, timer)
     found_prev_human = False
     if outputs[0] is not None:
@@ -185,6 +186,7 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
             tid = t.track_id
             print('Target index: ', tid)
             vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
+            print("box areaa: ", tlwh[2] * tlwh[3])
             if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
                 if tid == human_id:
                     found_prev_human = True
@@ -205,6 +207,13 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
                     target_feature = None
                     target_score = None
                     target_tlwh = None
+
+            else:
+                human_id= None
+                target_feature = None
+                target_score = None
+                target_tlwh = None
+                    
 
 
         if human_id == -1: ##initialize
