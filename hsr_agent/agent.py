@@ -42,6 +42,9 @@ from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
 
+from gtts import gTTS
+import subprocess
+
 
 class Agent:
     def __init__(self):
@@ -408,9 +411,15 @@ class Agent:
             print([round(cur_p[0], 4), round(cur_p[1], 4), round(cur_p[2], 4)])
         return self.move_base.get_pose()
 
+
+    def tts_pnu(self, text):
+        speech = gTTS(text=text, lang='en', slow=False)
+        speech.save("pnu.mp3")
+        subprocess.run(["mpg123", "-q", "pnu.mp3"])
+
     # tts
     def say(self, sentence, show_display=False):
-        self.tts.say(sentence)
+        self.tts_pnu(sentence)
         if show_display:
             self.head_show_text(sentence)
 
