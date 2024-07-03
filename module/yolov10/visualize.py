@@ -18,6 +18,10 @@ if not cap.isOpened():
     print("Error: Could not open webcam.")
     exit()
 
+# 해상도 설정
+cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
 # matplotlib 설정
 plt.ion()
 fig, ax = plt.subplots()
@@ -34,8 +38,12 @@ while True:
         print("Error: Could not read frame.")
         break
     
+    # 프레임 전처리
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    img = cv2.resize(img, (640, 480))
+
     # 모델을 사용하여 객체 감지 수행
-    results = model(frame)[0]
+    results = model(img)[0]
 
     # 감지된 객체의 클래스 인덱스와 신뢰도 추출
     classes = results.boxes.cls.cpu().numpy()  # 클래스 인덱스
