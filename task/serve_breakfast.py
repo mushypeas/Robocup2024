@@ -2,8 +2,7 @@ import rospy
 import numpy as np
 from std_srvs.srv import Empty, EmptyRequest
 from hsr_agent.agent import Agent
-<<<<<<< HEAD
-<<<<<<< HEAD
+
 
 ############################################## 대회 당일 To Do List #############################################
 #                                                                                                             #
@@ -33,11 +32,6 @@ from hsr_agent.agent import Agent
 
 # pouring 할 때, 흘리지 않으려면 새로운 포즈 생성해야 함. object height 기준으로 arm_lift_up 설정하기. 올라감과 동시에 wrist_roll이 함께 동작하여 '부으면서 살짝 내려갔다가 다시 살짝 들고' + 두기 로 변경하기.
 # 100번 초과 시 사람에게 달라고 해서 grasp한 상태로 코드 동작하는지 확인 필요.
-
-
-=======
-=======
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
  
 #  부산대학교 실험실 (10208 , 10동 208호) # 
 # picking_place_pnu 좌표 : [4.3083, -1.5883, 0.0044]
@@ -48,10 +42,6 @@ from hsr_agent.agent import Agent
 # initial location : [0.0053, 0.0243, -0.0228]
 ##########################################################################################
   
-<<<<<<< HEAD
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
-=======
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
 class ServeBreakfast:
 
     def __init__(self, agent: Agent):
@@ -300,11 +290,7 @@ class ServeBreakfast:
         # self.agent.move_abs('picking_location_pnu')
         # self.agent.say('I will move to picking location')
  
-<<<<<<< HEAD
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
-=======
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
-        picked_items = []
+
 
         for item in self.item_list:
 
