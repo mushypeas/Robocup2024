@@ -1,6 +1,11 @@
+#!/usr/bin/env python
+
+import rospy
 import cv2
 import torch
 import numpy as np
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge, CvBridgeError
 from utils.datasets import letterbox
 from utils.general import non_max_suppression_kpt
 from utils.plots import output_to_keypoint, plot_skeleton_kpts
@@ -11,17 +16,16 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model = attempt_load('yolov7-w6-pose.pt', map_location=device)
 model.to(device).eval()
 
-# 비디오 캡처 설정
-cap = cv2.VideoCapture(16)
-cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+# ROS 초기화
+rospy.init_node('pose_estimation_node', anonymous=True)
+bridge = CvBridge()
 
 # 라벨 맵핑
 label_dict = {'s': 'standing', 'l': 'lying', 't': 'sitting'}
 keypoint_labels = []
 
 def preprocess(image):
-    img = letterbox(image, 960, stride=64, auto=True)[0]  # 다시 960으로 변경
+    img = letterbox(image, 960, stride=64, auto=True)[0]
     img = img.transpose((2, 0, 1))[::-1]
     img = np.ascontiguousarray(img)
     img_tensor = torch.from_numpy(img).float().div(255.0).unsqueeze(0)
@@ -40,20 +44,19 @@ def scale_coords(coords, from_shape, to_shape):
 
 def origin_to_640x480(kpts):
     kpt640x480 = []
-
-    for idx, num in enumerate(origin_kpt):
+    for idx, num in enumerate(kpts):
         if idx % 3 == 2:
             kpt640x480.append(num)
         else:
             kpt640x480.append(num / 1.5)
-
     return kpt640x480
 
-
-while True:
-    ret, frame = cap.read()
-    if not ret:
-        break
+def image_callback(msg):
+    try:
+        frame = bridge.imgmsg_to_cv2(msg, "bgr8")
+    except CvBridgeError as e:
+        rospy.logerr("CvBridge Error: {0}".format(e))
+        return
 
     # 프레임 전처리 및 예측 수행
     img, resized_shape = preprocess(frame)
@@ -74,20 +77,25 @@ while True:
 
     # 프레임 디스플레이
     cv2.imshow('Pose Estimation', frame)
-
+    
     # 라벨링을 위한 키 입력 캡처
     key = cv2.waitKey(1) & 0xFF
     if key in [ord('s'), ord('l'), ord('t')]:
         label = label_dict[chr(key)]
         keypoint_labels.append((output, label))
         print(f"{label}로 라벨링됨")
-
-    # 종료 조건
     elif key == ord('q'):
-        break
+        rospy.signal_shutdown('User requested shutdown.')
+
+# 이미지 토픽 구독
+image_topic = '/camera/rgb/image_rect_color'
+rospy.Subscriber(image_topic, Image, image_callback)
+
+# ROS 노드가 종료될 때까지 유지
+rospy.spin()
 
 # 수집된 데이터 저장
-with open('keypoint_labels.txt', 'w') as f:
+with open('pose_keypoint_labels.txt', 'w') as f:
     for output, label in keypoint_labels:
         if isinstance(output, np.ndarray):
             for idx in range(output.shape[0]):
@@ -97,5 +105,4 @@ with open('keypoint_labels.txt', 'w') as f:
                 write_str = f"{keypoints_str} {label}\n"
                 f.write(write_str)
 
-cap.release()
 cv2.destroyAllWindows()
