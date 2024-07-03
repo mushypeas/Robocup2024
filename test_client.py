@@ -47,14 +47,14 @@ if __name__ == '__main__':
             agent.move_abs_safe('cloth_scan')
         elif command == 'dishwasher':
             agent.move_abs('dishwasher')
-        elif command == 'breakfast_test':
-            agent.move_abs_safe('breakfast_table')
+        elif command == 'kitchen_table':
+            agent.move_abs_safe('kitchen_table_pnu') # 0630
         elif command == 'table_front_test':
             agent.move_abs_safe('table_front')
         elif command == 'table_side_test':
             agent.move_abs_safe('table_side')
         elif command == 'breakfast_table':
-            agent.move_abs('breakfast_table')
+            agent.move_abs('breakfast_table_pnu') # 0630
 
         ### Pose commands
         elif command == 'point_seat_pose':
@@ -117,10 +117,10 @@ if __name__ == '__main__':
         elif command == 'put_plate_dish_washer':
             agent.pose.put_plate_dish_washer(table='dishwasher')
         elif command == 'bring_bowl_pose':
-            agent.pose.bring_bowl_pose(table='kitchen_table')
+            agent.pose.bring_bowl_pose()
         elif command == 'spill_cereal_pose':
             object_height = 0.14  # [m]
-            agent.pose.spill_object_pose(object_height, table='final_kitchen_table')
+            agent.pose.spill_object_pose(object_height, table='kitchen_table')
         elif command == 'pick_shelf_low_pose':
             agent.pose.pick_shelf_low_pose('pantry')
         elif command == 'pick_side_pose':
@@ -131,6 +131,10 @@ if __name__ == '__main__':
             agent.pose.table_search_pose()
         elif command == 'table_search_pose_breakfast':
             agent.pose.table_search_pose_breakfast()
+        elif command == 'low_table': # 높이 0.6m 정도
+            agent.pose.table_search_pose_low()
+        elif command == 'high_table': # 높이 0.8m 정도
+            agent.pose.table_search_pose_high()
         elif command == 'table_search_go_pose':
             agent.pose.table_search_go_pose()
         elif command == 'pick_object_side_pose':
