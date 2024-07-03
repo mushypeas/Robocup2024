@@ -21,7 +21,83 @@ except:
     pass
 
 AIIS = False
-FINAL = True
+FINAL = False
+PNU = True # 240630 mjgu 추가
+
+if PNU: # 240630 mjgu 추가
+    print('[GLOBAL CONFIG] PNU mode')
+    # real robot
+    ABS_POSITION = {
+
+        #insepction
+        'inspection': [4.8333, 2.7961, 1.6308],
+
+        # storing grocery
+        '쉘프': [1.9958, -0.7921, -3.1012], # 영어로 고치기 (feat.영재선배님)
+        '원탁앞90센치': [2.6643, -1.1615, -0.0232], # 영어로 고치기 (feat.영재선배님)
+
+        #clean the table
+        '원탁앞60센치' : [2.9768, -1.1441, -0.0054], # 영어로 고치기 (feat.영재선배님)
+        '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153], # 영어로 고치기 (feat.영재선배님)
+
+        # serve breakfast
+        'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
+        'picking_location_pnu': [4.424, -1.663, -0.0057], # (kitchen_table 근처) 240630 mjgu 추가
+        'kitchen_table_pnu' : [3.0768, -1.1441, -0.0054], # 240630 mjgu 추가
+        'breakfast_table_pnu': [2.4481, -1.4913, -3.0755], # 240630 mjgu 추가
+
+        # recptionist
+        'start': [4.7578, -1.6402, -1.5496],
+        'cloth_scan': [4.7578, -1.6402, -1.5496],
+        'seat_scan' : [6.7194, -0.3494, -0.7164],
+        'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+
+        # stickler for the rules
+        'kitchen_search': [3.3146, 0.4319, -2.2959],
+        'living_room_search': [4.9844, 0.2595, -0.8542],
+        'study_search': [5.1834, 1.9487, 2.7205],
+        'bedroom_search': [6.7134, 3.401, -0.6504],
+        'shoe_warning': [5.6829, -2.9312, 2.2687],
+        'bin_littering': [1.9497, -1.9686, 1.8865],
+        'bar_drink': [3.1751, -2.4041, 1.2635],
+        'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
+        'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+    }
+
+
+    TABLE_DIMENSION = {
+        # width, depth, height
+        'breakfast_table_pnu': [0.735, 1.18, 0.73], # (나무색) 240630 mjgu 추가
+        'kitchen_table_pnu': [40, 80.2, 60.2], #(흰색) 240630 mjgu 추가
+        
+    }
+
+
+    OBJECT_TYPES = [
+        "cleaning",  # 0
+        "drink",  # 1
+        "food",  # 2
+        "fruit",  # 3
+        "toy",  # 4
+        "snack",  # 5
+        "dish",  # 6
+        "bag",  # 7
+    ]
+
+    TINY_OBJECTS = ['spoon', 'fork', 'knife']
+
+    # added by lsh
+    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+
+    # added by sujin
+    # for gpsr
+    LOCATION_MAP = {
+        "bedroom": ['bed', 'bedside_table', 'shelf'],
+        "kitchen": ['pantry', 'trashbin', 'dishwasher', 'potted_plant', 'kitchen_table', 'chairs',
+                    'refrigerator', 'sink'],
+        "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
+        "living_room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
+    }
 
 
 if FINAL:
@@ -33,12 +109,12 @@ if FINAL:
         'inspection': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
-        '쉘프': [1.9958, -0.7921, -3.1012],
-        '원탁앞90센치': [2.6643, -1.1615, -0.0232],
+        '쉘프': [1.9958, -0.7921, -3.1012], # 영어로 고치기 (feat.영재선배님)
+        '원탁앞90센치': [2.6643, -1.1615, -0.0232], # 영어로 고치기 (feat.영재선배님)
 
         #clean the table
-        '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
-        '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
+        '원탁앞60센치' : [2.9768, -1.1441, -0.0054], # 영어로 고치기 (feat.영재선배님)
+        '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153], # 영어로 고치기 (feat.영재선배님)
 
         # serve breakfast
         'kitchen_table' : [3.0768, -1.1441, -0.0054], #2.9286, -1.1145, 0.0052 (가까움)
@@ -66,8 +142,8 @@ if FINAL:
     TABLE_DIMENSION = {
         # width, depth, height
 
-        '원탁': [0.89, 0.89, 0.735],
-        '식탁용식기세척기': [0.595, 0.595, 0.845],
+        '원탁': [0.89, 0.89, 0.735], # 영어로 고치기 (feat.영재선배님)
+        '식탁용식기세척기': [0.595, 0.595, 0.845], # 영어로 고치기 (feat.영재선배님)
         'breakfast_table': [0.595, 0.595, 0.845],
         'kitchen_table': [0.89, 0.89, 0.735],
         

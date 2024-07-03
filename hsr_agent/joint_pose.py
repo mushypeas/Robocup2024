@@ -12,6 +12,8 @@ from sensor_msgs.msg import JointState
 class JointPose:
     def __init__(self, table_dimension, gripper):
         self.table_dimension = table_dimension
+        self.kithchen_table = table_dimension['kitchen_table_pnu']
+        self.breakfast_table = table_dimension['breakfast_table_pnu']
 
         self.gripper = gripper
         self.joint_value = {}
@@ -104,7 +106,7 @@ class JointPose:
 
     def table_search_pose_breakfast(self):
         self.gripper.grasp(0.1)
-        self.seret_pose(['arm_lift_joint',
+        self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
                        'wrist_flex_joint',
@@ -143,12 +145,14 @@ class JointPose:
                       [arm_lift_joint, 0, 0, -1.57, 0])
         
     def dish_washer_ready_pose2(self, vertical=False, table='dishwasher'):
+        wrist_roll_joint = 0
         self.set_pose(['arm_lift_joint',
                 'arm_flex_joint',
                 'arm_roll_joint',
                 'wrist_flex_joint',
                 'wrist_roll_joint'],
-                [0, 0, 0, -1.57, wrist_roll_joint])
+                [0, 0, 0, -1.57, 0, wrist_roll_joint])
+        
     def neutral_pose(self, vertical=False):
         wrist_roll_joint = 0
         if vertical:
@@ -278,7 +282,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.2, -1.9, 1.57])
         
-    def placing_bowl_pose_obstacle (self, table='kitchenarm_table'):
+    def placing_bowl_pose_obstacle (self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -294,7 +298,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.2, -1.9, 1.57])
         
-    def placing_bowl_to_high_table (self, table='kitchenarm_table'):
+    def placing_bowl_to_high_table (self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -310,7 +314,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.2, -1.57, 1.57])
 
-    def pouring_cereal_to_high_table (self, table='kitchenarm_table'):
+    def pouring_cereal_to_high_table (self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -373,7 +377,7 @@ class JointPose:
                       [arm_lift_joint, 0, -1, -1.57, 1.57])
         
 
-    def bring_bowl_pose(self, table='kitchen_table'):
+    def bring_bowl_pose(self, table='kitchen_table'): #240630 mjgu
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -787,15 +791,25 @@ class JointPose:
                        'head_tilt_joint'],
                       [0.2, 0, -1.57, -1.57, -1.04, head_tilt])
 
-    def table_search_pose_high(self):
-        self.gripper.grasp(0.1)
+    def table_search_pose_low(self, head_tilt=-0.52, wait_gripper=True):
+        self.gripper.grasp(0.1, wait=wait_gripper)
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint',
                        'head_tilt_joint'],
-                      [0.35, 0, -1.57, -1.57, -1.04, -0.52])
+                      [0.1, 0, -1.57, -1.57, -1.04, head_tilt])
+
+    def table_search_pose_high(self, wait_gripper=True):
+        self.gripper.grasp(0.1, wait=wait_gripper)
+        self.set_pose(['arm_lift_joint',
+                       'arm_flex_joint',
+                       'arm_roll_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint',
+                       'head_tilt_joint'],
+                      [0.69, 0, -1.57, -1.57, -1.04, -0.52])
 
     def table_search_go_pose(self):
         self.gripper.grasp(0.1)
