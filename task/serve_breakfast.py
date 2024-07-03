@@ -148,48 +148,6 @@ class ServeBreakfast:
 
         if item == 'bowl':
             # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
-<<<<<<< HEAD
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
-            self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
-            self.agent.open_gripper(wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table) 
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.grasp()
-            self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
-            self.agent.move_rel(-0.4, 0, wait=False)
-
-        elif item in ['cucudas', 'blue_milk']:
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
-            self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
-            self.agent.open_gripper(wait=False)
-            # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
-            self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
-            self.agent.grasp(wait=False)
-            rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.7, 0, wait=False)
-
-        else:
-            if item == 'spoon':
-                self.agent.pose.bring_bowl_pose(table=self.pick_table)
-                # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
-                table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
-                self.agent.open_gripper(wait=False)
-                self.agent.move_rel(0, table_base_xyz[1], wait=True)
-                self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-                self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
-                self.agent.grasp(wait=False)
-                rospy.sleep(0.5) # wait for grasping manually
-                self.agent.pose.arm_flex(-60)
-
-    def pick_higher_item(self, item, table_base_xyz):
-
-        if item == 'bowl':
-=======
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
             self.agent.open_gripper(wait=False)
@@ -270,8 +228,6 @@ class ServeBreakfast:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         ### task start ##  (Inital location -> agent.move_abs('zero') )
 
         # self.agent.door_open()
@@ -279,9 +235,6 @@ class ServeBreakfast:
         rospy.sleep(2)
         self.agent.move_abs('breakfast_table')
 
-=======
-=======
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
         ### task start ###
 
         # self.agent.door_open()
