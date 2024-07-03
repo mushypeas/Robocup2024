@@ -3,6 +3,7 @@ import numpy as np
 from std_srvs.srv import Empty, EmptyRequest
 from hsr_agent.agent import Agent
 <<<<<<< HEAD
+<<<<<<< HEAD
 
 ############################################## 대회 당일 To Do List #############################################
 #                                                                                                             #
@@ -35,6 +36,8 @@ from hsr_agent.agent import Agent
 
 
 =======
+=======
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
  
 #  부산대학교 실험실 (10208 , 10동 208호) # 
 # picking_place_pnu 좌표 : [4.3083, -1.5883, 0.0044]
@@ -45,6 +48,9 @@ from hsr_agent.agent import Agent
 # initial location : [0.0053, 0.0243, -0.0228]
 ##########################################################################################
   
+<<<<<<< HEAD
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
+=======
 >>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
 class ServeBreakfast:
 
@@ -152,6 +158,7 @@ class ServeBreakfast:
 
         if item == 'bowl':
             # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
+<<<<<<< HEAD
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
             self.agent.open_gripper(wait=False)
@@ -191,12 +198,15 @@ class ServeBreakfast:
     def pick_higher_item(self, item, table_base_xyz):
 
         if item == 'bowl':
+=======
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
             self.agent.open_gripper(wait=False)
             self.agent.pose.bring_bowl_pose(table=self.pick_table) 
-            self.agent.move_rel(table_base_xyz[0]+0.1, 0, wait=True)
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp()
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.4, 0, wait=False)
@@ -271,6 +281,7 @@ class ServeBreakfast:
         stop_client.call(EmptyRequest())
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         ### task start ##  (Inital location -> agent.move_abs('zero') )
 
         # self.agent.door_open()
@@ -279,6 +290,8 @@ class ServeBreakfast:
         self.agent.move_abs('breakfast_table')
 
 =======
+=======
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
         ### task start ###
 
         # self.agent.door_open()
@@ -287,6 +300,9 @@ class ServeBreakfast:
         # self.agent.move_abs('picking_location_pnu')
         # self.agent.say('I will move to picking location')
  
+<<<<<<< HEAD
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
+=======
 >>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
         picked_items = []
 

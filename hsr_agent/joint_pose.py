@@ -406,7 +406,11 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
 <<<<<<< HEAD
+<<<<<<< HEAD
                       [arm_lift_joint, 0, -1.0472, -1.57, 1.57]) # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609
+=======
+                      [0.69 -1.57, 0, 0, 90])
+>>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
 =======
                       [0.69 -1.57, 0, 0, 90])
 >>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
