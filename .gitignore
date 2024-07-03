@@ -19,3 +19,4 @@ Tools/xtioncam_capture/image/*
 *.pbmm
 .DS_Store
 Tools/BoundingBox_Tool/Labels/*
+*.mp3

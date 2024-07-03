@@ -10,7 +10,7 @@ import numpy as np
 # import os
 # import yaml
 
-import spacy
+
 import re
 
 soundex = Soundex()
@@ -84,6 +84,7 @@ def parser_single(input, word_list=None, normalize=False):
 
 
 def parser_sentence(input, mode=None, word_list=None):
+    import spacy
 
     lower_input = input.strip().lower()
 
@@ -156,6 +157,8 @@ def parser_sentence(input, mode=None, word_list=None):
                     candidate_idx.append(i)
             print('candidate_idx: ', candidate_idx)
             for i in candidate_idx:
+                if i > len(sentence_split)-1:
+                    continue
                 print(sentence_split[i])
                 parse, dist = parser_single(sentence_split[i], word_list, normalize=True)
                 candidate_parse_list.append(parse)
@@ -173,7 +176,10 @@ def parser_sentence(input, mode=None, word_list=None):
                         candidate_parse_list.append(parse)
                         candidate_dist_list.append(dist)
             print('candidate_parse_dist_list: ', list(zip(candidate_parse_list, candidate_dist_list)))
-            sentence_parse_result = candidate_parse_list[np.argmin(candidate_dist_list)]
+            if len(candidate_parse_list) == 0 or len(candidate_dist_list) == 0:
+                sentence_parse_result = parser_single(lower_input, word_list)
+            else:
+                sentence_parse_result = candidate_parse_list[np.argmin(candidate_dist_list)]
             word_parse_result = sentence_parse_result
             print('word_parse_result: ', word_parse_result)
                                            

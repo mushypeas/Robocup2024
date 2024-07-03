@@ -3,7 +3,7 @@ import numpy as np
 import io
 from scipy.io.wavfile import write
 from std_msgs.msg import Float32, Float32MultiArray
-from .codebook_parser import parser
+# from .codebook_parser import parser
 from playsound import playsound
 import time
 # import traceback
