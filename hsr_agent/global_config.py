@@ -29,45 +29,18 @@ if FINAL:
     # real robot
     ABS_POSITION = {
 
-        #insepction
-        'inspection': [4.8333, 2.7961, 1.6308],
+        # CTT
+        'target_table' : [6.6449, 0.3005, 0.0422],
+        'dishwasher': [2.6256, -1.7107, 3.0623],
 
-        # storing grocery
-        '쉘프': [1.9958, -0.7921, -3.1012],
-        '원탁앞90센치': [2.6643, -1.1615, -0.0232],
-
-        #clean the table
-        '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
-        '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
-
-        # serve breakfast
-        '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
-        '식기세척기닫힘60센치': [1.9481, -1.4913, -3.0755],
-
-        # recptionist
-        'start': [4.7578, -1.6402, -1.5496],
-        'cloth_scan': [4.7578, -1.6402, -1.5496],
-        'seat_scan' : [6.7194, -0.3494, -0.7164],
-        'seat_scan_bypass': [6.7071, -0.3502, -3.038],
-
-        # stickler for the rules
-        'kitchen_search': [3.3146, 0.4319, -2.2959],
-        'living_room_search': [4.9844, 0.2595, -0.8542],
-        'study_search': [5.1834, 1.9487, 2.7205],
-        'bedroom_search': [6.7134, 3.401, -0.6504],
-        'shoe_warning': [5.6829, -2.9312, 2.2687],
-        'bin_littering': [1.9497, -1.9686, 1.8865],
-        'bar_drink': [3.1751, -2.4041, 1.2635],
-        'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
-        'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
     }
 
 
     TABLE_DIMENSION = {
         # width, depth, height
+        'target_table' : [0.55, 0.75, 0.730],
+        'dishwasher' : [0.65, 0.75, 0.595],
 
-        '원탁': [0.89, 0.89, 0.735],
-        '식탁용식기세척기': [0.595, 0.595, 0.845],
 
         # clean the table
         'dishwasher_rack' : [0.520,0.60,0.400],
