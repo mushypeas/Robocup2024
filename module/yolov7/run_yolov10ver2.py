@@ -1,0 +1,1 @@
+module/yolov7/run_yolov10ver2.py
