@@ -5,12 +5,14 @@ from gpsr_cmds import *
 from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
-from gpsr_clip import *
+# from gpsr_clip import *
 from gpsr_config import *
 from gpsr_follow import *
 
 from PIL import Image
 import cv2
+import torch
+import numpy as np
 
 from std_msgs.msg import Int16MultiArray
 
@@ -92,7 +94,7 @@ class GPSR:
         }
         
         # CLIP
-        self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+        # self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
 
         # FOLLOW
         # self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
@@ -206,20 +208,18 @@ class GPSR:
     def pick(self, obj):
         # find object
         # [TODO] Implement how the object can be picked up
-        if False:
-            self.agent.pose.pick_side_pose('grocery_table_pose2')
-            self.agent.open_gripper()
-            self.agent.move_rel(0, 0.5, wait=True)
-            self.agent.move_rel(0.05, 0, wait=True)
-            self.agent.grasp()
-            self.agent.pose.pick_side_pose('grocery_table_pose1')
+        # self.agent.pose.pick_side_pose('grocery_table_pose2')
+        # self.agent.open_gripper()
+        # self.agent.move_rel(0, 0.5, wait=True)
+        # self.agent.move_rel(0.05, 0, wait=True)
+        # self.agent.grasp()
+        # self.agent.pose.pick_side_pose('grocery_table_pose1')
 
-        else:
-            self.agent.say(f"GIVE {obj} to me")
-            rospy.sleep(3)
-            self.agent.open_gripper()
-            rospy.sleep(5)
-            self.agent.grasp()
+        self.agent.say(f"GIVE {obj} to me")
+        rospy.sleep(3)
+        self.agent.open_gripper()
+        rospy.sleep(5)
+        self.agent.grasp()
 
         print(f"[PICK] {obj} is picked up")
 
@@ -308,27 +308,33 @@ class GPSR:
         userName = self.cluster(userName, self.names_list)
         return userName
     
-    def getPose(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(0)
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+    def getPose(self, model_path='module/yolov7-pose-estimation/pose_classifier.pth'):
+        # input_data = 
+        model = torch.load(model_path)
+        model.eval()
 
-            if noPersonCount > 20:
-                print("No person detected, finish getPose")
-                return "no person"
+        # 입력 데이터 처리
+        lines = input_data.strip().split('\n')
+        keypoints = []
+        for line in lines[:-1]:  # 마지막 줄(레이블)을 제외하고 처리
+            x, y, confidence = map(float, line.split())
+            keypoints.extend([x, y, confidence])
 
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+        # 입력 텐서 생성
+        input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)
 
-            print(f"Person detected: {personCount[0]}")
-            feature, _ = detectPose(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            break
+        # 추론
+        with torch.no_grad():
+            output = model(input_tensor)
 
-        return feature
+        # 결과 처리 (예: 가장 높은 확률의 클래스 반환)
+        _, predicted = torch.max(output, 1)
+        
+        # 클래스 레이블 매핑 (예시)
+        class_labels = ['standing', 'sitting', 'lying', ...]  # 실제 클래스 레이블로 채워야 함
+        predicted_label = class_labels[predicted.item()]
+
+        return predicted_label
     
     def getGest(self):
         noPersonCount = 0

@@ -13,7 +13,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final.pt'
+yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 # YOLO classnames load

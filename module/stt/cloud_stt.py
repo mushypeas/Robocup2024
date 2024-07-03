@@ -2,7 +2,6 @@ import rospy
 import numpy as np
 import io
 from scipy.io.wavfile import write
-from robocup2023_stt.srv import SpeechToText
 from google.cloud import speech
 from google.api_core.retry import Retry
 from google.api_core.exceptions import RetryError

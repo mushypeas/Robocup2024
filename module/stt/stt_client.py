@@ -1,7 +1,6 @@
 import rospy
 import numpy as np
 import sounddevice as sd
-from robocup2023_stt.srv import SpeechToText
 from .codebook_parser import parser
 #from codebook_parser import parser
 from playsound import playsound
