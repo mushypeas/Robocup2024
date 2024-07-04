@@ -19,3 +19,5 @@ Tools/xtioncam_capture/image/*
 *.pbmm
 .DS_Store
 Tools/BoundingBox_Tool/Labels/*
+Tools/index_mapper/new/*
+Tools/index_mapper/old/*
