@@ -31,8 +31,20 @@ class MoveBaseStandalone:
         self.base_action_client.wait_for_server(timeout=2)
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
+        # jnpahk
+        self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
+        
+        
         # reset map
         # rospy.wait_for_service('/reset_map')
+
+
+    def _lidar_callback(self, data):
+        data_np = np.asarray(data.ranges)
+        data_np[np.isnan(data_np)] = max_dist  # remove nans
+        self.dists = data_np
+        self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
+        self.candidates = self.find_candidates()
 
     def move_zero(self, agent):
         self.base_action_client.wait_for_server(timeout=2)
