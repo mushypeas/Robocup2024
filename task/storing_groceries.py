@@ -11,7 +11,7 @@ class StoringGroceries:
 
         # !!! Mode params !!!
         # Set everything to False for actual task
-        self.cheating_mode = False
+        self.cheating_mode = True
 
         self.ignore_arena_door = True
         self.ignore_shelf_door = False
@@ -20,13 +20,13 @@ class StoringGroceries:
         self.place_only_mode = False
         
         # !!! Environment params !!!
-        self.closed_shelf_side = 'left' # ['right', 'left']
+        self.closed_shelf_side = 'right' # ['right', 'left']
         self.prior_categories = ['fruit', 'food', 'dish']
         self.ignore_items = ['dish', 'plate', 'yello_bag', 'blue_bag']
         self.item_list = ['mustard', 'apple', 'orange', 'blue_mug', 'blue_milk', 'pear', 'bowl']
 
         # !!! Measured Distances !!!
-        self.dist_to_table = 0.865
+        self.dist_to_table = 0.8
         self.dist_to_shelf = 0.9
         # self.dist_to_shelf = 0.82
         self.place_dist = 0.07
@@ -80,7 +80,7 @@ class StoringGroceries:
 
         # 1. reach into door
         self.agent.pose.reach_shelf_door_pose(shelf=self.open_shelf_floor, side=side)
-        reach_move_x = self.dist_to_shelf - 0.5 # 0.5 is the min distance from base to gripper when in cling_shelf_door_pose
+        reach_move_x = self.dist_to_shelf - 0.6 # 0.6 is the min distance from base to gripper when in cling_shelf_door_pose
         if side == 'left':
             reach_move_y = -0.10
         elif side == 'right':
@@ -138,8 +138,8 @@ class StoringGroceries:
             
             shelf_item_floor = 0
             for i in range(len(self.shelf_heights)):
-                if shelf_item_cent_z < self.shelf_heights[i+1]:
-                    shelf_item_floor = i
+                if shelf_item_cent_z < self.shelf_heights[i]:
+                    shelf_item_floor = i-1
                     break
 
             object_cnts_by_floor[shelf_item_floor] += 1
@@ -389,10 +389,14 @@ class StoringGroceries:
             self.agent.move_abs_safe(self.pick_table)
             item_info_list = self.search_all_items()
 
-            # Open shelf door
-            rospy.logwarn('Going to open_shelf_location...')
-            self.agent.move_abs_safe(self.open_shelf_location)
-            self.open_shelf(side=self.closed_shelf_side)
+            # # Open shelf door
+            # rospy.logwarn('Going to open_shelf_location...')
+            # self.agent.move_abs_safe(self.open_shelf_location)
+            # self.open_shelf(side=self.closed_shelf_side)
+
+            # Move back to shelf
+            self.agent.pose.table_search_pose(head_tilt=self.table_head_angle, wait_gripper=False)
+            self.agent.move_abs_safe(self.place_location)
 
             # Search shelf items
             rospy.logwarn('Searching items in shelf...')
@@ -404,14 +408,14 @@ class StoringGroceries:
                 self.agent.pose.pick_side_pose_by_height(height=1.0)
                 self.agent.open_gripper(wait=False)
 
-                self.agent.say(f'Please hand me the {item_info['name']}.')
+                self.agent.say(f'Please hand me the {item_info["name"]}.')
                 rospy.sleep(2)
                 self.agent.say('three'); rospy.sleep(1)
                 self.agent.say('two');   rospy.sleep(1)
                 self.agent.say('one');   rospy.sleep(1)
                 self.agent.grasp(wait=True)
 
-                self.place_item(self.place_test_object_name, self.place_test_object_type)
+                self.place_item(item_info["name"], item_info["type"])
                 self.agent.move_abs_safe(self.place_location)
 
         ## OPTION 2: Run Storing Groceries without any gimmicky approaches

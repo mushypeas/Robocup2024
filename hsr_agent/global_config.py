@@ -13,7 +13,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
+yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -29,9 +29,9 @@ if mode == 'PNU':
         'inspection': [4.8333, 2.7961, 1.6308],
 
         # storing grocery
-        'grocery_table': [4.4612, -1.1712, 0.0],
-        'grocery_shelf': [5.4415, 0.0065, 1.6457],
-
+        'grocery_table': [6.1949, -0.1462, -1.5937],
+        'grocery_shelf': [5.2891, -0.4195, 1.5308],
+        'grocery_shelf_door': [5.3238, -0.416, 1.5303],
         #clean the table
         '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
         '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
