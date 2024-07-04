@@ -147,7 +147,7 @@ class HumanFollowing:
             return None
         
         grouped_data = [arr[i:i+6] for i in range(0, len(arr), 6)]
-        filtered_data = [group for group in grouped_data if (group[5] >= .40 )]
+        filtered_data = [group for group in grouped_data if (group[5] >= .70 )]
         sorted_data = sorted(filtered_data, key = lambda x: x[0])
         sorted_arr = [item for sublist in sorted_data for item in sublist]
 
@@ -333,21 +333,37 @@ class HumanFollowing:
 
 
                         
-            right_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 180 : self.agent.center_idx - 50 ]) # 원래 self.agent.center_idx - 360 : self.agent.center_idx
-            right_edge_lidar = np.mean(self.agent.ranges[self.agent.center_idx - 240 : self.agent.center_idx - 180]) # 원래 self.agent.center_idx : self.agent.center_idx + 360
-            left_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 180]) # 원래 self.agent.center_idx : self.agent.center_idx + 360
-            left_edge_lidar = np.mean(self.agent.ranges[self.agent.center_idx + 180 : self.agent.center_idx + 240]) # 원래 self.agent.center_idx - 360 : self.agent.center_idx
-            thres = calc_z/ 1000.0 -0.2
+            # Right lidar
+            right_values = self.agent.ranges[self.agent.center_idx - 240 : self.agent.center_idx - 50]
+            right_lidar = np.mean(right_values[np.where(right_values < 0.5)])
+            if np.isnan(right_lidar):
+                right_lidar = 2.0
+            
+
+            # Right edge lidar
+            # right_edge_values = self.agent.ranges[self.agent.center_idx - 201 : self.agent.center_idx - 200]
+            # right_edge_lidar = np.mean(right_edge_values[np.where(right_edge_values < 1.0)])
+
+            # Left lidar
+            left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 240]
+            left_lidar = np.mean(left_values[np.where(left_values < 0.5)])
+            if np.isnan(left_lidar):
+                left_lidar = 2.0
+
+            # Left edge lidar
+            # left_edge_values = self.agent.ranges[self.agent.center_idx + 200 : self.agent.center_idx + 201]
+            # left_edge_lidar = np.mean(left_edge_values[np.where(left_edge_values < 1.0)])
+            thres = calc_z/ 1000.0 -0.3
 
             print("right_lidar : ", right_lidar)
             print("left_lidar : ", left_lidar)
-            print("right_edge_lidar : ", right_edge_lidar)
-            print("left_edge_lidar : ", left_edge_lidar)
+            # print("right_edge_lidar : ", right_edge_lidar)
+            # print("left_edge_lidar : ", left_edge_lidar)
             print("thres : ", thres)
 
             random_forward = random.uniform(-1, 1)
 
-            if (calc_z!=0 and _depth < 1.0 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 0.7 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -371,10 +387,12 @@ class HumanFollowing:
                 # background_mask = np.logical_or( seg_img == 0, seg_img == 15)# 배경 부분 또는 사람 부분
                 # baack_y, back_x = np.where(background_mask)
                 print("min_y+100 : ", min_y+100)
-                left_background_count = np.mean(depth[max(min_y+y_top, 0):min_y+y_top+20, :mid_x])
+                left_values = depth[max(min_y + y_top, 0):min_y + y_top, :mid_x]
+                left_background_count = np.mean(left_values[np.where(left_values < 1.0)])
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[max(min_y+y_top, 0):min_y+y_top+20, mid_x:])
+                right_values = depth[max(min_y + y_top, 0):min_y + y_top, mid_x:]
+                right_background_count = np.mean(right_values[np.where(right_values < 1.0)])    
                 # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
                 # _depth = self.barrier_check()
@@ -385,29 +403,29 @@ class HumanFollowing:
                 # right_edge = np.mean(self.agent.ranges[self.agent.center_idx + 0: self.agent.center_idx + 90])
 
                 # if left_edge_background_count > 2000 or right_edge_background_count > 2000:
-                if left_edge_lidar > 1.0 or right_edge_lidar > 1.0:
+                # if left_edge_lidar >  0.7 or right_edge_lidar >  0.7:
 
-                    # self.agent.say('Barrier checking....', show_display=False)
-                    print("Barrier checking....")
-                    
-                    if left_background_count > right_background_count :
-                        print("left side is empty")
-                        self.agent.move_rel(random_forward,0.3,0, wait=False) #then, HSR is intended to move left (pos)
-                        rospy.sleep(0.3)
-                        # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
-                        # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
-                    elif left_background_count  < right_background_count:
-                        print("right side is empty")
-                        self.agent.move_rel(random_forward,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
-                        rospy.sleep(0.3)
-                        # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
-                        # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
-                    # else: # ambigous
-                    #     rospy.sleep(1.0)
-                    #     self.agent.say('ambigous....', show_display=False)
-                    #     print("ambigous")
-                    #     self.agent.move_rel(-1.0,0,0, wait=False)
-                    #     rospy.sleep(1.0)
+                # self.agent.say('Barrier checking....', show_display=False)
+                print("Barrier checking....")
+                
+                if left_background_count > right_background_count :
+                    print("left side is empty")
+                    self.agent.move_rel(0.0,0.3,0, wait=False) #then, HSR is intended to move left (pos)
+                    rospy.sleep(0.3)
+                    # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
+                elif left_background_count  < right_background_count:
+                    print("right side is empty")
+                    self.agent.move_rel(0.0,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
+                    rospy.sleep(0.3)
+                    # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
+                    # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
+                # else: # ambigous
+                #     rospy.sleep(1.0)
+                #     self.agent.say('ambigous....', show_display=False)
+                #     print("ambigous")
+                #     self.agent.move_rel(-1.0,0,0, wait=False)
+                #     rospy.sleep(1.0)
 
 
             # print("left_lidar : ", left_lidar)
@@ -421,17 +439,17 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if left_edge_lidar > 1.3 or right_edge_lidar > 1.3:
-                    if left_lidar > right_lidar : 
-                        self.agent.move_rel(random_forward,0.3,0, wait=False)
-                        rospy.sleep(0.3)
-                    else:
-                        self.agent.move_rel(random_forward,-0.3,0, wait=False)
-                        rospy.sleep(0.3)
+                # if left_edge_lidar > 0.7 or right_edge_lidar >  0.7:
+                if left_lidar > right_lidar : 
+                    self.agent.move_rel(0.0,0.15,0, wait=False)
+                    rospy.sleep(0.2)
+                elif left_lidar < right_lidar:
+                    self.agent.move_rel(0.0,-0.15,0, wait=False)
+                    rospy.sleep(0.2)
 
-        else:
-            self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=False)
-            rospy.sleep(3)
+        # else:
+        #     self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=False)
+        #     rospy.sleep(3)
 
        ################################################################
 
@@ -1840,7 +1858,7 @@ def carry_my_luggage(agent):
                     human_seg_pos = [min_human_x, min_human_y]
                     twist, calc_z = human_following.human_reid_and_follower.back_follow(depth, human_seg_pos)
             print("before escape barrier, current calc_z: ", calc_z)
-            human_following.escape_barrier_back(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
+            # human_following.escape_barrier_back(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
             # human_following.escape_tiny()
             human_following.escape_tiny_canny_back()
 
