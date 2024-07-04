@@ -334,10 +334,10 @@ class HumanFollowing:
 
                         
             # Right lidar
-            right_values = self.agent.ranges[self.agent.center_idx - 240 : self.agent.center_idx - 50]
-            right_lidar = np.mean(right_values[np.where(right_values < 0.5)])
+            right_values = self.agent.ranges[self.agent.center_idx - 300 : self.agent.center_idx - 50]
+            right_lidar = np.mean(right_values[np.where(right_values < 0.7)])
             if np.isnan(right_lidar):
-                right_lidar = 2.0
+                right_lidar = 4.0
             
 
             # Right edge lidar
@@ -345,10 +345,10 @@ class HumanFollowing:
             # right_edge_lidar = np.mean(right_edge_values[np.where(right_edge_values < 1.0)])
 
             # Left lidar
-            left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 240]
-            left_lidar = np.mean(left_values[np.where(left_values < 0.5)])
+            left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 300]
+            left_lidar = np.mean(left_values[np.where(left_values < 0.7)])
             if np.isnan(left_lidar):
-                left_lidar = 2.0
+                left_lidar = 4.0
 
             # Left edge lidar
             # left_edge_values = self.agent.ranges[self.agent.center_idx + 200 : self.agent.center_idx + 201]
@@ -363,7 +363,7 @@ class HumanFollowing:
 
             random_forward = random.uniform(-1, 1)
 
-            if (calc_z!=0 and _depth < 0.7 and _depth< thres and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 0.5   and _depth< thres and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -410,14 +410,14 @@ class HumanFollowing:
                 
                 if left_background_count > right_background_count :
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.3,0, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(0.3)
+                    self.agent.move_rel(0.0,0.15,0, wait=False) #then, HSR is intended to move left (pos)
+                    rospy.sleep(0.2)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                 elif left_background_count  < right_background_count:
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.3,0, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(0.3)
+                    self.agent.move_rel(0.0,-0.15,0, wait=False) #then, HSR is intended to move right (neg)
+                    rospy.sleep(0.2)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
                 # else: # ambigous
@@ -431,7 +431,7 @@ class HumanFollowing:
             # print("left_lidar : ", left_lidar)
             # print("right_lidar : ", right_lidar)
             # print("thres : ", thres)
-            if (left_lidar < thres or right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if  (left_lidar < thres or right_lidar < thres ) and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
                 
                 print("Lidar BARRIER")
