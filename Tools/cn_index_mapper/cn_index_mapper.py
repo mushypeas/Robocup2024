@@ -17,7 +17,7 @@ new_class_names = [
 
 # 이전 class index를 이후 class index로 변환하는 매핑 딕셔너리 생성
 class_mapping = {old_class_names.index(name): new_class_names.index(name) for name in old_class_names}
-class_mapping[22] = 35
+class_mapping[22] = 35 # 병주: index는 22를 35로 변환 (부산대에서 cereal를 21,22 에다가 둘다 맵핑했기 때문에 발생한 문제를 땜빵한것임.)
 print(class_mapping)
 
 # 폴더 경로
