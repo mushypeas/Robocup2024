@@ -39,6 +39,48 @@ from module.stt.codebook_parser import parser, parser_single, parser_sentence
 
 #     return handle
 
+# 원래 receptionist 함수 내부에 있던 코드 1
+    # open door X
+    # if open_door_mode:
+    #     # 1. go to door position
+    #     agent.grasp()
+    #     agent.pose.move_pose()
+    #     # agent.move_abs_safe(door_bypass_position)
+    #     agent.move_abs_safe(door_position)
+    #     agent.pose.head_tilt(10)
+
+    #     # 2. open the door
+    #     # handle_xyz = door_handle_detection(agent)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.door_open_pose()
+    #     # agent.move_abs_safe(pick_position)
+    #     agent.grasp()
+    #     agent.pose.door_handle_down_pose() # 10cm position add
+    #     agent.move_rel(-0.5, 0, wait=True)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.move_pose()
+    #     agent.grasp()
+    #     # # agent.open_gripper()
+
+# 원래 receptionist 함수 내부에 있던 코드 2
+    # if open_door_mode:
+    #     # 6-2. open the door
+    #     # handle_xyz = door_handle_detection(agent)
+    #     rospy.sleep(1)
+    #     agent.pose.head_tilt(10)
+    #     agent.open_gripper()
+    #     agent.pose.door_open_pose()
+    #     # agent.move_abs_safe(pick_position)
+    #     agent.grasp()
+    #     agent.pose.door_handle_down_pose() # 10cm position add
+    #     agent.move_rel(-0.5, 0, wait=True)
+    #     rospy.sleep(1)
+    #     agent.open_gripper()
+    #     agent.pose.move_pose()
+    #     agent.grasp()
+
 
 def receptionist(agent):
     #################### global config ####################
@@ -51,7 +93,8 @@ def receptionist(agent):
     start_position = 'start'
 
     # second guest 소개 시 고개를 몇도 돌려야 하는지? scan_position과 scan_bypass_position 각도 차이
-    second_guest_head_pan_degree = -135
+    second_guest_head_pan_degree = -180 # PNU
+    stt_sentence_mode = True # 1st trial - False, 2nd trial - True
 
     # open_door_mode = False
     calibration_mode = False
@@ -64,6 +107,7 @@ def receptionist(agent):
     # face_threshold2 = 48 #38 #35
     # face_threshold = 40 # left, right
     # face_threshold2 = 25 # middle
+    # PNU
     face_threshold = 30 # left, right
     face_threshold2 = 35 # middle
 
@@ -132,29 +176,7 @@ def receptionist(agent):
     agent.move_abs_safe(start_position)
     agent.say('start receptionist')
 
-    # open door X
-    # if open_door_mode:
-    #     # 1. go to door position
-    #     agent.grasp()
-    #     agent.pose.move_pose()
-    #     # agent.move_abs_safe(door_bypass_position)
-    #     agent.move_abs_safe(door_position)
-    #     agent.pose.head_tilt(10)
-
-    #     # 2. open the door
-    #     # handle_xyz = door_handle_detection(agent)
-    #     rospy.sleep(1)
-    #     agent.open_gripper()
-    #     agent.pose.door_open_pose()
-    #     # agent.move_abs_safe(pick_position)
-    #     agent.grasp()
-    #     agent.pose.door_handle_down_pose() # 10cm position add
-    #     agent.move_rel(-0.5, 0, wait=True)
-    #     rospy.sleep(1)
-    #     agent.open_gripper()
-    #     agent.pose.move_pose()
-    #     agent.grasp()
-    #     # # agent.open_gripper()
+    ### open door X ###
 
     # 3. meet the first guest
 
@@ -193,7 +215,7 @@ def receptionist(agent):
     # First guest STT
     qr_check = False
 
-    # # 기존 코드
+    # # stt 기존 코드
     # agent.say('I will ask your \nname and drink.', show_display=True)
     # rospy.sleep(2.5)
     # if not calibration_mode and not qr_check:
@@ -247,126 +269,128 @@ def receptionist(agent):
     #             elif 'no' in answer:
     #                 continue
 
-    # ### Trial 1 (single word parsing)
-    # agent.say('I will ask your \nname and drink.', show_display=True)
-    # rospy.sleep(2.5)
-    # name1, drink1 = '_', '_'
-    # if not calibration_mode and not qr_check:
-    #     for _ in range(1):
-    #         agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-    #         rospy.sleep(4)
-            
-    #         for _ in range(2):
-    #             agent.say('What is your name?\n Say only name word.', show_display=True)
-    #             rospy.sleep(3)
-    #             first_raw_name = agent.stt(3)
-    #             name1, _ = parser_single(first_raw_name, name_list)
-    #             print('receptionist name1: ', name1)
-    #             if name1 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 name1 = '_'
-    #                 continue
-    #             else:
-    #                 agent.say(f'Is your name {name1}?\nSay yes or no', show_display=True)
-    #                 rospy.sleep(3)
-    #                 answer = agent.stt(2)
-    #                 answer, _ = parser_single(answer, ['yes', 'no'])
-    #                 if answer == 'yes':
-    #                     break
-    #                 else:
-    #                     name1 = '_'
-    #                     continue
-
-    #         if name1 == '_':
-    #             qr_check = True
-    #             break
-
-    #         for _ in range(2):
-    #             agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
-    #             rospy.sleep(3)
-    #             first_raw_drink = agent.stt(3)
-    #             drink1, _ = parser_single(first_raw_drink, drink_list)
-    #             print('receptionist drink1: ', drink1)
-    #             if drink1 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 drink1 = '_'
-    #                 continue
-    #             else:
-    #                 agent.say(f'Is your favorite drink {drink1}?\nSay yes or no', show_display=True)
-    #                 rospy.sleep(3)
-    #                 answer = agent.stt(2)
-    #                 answer, _ = parser_single(answer, ['yes', 'no'])
-    #                 if answer == 'yes':
-    #                     break
-    #                 else:
-    #                     drink1 = '_'
-    #                     continue
-
-    #         if drink1 == '_':
-    #             qr_check = True
-    #             break
-
-    ### Trial 2 (sentence parsing with pattern/spacy)
-    agent.say('I will ask your \nname and drink.', show_display=True)
-    rospy.sleep(2.5)
-    name1, drink1 = '_', '_'
-    if not calibration_mode and not qr_check:
-        for _ in range(1):
-            agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-            rospy.sleep(4)
-            
-            for _ in range(2):
-                agent.say('What is your name?', show_display=True)
-                first_raw_name = agent.stt(4)
-                name1 = parser_sentence(first_raw_name, mode='name', word_list=name_list)
-                print('receptionist name1: ', name1)
-                if name1 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.5)
-                    name1 = '_'
-                    continue
-                else:
-                    agent.say(f'Is your name {name1}?\nSay yes or no', show_display=True)
-                    rospy.sleep(2)
-                    answer = agent.stt(2)
-                    answer, _ = parser_single(answer, ['yes', 'no'])
-                    if answer == 'yes':
-                        break
-                    else:
+    if not stt_sentence_mode:
+        ### Trial 1 (single word parsing)
+        agent.say('I will ask your \nname and drink.', show_display=True)
+        rospy.sleep(2.5)
+        name1, drink1 = '_', '_'
+        if not calibration_mode and not qr_check:
+            for _ in range(1):
+                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+                rospy.sleep(4)
+                
+                for _ in range(2):
+                    agent.say('What is your name?\n Say only name word.', show_display=True)
+                    rospy.sleep(3)
+                    first_raw_name = agent.stt(3)
+                    name1, _ = parser_single(first_raw_name, name_list)
+                    print('receptionist name1: ', name1)
+                    if name1 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
                         name1 = '_'
                         continue
-
-            if name1 == '_':
-                qr_check = True
-                break
-
-            for _ in range(2):
-                agent.say('What is your favorite drink?', show_display=True)
-                first_raw_drink = agent.stt(3)
-                drink1 = parser_sentence(first_raw_drink, mode='drink', word_list=drink_list)
-                
-                print('receptionist drink1: ', drink1)
-                if drink1 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.5)
-                    drink1 = '_'
-                    continue
-                else:
-                    agent.say(f'Is your favorite drink {drink1}?\nSay yes or no', show_display=True)
-                    rospy.sleep(2)
-                    answer = agent.stt(2)
-                    answer, _ = parser_single(answer, ['yes', 'no'])
-                    if answer == 'yes':
-                        break
                     else:
+                        agent.say(f'Is your name {name1}?\nSay yes or no', show_display=True)
+                        rospy.sleep(3)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            name1 = '_'
+                            continue
+
+                if name1 == '_':
+                    qr_check = True
+                    break
+
+                for _ in range(2):
+                    agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
+                    rospy.sleep(3)
+                    first_raw_drink = agent.stt(3)
+                    drink1, _ = parser_single(first_raw_drink, drink_list)
+                    print('receptionist drink1: ', drink1)
+                    if drink1 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
                         drink1 = '_'
                         continue
+                    else:
+                        agent.say(f'Is your favorite drink {drink1}?\nSay yes or no', show_display=True)
+                        rospy.sleep(3)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            drink1 = '_'
+                            continue
 
-            if drink1 == '_':
-                qr_check = True
-                break
+                if drink1 == '_':
+                    qr_check = True
+                    break
+
+    else:
+        ### Trial 2 (sentence parsing with pattern/spacy)
+        agent.say('I will ask your \nname and drink.', show_display=True)
+        rospy.sleep(2.5)
+        name1, drink1 = '_', '_'
+        if not calibration_mode and not qr_check:
+            for _ in range(1):
+                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+                rospy.sleep(4)
+                
+                for _ in range(2):
+                    agent.say('What is your name?', show_display=True)
+                    first_raw_name = agent.stt(4)
+                    name1 = parser_sentence(first_raw_name, mode='name', word_list=name_list)
+                    print('receptionist name1: ', name1)
+                    if name1 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
+                        name1 = '_'
+                        continue
+                    else:
+                        agent.say(f'Is your name {name1}?\nSay yes or no', show_display=True)
+                        rospy.sleep(2)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            name1 = '_'
+                            continue
+
+                if name1 == '_':
+                    qr_check = True
+                    break
+
+                for _ in range(2):
+                    agent.say('What is your favorite drink?', show_display=True)
+                    first_raw_drink = agent.stt(4)
+                    drink1 = parser_sentence(first_raw_drink, mode='drink', word_list=drink_list)
+                    
+                    print('receptionist drink1: ', drink1)
+                    if drink1 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
+                        drink1 = '_'
+                        continue
+                    else:
+                        agent.say(f'Is your favorite drink {drink1}?\nSay yes or no', show_display=True)
+                        rospy.sleep(2)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            drink1 = '_'
+                            continue
+
+                if drink1 == '_':
+                    qr_check = True
+                    break
 
     if qr_check:
         agent.say('Sorry.\nShow me the QR code', show_display=True)
@@ -431,7 +455,7 @@ def receptionist(agent):
     agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated)
-    agent.say(name_host)
+    agent.say(name_host, show_display=True)
     rospy.sleep(0.6)
     cs.gaze_seat(agent, first_2b_seated)
     agent.say('This is ' + name1 + '.', show_display=True)
@@ -441,7 +465,7 @@ def receptionist(agent):
     rospy.sleep(1.8)
 
     cs.gaze_seat(agent, first_2b_seated)
-    agent.say(name1)
+    agent.say(name1, show_display=True)
     rospy.sleep(0.6)
     cs.gaze_seat(agent, host_seated)
     agent.say(f'This is {name_host}.', show_display=True)
@@ -458,21 +482,7 @@ def receptionist(agent):
     # rospy.sleep(8)
     rospy.sleep(4)
 
-    # if open_door_mode:
-    #     # 6-2. open the door
-    #     # handle_xyz = door_handle_detection(agent)
-    #     rospy.sleep(1)
-    #     agent.pose.head_tilt(10)
-    #     agent.open_gripper()
-    #     agent.pose.door_open_pose()
-    #     # agent.move_abs_safe(pick_position)
-    #     agent.grasp()
-    #     agent.pose.door_handle_down_pose() # 10cm position add
-    #     agent.move_rel(-0.5, 0, wait=True)
-    #     rospy.sleep(1)
-    #     agent.open_gripper()
-    #     agent.pose.move_pose()
-    #     agent.grasp()
+    ### open door X ###
 
     # 6-3. get second guest information
     agent.pose.head_tilt(10)
@@ -482,7 +492,7 @@ def receptionist(agent):
     # Second guest STT
     qr_check = False
 
-    # # 기존 코드
+    # # stt 기존 코드
     # agent.say('I will ask your \nname and drink.', show_display=True)
     # rospy.sleep(2.5)
     # if not calibration_mode and not qr_check:
@@ -536,126 +546,128 @@ def receptionist(agent):
     #             elif 'no' in answer:
     #                 continue
 
-    # ### Trial 1 (single word parsing)
-    # agent.say('I will ask your \nname and drink.', show_display=True)
-    # rospy.sleep(2.5)
-    # name2, drink2 = '_', '_'
-    # if not calibration_mode and not qr_check:
-    #     for _ in range(1):
-    #         agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-    #         rospy.sleep(4)
-            
-    #         for _ in range(2):
-    #             agent.say('What is your name?\n Say only name word.', show_display=True)
-    #             rospy.sleep(3)
-    #             second_raw_name = agent.stt(3)
-    #             name2, _ = parser_single(second_raw_name, name_list)
-    #             print('receptionist name2: ', name2)
-    #             if name2 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 name2 = '_'
-    #                 continue
-    #             else:
-    #                 agent.say(f'Is your name {name2}?\nSay yes or no', show_display=True)
-    #                 rospy.sleep(3)
-    #                 answer = agent.stt(2)
-    #                 answer, _ = parser_single(answer, ['yes', 'no'])
-    #                 if answer == 'yes':
-    #                     break
-    #                 else:
-    #                     name2 = '_'
-    #                     continue
-
-    #         if name2 == '_':
-    #             qr_check = True
-    #             break
-
-    #         for _ in range(2):
-    #             agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
-    #             rospy.sleep(3)
-    #             second_raw_drink = agent.stt(3)
-    #             drink2, _ = parser_single(second_raw_drink, drink_list)
-    #             print('receptionist drink2: ', drink2)
-    #             if drink2 == '':
-    #                 agent.say('Sorry, voice not recognized.', show_display=True)
-    #                 rospy.sleep(1.5)
-    #                 drink2 = '_'
-    #                 continue
-    #             else:
-    #                 agent.say(f'Is your favorite drink {drink2}?\nSay yes or no', show_display=True)
-    #                 rospy.sleep(3)
-    #                 answer = agent.stt(2)
-    #                 answer, _ = parser_single(answer, ['yes', 'no'])
-    #                 if answer == 'yes':
-    #                     break
-    #                 else:
-    #                     drink2 = '_'
-    #                     continue
-
-    #         if drink2 == '_':
-    #             qr_check = True
-    #             break
-
-    ### Trial 2 (sentence parsing with pattern/spacy)
-    agent.say('I will ask your \nname and drink.', show_display=True)
-    rospy.sleep(2.5)
-    name2, drink2 = '_', '_'
-    if not calibration_mode and not qr_check:
-        for _ in range(1):
-            agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-            rospy.sleep(4)
-            
-            for _ in range(2):
-                agent.say('What is your name?', show_display=True)
-                second_raw_name = agent.stt(4)
-                name2 = parser_sentence(second_raw_name, mode='name', word_list=name_list)
-                print('receptionist name2: ', name2)
-                if name2 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.5)
-                    name2 = '_'
-                    continue
-                else:
-                    agent.say(f'Is your name {name2}?\nSay yes or no', show_display=True)
-                    rospy.sleep(2)
-                    answer = agent.stt(2)
-                    answer, _ = parser_single(answer, ['yes', 'no'])
-                    if answer == 'yes':
-                        break
-                    else:
+    if not stt_sentence_mode:
+        ### Trial 1 (single word parsing)
+        agent.say('I will ask your \nname and drink.', show_display=True)
+        rospy.sleep(2.5)
+        name2, drink2 = '_', '_'
+        if not calibration_mode and not qr_check:
+            for _ in range(1):
+                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+                rospy.sleep(4)
+                
+                for _ in range(2):
+                    agent.say('What is your name?\n Say only name word.', show_display=True)
+                    rospy.sleep(3)
+                    second_raw_name = agent.stt(3)
+                    name2, _ = parser_single(second_raw_name, name_list)
+                    print('receptionist name2: ', name2)
+                    if name2 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
                         name2 = '_'
                         continue
-
-            if name2 == '_':
-                qr_check = True
-                break
-
-            for _ in range(2):
-                agent.say('What is your favorite drink?', show_display=True)
-                second_raw_drink = agent.stt(3)
-                drink2 = parser_sentence(second_raw_drink, mode='drink', word_list=drink_list)
-                
-                print('receptionist drink2: ', drink2)
-                if drink2 == '':
-                    agent.say('Sorry, voice not recognized.', show_display=True)
-                    rospy.sleep(1.5)
-                    drink2 = '_'
-                    continue
-                else:
-                    agent.say(f'Is your favorite drink {drink2}?\nSay yes or no', show_display=True)
-                    rospy.sleep(2)
-                    answer = agent.stt(2)
-                    answer, _ = parser_single(answer, ['yes', 'no'])
-                    if answer == 'yes':
-                        break
                     else:
+                        agent.say(f'Is your name {name2}?\nSay yes or no', show_display=True)
+                        rospy.sleep(3)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            name2 = '_'
+                            continue
+
+                if name2 == '_':
+                    qr_check = True
+                    break
+
+                for _ in range(2):
+                    agent.say('What is your favorite drink?\n Say only drink word.', show_display=True)
+                    rospy.sleep(3)
+                    second_raw_drink = agent.stt(3)
+                    drink2, _ = parser_single(second_raw_drink, drink_list)
+                    print('receptionist drink2: ', drink2)
+                    if drink2 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
                         drink2 = '_'
                         continue
+                    else:
+                        agent.say(f'Is your favorite drink {drink2}?\nSay yes or no', show_display=True)
+                        rospy.sleep(3)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            drink2 = '_'
+                            continue
 
-            if drink2 == '_':
-                qr_check = True
-                break
+                if drink2 == '_':
+                    qr_check = True
+                    break
+
+    else:
+        ### Trial 2 (sentence parsing with pattern/spacy)
+        agent.say('I will ask your \nname and drink.', show_display=True)
+        rospy.sleep(2.5)
+        name2, drink2 = '_', '_'
+        if not calibration_mode and not qr_check:
+            for _ in range(1):
+                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
+                rospy.sleep(4)
+                
+                for _ in range(2):
+                    agent.say('What is your name?', show_display=True)
+                    second_raw_name = agent.stt(4)
+                    name2 = parser_sentence(second_raw_name, mode='name', word_list=name_list)
+                    print('receptionist name2: ', name2)
+                    if name2 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
+                        name2 = '_'
+                        continue
+                    else:
+                        agent.say(f'Is your name {name2}?\nSay yes or no', show_display=True)
+                        rospy.sleep(2)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            name2 = '_'
+                            continue
+
+                if name2 == '_':
+                    qr_check = True
+                    break
+
+                for _ in range(2):
+                    agent.say('What is your favorite drink?', show_display=True)
+                    second_raw_drink = agent.stt(4)
+                    drink2 = parser_sentence(second_raw_drink, mode='drink', word_list=drink_list)
+                    
+                    print('receptionist drink2: ', drink2)
+                    if drink2 == '':
+                        agent.say('Sorry, voice not recognized.', show_display=True)
+                        rospy.sleep(1.5)
+                        drink2 = '_'
+                        continue
+                    else:
+                        agent.say(f'Is your favorite drink {drink2}?\nSay yes or no', show_display=True)
+                        rospy.sleep(2)
+                        answer = agent.stt(2)
+                        answer, _ = parser_single(answer, ['yes', 'no'])
+                        if answer == 'yes':
+                            break
+                        else:
+                            drink2 = '_'
+                            continue
+
+                if drink2 == '_':
+                    qr_check = True
+                    break
 
     if qr_check:
         agent.say('Sorry.\nShow me the QR code', show_display=True)
@@ -730,7 +742,7 @@ def receptionist(agent):
     # agent.pose.head_pan(100)
     # agent.pose.head_pan(-135)
     agent.pose.head_pan(second_guest_head_pan_degree)
-    agent.say(name2)
+    agent.say(name2, show_display=True)
     rospy.sleep(0.6)
     cs.gaze_seat(agent, host_seated)
     agent.say(f'This is {name_host}', show_display=True)
