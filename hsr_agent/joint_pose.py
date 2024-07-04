@@ -82,7 +82,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [0, 0, -1.57, -1.57, wrist_roll_joint])
 
-    def holding_pose(self): # mjgu 240516
+    def table_search_pose_breakfast_initial(self):
         self.gripper.grasp(0.1)
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
@@ -90,17 +90,7 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint',
                        'head_tilt_joint'],
-                      [0, -1.57, -1.57, -1.57, 1.57, 0.03])
-
-    def table_search_pose_breakfast_initial(self): # mjgu 240516
-        self.gripper.grasp(0.1)
-        self.set_pose(['arm_lift_joint',
-                       'arm_flex_joint',
-                       'arm_roll_joint',
-                       'wrist_flex_joint',
-                       'wrist_roll_joint',
-                       'head_tilt_joint'],
-                      [0, 0, -1.57, -1.57, 0, -0.052])
+                      [0.15, 0, -1.57, -1.57, -1.04, -0.52])
 
     def table_search_pose_breakfast(self):
         self.gripper.grasp(0.1)
@@ -200,8 +190,7 @@ class JointPose:
     def pick_top_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.11
-        offset = 0 # bjkim
-        arm_lift_joint = target_table_height - robot_default_height - offset # bjkim
+        arm_lift_joint = target_table_height - robot_default_height
         if arm_lift_joint > 0.69:
             arm_lift_joint = 0.69
         self.set_pose(['arm_lift_joint',
@@ -248,6 +237,9 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 1.57])
+        return arm_lift_joint # added by bjkim 5th june
+
+
 
     def pick_bowl_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
@@ -305,8 +297,7 @@ class JointPose:
                        'arm_flex_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, 0, -1.57, -1.57, 1.57]) 
-        
+                      [arm_lift_joint, 0, -1.57, -1.57, 1.57])
     def pick_up_bowl_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
@@ -435,7 +426,7 @@ class JointPose:
     def arm_lift_object_table_down(self, object_height, table='breakfast_table'): #mjgu 240505
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
-        offset = 0  # table to object before open_gripper
+        offset = 0.5  # table to object before open_gripper
         # 0.74(kitchen_table) + 0.16(cereal) + 0.01 - 0.3 = 0.61
         arm_lift_joint = target_table_height + object_height + offset - robot_default_height
         print('arm_lift_joint', arm_lift_joint)
@@ -511,9 +502,9 @@ class JointPose:
 
     def place_bowl_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
-        hand_down_length = 0.18 # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree 
+        hand_down_length = 0.15 # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree 
         robot_default_height = 0.3
-        bowl_offset = -0.01
+        bowl_offset = 0.03
         arm_lift_joint = target_table_height + bowl_offset + hand_down_length - robot_default_height
 
         if arm_lift_joint > 0.69:
@@ -525,7 +516,7 @@ class JointPose:
                        'arm_flex_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-                      [arm_lift_joint, 0, -1.57, -0.8, 1.57])
+                      [arm_lift_joint, 0, -1.57, -0.785, 1.57])
 
 
     # def place_cutlery_pose(self, table='dishwasher'):
@@ -642,8 +633,7 @@ class JointPose:
     def pick_object_side_pose(self, object_height, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.33
-        offset = 0.02
-        arm_lift_joint = target_table_height + object_height + offset - robot_default_height
+        arm_lift_joint = target_table_height + object_height - robot_default_height
         print('arm_lift_joint, ', arm_lift_joint)
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
@@ -652,10 +642,10 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
-    def spill_object_pose(self, object_height, table='kitchen_table'): # mjgu. target table 달라질 경우 수정 필요
+    def spill_object_pose(self, object_height, table='breakfast_table'): # kitchen_table 에서 변경 / mjgu
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
-        offset = 0.1 # object to table
+        offset = 0.04 # object to table
         # 0.74(kitchen_table) + 0.2 - 0.3 = 0.64
         arm_lift_joint = target_table_height + object_height + offset - robot_default_height
         print('arm_lift_joint', arm_lift_joint)

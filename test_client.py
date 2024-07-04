@@ -75,8 +75,6 @@ if __name__ == '__main__':
             agent.pose.neutral_pose()
         elif command == 'neutral_pose_vertical':
             agent.pose.neutral_pose(vertical=True)
-        elif command == 'pose1': # test pose 추가. mjgu 240516
-            agent.pose.table_search_pose_breakfast_initial()           
         elif command == 'pick_side_pose':
             agent.pose.pick_side_pose(table='kitchen_table')
         elif command == 'pick_side_pose_breakfast_table':
