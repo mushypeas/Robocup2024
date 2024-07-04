@@ -22,6 +22,32 @@ try:
 except Exception as e:
     print(e)
     print('Skip loading OBJECT_LIST')
+    OBJECT_LIST = [['water', 0, 0, 0],
+        ['milk', 1, 0, 0],
+        ['coke', 2, 0, 0],
+        ['tonic', 3, 0, 0],
+        ['bubble_tea', 4, 0, 0],
+        ['ice tea', 5, 0, 0],
+        ['cereal', 6, 2, 0],
+        ['tuna_can', 7, 2, 0],
+        ['coffee_jar', 8, 2, 0],
+        ['sugar', 9, 2, 0],
+        ['mustard', 10, 2, 0],
+        ['apple', 11, 3, 0],
+        ['peach', 12, 3, 0],
+        ['orange', 13, 3, 0],
+        ['banana', 14, 3, 0],
+        ['strawberry', 15, 3, 0],
+        ['pockys', 16, 4, 0],
+        ['pringles', 17, 4, 0],
+        ['spoon', 18, 5, 1],
+        ['fork', 19, 5, 1],
+        ['plate', 20, 5, 3],
+        ['bowl', 21, 5, 2],
+        ['mug', 22, 5, 0],
+        ['knife', 23, 5, 1],
+        ['paperbag', 24, 1, 1],
+        ['tab', 25, 0, 0]]
     pass
 
 AIIS = True

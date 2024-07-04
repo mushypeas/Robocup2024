@@ -12,14 +12,45 @@ from gpsr_follow import *
 from PIL import Image
 import cv2
 
-from std_msgs.msg import Int16MultiArray
+from std_msgs.msg import Int16MultiArray, String, Float32MultiArray
 
 from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 
+import torch
+import numpy as np
+import torch.nn as nn
 
 
 objects_data = readData(objects_file_path)
+
+class PoseClassifier(nn.Module):
+    def __init__(self, input_size):
+        super(PoseClassifier, self).__init__()
+        self.fc1 = nn.Linear(input_size, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 3)
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
+    
+class GestClassifier(nn.Module):
+    def __init__(self, input_size):
+        super(GestClassifier, self).__init__()
+        self.fc1 = nn.Linear(input_size, 128)
+        self.fc2 = nn.Linear(128, 64)
+        self.fc3 = nn.Linear(64, 4)  # 4개의 클래스
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        x = self.relu(self.fc1(x))
+        x = self.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
     
 class GPSR:
     def __init__(self, agent):
@@ -49,6 +80,7 @@ class GPSR:
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
+        self.image_sub = rospy.Subscriber('human_keypoints', Float32MultiArray, self.hk_cb)
 
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
@@ -93,6 +125,14 @@ class GPSR:
         
         # CLIP
         self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+        # 학습된 모델 로드
+        self.pose_model = PoseClassifier(51)
+        self.pose_model.load_state_dict(torch.load('module/yolov7-pose-estimation/pose_classifier_1.pth'))
+        self.pose_model.eval()
+
+        self.gest_model = GestClassifier(51)
+        self.gest_model.load_state_dict(torch.load('module/yolov7-pose-estimation/gest_classifier_1.pth'))
+        self.gest_model.eval()
 
         # FOLLOW
         # self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
@@ -103,6 +143,10 @@ class GPSR:
     # CALLBACKS
     def _knee_pose_callback(self, msg):
         rospy.loginfo(msg.data)
+
+    # human keypoints callback
+    def hk_cb(self, msg):
+        self.human_keypoints = msg.data
 
     ### HELP Functions ###
         
@@ -309,52 +353,67 @@ class GPSR:
         return userName
     
     def getPose(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(0)
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        num_features = 51
+        keypoint_data = self.human_keypoints
+        split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
 
-            if noPersonCount > 20:
-                print("No person detected, finish getPose")
-                return "no person"
+        human_poses = []
 
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+        for input_data in split_data:
 
-            print(f"Person detected: {personCount[0]}")
-            feature, _ = detectPose(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            break
+            input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 
-        return feature
+            # Perform the inference
+            with torch.no_grad():
+                output = self.pose_model(input_tensor)
+
+            # Print the output
+            _, predicted_label = torch.max(output.data, 1)
+
+            predicted = predicted_label.item()
+
+            if predicted == 0:
+                human_poses.append('sitting')
+            elif predicted == 1:
+                human_poses.append('standing')
+            elif predicted == 2:
+                human_poses.append('lying')
+
+        return human_poses
+
     
     def getGest(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(5)
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        num_features = 51
+        keypoint_data = self.human_keypoints
+        split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
 
-            if noPersonCount > 20:
-                print("No person detected, finish getGest")
-                return "no person"
+        human_gests = []
+
+        for input_data in split_data:
+
+            input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+
+            # Perform the inference
+            with torch.no_grad():
+                output = self.gest_model(input_tensor)
+
+            # Print the output
+            confidence, predicted_label = torch.max(output.data, 1)
             
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+            confidence = confidence.item()
+            predicted = predicted_label.item()
 
-            print(f"Person detected: {personCount[0]}")
-            feature, _ = detectGest(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            if feature == "no pose":
-                print("No pose detected")
-                continue
-            
-            break
+            if predicted == 0:
+                human_gests.append(('raising left', confidence))
+            elif predicted == 1:
+                human_gests.append(('raising right', confidence))
+            elif predicted == 2:
+                human_gests.append(('pointing right', confidence))
+            elif predicted == 3:
+                human_gests.append(('pointing left', confidence))
 
-        return feature
+        return human_gests
+        
     
     def getCloth(self):
         noPersonCount = 0
