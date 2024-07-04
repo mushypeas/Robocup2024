@@ -63,7 +63,7 @@ class MoveBaseStandalone:
         self.base_action_client.wait_for_server(5)
         theta = 0.
         rotate_delta = 30.
-        r = 0.5
+        r = 1.0 # 0.5
         spin_count = 0
         while not rospy.is_shutdown():
             # goal topic generation
@@ -281,9 +281,9 @@ def restaurant(agent):
                 agent.say('Please say items you like to order in proper format after the ding sound')
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
-                # result = agent.stt(5.)
-                # raw, item_parsed = result
-                item_parsed = 'apple'
+                result = agent.stt(5.)
+                raw, item_parsed = result
+                # item_parsed = 'apple'
                 if len(item_parsed) == 0:
                     agent.say('I am sorry that I could not recognize what you said. Please answer me again.')
                     agent.head_show_image('STT Fail')
