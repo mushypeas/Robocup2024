@@ -21,7 +21,6 @@ import torch
 import numpy as np
 import torch.nn as nn
 
-
 objects_data = readData(objects_file_path)
 
 class PoseClassifier(nn.Module):
