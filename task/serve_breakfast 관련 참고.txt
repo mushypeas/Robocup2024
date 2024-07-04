@@ -1,0 +1,61 @@
+[Robocup 2024] 2024.07.04 mjgu 작성
+
+Task : Serve_breakfast
+
+
+대회 당일 해야할 것
+1. (좌표) picking location, kitchen_table, breakfast_table
+2. (Dimension / w,d,h) kitchen_table, breakfast_table
+3. (Object) object list(yolo), object height
+4. (Offset 설정) 정확한 위치에 가서 picking / pouring / placing 되는지 확인 -> 안 되면 offset 줘야 함
+5. (HSR display, tts 확인) 음성, display 제대로 나오는지 확인
+6. (yolo detect) object detect 정확하게 되는지 확인 (60cm)
+
+
+대회 이전 고려해야 할 사항 정리
+1. 주행(Navigation) 관련  : picking location 이동 중 obstacle 가능성,
+			   placing table에 의자 등의 obstacle 가능성
+2. Object 관련 : cereal, milk의 height 혹은 shapd, package 상태 (비닐 etc)
+3. Desk height 관련
+ (1) Low desk : head_tilt 조정 (-15~-20), side_picking 가능
+ (2) Standdard desk : head_tilt 조정, side_picking 가능
+ (3) High desk : head_tilt 조정, side_picking 가능
+ (4) MAX High desk (arm_lift_up이 max로 했을 때, 팔을 쭉 뻗는 side_picking_pose가 불가한 경우)
+4. Offset 관련
+
+* 관련 설정
+ - 주행 불가 : (Alias 되어있음) 'sh', 'cr'로 동기화.
+ - Object : object list(global config), yolo(모델 문제, cn파일, global_config 혹은 run.yolo 파일에서 경로 확인)
+            가까이에서 detect 하는 수 밖에 없음.
+
+
+< 점수표 > 총점 : 1175점
+Initial navigation to pick up area : 15점
+Perceiving object and categorizing it correctly (visualize or say) 4×15점 = 60점
+Picking up breakfast items for transportation to the table 4×50점 = 200점
+Placing breakfast items on the table 4×50점 = 200점
+Pouring cereal into the bowl 300점
+Total : 775점
+
+(Bonus Rewards)
+Pouring milk into the bowl 300점
+Placing a spoon next to the bowl 100점
+Total : 400점
+
+(Penalties)
+Throwing or dropping an object on the table : 4개×–30점 = -120점
+Spilling cereal while pouring : –100점
+Spilling milk while pouring : –100점
+Total : -320점
+
+(Deus Ex Machina Penalties)
+Pointing at an object 4×–5점 = -20점
+Handing an object over to the robot 4×–50점 = -200점
+A human placing an object on the table 4×–50점 = -200점
+A human pouring cereal in the bowl –300점
+Total : -720점
+
+(Special Penalties & Bonuses)
+Not attending (see sec. 2.3.1) –500점
+Using alternative start signal –100점
+Outstanding performance (see sec. 2.3.3) 117
