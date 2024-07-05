@@ -9,7 +9,7 @@ class StoringGroceries:
     def __init__(self, agent: Agent):
         self.agent = agent
 
-        # !!! Mode params !!!
+        ## !!! Mode params !!!
         # Set everything to False for actual task
         self.ignore_arena_door = True
         self.ignore_shelf_door = False
@@ -17,7 +17,7 @@ class StoringGroceries:
         self.picking_only_mode = False
         self.place_only_mode = False
         
-        # !!! Environment params !!!
+        ## !!! Environment params !!!
         self.closed_shelf_side = 'right' # ['right', 'left']
         self.open_shelf_floor = 2
         self.prior_categories = ['cleaning', 'drink', 'toy', 'fruit', 'food', 'dish', 'snack']
@@ -25,20 +25,22 @@ class StoringGroceries:
         self.item_list = None
         # self.item_list = ['bowl']
 
-        # !!! Measured Distances !!!
+        ## !!! Measured Distances !!!
         self.table_dist = 0.85
         self.shelf_dist = 0.86
         self.place_dist = 0.12
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf'][0][0] * 0.9
                                 - self.place_dist * 2) / 2
 
-        # !!! Hard-Coded Offsets !!!
+        ## !!! Hard-Coded Offsets !!!
         self.pick_front_bias = [0.03, 1.15, -0.02] # [x, y_ratio, height]
         self.pick_top_bias = [0.1, 0, -0.015]
         self.pick_bowl_bias = [0.0, 0.00, -0.10]
         self.place_x_bias = [None, 0.0, 0.0, 0.0]
 
         self.open_shelf_location = 'grocery_shelf_door'
+        self.open_shelf_move_y = 0.12
+        self.open_shelf_move_yaw = 0.05
 
         self.pick_table = 'grocery_table'
         self.table_height = self.agent.table_dimension[self.pick_table][2]
@@ -71,11 +73,11 @@ class StoringGroceries:
         self.agent.pose.reach_shelf_door_pose(shelf=self.place_shelf, floor=self.open_shelf_floor, side=side)
         reach_move_x = self.shelf_dist - 0.52 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
         if side == 'left':
-            reach_move_y = -0.10
-            open_move_yaw = 0.05
+            reach_move_y = -self.open_shelf_move_y
+            open_move_yaw = self.open_shelf_move_yaw
         elif side == 'right':
-            reach_move_y = 0.10
-            open_move_yaw = -0.05
+            reach_move_y = self.open_shelf_move_y
+            open_move_yaw = -self.open_shelf_move_yaw
         self.agent.move_rel(0.0, reach_move_y, wait=True)
         self.agent.move_rel(reach_move_x, 0, wait=True)
 
@@ -234,7 +236,7 @@ class StoringGroceries:
 
 
     def place_item(self, item_name, item_type):
-
+        rospy.logdebug(f'prior_categories: {self.prior_categories}')
         # Set offset dist from object in shelf
         if item_type not in self.shelf_item_dict.keys():  # for new category objects
             self.shelf_item_dict[item_type] = self.shelf_item_dict.pop('new')
