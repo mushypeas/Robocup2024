@@ -3,7 +3,7 @@ import cv2
 #import logging
 #import math
 import torch
-#import torch.backends.cudnn as cudnn
+import torch.backends.cudnn as cudnn
 from numpy import random
 from ultralytics import YOLOv10
 import supervision as sv
