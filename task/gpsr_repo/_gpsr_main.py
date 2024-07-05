@@ -8,6 +8,7 @@ from gpsr_utils import *
 from gpsr_clip import *
 from gpsr_config import *
 from gpsr_follow import *
+from gpsr_model_class import *
 
 from PIL import Image
 import cv2
