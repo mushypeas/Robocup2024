@@ -331,16 +331,12 @@ class HumanFollowing:
             #and self.image_size * human_box_thres > human_box_size
             #원래 var=10, _depth < 1.3 . -> var=320, _depth < 0.7하고 sleep(0.5)
 
-            lidar_max = 0.6
+
                         
             # Right lidar
             right_values = self.agent.ranges[self.agent.center_idx - 300 : self.agent.center_idx - 50]
-            filtered_right_values = right_values[right_values < lidar_max]
-            if filtered_right_values.size > 0:
-                right_lidar = np.min(filtered_right_values)
-
-            else:
-                right_lidar = np.nan  
+            right_lidar = np.mean(right_values[np.where(right_values < 0.7)])
+            if np.isnan(right_lidar):
                 right_lidar = 4.0
             
 
@@ -350,11 +346,8 @@ class HumanFollowing:
 
             # Left lidar
             left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 300]
-            filtered_left_values = left_values[left_values < lidar_max]
-            if filtered_left_values.size > 0:
-                left_lidar = np.min(filtered_left_values)
-            else:
-                left_lidar = np.nan
+            left_lidar = np.mean(left_values[np.where(left_values < 0.7)])
+            if np.isnan(left_lidar):
                 left_lidar = 4.0
 
             # Left edge lidar
@@ -370,7 +363,7 @@ class HumanFollowing:
 
             random_forward = random.uniform(-1, 1)
 
-            if (calc_z!=0 and _depth < 0.5   and _depth< thres and not (left_lidar < (lidar_max) and right_lidar < (lidar_max) ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 0.5   and _depth< thres and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -417,13 +410,13 @@ class HumanFollowing:
                 
                 if left_background_count > right_background_count :
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.1,0, wait=False) #then, HSR is intended to move left (pos)
+                    self.agent.move_rel(0.0,0.15,0, wait=False) #then, HSR is intended to move left (pos)
                     rospy.sleep(0.2)
                     # self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,-self.stop_rotate_velocity//4, wait=False)
                 elif left_background_count  < right_background_count:
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.1,0, wait=False) #then, HSR is intended to move right (neg)
+                    self.agent.move_rel(0.0,-0.15,0, wait=False) #then, HSR is intended to move right (neg)
                     rospy.sleep(0.2)
                     # self.agent.move_rel(0.3,0,self.stop_rotate_velocity//8, wait=False)
                     # self.agent.move_rel(0,0,self.stop_rotate_velocity//4, wait=False)
@@ -438,7 +431,7 @@ class HumanFollowing:
             # print("left_lidar : ", left_lidar)
             # print("right_lidar : ", right_lidar)
             # print("thres : ", thres)
-            if  (left_lidar < thres or right_lidar < thres ) and not (left_lidar < (lidar_max) and right_lidar < (lidar_max) ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if  (left_lidar < thres or right_lidar < thres ) and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
                 
                 print("Lidar BARRIER")
