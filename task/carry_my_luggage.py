@@ -363,7 +363,7 @@ class HumanFollowing:
 
             random_forward = random.uniform(-1, 1)
 
-            if (calc_z!=0 and _depth < 0.5   and _depth< thres and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if (calc_z!=0 and _depth < 0.5   and _depth< thres and not (abs(left_lidar - right_lidar) < 0.1 ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)):
                 _num_rotate = _num_rotate + 1
                 # rospy.sleep(1)
@@ -431,7 +431,7 @@ class HumanFollowing:
             # print("left_lidar : ", left_lidar)
             # print("right_lidar : ", right_lidar)
             # print("thres : ", thres)
-            if  (left_lidar < thres or right_lidar < thres ) and not (left_lidar < thres and right_lidar < thres ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
+            if  (left_lidar < thres or right_lidar < thres ) and not (abs(left_lidar - right_lidar) < 0.1 ) and not (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius):
                 
                 print("Lidar BARRIER")
