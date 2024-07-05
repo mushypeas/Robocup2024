@@ -18,7 +18,7 @@ class ServeBreakfast:
         self.agent = agent
 
         # !!! Test params !!!
-        self.is_picking_test_mode = True
+        self.is_picking_test_mode = False
         self.is_pouring_test_mode = False
         self.is_placing_test_mode = False
 
@@ -43,16 +43,16 @@ class ServeBreakfast:
         self.pick_bowl_bias = [0.0, 0.00, 0.0]    # [x, y, height]
         self.pick_cucudas_bias = [0.0, 0.00, 0.0] # [x, y, height]
         self.pick_spoon_bias = [0.0, 0.00, 0.0]    # [x, y, height]     
-        self.pour_offsets = { # [x, y, angle]
-            'cucudas': [0.0, 0.0, 110],
-            'blue_milk': [0.0, 0.0, 130],
+        self.pour_offsets = { # [x, y, angle] 
+            'cucudas': [0.0, -0.08, 110], # bowl 왼쪽 끝에 맞춰서 따르기
+            'blue_milk': [0.0, -0.08, 130], # bowl 왼쪽 끝에 맞춰서 따르기
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height]
-            'bowl': [self.dist_to_place_table - 0.57, -0.2, 0],
-            'cucudas': [0, 0.3, 0],
-            'blue_milk': [0, 0.15, 0],
-            'spoon': [0.25, -0.3, 0.23]
+            'bowl': [self.dist_to_place_table, -0.1, 0],
+            'cucudas': [0, 0.2, 0],
+            'blue_milk': [0, 0.1, 0],
+            'spoon': [0, -0.16, 0]
         }
 
         self.pick_table = 'kitchen_table_pnu' 
@@ -211,8 +211,8 @@ class ServeBreakfast:
             # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp(wait=False)
-            rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.3, 0, wait=False)
+            rospy.sleep(0.5) 
+            self.agent.move_rel(-0.4, 0, wait=False)
 
             # picking test mode 추가
             # if self.picking_test_mode = True
@@ -222,13 +222,13 @@ class ServeBreakfast:
 
         else:
             if item == 'spoon':
-                self.agent.pose.bring_bowl_pose(table=self.pick_table)
                 # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
+                self.agent.pose.pick_spoon_pose_low(table=self.pick_table)
                 self.agent.open_gripper(wait=False)
                 self.agent.move_rel(0, table_base_xyz[1], wait=True)
                 self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-                self.agent.pose.pick_spoon_pose_low(table=self.pick_table)        
+                self.agent.pose.pick_down_spoon_pose(table=self.pick_table)        
                 self.agent.grasp(wait=False)
                 rospy.sleep(0.5) # wait for grasping manually
 
@@ -244,13 +244,15 @@ class ServeBreakfast:
         table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])] 
         self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table)
         self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
+        self.agent.pose.spill_safety_pose() # (spill 방지용) 살짝 내려갔다가
         self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
         self.agent.pose.wrist_roll(0) # 붓기 완료
+        self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table) # (spill 방지용) 다시 올라오기
 
 
     def place_item(self, item):
 
-        if item == 'bowl': # 주석 풀기
+        if item == 'bowl': 
             self.agent.pose.place_bowl_pose()
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
 
@@ -266,9 +268,7 @@ class ServeBreakfast:
             
         self.agent.open_gripper()
         self.agent.pose.arm_lift_up(self.arm_lift_height)
-        self.agent.move_rel(-0.6, 0, wait=False)
-        rospy.sleep(1) # wait manually
-
+        rospy.sleep(1) 
 
     
     def check_grasp(self, grasping_type):
@@ -351,13 +351,14 @@ class ServeBreakfast:
             self.agent.say('I will move to a different location. Please be careful.')
             self.agent.move_rel(0, -1.0, wait=True)            
             self.agent.move_abs_safe(self.place_table)
-            self.agent.move_rel(-0.3, 0)
+            self.agent.move_rel(-0.4, 0)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
             if item in ['cucudas', 'blue_milk']:
                 self.pour_item(item=item)
 
-            self.agent.move_rel(-0.3,0, wait=True)
+            self.agent.move_rel(-0.4,0, wait=True)
             rospy.logwarn('Placing item...')
             self.place_item(item=item)
             self.agent.pose.table_search_pose_breakfast_initial()
+            self.agent.move_rel(-0.6, -0.3, wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가

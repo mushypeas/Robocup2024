@@ -86,7 +86,9 @@ if __name__ == '__main__':
         elif command == 'pick_milk_pose':
             agent.pose.pick_milk_pose(table='kitchen_table_pnu')
         elif command == 'pick_spoon_pose_low':
-            agent.pose.pick_spoon_pose_low(table='kitchen_table_pnu')            
+            agent.pose.pick_spoon_pose_low(table='kitchen_table_pnu')
+        elif command == 'pick_down_spoon_pose':
+            agent.pose.pick_down_spoon_pose()           
         elif command == 'open_shelf_pose1_by_height':
             agent.pose.open_shelf_pose1_by_height(height=0.59)
         elif command == 'open_shelf_pose2_by_height':
@@ -126,6 +128,10 @@ if __name__ == '__main__':
             agent.pose.bring_bowl_pose()
         elif command == 'bring_bowl_pose_low':
             agent.pose.bring_bowl_pose_low()
+        elif command == 'spill_object_pose':
+            agent.pose.spill_object_pose()
+        elif command == 'spill_safety_pose':
+            agent.pose.spill_safety_pose()
         elif command == 'spill_cereal_pose':
             object_height = 0.14  # [m]
             agent.pose.spill_object_pose(object_height, table='kitchen_table')
@@ -151,6 +157,10 @@ if __name__ == '__main__':
             agent.pose.place_shelf_pose('shelf_1f')
         elif command == 'place_shelf_pose_2f':
             agent.pose.place_shelf_pose('shelf_2f')
+        elif command == 'place_top_pose':
+            agent.pose.place_top_pose()
+        elif command == 'arm_lift_object_table_down':
+            agent.pose.arm_lift_object_table_down()
         elif command == 'arm_lift_object_table_down_spoon':
             agent.pose.place_top_pose(0.05, table='kitchen_table')
             agent.pose.arm_lift_object_table_down(0.23, table='kitchen_table')
