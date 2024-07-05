@@ -201,6 +201,7 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
                     target_tlwh = tlwh
                     target_score = t.score
                     target_feature = human_feature
+                    break
                 online_tlwhs.append(tlwh)
                 online_ids.append(tid)
                 online_scores.append(t.score)

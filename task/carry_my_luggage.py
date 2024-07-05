@@ -338,7 +338,7 @@ class HumanFollowing:
             # right_lidar = np.mean(right_values[np.where(right_values < 0.7)])
             # if np.isnan(right_lidar):
             #     right_lidar = 4.0
-            right_lidar_values = right_values[np.where(right_values < 0.7)]
+            right_lidar_values = right_values[np.where(right_values < 0.6)]
 
             if right_lidar_values.size == 0:
                 right_lidar = 4.0
@@ -354,7 +354,7 @@ class HumanFollowing:
             # left_lidar = np.mean(left_values[np.where(left_values < 0.7)])
             # if np.isnan(left_lidar):
             #     left_lidar = 4.0
-            left_lidar_values = left_values[np.where(left_values < 0.7)]
+            left_lidar_values = left_values[np.where(left_values < 0.6)]
 
             if left_lidar_values.size == 0:
                 left_lidar = 4.0
