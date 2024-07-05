@@ -8,7 +8,7 @@ from pathlib import Path
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', type=str, default='weight/v10m_240704_2.pt', help='model.pt path')
+    parser.add_argument('--weights', type=str, default='weight/yolov10m_240704_v2.pt', help='model.pt path')
     parser.add_argument('--source', type=str, default='../BoundingBox_Tool/Images/Test', help='source directory containing images')
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
