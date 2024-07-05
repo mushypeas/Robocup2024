@@ -384,8 +384,8 @@ class JointPose:
                       [arm_lift_joint, -0.5, 0, -1.07, -1.57])
         
 
-    def reach_shelf_door_pose(self, shelf, side):
-        arm_lift_joint = self.table_dimension[shelf][2] - 0.45 # 0.45 is the loosely max distance from the base to the gripper
+    def reach_shelf_door_pose(self, shelf, floor, side):
+        arm_lift_joint = min(self.table_dimension[shelf][floor][2] - 0.45, 0.69) # 0.45 is the loosely max distance from the base to the gripper
         self.gripper.grasp(0.1, wait=False)
         if side == 'left':
             arm_roll_joint = 1.57
@@ -399,8 +399,8 @@ class JointPose:
                       [arm_lift_joint, -1.57, arm_roll_joint, 0, 0])
         
 
-    def cling_shelf_door_pose(self, shelf, side):
-        arm_lift_joint = self.table_dimension[shelf][2] - 0.45 # 0.45 is the loosely max distance from the base to the gripper
+    def cling_shelf_door_pose(self, shelf, floor, side):
+        arm_lift_joint = min(self.table_dimension[shelf][floor][2] - 0.45, 0.69) # 0.45 is the loosely max distance from the base to the gripper
         self.gripper.grasp(0.1, wait=False)
         if side == 'left':
             arm_roll_joint = 1.57
@@ -480,6 +480,20 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
+        
+
+    def place_side_pose_by_height(self, height):
+        robot_default_height = 0.3
+        offset = 0.05
+        arm_lift_joint = height - robot_default_height + offset
+
+        self.set_pose(['arm_lift_joint',
+                       'arm_flex_joint',
+                       'arm_roll_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, -1.57, 0, 0, 0])
+        
 
     def pick_shelf_low_pose(self, table):
         target_table_height = self.table_dimension[table][2]
@@ -599,7 +613,7 @@ class JointPose:
         target_table_height = self.table_dimension[shelf][floor][2]
 
         if target_table_height < 0.9:
-            self.place_side_pose(table=shelf)
+            self.place_side_pose_by_height(height=target_table_height)
         else:
             offset = 0.15
             robot_default_height = 0.7

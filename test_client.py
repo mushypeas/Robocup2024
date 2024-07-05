@@ -86,13 +86,13 @@ if __name__ == '__main__':
         elif command == 'place_side_shelf_pose':
             agent.pose.place_side_pose('shelf_1f')
         elif command == 'reach_left':
-            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf_2f', side='left')
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=3, side='left')
         elif command == 'reach_right':
-            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf_2f', side='right')
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=3, side='right')
         elif command == 'cling_left':
-            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf_2f', side='left')
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=3, side='left')
         elif command == 'cling_right':
-            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf_2f', side='right')
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=3, side='right')
         elif command == 'pick_top_pose':
             agent.pose.pick_top_pose(table='breakfast_table')
         elif command == 'pick_top_pose_breakfast_table':
@@ -249,17 +249,17 @@ if __name__ == '__main__':
         elif command == 'ww':
             agent.move_rel(0.1, 0,wait=True)
         elif command == 'www':
-            agent.move_rel(0.02, 0)
+            agent.move_rel(0.03, 0)
         elif command == 'ss':
             agent.move_rel(-0.1, 0)
         elif command == 'aa':
             agent.move_rel(0, 0.1)
         elif command == 'aaa':
-            agent.move_rel(0, 0.02)
+            agent.move_rel(0, 0.03)
         elif command == 'dd':
             agent.move_rel(0, -0.1)
         elif command == 'ddd':
-            agent.move_rel(0, -0.01)
+            agent.move_rel(0, -0.03)
         elif command == 'zz':
             agent.move_rel(0, 0, yaw=0.2)
         elif command == 'zzz':

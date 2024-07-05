@@ -19,24 +19,24 @@ class StoringGroceries:
         
         # !!! Environment params !!!
         self.closed_shelf_side = 'right' # ['right', 'left']
-        self.open_shelf_floor = 3
-        self.prior_categories = ['fruit', 'food', 'dish']
-        self.ignore_items = ['dish', 'plate', 'yello_bag', 'blue_bag']
-        self.item_list = ['mustard', 'apple', 'orange', 'blue_mug', 'blue_milk', 'pear', 'bowl']
+        self.open_shelf_floor = 2
+        self.prior_categories = ['cleaning', 'drink', 'toy', 'fruit', 'food', 'dish', 'snack']
+        self.ignore_items = ['bowl', 'dish', 'plate', 'yellow_bag', 'blue_bag']
+        self.item_list = None
+        # self.item_list = ['bowl']
 
         # !!! Measured Distances !!!
-        self.table_dist = 0.8
-        self.shelf_dist = 0.9
-        # self.dist_to_shelf = 0.82
-        self.place_dist = 0.07
+        self.table_dist = 0.85
+        self.shelf_dist = 0.86
+        self.place_dist = 0.12
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf'][0][0] * 0.9
                                 - self.place_dist * 2) / 2
 
         # !!! Hard-Coded Offsets !!!
-        self.pick_front_bias = [0.03, 0.00, -0.04] # [x, y, height]
-        self.pick_top_bias = [0.03, 0, -0.015]
-        self.pick_bowl_bias = [0.15, 0.04, -0.13]
-        self.place_x_bias = [None, -0.40, -0.20, 0.0]
+        self.pick_front_bias = [0.03, 1.15, -0.02] # [x, y_ratio, height]
+        self.pick_top_bias = [0.1, 0, -0.015]
+        self.pick_bowl_bias = [0.0, 0.00, -0.10]
+        self.place_x_bias = [None, 0.0, 0.0, 0.0]
 
         self.open_shelf_location = 'grocery_shelf_door'
 
@@ -46,8 +46,8 @@ class StoringGroceries:
         self.table_head_angle = np.arctan(
             (self.table_height - 1.1) / self.table_dist # 1.1: HSR height
         )
-
         self.place_shelf = 'grocery_shelf'
+        self.place_test_object_name, self.place_test_object_type = 'orange', 'fruit'
         self.shelf_depth = self.agent.table_dimension[self.place_shelf][0][1]
         self.shelf_width = self.agent.table_dimension[self.place_shelf][0][0]
         self.shelf_heights = [shelf_dim[2] for shelf_dim in self.agent.table_dimension['grocery_shelf']]
@@ -68,24 +68,25 @@ class StoringGroceries:
         self.agent.say(f'I will attept to open the {side} door.')
 
         # 1. reach into door
-        self.agent.pose.reach_shelf_door_pose(shelf=self.open_shelf_floor, side=side)
-        reach_move_x = self.shelf_dist - 0.6 # 0.6 is the min distance from base to gripper when in cling_shelf_door_pose
+        self.agent.pose.reach_shelf_door_pose(shelf=self.place_shelf, floor=self.open_shelf_floor, side=side)
+        reach_move_x = self.shelf_dist - 0.52 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
         if side == 'left':
             reach_move_y = -0.10
+            open_move_yaw = 0.05
         elif side == 'right':
             reach_move_y = 0.10
+            open_move_yaw = -0.05
         self.agent.move_rel(0.0, reach_move_y, wait=True)
-        self.agent.move_rel(reach_move_x, 0.0, wait=True)
+        self.agent.move_rel(reach_move_x, 0, wait=True)
 
         # 2. open door
-        self.agent.pose.cling_shelf_door_pose(shelf=self.open_shelf_floor, side=side)
+        self.agent.pose.cling_shelf_door_pose(shelf=self.place_shelf, floor=self.open_shelf_floor, side=side)
         open_move_x = - self.shelf_width / 2
         if side == 'left':
             open_move_y = max(0, self.shelf_width / 2 - 0.12)
         elif side == 'right':
             open_move_y = -max(0, self.shelf_width / 2 - 0.12)
-        self.agent.move_rel(open_move_x / 3, 0.0, wait=True)
-        self.agent.move_rel(open_move_x / 3 * 2, open_move_y, wait=True)
+        self.agent.move_rel(open_move_x, open_move_y, open_move_yaw, wait=True)
 
         # 3. move back to searcing position
         self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=False)
@@ -102,7 +103,7 @@ class StoringGroceries:
         rospy.loginfo(f"Shelf item center list:\n{center_list}")
 
         # 1. make shelf_item_dict
-        object_cnts_by_floor = [0 for i in range(len(self.shelf_heights)+1)]
+        object_cnts_by_floor = [0 for i in range(len(self.shelf_heights))]
         object_cnts_by_floor[0] = 1000 # [NULL, 1F, 2F, 3F, ...]
         for shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z, shelf_item_class_id in center_list:
             shelf_item_name = self.agent.yolo_module.find_name_by_id(shelf_item_class_id)
@@ -110,7 +111,8 @@ class StoringGroceries:
             
             shelf_item_floor = 0
             for i in range(len(self.shelf_heights)):
-                if shelf_item_cent_z < self.shelf_heights[i]:
+                shelf_item_floor = i
+                if shelf_item_cent_z < self.shelf_heights[i] - 0.05: # 0.05 is the margin for short items
                     shelf_item_floor = i-1
                     break
 
@@ -124,9 +126,18 @@ class StoringGroceries:
             rospy.loginfo(f"Item center: {shelf_item_cent_x}, {shelf_item_cent_y}, {shelf_item_cent_z}")
 
         # 2. add new category in shelf_item_dict
+
+        new_category_floor = np.argmin(object_cnts_by_floor)
         shelf_item_dict_keys = list(self.shelf_item_dict.keys())
-        shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = self.shelf_item_dict[shelf_item_dict_keys[0]]['center']
-        new_category_floor = self.shelf_item_dict[shelf_item_dict_keys[0]]['floor']
+        for key in shelf_item_dict_keys:
+            if self.shelf_item_dict[key]['floor'] == new_category_floor:
+                shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = self.shelf_item_dict[key]['center']
+                if shelf_item_cent_y > 0:
+                    shelf_item_cent_y -= self.new_category_dist
+                else:
+                    shelf_item_cent_y += self.new_category_dist
+                break
+
         rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         self.shelf_item_dict['new'] = {
             'name': '-',
@@ -134,7 +145,8 @@ class StoringGroceries:
             'floor': new_category_floor,
         }
 
-        print(f'shelf_item_dict: {self.shelf_item_dict}')
+        for key in self.shelf_item_dict.keys():
+            rospy.loginfo(f"shelf_item_dict[{key}]: {self.shelf_item_dict[key]}")
 
 
     def visualize_item(self):
@@ -184,7 +196,8 @@ class StoringGroceries:
 
         # front
         if grasping_type == 0:
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+            table_base_xyz[0] += self.pick_front_bias[0]
+            table_base_xyz[1] *= self.pick_front_bias[1] # The HSR tends to undershoot the distance for some reason, hence giving the bias as a y axis multiplier
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_side_pose_by_height(height=self.table_height + self.pick_front_bias[2])
             self.agent.open_gripper(wait=False)
@@ -202,6 +215,8 @@ class StoringGroceries:
             self.agent.grasp(wait=False)
             rospy.sleep(0.5) # wait for grasping manually
             self.agent.pose.arm_flex(-60)
+            self.agent.move_rel(-0.4, 0, wait=True)
+
 
         # bowl. # don't care plate, ...
         elif grasping_type == 2:
@@ -215,7 +230,7 @@ class StoringGroceries:
             self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
             self.agent.grasp()
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
-            self.agent.move_rel(-0.2, 0)
+            self.agent.move_rel(-0.4, 0, wait=False)
 
 
     def place_item(self, item_name, item_type):
@@ -224,8 +239,7 @@ class StoringGroceries:
         if item_type not in self.shelf_item_dict.keys():  # for new category objects
             self.shelf_item_dict[item_type] = self.shelf_item_dict.pop('new')
             self.shelf_item_dict[item_type]['name'] = item_name
-            if item_type not in self.prior_categories:
-                self.prior_categories.append(item_type)
+            self.prior_categories = self.shelf_item_dict.keys()
             rospy.loginfo(f'New category : {item_type} (Current item: {item_name})')
             item_floor = self.shelf_item_dict[item_type]['floor']
             self.agent.say(f'Placing a new category object, {item_name}, on shelf floor {item_floor}...')
@@ -233,9 +247,6 @@ class StoringGroceries:
             item_floor = self.shelf_item_dict[item_type]['floor']
             rospy.loginfo(f'Known category : {item_type} (Current item: {item_name})')
             self.agent.say(f'Placing {item_name}, next to {self.shelf_item_dict[item_type]["name"]}, on shelf floor {item_floor}...')
-
-        print(f'Type of item to place: {item_type}')
-        print(f'shelf_item_dict: {self.shelf_item_dict[item_type]}')
 
         # Get axis of the shelf the item belongs
         try:
@@ -273,7 +284,7 @@ class StoringGroceries:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        self.agent.pose.table_search_pose(head_tilt=self.table_head_angle, wait_gripper=False)
+        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=True)
 
         if not self.ignore_arena_door:
             self.agent.door_open()
@@ -290,6 +301,16 @@ class StoringGroceries:
         if not self.ignore_shelf_door:
             self.agent.move_abs_safe(self.open_shelf_location)
             self.open_shelf(side=self.closed_shelf_side)
+
+        rospy.logwarn('Going to place_location...')
+        self.agent.move_abs_safe(self.place_shelf)
+
+        ## 2. Search shelf
+        rospy.logwarn('Examining items in shelf...')
+        self.agent.say('Examining items in shelf.')
+        self.agent.pose.head_tilt(angle=self.shelf_head_angle)
+        rospy.sleep(2) # give some time for the YOLO to update
+        self.search_shelf()
         
         if self.place_only_mode:
             self.agent.move_abs_safe(self.place_shelf)
@@ -297,7 +318,7 @@ class StoringGroceries:
 
             while True:
                 self.agent.pose.pick_side_pose_by_height(height=1.0)
-                self.agent.open_gripper(wait=False)
+                self.agent.open_gripper(wait=True)
 
                 self.agent.say('Please hand me an item.')
                 rospy.sleep(2)
@@ -308,16 +329,6 @@ class StoringGroceries:
 
                 self.place_item(self.place_test_object_name, self.place_test_object_type)
                 self.agent.move_abs_safe(self.place_shelf)
-
-        rospy.logwarn('Going to place_location...')
-        self.agent.move_abs_safe(self.place_shelf)
-
-        ## 2. Search shelf
-        rospy.logwarn('Examining items in shelf...')
-        self.agent.say('Examining items in shelf.')
-        self.agent.pose.head_tilt(angle=self.shelf_head_angle)
-        rospy.sleep(1) # give some time for the YOLO to update
-        self.search_shelf()
 
         while True:
 

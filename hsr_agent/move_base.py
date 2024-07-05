@@ -98,7 +98,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr(f"Navigation Failed! (GOAL {action_state})")
+                rospy.logerr(f"Navigation Failed! (GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
