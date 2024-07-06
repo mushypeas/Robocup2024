@@ -681,7 +681,7 @@ class HumanFollowing:
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
                     print('Tiny object. I\'ll avoid it.')
-                    self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                    # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
                         self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                         rospy.sleep(2)
@@ -746,7 +746,7 @@ class HumanFollowing:
             print('Tiny object. I\'ll avoid it.')
             print('Tiny object. I\'ll avoid it.')
             print('Tiny object. I\'ll avoid it.')
-            self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+            # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
             if right_background_count > left_background_count:
                 self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
                 rospy.sleep(3)
