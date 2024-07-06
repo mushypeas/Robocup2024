@@ -6,35 +6,42 @@ from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
+is_yolov10 = True
+
 # data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
-# 기존 경로 : 'weight/best_240409.pt'
-# YOLO weight 변경 시 경로 변경
-# yolo_weight_path = 'weight/best_0704.pt'
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-# yolo_classnames_path = 'weight/best_for_final.cn'
-yolo_classnames_path = 'weight/YOLOV10-M-SNU-0703.cn'
+if is_yolov10==False:
+    yolo_weight_path = 'weight/best_0704.pt'
+    # yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
+    yolo_classnames_path = 'weight/best_0704.cn'
+
+
+if is_yolov10:
+#     yolo_weight_path = 'weight/pnu_final.pt'
+#     yolo_classnames_path = 'weight/pnu_final.cn'
+    yolo_weight_path = 'weight/collectedbysnu_240704and05.pt'
+    yolo_classnames_path = 'weight/collectedbysnu_240704and05.cn'
+
 
 try:
-    OBJECT_LIST = make_object_list(yolo_classnames_path)
+        OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
 except:
     print('Error: Cannot load object list')
     pass
 
-FINAL = True
+PNU = True
 
 
-if FINAL:
-    print('[GLOBAL CONFIG] FINAL mode')
-    # real robot
+if PNU:
+    print('[GLOBAL CONFIG] PNU mode')
+
     ABS_POSITION = {
-
         # CTT
         'pos_target_table' : [5.2366, -1.3278, 0.0333],
-        'pos_dishwasher': [5.703, -2.9454, -1.5737]
+        'pos_dishwasher': [5.703, -2.7454, -1.5737]
 
     }
 

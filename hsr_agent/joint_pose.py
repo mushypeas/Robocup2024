@@ -422,7 +422,7 @@ class JointPose:
     
     def arm_lift_top_table_down(self, height, table='breakfast_table'):
         target_table_height = self.table_dimension[table][2]
-        robot_default_height = 0.8
+        robot_default_height = 0.105 # bj가 부산에서 찾은 값임. 바꾸면 죽인다.
         # 0.625(breakfast_table) + 0.03(height) - 0.11 = 0.545
         arm_lift_joint = target_table_height + height - robot_default_height
         print('arm_lift_joint', arm_lift_joint)
@@ -811,6 +811,11 @@ class JointPose:
     def wrist_flex(self, angle):
         angle = math.radians(float(angle))
         self.set_pose(['wrist_flex_joint'], [angle])
+    
+    def cutlery_placing_wrist(self,flex,roll):
+        flex = math.radians(float(flex))
+        roll = math.radians(float(roll))
+        self.set_pose(['wrist_flex_joint','wrist_roll_joint'], [flex, roll])
 
     def arm_flex(self, angle):
         angle = math.radians(float(angle))

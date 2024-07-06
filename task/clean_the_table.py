@@ -29,25 +29,23 @@ def clean_the_table(agent: Agent):
 
     # MODE PARAMETERS #
     no_distancing_mode = True
-    picking_mode = False
+    picking_mode = True
     placing_mode = True
+    door_open_mode = False
     rack_close_mode = True
 
-    
-    tab_name = 'dishwasher_tablet'
-    item_list = ['mug', 'fork', 'spoon', 'knife', 'bowl', 'plate' ]
+    item_list = [ 'bowl', 'blue_mug','fork', 'spoon', 'knife', 'plate' ]
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
     short_move = 2.0
 
-    cutlery_box_position = [0.15, 0]
-    place_position_dict = {'mug': [0, -0.24], 'bowl': [0.12, 0], 'plate': [0.1, -0.24], 'fork': cutlery_box_position,
-                    'knife': cutlery_box_position, 'spoon': cutlery_box_position, tab_name: [0.05, 0.0]}
+    cutlery_box_position = [0.2, 0.1]
+    place_position_dict = {'blue_mug': [0.2, -0.10], 'bowl': [0.2, 0], 'plate': [0.2, 0], 'fork': cutlery_box_position,
+                    'knife': cutlery_box_position, 'spoon': cutlery_box_position}
 
-    is_using_check_grasp_dict = {'mug': True, 'bowl': True, 'plate': True,
-                                 'fork': False, 'knife': False, 'spoon': False, tab_name: True}     # do not use check_grasp for motions that scrapes the table
-    id_item_dict = {46: tab_name, 22: 'spoon', 21: 'fork', 19: 'plate', 17: 'bowl', 18: 'mug', 20: 'knife', 46: 'tab'}
+    is_using_check_grasp_dict = {'blue_mug': True, 'bowl': True, 'plate': True,
+                                 'fork': False, 'knife': False, 'spoon': False}     # do not use check_grasp for motions that scrapes the table
     miss_count = 0
     is_picked = False
     double_check_item_list = ['plate', 'bowl']  # items that have ambiguous values when using check_grasp
@@ -62,10 +60,12 @@ def clean_the_table(agent: Agent):
     safe_flag = 0
 
     agent.grasp()
-    agent.pose.move_pose()
+    agent.pose.table_search_pose()
 
-    # agent.door_open()
-    # agent.move_rel(2.0, 0, wait=True)
+    if door_open_mode:
+        agent.door_open()
+        agent.move_rel(2.0, 0, wait=True)
+    
     agent.say('start clean the table', show_display=True)
     import pdb; pdb.set_trace()
 
@@ -76,11 +76,9 @@ def clean_the_table(agent: Agent):
             if safe_flag == 0:
                 rospy.sleep(0.5)
                 agent.move_abs(pick_position)
-                agent.pose.table_search_pose()
                 
 
             # 2.0 search
-            agent.pose.table_search_pose()
             rospy.sleep(1)
             table_item_list = agent.yolo_module.detect_3d(pick_table) # eg. [0.8,0.0,0.7,20] (20 means knife) ()
             table_item_id_list = [table_item[3] for table_item in table_item_list] # eg. [20] (=knife)
@@ -91,6 +89,7 @@ def clean_the_table(agent: Agent):
             # 2.1 select target_object_pc
             is_detected = False
             for item in item_list: # Item list is set already
+                # import pdb; pdb.set_trace()
                 name, item_id, _, grasping_type = agent.yolo_module.find_object_info_by_name(item)
                 for table_item in table_item_list:
                     if item_id == table_item[3]:
@@ -141,10 +140,6 @@ def clean_the_table(agent: Agent):
                 agent.pose.bring_bowl_pose(table=pick_table) # 살짝 들림
                 agent.open_gripper()
 
-
-                # agent.move_rel(0, base_xyz[1] + 0.04, wait=True)
-                # agent.move_rel(base_xyz[0] + 0.16, 0, wait=True)
-
                 agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.05, wait=True)
 
                 agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
@@ -158,7 +153,7 @@ def clean_the_table(agent: Agent):
                 agent.move_rel(-0.2, 0)
 
 
-            elif item == 'mug':
+            elif item == 'blue_mug':
 
                 agent.pose.pick_side_pose_by_height(height = (0.73 - 0.02))
                 
@@ -215,6 +210,7 @@ def clean_the_table(agent: Agent):
                 is_picked = agent.pose.check_grasp()
                 print(f"2.4 grasp value of item '{item}': {is_picked}")
             
+            
 
 
             # PLATE HAND OVER MODE  
@@ -262,8 +258,7 @@ def clean_the_table(agent: Agent):
         ########################################
         ## CHECK GRASP ##
         ########################################
-            agent.pose.table_search_pose()
-            rospy.sleep(1)
+
 
             # if is_using_check_grasp:        # when it detects miss with check_grasp
             #     if is_picked: # 손 grasp 너비로 확인
@@ -410,7 +405,6 @@ def clean_the_table(agent: Agent):
 
             # dishwasher_y = distancing_horizontal(agent.yolo_module.pc, dishwasher_table)
 
-            agent.move_rel(-0.2, 0, wait=True)
             
             agent.move_rel(0, place_position_dict[item][1], wait=True)
             rospy.sleep(short_move)
@@ -425,19 +419,11 @@ def clean_the_table(agent: Agent):
             agent.pose.arm_lift_up(arm_lift_value - 0.1)
             
             if item == 'fork' or item == 'spoon' or item == 'knife':
-                agent.pose.wrist_flex(-20)
-                agent.pose.wrist_roll(90)
-            # agent.move_rel(0.27 + place_position_dict[item][0], place_position_dict[item][1], wait=True)
+                agent.pose.cutlery_placing_wrist(-20,90)
 
             agent.open_gripper()
 
-            agent.pose.wrist_roll(0)
-
-            # agent.pose.pick_up_bowl_pose(table=place_table)
-            agent.pose.arm_lift_up(0.3)
-            rospy.sleep(1)
-            agent.move_rel(-0.3, 0)
-            agent.pose.move_pose()
+            agent.pose.table_search_pose()
 
         # if num_gripped_items == 4:
         #     #Rack Close Action
