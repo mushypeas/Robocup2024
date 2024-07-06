@@ -183,7 +183,7 @@ def parser_sentence(input, mode=None, word_list=None):
 
             if type(sentence_parse_result)==tuple:
                 sentence_parse_result = sentence_parse_result[0]
-                
+
             word_parse_result = sentence_parse_result
             print('word_parse_result: ', word_parse_result)
                                            
@@ -192,6 +192,9 @@ def parser_sentence(input, mode=None, word_list=None):
 
     if word_parse_result == '':
         word_parse_result = parser_single(sentence_parse_result, word_list)
+
+    if type(word_parse_result)==tuple:
+        word_parse_result = word_parse_result[0]
     
     return word_parse_result
 
