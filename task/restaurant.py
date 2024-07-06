@@ -202,6 +202,7 @@ class MoveBaseStandalone:
         spin_count = 0
 
         self.last_checked_pos = self.get_pose()
+        print("update last checked pose", self.last_checked_pos)
         self.last_checked_time = time.time()
 
         while not rospy.is_shutdown():
@@ -237,12 +238,12 @@ class MoveBaseStandalone:
                     rospy.sleep(3)
                     theta = (theta + rotate_delta) % 360
                     spin_count += 1
-                    '''
-                    if spin_count % 8 == 0:
-                       reset = rospy.ServiceProxy('/reset_map', Trigger)
-                       reset()
-                       rospy.sleep(3.0)
-                    '''
+
+                    # if spin_count % 8 == 0:
+                    #    reset = rospy.ServiceProxy('/reset_map', Trigger)
+                    #    reset()
+                    #    rospy.sleep(3.0)
+  
                     if spin_count % 8 == 0:
                         r += 0.1
                     break
@@ -363,7 +364,7 @@ class MoveBaseStandalone:
 
         self.last_checked_pos = self.get_pose()
         self.last_checked_time = time.time()
-        
+
         while not rospy.is_shutdown():
             # goal topic generation
             if goal_yaw is None: goal_yaw = 0.
@@ -443,10 +444,8 @@ def restaurant(agent):
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
 
-
     head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
     head_map_client.update_configuration({"enable": True})
-
 
     slam_args = ['tidyboy_nav_stack', 'hector.launch']
     nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
