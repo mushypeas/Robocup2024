@@ -194,7 +194,6 @@ class MoveBaseStandalone:
                 #reset()
                 #rospy.sleep(3.0)
                 rospy.logwarn("Move zero aborted/rejected. Turn around.")
-                self.turn_around()
                 self.base_action_client.send_goal(goal)
             else:
                 cur_pos = self.get_pose()
@@ -212,8 +211,10 @@ class MoveBaseStandalone:
                     while not best_interval:
                         best_interval = self.get_best_candidate(candidates)
 
+                        maware_count += 1
+
                         if maware_count > 10:
-                            self.turn_around(angle=60)
+                            self.turn_around()
 
                     self.move_best_interval(best_interval)
 
@@ -267,7 +268,6 @@ class MoveBaseStandalone:
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                     rospy.logwarn("Move Customer Aborted.")
                     agent.say("I am searching the valid pathway. Please hold.", show_display=True)
-                    self.turn_around()
                     rospy.sleep(3)
                     theta = (theta + rotate_delta) % 360
                     spin_count += 1
@@ -292,8 +292,16 @@ class MoveBaseStandalone:
                         except AttributeError:
                             continue
                         best_interval = self.get_best_candidate(candidates)
+                        maware_count = 0
+
                         while not best_interval:
                             best_interval = self.get_best_candidate(candidates)
+
+                            maware_count += 1
+
+                            if maware_count > 10:
+                                self.turn_around()
+
                         self.move_best_interval(best_interval)
 
                         if abs(_goal_x - self.last_checked_pos[0]) < r + 0.1 and abs(_goal_y - self.last_checked_pos[1]) < r + 0.1:
