@@ -316,7 +316,7 @@ class HumanFollowing:
                         
             # Right lidar
             right_values = self.agent.ranges[self.agent.center_idx - 330 : self.agent.center_idx - 50]
-            right_lidar_values = right_values[np.where(right_values < 0.6)]
+            right_lidar_values = right_values[np.where(right_values < 0.3)] # 성공한거 : 0.6
             if right_lidar_values.size == 0:
                 right_lidar = 4.0
             else:
@@ -325,7 +325,7 @@ class HumanFollowing:
 
             # Left lidar
             left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 330]
-            left_lidar_values = left_values[np.where(left_values < 0.6)]
+            left_lidar_values = left_values[np.where(left_values < 0.3)]
             if left_lidar_values.size == 0:
                 left_lidar = 4.0
             else:
@@ -683,15 +683,15 @@ class HumanFollowing:
                     print('Tiny object. I\'ll avoid it.')
                     # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
-                        self.agent.move_rel(0.0,-0.8,0, wait=False) ## move right is neg
-                        rospy.sleep(2)
-                        self.agent.move_rel(0.3,0,self.stop_rotate_velocity//12, wait=False)
+                        self.agent.move_rel(0.0,-0.4,0, wait=False) ## move right is neg
                         rospy.sleep(1)
+                        # self.agent.move_rel(0.3,0,0, wait=False)
+                        # rospy.sleep(1)
                     else:
-                        self.agent.move_rel(0.0,0.8,0, wait=False)
-                        rospy.sleep(2)
-                        self.agent.move_rel(0.3,0,-self.stop_rotate_velocity//12, wait=False)
+                        self.agent.move_rel(0.0,0.4,0, wait=False)
                         rospy.sleep(1)
+                        # self.agent.move_rel(0.3,0,0, wait=False)
+                        # rospy.sleep(1)
 
 
 
