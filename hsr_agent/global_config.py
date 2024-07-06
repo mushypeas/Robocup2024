@@ -12,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
+yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -46,10 +46,14 @@ if FINAL:
         '식기세척기닫힘60센치': [1.9481, -1.4913, -3.0755],
 
         # recptionist
-        'start': [4.7578, -1.6402, -1.5496],
-        'cloth_scan': [4.7578, -1.6402, -1.5496],
-        'seat_scan' : [6.7194, -0.3494, -0.7164],
-        'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+        # 'start': [4.7578, -1.6402, -1.5496],
+        'start': [2.9293, -6.154, -2.3819],
+        # 'cloth_scan': [4.7578, -1.6402, -1.5496],
+        'cloth_scan': [2.9293, -6.154, -2.3819],
+        # 'seat_scan' : [6.7194, -0.3494, -0.7164],
+        'seat_scan': [2.6837, -1.589, 1.5473], #PNU
+        # 'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+        'seat_scan_bypass': [2.6823, -1.5846, -1.6473], #PNU
 
         # stickler for the rules
         'kitchen_search': [3.3146, 0.4319, -2.2959],

@@ -177,9 +177,13 @@ def parser_sentence(input, mode=None, word_list=None):
                         candidate_dist_list.append(dist)
             print('candidate_parse_dist_list: ', list(zip(candidate_parse_list, candidate_dist_list)))
             if len(candidate_parse_list) == 0 or len(candidate_dist_list) == 0:
-                sentence_parse_result = parser_single(lower_input, word_list)
+                sentence_parse_result, _ = parser_single(lower_input, word_list)
             else:
                 sentence_parse_result = candidate_parse_list[np.argmin(candidate_dist_list)]
+
+            if type(sentence_parse_result)==tuple:
+                sentence_parse_result = sentence_parse_result[0]
+                
             word_parse_result = sentence_parse_result
             print('word_parse_result: ', word_parse_result)
                                            

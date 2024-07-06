@@ -41,16 +41,18 @@ class CheckSeat():
 
         # left view
         # agent.pose.head_pan(self.head_pan_angle[0])
-        agent.pose.head_pan(45) # 0609
+        agent.pose.head_pan(45) # 0609 # PNU
         rospy.sleep(1)
 
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
             # self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
-            self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
+            # self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
+            self.check_calibration_mode(agent, self.face_threshold, [160, 520]) # PNU
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
+        user_locations, user_face_data = self.check(agent, self.face_threshold, [160, 520]) # PNU
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -69,11 +71,18 @@ class CheckSeat():
             #     elif 360 <= user[0] < 560:
             #         seat_info[1][0] = 1
 
-            # 0609
+            # # 0609
+            # for user in user_locations:
+            #     if 180 <= user[0] < 440:
+            #         seat_info[0][0] = 1
+            #     elif 440 <= user[0] < 600:
+            #         seat_info[1][0] = 1
+
+            # PNU
             for user in user_locations:
-                if 180 <= user[0] < 440:
+                if 160 <= user[0] < 340:
                     seat_info[0][0] = 1
-                elif 440 <= user[0] < 600:
+                elif 340 <= user[0] < 520:
                     seat_info[1][0] = 1
 
         # middle view
@@ -83,10 +92,12 @@ class CheckSeat():
         if self.calibration_mode:
             # self.check_calibration_mode(agent, self.face_threshold, [130, 580])
             # self.check_calibration_mode(agent, self.face_threshold, [100, 500]) # 0514
-            self.check_calibration_mode(agent, self.face_threshold2, [150, 550]) # 0609
+            # self.check_calibration_mode(agent, self.face_threshold2, [150, 550]) # 0609
+            self.check_calibration_mode(agent, self.face_threshold2, [100, 540]) # PNU
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [130, 580])
         # user_locations, user_face_data = self.check(agent, self.face_threshold, [100, 500]) # 0514
-        user_locations, user_face_data = self.check(agent, self.face_threshold2, [150, 550]) # 0609
+        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [150, 550]) # 0609
+        user_locations, user_face_data = self.check(agent, self.face_threshold2, [100, 540]) # PNU
         if user_locations != None:
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
@@ -105,12 +116,21 @@ class CheckSeat():
             #     elif 320 <= user[0] < 500:
             #         seat_info[3][0] = 1
 
-            # 0609
+            # # 0609
+            # for user in user_locations:
+            #     if 150 <= user[0] < 350:
+            #         seat_info[2][0] = 1
+            #     elif 350 <= user[0] < 550:
+            #         seat_info[3][0] = 1
+
+            # PNU
             for user in user_locations:
-                if 150 <= user[0] < 350:
+                if 100 <= user[0] < 250:
                     seat_info[2][0] = 1
-                elif 350 <= user[0] < 550:
+                elif 250 <= user[0] < 390:
                     seat_info[3][0] = 1
+                elif 390 <= user[0] < 540:
+                    seat_info[4][0] = 1
 
                 # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
                 #     seat_info[2][0] = 1
@@ -123,47 +143,52 @@ class CheckSeat():
                 # elif self.sofa_width / 5 * 4 + self.sofa_range[0] <= user[0] < self.sofa_range[1]:
                 #     seat_info[6][0] = 1
 
-        # right view
-        # agent.pose.head_pan(self.head_pan_angle[-1])
-        # agent.pose.head_pan(self.head_pan_angle[-2])
-        agent.pose.head_pan(-45) # 0609
-        rospy.sleep(1)
 
-        if self.calibration_mode:
-            # self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
-            # self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
-            self.check_calibration_mode(agent, self.face_threshold, [30, 560])
-        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
-        # user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [30, 560])
-        if user_locations is not None:
-            user_location_list.extend(user_locations)
-            user_face_data_list.extend(user_face_data)
+        # ##### PNU right seat X
+        # # right view
+        # # agent.pose.head_pan(self.head_pan_angle[-1])
+        # # agent.pose.head_pan(self.head_pan_angle[-2])
+        # agent.pose.head_pan(-45) # 0609
+        # rospy.sleep(1)
 
-            # 기존코드
-            # for user in user_locations:
-            #     if 0 <= user[0] < width / 2:
-            #         seat_info[4][0] = 1
-            #     elif width / 2 <= user[0] < width:
-            #         seat_info[5][0] = 1
+        # if self.calibration_mode:
+        #     # self.check_calibration_mode(agent, self.face_threshold2, [20, 620])
+        #     # self.check_calibration_mode(agent, self.face_threshold2, [80, 560])
+        #     self.check_calibration_mode(agent, self.face_threshold, [30, 560])
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold2, [20, 620])
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold2, [80, 560])
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [30, 560])
+        # if user_locations is not None:
+        #     user_location_list.extend(user_locations)
+        #     user_face_data_list.extend(user_face_data)
 
-            # # 0514
-            # for user in user_locations:
-            #     if 80 <= user[0] < 210:
-            #         seat_info[4][0] = 1
-            #     elif 210 <= user[0] < 360:
-            #         seat_info[5][0] = 1
-            #     elif 360 <= user[0] < 560:
-            #         seat_info[6][0] = 1
+        #     # 기존코드
+        #     # for user in user_locations:
+        #     #     if 0 <= user[0] < width / 2:
+        #     #         seat_info[4][0] = 1
+        #     #     elif width / 2 <= user[0] < width:
+        #     #         seat_info[5][0] = 1
 
-            # 0609
-            for user in user_locations:
-                if 30 <= user[0] < 170:
-                    seat_info[4][0] = 1
-                elif 170 <= user[0] < 330:
-                    seat_info[5][0] = 1
-                elif 330 <= user[0] < 560:
-                    seat_info[6][0] = 1
+        #     # # 0514
+        #     # for user in user_locations:
+        #     #     if 80 <= user[0] < 210:
+        #     #         seat_info[4][0] = 1
+        #     #     elif 210 <= user[0] < 360:
+        #     #         seat_info[5][0] = 1
+        #     #     elif 360 <= user[0] < 560:
+        #     #         seat_info[6][0] = 1
+
+        #     # 0609
+        #     for user in user_locations:
+        #         if 30 <= user[0] < 170:
+        #             seat_info[4][0] = 1
+        #         elif 170 <= user[0] < 330:
+        #             seat_info[5][0] = 1
+        #         elif 330 <= user[0] < 560:
+        #             seat_info[6][0] = 1
+        # ##### PNU right seat X
+
+
 
         # # save host face image
         # if self.host_face_data is None and len(user_face_data_list):
@@ -267,7 +292,8 @@ class CheckSeat():
         
         # 0609
         # 일단 가운데부터, 양 옆 사람 없는 자리 고름
-        for i in [2, 3, 1, 4, 0, 5, 6]:
+        # for i in [2, 3, 1, 4, 0, 5, 6]:
+        for i in [2, 3, 1, 4, 0]:
             if seat_info[i][0] != 1:
                 if i == 0:
                     if seat_info[1][0] != 1:
