@@ -29,7 +29,7 @@ def clean_the_table(agent: Agent):
 
     # MODE PARAMETERS #
     no_distancing_mode = True
-    picking_mode = True
+    picking_mode = False
     placing_mode = True
     rack_close_mode = True
 
@@ -70,7 +70,6 @@ def clean_the_table(agent: Agent):
     import pdb; pdb.set_trace()
 
     while True:
-
         if picking_mode:
             
             # 1. go to pick table
@@ -160,13 +159,13 @@ def clean_the_table(agent: Agent):
 
 
             elif item == 'mug':
-                agent.pose.pick_side_cup_pose(table=pick_table)
-                agent.open_gripper()
-                # agent.move_rel(0, base_xyz[1]+0.03, wait=True)
-                agent.pose.arm_lift_top_table_down(height=-0.12, table=pick_table)
-                # agent.move_rel(base_xyz[0]+0.20, 0, wait=True)
-                agent.move_rel(base_xyz[0]+0.20, base_xyz[1] + 0.03, wait=True)
 
+                agent.pose.pick_side_pose_by_height(height = (0.73 - 0.02))
+                
+                # agent.pose.pick_side_cup_pose(table=pick_table)
+                agent.open_gripper()
+                agent.move_rel(base_xyz[0]+0.20, base_xyz[1] + 0.03, wait=True)
+                
                 agent.grasp()
 
                 is_picked = agent.pose.check_grasp(threshold=-1.45)  # modify
@@ -398,6 +397,9 @@ def clean_the_table(agent: Agent):
         ########################################
 
         if placing_mode:
+            if picking_mode == False:
+                item = 'fork'
+                
             num_gripped_items += 1
             agent.pose.move_pose()      
             agent.move_abs(place_position)

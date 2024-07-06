@@ -512,12 +512,20 @@ class JointPose:
         robot_default_height = 0.3
         arm_lift_joint = target_table_height + offset - robot_default_height
 
+
+        # arm_lift_joint 값 조정
+        if arm_lift_joint < 0:
+            arm_lift_joint = 0.01
+        elif arm_lift_joint > 0.45:
+            arm_lift_joint = 0.45
+
         self.set_pose(['arm_lift_joint',
                        'arm_roll_joint',
                        'arm_flex_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, 0, 0])
+    
         
         return arm_lift_joint
         

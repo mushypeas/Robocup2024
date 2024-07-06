@@ -19,9 +19,7 @@ yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/YOLOV10-M-SNU-0703.cn'
 
 try:
-    import pdb;
     OBJECT_LIST = make_object_list(yolo_classnames_path)
-    pdb.set_trace()
 except:
     print('Error: Cannot load object list')
     pass
