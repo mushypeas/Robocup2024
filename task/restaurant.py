@@ -153,19 +153,43 @@ class MoveBaseStandalone:
         goal.target_pose = pose
         self.base_action_client.send_goal(goal)
         while not rospy.is_shutdown():
-           rospy.sleep(0.1)
-           action_state = self.base_action_client.get_state()
-           if action_state == GoalStatus.SUCCEEDED:
-               rospy.loginfo("Navigation Succeeded.")
-               return
-           elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
-               #reset = rospy.ServiceProxy('/reset_map', Trigger)
-               #reset()
-               #rospy.sleep(3.0)
-               self.base_action_client.send_goal(goal)
-               pass
-           else:
-               pass
+            rospy.sleep(0.1)
+            action_state = self.base_action_client.get_state()
+            if action_state == GoalStatus.SUCCEEDED:
+                rospy.loginfo("Navigation Succeeded.")
+                return
+            elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
+                #reset = rospy.ServiceProxy('/reset_map', Trigger)
+                #reset()
+                #rospy.sleep(3.0)
+                self.base_action_client.send_goal(goal)
+                pass
+            else:
+                cur_pos = self.get_pose()
+                if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                    agent.move_base.base_action_client.cancel_all_goals()
+                    print("No movement detected. Trying to find the best interval.")
+                    try:
+                        candidates = self.candidates
+                    except AttributeError:
+                        continue
+                    best_interval = self.get_best_candidate(candidates)
+                    while not best_interval:
+                        best_interval = self.get_best_candidate(candidates)
+                    self.move_best_interval(best_interval)
+                    self.last_checked_pos = self.get_pose()
+                    self.last_checked_time = time.time()
+
+
+                    if abs(self.last_checked_pos[0]) < 0.1 and abs(self.last_checked_pos[1]) < 0.1:
+                        rospy.loginfo("Navigation Succeeded.")
+                        return 
+
+                    self.base_action_client.send_goal(goal)
+
+            if (time.time() - self.last_checked_time) > 3:
+                self.last_checked_pos = self.get_pose()
+                self.last_checked_time = time.time()
 
     def move_customer(self, agent, goal_x, goal_y, goal_yaw=None):
         
@@ -240,6 +264,10 @@ class MoveBaseStandalone:
                             return _goal_x, _goal_y, _goal_yaw
 
                         self.base_action_client.send_goal(goal)
+
+                if (time.time() - self.last_checked_time) > 3:
+                    self.last_checked_pos = self.get_pose()
+                    self.last_checked_time = time.time()
 
     def get_pose(self):
         while not rospy.is_shutdown():
