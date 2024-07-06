@@ -18,6 +18,7 @@ from utils.marker_maker import MarkerMaker
 from playsound import playsound
 from std_srvs.srv import Trigger
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+import dynamic_reconfigure.client
 
 
 
@@ -177,9 +178,6 @@ class MoveBaseStandalone:
                     while not best_interval:
                         best_interval = self.get_best_candidate(candidates)
                     self.move_best_interval(best_interval)
-                    self.last_checked_pos = self.get_pose()
-                    self.last_checked_time = time.time()
-
 
                     if abs(self.last_checked_pos[0]) < 0.1 and abs(self.last_checked_pos[1]) < 0.1:
                         rospy.loginfo("Navigation Succeeded.")
@@ -255,9 +253,6 @@ class MoveBaseStandalone:
                         while not best_interval:
                             best_interval = self.get_best_candidate(candidates)
                         self.move_best_interval(best_interval)
-                        self.last_checked_pos = self.get_pose()
-                        self.last_checked_time = time.time()
-
 
                         if abs(_goal_x - self.last_checked_pos[0]) < r + 0.1 and abs(_goal_y - self.last_checked_pos[1]) < r + 0.1:
                             rospy.loginfo("Navigation Succeeded.")
@@ -283,14 +278,6 @@ class MoveBaseStandalone:
         yaw = euler_angles[2]
 
         return [trans[0], trans[1], yaw]
-    
-    def move_rel(self, x, y, yaw=0):
-        cur_x, cur_y, cur_yaw = self.get_pose()
-        goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
-        goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
-        goal_yaw = cur_yaw + yaw
-        self.move_abs(None, goal_x, goal_y, goal_yaw)
-
 
     def move_abs(self, agent, goal_x, goal_y, goal_yaw=None):
         self.base_action_client.wait_for_server(5)
@@ -348,13 +335,50 @@ class MoveBaseStandalone:
         move_dist = avg_dist / avg_dist_move_dist_ratio
         avg_rad = (start_rad + end_rad) / 2
         
-        move_x = move_dist * math.cos(avg_rad)
-        move_y = move_dist * math.sin(avg_rad)
+        x = move_dist * math.cos(avg_rad)
+        y = move_dist * math.sin(avg_rad)
+        yaw = 0
         # if self.human_rad:
         #     move_yaw = self.human_rad
         # else:
         #     move_yaw = 0
-        self.move_rel(move_x, move_y, yaw=0)
+        cur_x, cur_y, cur_yaw = self.get_pose()
+        goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
+        goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
+        goal_yaw = cur_yaw + yaw
+
+        self.base_action_client.wait_for_server(5)
+        while not rospy.is_shutdown():
+            # goal topic generation
+            if goal_yaw is None: goal_yaw = 0.
+            pose = PoseStamped()
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = "map"
+            pose.pose.position = Point(goal_x, goal_y, 0)
+            quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
+            pose.pose.orientation = Quaternion(*quat)
+            goal = MoveBaseGoal()
+            goal.target_pose = pose
+            # send message to the action server
+            self.base_action_client.send_goal(goal)
+            # Retry navigation to the customer until it success
+            while not rospy.is_shutdown():
+                rospy.sleep(0.1)
+                action_state = self.base_action_client.get_state()
+                if action_state == GoalStatus.SUCCEEDED:
+                    rospy.loginfo("Navigation Succeeded.")
+                    return True
+                elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
+                    rospy.logwarn("Invalid Navigation Target")
+                    return False
+                else:
+                    cur_pos = self.get_pose()
+                    if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                        return False
+
+                if (time.time() - self.last_checked_time) > 3:
+                    self.last_checked_pos = self.get_pose()
+                    self.last_checked_time = time.time()
 
 
 def nav_target_from_pc(pc, table, robot_ori, K=100):
@@ -403,6 +427,11 @@ def restaurant(agent):
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
 
+
+    head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
+    head_map_client.update_configuration({"enable": True})
+
+
     slam_args = ['tidyboy_nav_stack', 'hector.launch']
     nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
     slam_launch_file = roslaunch.rlutil.resolve_launch_arguments(slam_args)
@@ -417,7 +446,7 @@ def restaurant(agent):
                                             sigterm_timeout=5.0)
     slam.start()
     nav.start()
-    rospy.sleep(3.)
+    rospy.sleep(5.)
     # StanAlone MoveBase
     move = MoveBaseStandalone()
     agent.say('start restaurant', show_display=True)
