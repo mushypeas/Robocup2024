@@ -21,8 +21,6 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import dynamic_reconfigure.client
 
 
-
-
 min_interval_arc_len = 1.0
 unit_rad = 0.25 * ( math.pi / 180 )
 avg_dist_move_dist_ratio = 3
@@ -35,7 +33,6 @@ def index_to_rad(idx):
     return (idx - center_index) * unit_rad
 
 ################ Maybe Constant? ################
-
 ## main frequency
 main_freq = 1
 main_period = 1.0 / main_freq
@@ -141,7 +138,36 @@ class MoveBaseStandalone:
         return segments
 
 
-    
+    def turn_around(self, angle=180):
+        while not rospy.is_shutdown():
+            # goal topic generation
+            pose = PoseStamped()
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = "map"
+
+            cur_pos = self.get_pose()
+            goal_x, goal_y, goal_yaw = cur_pos
+            goal_yaw = goal_yaw + angle * math.pi / 180
+            pose.pose.position = Point(goal_x, goal_y, 0)
+            quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
+            pose.pose.orientation = Quaternion(*quat)
+            goal = MoveBaseGoal()
+            goal.target_pose = pose
+            # send message to the action server
+            self.base_action_client.send_goal(goal)
+            # Retry navigation to the customer until it success
+            while not rospy.is_shutdown():
+                rospy.sleep(0.1)
+                action_state = self.base_action_client.get_state()
+                if action_state == GoalStatus.SUCCEEDED:
+                    rospy.loginfo("Turn around succeeded.")
+                    return True
+                elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
+                    rospy.logwarn("Turn around aborted/rejected.")
+                    return False
+                else:
+                    print(action_state)
+                    pass
 
     def move_zero(self, agent):
         self.base_action_client.wait_for_server(timeout=2)
@@ -161,14 +187,15 @@ class MoveBaseStandalone:
             rospy.sleep(0.1)
             action_state = self.base_action_client.get_state()
             if action_state == GoalStatus.SUCCEEDED:
-                rospy.loginfo("Navigation Succeeded.")
+                rospy.loginfo('Success move zero by action state')
                 return
             elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                 #reset = rospy.ServiceProxy('/reset_map', Trigger)
                 #reset()
                 #rospy.sleep(3.0)
+                rospy.logwarn("Move zero aborted/rejected. Turn around.")
+                self.turn_around()
                 self.base_action_client.send_goal(goal)
-                pass
             else:
                 cur_pos = self.get_pose()
                 if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
@@ -179,12 +206,19 @@ class MoveBaseStandalone:
                     except AttributeError:
                         continue
                     best_interval = self.get_best_candidate(candidates)
+
+                    maware_count = 0
+
                     while not best_interval:
                         best_interval = self.get_best_candidate(candidates)
+
+                        if maware_count > 10:
+                            self.turn_around(angle=60)
+
                     self.move_best_interval(best_interval)
 
-                    if abs(self.last_checked_pos[0]) < 0.1 and abs(self.last_checked_pos[1]) < 0.1:
-                        rospy.loginfo("Navigation Succeeded.")
+                    if abs(self.last_checked_pos[0]) < 0.3 and abs(self.last_checked_pos[1]) < 0.3:
+                        rospy.loginfo("Success move zero by distancing")
                         return 
 
                     self.base_action_client.send_goal(goal)
@@ -194,15 +228,13 @@ class MoveBaseStandalone:
                 self.last_checked_time = time.time()
 
     def move_customer(self, agent, goal_x, goal_y, goal_yaw=None):
-        
+        r = 0.3 # 0.5
         self.base_action_client.wait_for_server(5)
         theta = 0.
         rotate_delta = 30.
-        r = 0.3 # 0.5
         spin_count = 0
 
         self.last_checked_pos = self.get_pose()
-        print("update last checked pose", self.last_checked_pos)
         self.last_checked_time = time.time()
 
         while not rospy.is_shutdown():
@@ -229,12 +261,13 @@ class MoveBaseStandalone:
                 action_state = self.base_action_client.get_state()
 
                 if action_state == GoalStatus.SUCCEEDED and not doing_lookup:
-                    rospy.loginfo("Navigation Succeeded.")
+                    rospy.loginfo("Move Customer Succeeded.")
                     return _goal_x, _goal_y, _goal_yaw
                 
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
-                    rospy.logwarn("Invalid Navigation Target")
+                    rospy.logwarn("Move Customer Aborted.")
                     agent.say("I am searching the valid pathway. Please hold.", show_display=True)
+                    self.turn_around()
                     rospy.sleep(3)
                     theta = (theta + rotate_delta) % 360
                     spin_count += 1
@@ -246,6 +279,7 @@ class MoveBaseStandalone:
   
                     if spin_count % 8 == 0:
                         r += 0.1
+
                     break
 
                 else:
@@ -263,7 +297,7 @@ class MoveBaseStandalone:
                         self.move_best_interval(best_interval)
 
                         if abs(_goal_x - self.last_checked_pos[0]) < r + 0.1 and abs(_goal_y - self.last_checked_pos[1]) < r + 0.1:
-                            rospy.loginfo("Navigation Succeeded.")
+                            rospy.loginfo("Finish move customer by distancing.")
                             return _goal_x, _goal_y, _goal_yaw
 
                         self.base_action_client.send_goal(goal)
@@ -311,10 +345,10 @@ class MoveBaseStandalone:
                 rospy.sleep(0.1)
                 action_state = self.base_action_client.get_state()
                 if action_state == GoalStatus.SUCCEEDED:
-                    rospy.loginfo("Navigation Succeeded.")
+                    rospy.loginfo("Move abs Succeeded.")
                     return True
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
-                    rospy.logwarn("Invalid Navigation Target")
+                    rospy.logwarn("Move abs Aborted/Rejected.")
                     return False
                 else:
                     pass
@@ -336,6 +370,8 @@ class MoveBaseStandalone:
         heuristic_values = [self.heuristic(start, end, avg_dist) for start, end, avg_dist in candidates]
         # if not heuristic_values:
         #     return None
+        if heuristic_values == []:
+            return False
         best_idx = np.argmax(heuristic_values)
         return candidates[best_idx]
     
@@ -358,7 +394,7 @@ class MoveBaseStandalone:
         cur_x, cur_y, cur_yaw = self.get_pose()
         goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
         goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
-        goal_yaw = cur_yaw + yaw
+        goal_yaw = cur_yaw
 
         self.base_action_client.wait_for_server(5)
 
@@ -383,14 +419,16 @@ class MoveBaseStandalone:
                 rospy.sleep(0.1)
                 action_state = self.base_action_client.get_state()
                 if action_state == GoalStatus.SUCCEEDED:
-                    rospy.loginfo("Navigation Succeeded.")
+                    rospy.loginfo("Move best interval Succeeded.")
                     return True
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
-                    rospy.logwarn("Invalid Navigation Target")
+                    rospy.logwarn("Move best interval Aborted/Rejected.")
+                    self.turn_around()
                     return False
                 else:
                     cur_pos = self.get_pose()
                     if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                        rospy.logwarn('STOP move_best_interval')
                         return False
 
                 if (time.time() - self.last_checked_time) > 3:
@@ -444,8 +482,8 @@ def restaurant(agent):
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
 
-    head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
-    head_map_client.update_configuration({"enable": True})
+    # head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
+    # head_map_client.update_configuration({"enable": True})
 
     slam_args = ['tidyboy_nav_stack', 'hector.launch']
     nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
