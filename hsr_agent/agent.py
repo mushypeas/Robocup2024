@@ -39,6 +39,7 @@ from utils.axis_transform import Axis_transform
 from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
+from module.stt.whisper_stt import whisper_stt
 
 
 class Agent:
@@ -417,7 +418,7 @@ class Agent:
 
     # stt
     def stt(self, sec=5., mode=None):
-        return stt_client(sec=sec)
+        return whisper_stt(sec=sec)
 
     # gripper
     def open_gripper(self):
