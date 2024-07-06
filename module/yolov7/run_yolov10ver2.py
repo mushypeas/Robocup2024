@@ -49,7 +49,7 @@ class custom_Yolov10:
 
     def ready(self):
         # self.model = YOLOv10("240621_v10m.pt")  #path for weight file
-        self.model = YOLOv10("YOLOV10-M-SNU-0703.pt")  #path for weight file
+        self.model = YOLOv10("/home/tidy/Robocup2024/module/yolov7/YOLOV10-M-SNU-0703.pt")  #path for weight file
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
