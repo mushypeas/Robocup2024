@@ -152,6 +152,10 @@ class MoveBaseStandalone:
         pose.pose.position = Point(0, 0, 0)
         pose.pose.orientation = Quaternion(0, 0, 0, 1)
         goal.target_pose = pose
+
+        self.last_checked_pos = self.get_pose()
+        self.last_checked_time = time.time()
+        
         self.base_action_client.send_goal(goal)
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
@@ -196,6 +200,9 @@ class MoveBaseStandalone:
         rotate_delta = 30.
         r = 0.3 # 0.5
         spin_count = 0
+
+        self.last_checked_pos = self.get_pose()
+        self.last_checked_time = time.time()
 
         while not rospy.is_shutdown():
             # goal topic generation
@@ -281,6 +288,10 @@ class MoveBaseStandalone:
 
     def move_abs(self, agent, goal_x, goal_y, goal_yaw=None):
         self.base_action_client.wait_for_server(5)
+
+        self.last_checked_pos = self.get_pose()
+        self.last_checked_time = time.time()
+        
         while not rospy.is_shutdown():
             # goal topic generation
             if goal_yaw is None: goal_yaw = 0.
@@ -328,6 +339,7 @@ class MoveBaseStandalone:
         return candidates[best_idx]
     
     def move_best_interval(self, interval):
+
         start_rad = interval[0]
         end_rad = interval[1]
         avg_dist = interval[2]
@@ -348,6 +360,10 @@ class MoveBaseStandalone:
         goal_yaw = cur_yaw + yaw
 
         self.base_action_client.wait_for_server(5)
+
+        self.last_checked_pos = self.get_pose()
+        self.last_checked_time = time.time()
+        
         while not rospy.is_shutdown():
             # goal topic generation
             if goal_yaw is None: goal_yaw = 0.
