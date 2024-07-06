@@ -417,9 +417,7 @@ class Agent:
 
     # stt
     def stt(self, sec=5., mode=None):
-        return input()
-        # return stt_client(sec=sec)
-        pass
+        return stt_client(sec=sec)
 
     # gripper
     def open_gripper(self):

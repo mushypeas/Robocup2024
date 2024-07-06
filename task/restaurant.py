@@ -204,7 +204,7 @@ class MoveBaseStandalone:
                 
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                     rospy.logwarn("Invalid Navigation Target")
-                    agent.say("I am searching the valid pathway. Please hold.")
+                    agent.say("I am searching the valid pathway. Please hold.", show_display=True)
                     rospy.sleep(3)
                     theta = (theta + rotate_delta) % 360
                     spin_count += 1
@@ -391,7 +391,7 @@ def restaurant(agent):
     rospy.sleep(3.)
     # StanAlone MoveBase
     move = MoveBaseStandalone()
-    agent.say('start restaurant')
+    agent.say('start restaurant', show_display=True)
     marker_maker = MarkerMaker('/snu/robot_path_visu')
 
     openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
@@ -404,7 +404,7 @@ def restaurant(agent):
             agent.head_show_image('Neutral')
             agent.pose.head_tilt(0)
             agent.pose.restaurant_move_pose()
-            agent.say('Please wave your hand to order')
+            agent.say('Please wave your hand to order', show_display=True)
             rospy.sleep(3.)
             start_time = time.time()
             Dx = 0
@@ -431,7 +431,7 @@ def restaurant(agent):
                     rospy.sleep(3)
                 now = time.time()
                 if now-start_time > 5:
-                    agent.say('Please wave your hand to order')
+                    agent.say('Please wave your hand to order', show_display=True)
                     rospy.sleep(3.)
                     start_time = now
 
@@ -467,49 +467,49 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            agent.say("I found the customer. I will calculate the pathway toward the customer.")
+            agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=True)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
             rospy.sleep(1.)
             while not rospy.is_shutdown():
                 agent.head_show_image('red')
-                agent.say('Please say items you like to order in proper format after the ding sound')
+                agent.say('Please say items you like to order in proper format after the ding sound', show_display=True)
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
                 result = agent.stt(5.)
                 raw, item_parsed = result
                 # item_parsed = 'apple'
                 if len(item_parsed) == 0:
-                    agent.say('I am sorry that I could not recognize what you said. Please answer me again.')
+                    agent.say('I am sorry that I could not recognize what you said. Please answer me again.', show_display=True)
                     agent.head_show_image('STT Fail')
                     rospy.sleep(6.)
                     continue
                 # rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
                 agent.head_show_text(f'{item_parsed}')
                 rospy.sleep(1.)
-                agent.say('Is this your order? Please say Yes or No to confirm after the ding sound')
+                agent.say('Is this your order? Please say Yes or No to confirm after the ding sound', show_display=True)
 
                 rospy.sleep(6.)
                 # _, confirm_parsed = agent.stt(3.)
                 confirm_parsed = 'yes'
                 if confirm_parsed != 'yes':
-                    agent.say('I am sorry that I misunderstand your order. Please answer me again.')
+                    agent.say('I am sorry that I misunderstand your order. Please answer me again.', show_display=True)
                     agent.head_show_text('Speech Recognition Failed!')
                     rospy.sleep(6.0)
                     continue
-                agent.say('I received your order!')
+                agent.say('I received your order!', show_display=True)
                 agent.head_show_image('Neutral')
                 rospy.sleep(3.)
                 break
             move.move_zero(agent)
             rospy.sleep(1.)
-            agent.say(f'Bartender, please give me {item_parsed}.')
+            agent.say(f'Bartender, please give me {item_parsed}.', show_display=True)
             rospy.sleep(2.)
             agent.pose.restaurant_give_pose()
             rospy.sleep(2.)
             for i in range(5, 0, -1):
-                agent.say(str(i))
+                agent.say(str(i), show_display=True)
                 rospy.sleep(1)
             agent.say('Thank you!')
             rospy.sleep(3.)
@@ -520,10 +520,10 @@ def restaurant(agent):
                 move.move_customer(agent, offset + Dx, Dy)
             agent.pose.restaurant_give_pose()
             agent.head_show_image('Take Menu')
-            agent.say(f'Here is your {item_parsed}, Take menu in ')
+            agent.say(f'Here is your {item_parsed}, Take menu in ', show_display=True)
             rospy.sleep(4.)
             for i in range(5, 0, -1):
-                agent.say(str(i))
+                agent.say(str(i), show_display=True)
                 rospy.sleep(1)
 
             # 5. Return to the start position (zero pose)
@@ -535,6 +535,6 @@ def restaurant(agent):
             break
     nav.shutdown()
     slam.shutdown()
-    agent.say('The task is finished!')
+    agent.say('The task is finished!', show_display=True)
 
 
