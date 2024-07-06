@@ -790,10 +790,13 @@ class HumanFollowing:
                     return True
                 elif 'no' in answer:
                     self.agent.say('Okay! I will follow you', show_display=True)
-                    print('Okay! I will follow you')
-                    rospy.sleep(1)
+                    print('Okay! Please wait, I will follow you')
                     self.show_byte_track_image = True
                     self.agent.last_moved_time = time.time()
+                    cur_track = self.track_queue[len(self.track_queue)-1]
+                    self.agent.move_abs_coordinate(cur_track, wait=True)
+                    self.agent.move_rel(0, 0.5, 0, wait=False)
+                    rospy.sleep(2)
                     return False
             else:
                 # '''
