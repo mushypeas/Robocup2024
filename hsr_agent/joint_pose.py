@@ -420,7 +420,7 @@ class JointPose:
         print('arm_lift_joint', arm_lift_joint)
         self.set_pose(['arm_lift_joint'], [arm_lift_joint])
     
-    def arm_lift_top_table_down(self, height, table='breakfast_table'): #mjgu 240505
+    def arm_lift_top_table_down(self, height, table='breakfast_table'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.8
         # 0.625(breakfast_table) + 0.03(height) - 0.11 = 0.545

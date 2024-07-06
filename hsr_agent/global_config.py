@@ -35,21 +35,16 @@ if FINAL:
     ABS_POSITION = {
 
         # CTT
-        'target_table' : [6.6449, 0.3005, 0.0422],
-        'dishwasher': [2.6256, -1.7107, 3.0623],
+        'pos_target_table' : [5.2366, -1.3278, 0.0333],
+        'pos_dishwasher': [5.703, -2.9454, -1.5737]
 
     }
 
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'target_table' : [0.55, 0.75, 0.730],
-        'dishwasher' : [0.65, 0.75, 0.595],
-
-
-        # clean the table
-        'dishwasher_rack' : [0.520,0.60,0.400],
-        'dishwasher' : [0.520,0.60,0.830] #height is not precise
+        'tab_target_table': [1.18,0.735,0.73],
+        'tab_dishwasher' : [0.41,0.32,0.12],
         
     }
 
