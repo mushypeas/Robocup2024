@@ -222,6 +222,7 @@ class MoveBaseStandalone:
                     cur_pos = self.get_pose()
                     if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                         agent.move_base.base_action_client.cancel_all_goals()
+                        print("No movement detected. Trying to find the best interval.")
                         try:
                             candidates = self.candidates
                         except AttributeError:
