@@ -62,7 +62,7 @@ class ServeBreakfast:
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'kitchen_table_pnu' 
+        self.place_table = 'breakfast_table_pnu' 
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
     # def picking_test_mode(self, item, table_base_xyz):
@@ -205,14 +205,14 @@ class ServeBreakfast:
 
         elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
+            self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_milk_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
             # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp(wait=False)
             rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.5, 0, wait=False)
+            self.agent.move_rel(-0.3, 0, wait=False)
 
             # picking test mode 추가
             # if self.picking_test_mode = True
@@ -231,7 +231,7 @@ class ServeBreakfast:
                 self.agent.pose.pick_spoon_pose_low(table=self.pick_table)        
                 self.agent.grasp(wait=False)
                 rospy.sleep(0.5) # wait for grasping manually
-                self.agent.pose.arm_flex(-60)
+
 
             # picking test mode 추가
             # if self.picking_test_mode = True
@@ -343,12 +343,13 @@ class ServeBreakfast:
                     rospy.logwarn(f'Failed to grasp {item}! Retrying...')
 
             # if self.picking_test_mode:
-                self.agent.open_gripper()
-                continue
+                # self.agent.open_gripper()
+                # continue
 
             ## 3. Go to place_location
             rospy.logwarn('Going to place_location...')
             self.agent.say('I will move to a different location. Please be careful.')
+            self.agent.move_rel(0, -1.0, wait=True)            
             self.agent.move_abs_safe(self.place_table)
             self.agent.move_rel(-0.3, 0)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
@@ -359,3 +360,4 @@ class ServeBreakfast:
             self.agent.move_rel(-0.3,0, wait=True)
             rospy.logwarn('Placing item...')
             self.place_item(item=item)
+            self.agent.pose.table_search_pose_breakfast_initial()

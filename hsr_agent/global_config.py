@@ -12,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_tiny_added.pt'
+yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -68,7 +68,7 @@ if PNU: # 240630 mjgu 추가
     TABLE_DIMENSION = {
         # width, depth, height
         'breakfast_table_pnu': [0.735, 1.18, 0.73], # (나무색) 240630 mjgu 추가
-        'kitchen_table_pnu': [0.4, 0.802, 0.602], #(흰색) 240630 mjgu 추가
+        'kitchen_table_pnu': [0.80, 0.40, 0.602], #(흰색) 240630 mjgu 추가
     }
 
 

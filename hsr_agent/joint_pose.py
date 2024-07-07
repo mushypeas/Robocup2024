@@ -14,7 +14,7 @@ class JointPose:
     
         self.table_dimension = table_dimension   
         self.kithchen_table = table_dimension['kitchen_table_pnu']
-        self.breakfast_table = table_dimension['breakfast_table_pnu']
+        self.__table = table_dimension['breakfast_table_pnu']
 
         self.gripper = gripper
         self.joint_value = {}
@@ -561,7 +561,7 @@ class JointPose:
         print('arm_lift_joint', arm_lift_joint)
         self.set_pose(['arm_lift_joint'], [arm_lift_joint])
     
-    def arm_lift_top_table_down(self, height, table='breakfast_table'): #mjgu 240505
+    def arm_lift_top_table_down(self, height, table='breakfast_table_pnu'): #mjgu 240505
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.8
         # 0.625(breakfast_table) + 0.03(height) - 0.11 = 0.545
@@ -576,7 +576,7 @@ class JointPose:
         print('arm_lift_joint', arm_lift_joint)
         self.set_pose(['arm_lift_joint'], [arm_lift_joint])
     
-    def place_top_pose(self, offset, table='kitchen_table'):
+    def place_top_pose(self, offset, table='breakfast_table_pnu'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.11
         arm_lift_joint = target_table_height + offset - robot_default_height
@@ -615,7 +615,7 @@ class JointPose:
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
 
-    def place_bowl_pose(self, table='kitchen_table'):
+    def place_bowl_pose(self, table='breakfast_table_pnu'):
         target_table_height = self.table_dimension[table][2]
         hand_down_length = 0.18 # amount of hand-end going down, due to wrist_flex_joint rotation by 45 degree 
         robot_default_height = 0.3
@@ -758,7 +758,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
-    def spill_object_pose(self, object_height, table='kitchen_table'): # mjgu. target table 달라질 경우 수정 필요
+    def spill_object_pose(self, object_height, table='breakfast_table_pnu'): # mjgu. target table 달라질 경우 수정 필요
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
         offset = 0.1 # object to table
