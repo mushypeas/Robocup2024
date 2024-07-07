@@ -22,6 +22,7 @@ from geometry_msgs.msg import Twist
 
 import torch
 import numpy as np
+import Levenshtein
 
 objects_data = readData(objects_file_path)
 
@@ -33,14 +34,6 @@ class GPSR:
         self.loc_list = list(ABS_POSITION.keys())
         self.rooms_list = rooms_list
         self.names_list = names_list
-
-
-        self.gesture_person_list = gesture_person_list
-        self.pose_person_list = pose_person_list
-        self.gesture_person_plural_list = gesture_person_plural_list
-        self.pose_person_plural_list = pose_person_plural_list
-        self.person_info_list = person_info_list
-        self.object_comp_list = object_comp_list
         self.talk_list = talk_list
         self.question_list = question_list
         self.color_list = color_list
@@ -312,8 +305,9 @@ class GPSR:
             print(e)
             print("Error in clustering")
 
-            ## TODO 단어 거리 하드코딩
-            return word
+            distances = [(Levenshtein.distance(word, a), a) for a in arr]
+            closest_match = min(distances, key=lambda x: x[0])
+            return closest_match[1]
             
     # TODO
     def getName(self):
@@ -350,6 +344,8 @@ class GPSR:
             elif predicted == 2:
                 human_poses.append(('lying person', confidence))
 
+        print('human_poses', human_poses)
+
         if len(human_poses) == 0:
             return "no person"
 
@@ -385,6 +381,7 @@ class GPSR:
             elif predicted == 3:
                 human_gests.append(('person pointing to the left', confidence))
 
+        print('human_gests', human_gests)
 
         if len(human_gests) == 0:
             return "no person"
