@@ -24,7 +24,7 @@ from open3d import geometry
 
 # stt
 # from module.stt.stt_client import stt_client
-from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+# from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -103,7 +103,7 @@ class Agent:
         # jykim static-map
         if is_sim:
             static_topic_name = '/static_obstacle_ros_map'
-        else:
+        else:   
             static_topic_name = '/static_obstacle_map_ref'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=3.0)
