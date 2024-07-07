@@ -11,7 +11,7 @@ class StoringGroceries:
 
         ## !!! Mode params !!!
         # Set everything to False for actual task
-        self.ignore_arena_door = True
+        self.ignore_arena_door = False
         self.ignore_shelf_door = False
         
         self.picking_only_mode = False
