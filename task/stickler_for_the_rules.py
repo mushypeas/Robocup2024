@@ -144,8 +144,8 @@ class ShoeDetection:
                     left_x, left_y = self.ankle_list[human_idx*2]
                     right_x, right_y = self.ankle_list[human_idx*2+1]
 
-                    if left_x >= 640-160 or right_x <= 160:
-                        continue
+                    # if left_x >= 640-160 or right_x <= 160:
+                    #     continue
                     if human_idx >= len(no_shoes_person):
                         break
                     if no_shoes_person[human_idx]:
@@ -186,7 +186,7 @@ class ShoeDetection:
 
                         # Calculate text probabilities
                         # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        text_probs = (100.0 * image_features @ text_features.T)
+                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
 
                     # Convert probabilities to percentages
                     text_probs_percent = text_probs * 100
@@ -883,7 +883,7 @@ class DrinkDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 90:
+                    if text_probs_percent_np[0][0] > 95:
                         drink_person[human_idx] = True
                         # return True
                     else:
@@ -1047,8 +1047,10 @@ def stickler_for_the_rules(agent):
     # If needed, mark min & max points of all 4 rooms !
     # forbidden_room_min_points = {'bedroom_search': [5.354, -6.1233, 0.03]}
     # forbidden_room_max_points = {'bedroom_search': [9.2773, -3.1132, 2.0]}
-    forbidden_room_min_points = {'bedroom_search': [5.72316, 1.1233, 0.03]}
-    forbidden_room_max_points = {'bedroom_search': [9.89225, 4.0337, 2.0]}
+    # forbidden_room_min_points = {'bedroom_search': [5.72316, 1.1233, 0.03]}
+    # forbidden_room_max_points = {'bedroom_search': [9.89225, 4.0337, 2.0]}
+    forbidden_room_min_points = {'bedroom_search': [4.2073, -7.9801, 0.03]} # PNU
+    forbidden_room_max_points = {'bedroom_search': [7.7033, -4.1148, 2.0]} # PNU
 
     ## params for rule 3. No littering ##
     bin_location = 'bin_littering'
@@ -1074,7 +1076,7 @@ def stickler_for_the_rules(agent):
     # search_location_list = ['living_room_search'] #todo delete
     search_location_list = [
         # 'bedroom_search',
-        # 'kitchen_search', 
+        'kitchen_search', 
         'living_room_search', 'study_search',
         # 'bedroom_search', 
         'kitchen_search', 'living_room_search', 'study_search',
@@ -1102,6 +1104,15 @@ def stickler_for_the_rules(agent):
         rospy.sleep(2)
         
         agent.pose.head_tilt(0)
+        # if search_location == 'kitchen_search':
+        #     agent.move_abs_safe('bedroom_search_reverse')
+        if search_location == 'living_room_search':
+            agent.move_abs_safe('kitchen_leave')
+        elif search_location == 'study_search':
+            agent.move_abs_safe('living_room_leave')
+        # elif search_location == 'bedroom_search':
+        #     agent.move_abs_safe('bedroom_search_reverse')
+
         agent.move_abs_safe(search_location)
         agent.say('I am checking \n the rules', show_display=True)
         rospy.sleep(2)
@@ -1124,10 +1135,10 @@ def stickler_for_the_rules(agent):
                     rospy.sleep(2)
 
                     # 0609
-                    agent.move_rel(0, 0, yaw=math.radians(180))
-                    rospy.sleep(3)
-                    agent.say('You can leave that way', show_display=True)
-                    rospy.sleep(3)
+                    # agent.move_rel(0, 0, yaw=math.radians(180))
+                    # rospy.sleep(3)
+                    # agent.say('You can leave that way', show_display=True)
+                    # rospy.sleep(3)
 
                     agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
                     rospy.sleep(8) # 0609

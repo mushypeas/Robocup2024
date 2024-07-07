@@ -56,15 +56,27 @@ if FINAL:
         'seat_scan_bypass': [2.6823, -1.5846, -1.6473], #PNU
 
         # stickler for the rules
-        'kitchen_search': [3.3146, 0.4319, -2.2959],
-        'living_room_search': [4.9844, 0.2595, -0.8542],
-        'study_search': [5.1834, 1.9487, 2.7205],
-        'bedroom_search': [6.7134, 3.401, -0.6504],
-        'shoe_warning': [5.6829, -2.9312, 2.2687],
-        'bin_littering': [1.9497, -1.9686, 1.8865],
-        'bar_drink': [3.1751, -2.4041, 1.2635],
-        'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
-        'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+        # 'kitchen_search': [3.3146, 0.4319, -2.2959],
+        'kitchen_search': [4.6604, -3.4706, 0.8235], # PNU
+        'kitchen_leave': [4.3274, -1.454, -3.0948], # PNU
+        # 'living_room_search': [4.9844, 0.2595, -0.8542],
+        'living_room_search': [3.595, -3.533, 2.3387], # PNU
+        'living_room_leave': [3.0107, -3.384, -1.5582], # PNU
+        # 'study_search': [5.1834, 1.9487, 2.7205],
+        'study_search': [3.6726, -4.521, -2.2941], # PNU
+        'study_leave': [3.2304, -5.6171, -0.1496], # PNU
+        # 'bedroom_search': [6.7134, 3.401, -0.6504],
+        'bedroom_search': [4.6, -5.4843, 0.0123], # PNU
+        # 'shoe_warning': [5.6829, -2.9312, 2.2687],\
+        'shoe_warning': [1.2716, -0.73, 1.5158], # PNU
+        # 'bin_littering': [1.9497, -1.9686, 1.8865],
+        'bin_littering': [6.8991, 0.1616, 2.1771], # PNU
+        # 'bar_drink': [3.1751, -2.4041, 1.2635],
+        'bar_drink': [5.5804, -2.0962, 1.6104], # PNU
+        # 'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
+        'bedroom_doublecheck': [4.6, -5.4843, 0.0123], # PNU, same with bedroom_search
+        # 'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+        'bedroom_search_reverse': [5.1777, -4.2715, 1.6012], # PNU, before leaving bedroom
     }
 
 
