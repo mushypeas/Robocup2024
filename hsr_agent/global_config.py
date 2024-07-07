@@ -1,5 +1,6 @@
 import os
 import sys
+sys.path.append('../../hsr_agent')
 sys.path.append('hsr_agent')
 from global_config_utils import make_object_list
 

@@ -102,7 +102,7 @@ class ShoeDetection:
                 formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                 print("Labels probabilities in percentage:", formatted_probs)
-                if text_probs_percent_np[0][0] > 90:
+                if text_probs_percent_np[0][0] > 60:
                     return True
                 count += 1
 
@@ -144,10 +144,10 @@ class ShoeDetection:
                     left_x, left_y = self.ankle_list[human_idx*2]
                     right_x, right_y = self.ankle_list[human_idx*2+1]
 
-                    # if left_x >= 640-160 or right_x <= 160:
-                    #     continue
+                    if left_x >= 640-160 or right_x <= 160:
+                        continue
                     if human_idx >= len(no_shoes_person):
-                        break
+                        continue
                     if no_shoes_person[human_idx]:
                         continue
 
@@ -194,7 +194,7 @@ class ShoeDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 90:
+                    if text_probs_percent_np[0][0] > 60:
                         # no_shoes_person[human_idx] = False
                         self.shoe_position = human_coord_in_map
                     else:
@@ -307,7 +307,7 @@ class ShoeDetection:
                        show_display=True)
         rospy.sleep(3)
         self.agent.say('Please follow me!', show_display=True)
-        rospy.sleep(2)
+        rospy.sleep(1)
         self.agent.move_abs_safe(entrance)
 
         # ask to take off their shoes
@@ -315,8 +315,8 @@ class ShoeDetection:
         self.agent.say('Please take off your shoes\n here at the enterance', show_display=True)
         rospy.sleep(3)
 
-        self.agent.say('I will wait ten seconds\nfor you to take off your shoes', show_display=True)
-        rospy.sleep(13)
+        self.agent.say('I will wait a few seconds\nfor you to take off your shoes', show_display=True)
+        rospy.sleep(10)
 
         rebelion_count = 0
         while rebelion_count < 3:
@@ -333,6 +333,9 @@ class ShoeDetection:
                 # self.agent.say(f'I will wait five more seconds\nfor you to take off your shoes', show_display=True)
                 # rospy.sleep(8)
                 # rebelion_count += 1
+                # self.agent.pose.head_tilt(20)
+                self.agent.say('Please take off your shoes.\nEnjoy your party', show_display=True)
+                rospy.sleep(3)
                 break
             else:
                 self.agent.pose.head_tilt(20)
@@ -340,9 +343,9 @@ class ShoeDetection:
                 rospy.sleep(2.5)
                 return
 
-        self.agent.pose.head_tilt(20)
-        self.agent.say('I give up.\nEnjoy your party', show_display=True)
-        rospy.sleep(2.5)
+        # self.agent.pose.head_tilt(20)
+        # self.agent.say('I give up.\nEnjoy your party', show_display=True)
+        # rospy.sleep(2.5)
 
 
 class ForbiddenRoom:
@@ -399,7 +402,7 @@ class ForbiddenRoom:
         # rospy.sleep(4.5)
         self.agent.say(
             'Sorry but\n this room is not\naccessible to guests.', show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
 
     def ask_to_action(self, destination):
         # take the offender to the other party guests
@@ -414,7 +417,7 @@ class ForbiddenRoom:
         self.agent.move_abs_safe(destination)
 
         self.agent.pose.head_tilt(20)
-        self.agent.pose.head_pan(135) # 0609
+        # self.agent.pose.head_pan(135) # 0609
         self.agent.say('Thank you!', show_display=True)
         rospy.sleep(1)
         self.agent.say('Now you are in\nan appropriate room!',
@@ -513,7 +516,8 @@ class NoLittering:
 
     def find_closest_offender(self):
         # find closest offender in terms of pan degree
-        for pan_degree in [60, 0, -60, -120, -180, -220]:
+        # for pan_degree in [60, 0, -60, -120, -180, -220]:
+        for pan_degree in [90, 60, 30, 0, -30, -60, -90]:
             self.agent.pose.head_pan_tilt(pan_degree, -25)
             rospy.sleep(3)
             print('self.knee_list', self.knee_list)
@@ -592,7 +596,7 @@ class NoLittering:
         # self.agent.pose.head_pan_tilt(90, 20) # 0609
         self.agent.pose.head_tilt(20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
-        rospy.sleep(3.5)
+        rospy.sleep(3)
 
 
 class DrinkDetection:
@@ -688,7 +692,7 @@ class DrinkDetection:
                 formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                 print("Labels probabilities in percentage:", formatted_probs)
-                if text_probs_percent_np[0][0] > 50:
+                if text_probs_percent_np[0][0] > 90:
                     return True
                 count += 1
 
@@ -883,7 +887,7 @@ class DrinkDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 95:
+                    if text_probs_percent_np[0][0] > 99:
                         drink_person[human_idx] = True
                         # return True
                     else:
@@ -1075,7 +1079,7 @@ def stickler_for_the_rules(agent):
     # search_location_list = ['living_room_search', 'study_search']
     # search_location_list = ['living_room_search'] #todo delete
     search_location_list = [
-        # 'bedroom_search',
+        'bedroom_search',
         'kitchen_search', 
         'living_room_search', 'study_search',
         # 'bedroom_search', 
@@ -1089,9 +1093,10 @@ def stickler_for_the_rules(agent):
     agent.pose.move_pose()
 
     # while True:
-    for search_location in search_location_list:
+    for search_idx, search_location in enumerate(search_location_list):
         # pan_degree_list = [-60, -30, 0, 30, 60]  # default for kitchen
         pan_degree_list = [-30, 0, 30]
+        pan_degree_list_forbidden_room = [60, 30, 0, -30, -60]
         # pan_degree_list = [0]
         # if search_location == "living_room_search":
         #     pan_degree_list = [60, 0, -60, -120, -180, -220]
@@ -1104,8 +1109,8 @@ def stickler_for_the_rules(agent):
         rospy.sleep(2)
         
         agent.pose.head_tilt(0)
-        # if search_location == 'kitchen_search':
-        #     agent.move_abs_safe('bedroom_search_reverse')
+        if search_location == 'kitchen_search' and search_idx > 3:
+            agent.move_abs_safe('bedroom_search_reverse')
         if search_location == 'living_room_search':
             agent.move_abs_safe('kitchen_leave')
         elif search_location == 'study_search':
@@ -1121,9 +1126,10 @@ def stickler_for_the_rules(agent):
         # [RULE 2] Forbidden room
         if search_location == 'bedroom_search':
             agent.pose.head_tilt(0)
-            for pan_degree in pan_degree_list:
+            # for pan_degree in pan_degree_list:
+            for pan_degree in pan_degree_list_forbidden_room:
                 agent.pose.head_pan(pan_degree)
-                rospy.sleep(1)
+                rospy.sleep(2)
 
                 if forbidden_room.detect_forbidden_room():
                     break_rule_check_list['room'] += 1
@@ -1141,26 +1147,27 @@ def stickler_for_the_rules(agent):
                     # rospy.sleep(3)
 
                     agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
-                    rospy.sleep(8) # 0609
+                    rospy.sleep(5) # 0609
                     agent.move_abs_safe('bedroom_doublecheck')
                     agent.say('Checking the room if empty', show_display=True)
                     agent.pose.head_tilt(-15)
-                    for pan_degree in [45, 0, -45]:
+                    for pan_degree in pan_degree_list_forbidden_room:
                         # marking forbidden room violation detection
                         # break_rule_check_list['room'] = True
                         # break_rule_check_list['room'] += 1
 
                         agent.pose.head_pan(pan_degree)
-                        rospy.sleep(1.5)
+                        rospy.sleep(2)
 
                         if forbidden_room.detect_forbidden_room(): # TODO : check knee outside the bedroom
                             agent.say('Oh my god. \n You are still here',
                                         show_display=True)
-                            rospy.sleep(3.5)
+                            rospy.sleep(3)
                             agent.say('Lets leave with me')
                             break
 
                     # take the offender to the other party guests
+                    agent.pose.head_pan(0)
                     forbidden_room.ask_to_action('kitchen_search')
                     break
 
@@ -1169,6 +1176,7 @@ def stickler_for_the_rules(agent):
         else:
             for pan_degree in pan_degree_list:
                 agent.pose.head_pan(pan_degree)
+                rospy.sleep(2)
 
                 ##[RULE 4] Compulsory hydration : tilt 0
                 # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
@@ -1199,18 +1207,22 @@ def stickler_for_the_rules(agent):
                     shoe_detection.ask_to_action(entrance)
                     break
 
-                # [RULE 3] No littering : tilt -40
-                if break_rule_check_list['garbage'] < 2 and no_littering.detect_garbage():
-                    # marking no littering violation detection
-                    # break_rule_check_list['garbage'] = True
-                    break_rule_check_list['garbage'] += 1
-                    print('garbage detection')
+            if search_idx > 3:
+                for pan_degree in pan_degree_list[::-1]:
+                    # [RULE 3] No littering : tilt -40
+                    agent.pose.head_pan(pan_degree)
+                    rospy.sleep(2)
+                    if break_rule_check_list['garbage'] < 2 and no_littering.detect_garbage():
+                        # marking no littering violation detection
+                        # break_rule_check_list['garbage'] = True
+                        break_rule_check_list['garbage'] += 1
+                        print('garbage detection')
 
-                    # go to the offender and clarify what rule is being broken
-                    no_littering.clarify_violated_rule()
-                    # ask the offender to pick up and trash the garbage
-                    no_littering.ask_to_action(bin_location)
-                    break
+                        # go to the offender and clarify what rule is being broken
+                        no_littering.clarify_violated_rule()
+                        # ask the offender to pick up and trash the garbage
+                        no_littering.ask_to_action(bin_location)
+                        break
 
         if sum(break_rule_check_list.values())==4:
             break
@@ -1219,10 +1231,10 @@ def stickler_for_the_rules(agent):
         agent.pose.head_pan_tilt(0, 0)
         agent.say("Now I'm going to\nmove to another room.",
                     show_display=True)
-        rospy.sleep(3)
+        rospy.sleep(2)
         agent.say(
             "If you are in my path,\nplease move to the side.", show_display=True)
-        rospy.sleep(6)
+        rospy.sleep(5)
 
 
 
