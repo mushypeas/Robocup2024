@@ -65,72 +65,72 @@ class ServeBreakfast:
         self.place_table = 'kitchen_table_pnu' 
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
-    def picking_test_mode(self, item, table_base_xyz):
+    # def picking_test_mode(self, item, table_base_xyz):
 
-        if item == 'bowl':
-            # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
-            self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
-            self.agent.open_gripper(wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table) 
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.grasp()
-            self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
-            self.agent.move_rel(-0.4, 0, wait=False)
+    #     if item == 'bowl':
+    #         # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
+    #         table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
+    #         self.agent.move_rel(0, table_base_xyz[1], wait=False)
+    #         self.agent.open_gripper(wait=False)
+    #         self.agent.pose.bring_bowl_pose(table=self.pick_table) 
+    #         self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+    #         self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
+    #         self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+    #         self.agent.grasp()
+    #         self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
+    #         self.agent.move_rel(-0.3, 0, wait=False)
 
-        elif item in ['cucudas', 'blue_milk']:
-            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
-            self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
-            self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
-            self.agent.open_gripper(wait=False)
-            # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
-            self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
-            self.agent.grasp(wait=False)
-            rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.7, 0, wait=False)
+    #     elif item in ['cucudas', 'blue_milk']:
+    #         table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+    #         self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
+    #         self.agent.pose.bring_bowl_pose(table=self.pick_table)
+    #         self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
+    #         self.agent.open_gripper(wait=False)
+    #         # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
+    #         self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
+    #         self.agent.grasp(wait=False)
+    #         rospy.sleep(0.5) # wait for grasping manually
+    #         self.agent.move_rel(-0.6, 0, wait=False)
 
-        else:
-            if item == 'spoon':
-                self.agent.pose.bring_bowl_pose(table=self.pick_table)
-                # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
-                table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
-                self.agent.open_gripper(wait=False)
-                self.agent.move_rel(0, table_base_xyz[1], wait=True)
-                self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-                self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
-                self.agent.grasp(wait=False)
-                rospy.sleep(0.5) # wait for grasping manually
-                self.agent.pose.arm_flex(-60)
+    #     else:
+    #         if item == 'spoon':
+    #             self.agent.pose.bring_bowl_pose(table=self.pick_table)
+    #             # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
+    #             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
+    #             self.agent.open_gripper(wait=False)
+    #             self.agent.move_rel(0, table_base_xyz[1], wait=True)
+    #             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+    #             self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
+    #             self.agent.grasp(wait=False)
+    #             rospy.sleep(0.5) # wait for grasping manually
 
-    def pouring_test_mode(self, item):
-        table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])] 
-        self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table)
-        self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
-        self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
-        self.agent.pose.wrist_roll(0) # 붓기 완료
 
-    def placing_test_mode(self, item):
-        if item == 'bowl': # 주석 풀기
-            self.agent.pose.place_bowl_pose()
-            self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
+    # def pouring_test_mode(self, item):
+    #     table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])] 
+    #     self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table)
+    #     self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
+    #     self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
+    #     self.agent.pose.wrist_roll(0) # 붓기 완료
 
-        elif item in ['cucudas', 'blue_milk']:
-            self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
-            self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
+    # def placing_test_mode(self, item):
+    #     if item == 'bowl': # 주석 풀기
+    #         self.agent.pose.place_bowl_pose()
+    #         self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
+
+    #     elif item in ['cucudas', 'blue_milk']:
+    #         self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
+    #         self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
         
-        elif item == 'spoon':
-            table_base_xyz = [axis + bias for axis, bias in zip(self.place_offsets[item], self.place_offsets['bowl'])]
-            self.agent.pose.place_top_pose(0.05, table=self.place_table)
-            self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
-            self.agent.pose.arm_lift_object_table_down(self.place_offsets[item][2], table=self.place_table) # top_pose = 0.2
+    #     elif item == 'spoon':
+    #         table_base_xyz = [axis + bias for axis, bias in zip(self.place_offsets[item], self.place_offsets['bowl'])]
+    #         self.agent.pose.place_top_pose(0.05, table=self.place_table)
+    #         self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
+    #         self.agent.pose.arm_lift_object_table_down(self.place_offsets[item][2], table=self.place_table) # top_pose = 0.2
             
-        self.agent.open_gripper()
-        self.agent.pose.arm_lift_up(self.arm_lift_height)
-        self.agent.move_rel(-0.6, 0, wait=False)
-        rospy.sleep(1) # wait manually
+    #     self.agent.open_gripper()
+    #     self.agent.pose.arm_lift_up(self.arm_lift_height)
+    #     self.agent.move_rel(-0.6, 0, wait=False)
+    #     rospy.sleep(1) # wait manually
 
     def search_item(self, item, picked_items):
         table_item_list = np.zeros(0)
@@ -187,21 +187,21 @@ class ServeBreakfast:
         if item == 'bowl':
             # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
-            self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
+            self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.bring_bowl_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+            # self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.pose.bring_bowl_pose_low(table=self.pick_table)    
             self.agent.grasp()
             self.agent.pose.bring_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.3, 0, wait=False)
 
             # picking test mode 추가
-            if self.picking_test_mode = True
-                self.agent.pose.bring_bowl_pose(table=self.pick_table)
-                self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
-                self.agent.open_gripper(wait=False)
+            # if self.picking_test_mode = True
+            #     self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            #     self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
+            #     self.agent.open_gripper(wait=False)
 
         elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
@@ -212,13 +212,13 @@ class ServeBreakfast:
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp(wait=False)
             rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.7, 0, wait=False)
+            self.agent.move_rel(-0.5, 0, wait=False)
 
             # picking test mode 추가
-            if self.picking_test_mode = True
-                self.agent.pose.bring_bowl_pose(table=self.pick_table)
-                self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
-                self.agent.open_gripper(wait=False)
+            # if self.picking_test_mode = True
+            #     self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            #     self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
+            #     self.agent.open_gripper(wait=False)
 
         else:
             if item == 'spoon':
@@ -228,16 +228,16 @@ class ServeBreakfast:
                 self.agent.open_gripper(wait=False)
                 self.agent.move_rel(0, table_base_xyz[1], wait=True)
                 self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-                self.agent.pose.pick_up_spoon_pose(table=self.pick_table, height=self.pick_spoon_bias[2])        
+                self.agent.pose.pick_spoon_pose_low(table=self.pick_table)        
                 self.agent.grasp(wait=False)
                 rospy.sleep(0.5) # wait for grasping manually
                 self.agent.pose.arm_flex(-60)
 
             # picking test mode 추가
-            if self.picking_test_mode = True
-                self.agent.pose.table_search_pose_breakfast_initial(table=self.pick_table)
-                self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
-                self.agent.open_gripper(wait=False)
+            # if self.picking_test_mode = True
+            #     self.agent.pose.table_search_pose_breakfast_initial(table=self.pick_table)
+            #     self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
+            #     self.agent.open_gripper(wait=False)
 
     def pour_item(self, item):
 
@@ -286,11 +286,11 @@ class ServeBreakfast:
         #  self.agent.open_gripper()
         #   continue
 
-        self.picking_test_mode(self, item, table_base_xyz)
+       # self.picking_test_mode(self, item, table_base_xyz)
     
-        self.pouring_test_mode(self, item)
+        #self.pouring_test_mode(self, item)
 
-        self.placing_test_mode(self, item)
+        #self.placing_test_mode(self, item)
 
 
         ### task start ###
@@ -320,6 +320,7 @@ class ServeBreakfast:
                 # rospy.sleep(2)
 
                 # Search item
+                rospy.sleep(1)
                 item_info = self.search_item(item, picked_items)
                 if item_info is None:
                     rospy.logwarn('Failed to find item to pick. Retrying...')

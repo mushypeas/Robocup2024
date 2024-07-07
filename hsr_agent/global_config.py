@@ -43,7 +43,7 @@ if PNU: # 240630 mjgu 추가
         # serve breakfast
         'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
         'picking_location_pnu': [4.3083, -1.5883, 0.0044], # (kitchen_table 근처) 240630 mjgu 추가
-        'kitchen_table_pnu' : [6.514, -2.7987, -1.5837], # 240630 mjgu 추가
+        'kitchen_table_pnu' : [6.5185, -2.7109, -1.536], # 240630 mjgu 추가
         'breakfast_table_pnu': [5.3689, -1.3234, 0.0665], # 240630 mjgu 추가
 
         # recptionist

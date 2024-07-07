@@ -85,6 +85,8 @@ if __name__ == '__main__':
             agent.pose.place_side_pose('shelf_1f')
         elif command == 'pick_milk_pose':
             agent.pose.pick_milk_pose(table='kitchen_table_pnu')
+        elif command == 'pick_spoon_pose_low':
+            agent.pose.pick_spoon_pose_low(table='kitchen_table_pnu')            
         elif command == 'open_shelf_pose1_by_height':
             agent.pose.open_shelf_pose1_by_height(height=0.59)
         elif command == 'open_shelf_pose2_by_height':

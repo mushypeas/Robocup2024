@@ -411,7 +411,7 @@ class JointPose:
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
-        offset = 0.1
+        offset = 0.11
         arm_lift_joint = target_table_height + table_to_gripper - robot_default_height - offset
         if arm_lift_joint > 0.69:
             arm_lift_joint = 0.69
@@ -421,6 +421,7 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 1.57])
+        
 
     def pouring_pose (self, table='kitchen_table_pnu'):
         target_table_height = self.table_dimension[table][2]
@@ -462,6 +463,21 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
+        
+    def pick_spoon_pose_low(self, table='kitchen_table_pnu'): #240630 mjgu
+        target_table_height = self.table_dimension[table][2]
+        table_to_gripper = 0.12
+        robot_default_height = 0.11
+        offset = 0.15
+        arm_lift_joint = target_table_height + table_to_gripper - robot_default_height - offset
+        if arm_lift_joint > 0.69:
+            arm_lift_joint = 0.69
+        self.set_pose(['arm_lift_joint',
+                       'arm_roll_joint',
+                       'arm_flex_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, 0, -1.57, -1.57, 1.57])
 
     def pick_side_pose_by_height(self, height=0.69):
         robot_default_height = 0.3
