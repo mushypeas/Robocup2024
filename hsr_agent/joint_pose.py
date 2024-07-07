@@ -811,6 +811,11 @@ class JointPose:
     def wrist_flex(self, angle):
         angle = math.radians(float(angle))
         self.set_pose(['wrist_flex_joint'], [angle])
+    
+    def cutlery_placing_wrist(self,flex,roll):
+        flex = math.radians(float(flex))
+        roll = math.radians(float(roll))
+        self.set_pose(['wrist_flex_joint','wrist_roll_joint'], [flex, roll])
 
     def arm_flex(self, angle):
         angle = math.radians(float(angle))
