@@ -9,18 +9,18 @@ def clean_the_table(agent: Agent):
 
     ### task params #############################################
     # ABS_POSITIONS #
-    pick_position = '원탁앞90센치'
-    place_position = '식기세척기앞60센치'
-    close_position1 = 'rack_close_position1'
-    close_position2 = 'rack_close_position2'
-    close_position3 = 'rack_close_position3'
-    open_position1 = 'rack_open_position1'
+    pick_position = 'pos_target_table'
+    place_position = 'pos_dishwasher'
+    # close_position1 = 'rack_close_position1'
+    # close_position2 = 'rack_close_position2'
+    # close_position3 = 'rack_close_position3'
+    # open_position1 = 'rack_open_position1'
 
     # TABLE_DIMENSIONS #
-    pick_table = '원탁'
-    dishwasher_door = 'dishwasher_door'
-    dishwasher_rack = 'dishwasher_rack'
-    dishwasher = 'dishwasher'
+    pick_table = 'tab_target_table'
+    # dishwasher_door = 'dishwasher_door'
+    # dishwasher_rack = 'dishwasher_rack'
+    place_table = 'tab_dishwasher'
 
     # POSE PARAMETERS #
 
@@ -29,7 +29,7 @@ def clean_the_table(agent: Agent):
 
     # MODE PARAMETERS #
     no_distancing_mode = True
-    picking_mode = True
+    picking_mode = False
     placing_mode = True
     rack_close_mode = True
 
@@ -67,9 +67,9 @@ def clean_the_table(agent: Agent):
     agent.door_open()
     agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
+    import pdb; pdb.set_trace()
 
     while True:
-
         if picking_mode:
             
             # 1. go to pick table
@@ -159,13 +159,13 @@ def clean_the_table(agent: Agent):
 
 
             elif item == 'mug':
-                agent.pose.pick_side_cup_pose(table=pick_table)
-                agent.open_gripper()
-                # agent.move_rel(0, base_xyz[1]+0.03, wait=True)
-                agent.pose.arm_lift_top_table_down(height=-0.12, table=pick_table)
-                # agent.move_rel(base_xyz[0]+0.20, 0, wait=True)
-                agent.move_rel(base_xyz[0]+0.20, base_xyz[1] + 0.03, wait=True)
 
+                agent.pose.pick_side_pose_by_height(height = (0.73 - 0.02))
+                
+                # agent.pose.pick_side_cup_pose(table=pick_table)
+                agent.open_gripper()
+                agent.move_rel(base_xyz[0]+0.20, base_xyz[1] + 0.03, wait=True)
+                
                 agent.grasp()
 
                 is_picked = agent.pose.check_grasp(threshold=-1.45)  # modify
@@ -397,6 +397,9 @@ def clean_the_table(agent: Agent):
         ########################################
 
         if placing_mode:
+            if picking_mode == False:
+                item = 'fork'
+                
             num_gripped_items += 1
             agent.pose.move_pose()      
             agent.move_abs(place_position)
@@ -418,7 +421,7 @@ def clean_the_table(agent: Agent):
             agent.move_rel(place_position_dict[item][0], 0, wait=True)
             rospy.sleep(short_move)
 
-            arm_lift_value = agent.pose.place_cutlery_pose(table=dishwasher_rack) # temp
+            arm_lift_value = agent.pose.place_cutlery_pose(table=place_table) # temp
             agent.pose.arm_lift_up(arm_lift_value - 0.1)
             
             if item == 'fork' or item == 'spoon' or item == 'knife':
@@ -436,22 +439,22 @@ def clean_the_table(agent: Agent):
             agent.move_rel(-0.3, 0)
             agent.pose.move_pose()
 
-        if num_gripped_items == 4:
-            #Rack Close Action
-            agent.grasp()
-            agent.move_abs(close_position1)
+        # if num_gripped_items == 4:
+        #     #Rack Close Action
+        #     agent.grasp()
+        #     agent.move_abs(close_position1)
 
-            agent.pose.place_cutlery_pose(table=dishwasher)
+        #     agent.pose.place_cutlery_pose(table=dishwasher)
 
-            agent.pose.arm_lift_up(rack_close_arm_lift) #parameter 1
-            agent.pose.wrist_flex(-70)
+        #     agent.pose.arm_lift_up(rack_close_arm_lift) #parameter 1
+        #     agent.pose.wrist_flex(-70)
             
-            agent.move_abs(close_position2)
-            agent.move_abs(close_position3)
-            agent.move_abs(close_position2)
-            agent.move_abs(close_position1)
+        #     agent.move_abs(close_position2)
+        #     agent.move_abs(close_position3)
+        #     agent.move_abs(close_position2)
+        #     agent.move_abs(close_position1)
             
-            agent.say('I finished cleaning the table', show_display=True)
+        #     agent.say('I finished cleaning the table', show_display=True)
 
-            break
+        #     break
 
