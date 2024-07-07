@@ -31,6 +31,7 @@ def clean_the_table(agent: Agent):
     no_distancing_mode = True
     picking_mode = False
     placing_mode = True
+    door_open_mode = False
     rack_close_mode = True
 
     
@@ -64,7 +65,9 @@ def clean_the_table(agent: Agent):
     agent.grasp()
     agent.pose.move_pose()
 
-    agent.door_open()
+    if door_open_mode:
+        agent.door_open()
+    
     agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
     import pdb; pdb.set_trace()

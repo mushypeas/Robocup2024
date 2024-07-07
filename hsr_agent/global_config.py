@@ -16,7 +16,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 # yolo_weight_path = 'weight/best_0704.pt'
 yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
 # yolo_classnames_path = 'weight/best_for_final.cn'
-yolo_classnames_path = 'weight/YOLOV10-M-SNU-0703.cn'
+yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
@@ -24,14 +24,13 @@ except:
     print('Error: Cannot load object list')
     pass
 
-FINAL = True
+PNU = True
 
 
-if FINAL:
+if PNU:
     print('[GLOBAL CONFIG] FINAL mode')
-    # real robot
-    ABS_POSITION = {
 
+    ABS_POSITION = {
         # CTT
         'pos_target_table' : [5.2366, -1.3278, 0.0333],
         'pos_dishwasher': [5.703, -2.9454, -1.5737]
