@@ -224,7 +224,7 @@ class HumanFollowing:
 
 
 
-        self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
+        
 
 
             
@@ -1053,8 +1053,8 @@ class HumanFollowing:
 
 
             # self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
-
-
+            target_xyyaw =  self.last_human_pos
+            self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)      
             # rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
