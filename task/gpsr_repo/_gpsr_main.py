@@ -119,6 +119,7 @@ class GPSR:
 
     # human keypoints callback
     def hk_cb(self, msg):
+        print("msg", msg)
         self.human_keypoints = msg.data
 
     ### HELP Functions ###
@@ -323,35 +324,6 @@ class GPSR:
         userName = self.cluster(userName, self.names_list)
         return userName
     
-<<<<<<< HEAD
-    def getPose(self, model_path='module/yolov7-pose-estimation/pose_classifier.pth'):
-        # input_data = 
-        model = torch.load(model_path)
-        model.eval()
-
-        # 입력 데이터 처리
-        lines = input_data.strip().split('\n')
-        keypoints = []
-        for line in lines[:-1]:  # 마지막 줄(레이블)을 제외하고 처리
-            x, y, confidence = map(float, line.split())
-            keypoints.extend([x, y, confidence])
-
-        # 입력 텐서 생성
-        input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)
-
-        # 추론
-        with torch.no_grad():
-            output = model(input_tensor)
-
-        # 결과 처리 (예: 가장 높은 확률의 클래스 반환)
-        _, predicted = torch.max(output, 1)
-        
-        # 클래스 레이블 매핑 (예시)
-        class_labels = ['standing', 'sitting', 'lying', ...]  # 실제 클래스 레이블로 채워야 함
-        predicted_label = class_labels[predicted.item()]
-
-        return predicted_label
-=======
     def getPose(self):
         num_features = 51
         keypoint_data = self.human_keypoints
@@ -381,7 +353,6 @@ class GPSR:
 
         return human_poses
 
->>>>>>> 807f969038a867082d222631466a46745f28af09
     
     def getGest(self):
         num_features = 51
