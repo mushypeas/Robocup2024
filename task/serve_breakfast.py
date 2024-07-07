@@ -17,7 +17,7 @@ class ServeBreakfast:
         self.agent = agent
 
         # !!! Test params !!!
-        self.is_picking_test_mode = True
+        self.is_picking_test_mode = False
         self.is_pouring_test_mode = False
         self.is_placing_test_mode = False
 
@@ -194,28 +194,27 @@ class ServeBreakfast:
             # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(-0.2, table_base_xyz[1], wait=False)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table) 
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.pick_bowl_max_pose(table=self.pick_table, height=self.pick_bowl_bias[2])
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+            self.agent.pose.bring_bowl_pose_low(table=self.pick_table)    
             self.agent.grasp()
-            self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
-            self.agent.move_rel(-0.4, 0, wait=False)
+            self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            self.agent.move_rel(-0.3, 0, wait=False)
 
             # if _is_pouring_test_mode = True: 
 
         elif item in ['cucudas', 'blue_milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
             self.agent.move_rel(-0.5, table_base_xyz[1], wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
-            self.agent.pose.pick_cucudas_pose(table=self.pick_table, height=self.pick_cucudas_bias[2]) # cucudas 추가
+            self.agent.pose.pick_milk_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
             # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
-            self.agent.move_rel(table_base_xyz[0]+0.5, 0, wait=True)
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
             self.agent.grasp(wait=False)
             rospy.sleep(0.5) # wait for grasping manually
-            self.agent.move_rel(-0.7, 0, wait=False)
+            self.agent.move_rel(-0.5, 0, wait=False)
 
             # if _is_pouring_test_mode = True:             
 
@@ -347,7 +346,7 @@ class ServeBreakfast:
                 else:
                     rospy.logwarn(f'Failed to grasp {item}! Retrying...')
 
-            if self.picking_test_mode:
+            # if self.picking_test_mode:
                 self.agent.open_gripper()
                 continue
 

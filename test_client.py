@@ -76,13 +76,15 @@ if __name__ == '__main__':
         elif command == 'pouring_pose': # test pose 추가. mjgu_240612
             agent.pose.pouring_pose()        
         elif command == 'pick_side_pose':
-            agent.pose.pick_side_pose(table='kitchen_table')
+            agent.pose.pick_side_pose(table='kitchen_table_pnu')
         elif command == 'pick_side_pose_breakfast_table':
-            agent.pose.pick_side_pose(table='breakfast_table')
+            agent.pose.pick_side_pose(table='breakfast_table_pnu')
         elif command == 'pick_side_pose_by_height':
             agent.pose.pick_side_pose_by_height(height=0.59)
         elif command == 'place_side_shelf_pose':
             agent.pose.place_side_pose('shelf_1f')
+        elif command == 'pick_milk_pose':
+            agent.pose.pick_milk_pose(table='kitchen_table_pnu')
         elif command == 'open_shelf_pose1_by_height':
             agent.pose.open_shelf_pose1_by_height(height=0.59)
         elif command == 'open_shelf_pose2_by_height':

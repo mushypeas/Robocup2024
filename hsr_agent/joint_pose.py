@@ -381,7 +381,7 @@ class JointPose:
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
-        offset = 0.3
+        offset = 0.3 # 내려갈 높이
         arm_lift_joint = target_table_height + table_to_gripper - robot_default_height - offset
         if arm_lift_joint > 0.69:
             arm_lift_joint = 0.69
@@ -422,7 +422,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 1.57])
 
-    def pouring_pose (self, table='kitchen_table'):
+    def pouring_pose (self, table='kitchen_table_pnu'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0
         arm_lift_joint = target_table_height - robot_default_height # 0.49나 0.5 높이가 적당 / bowl 높이는 5.5cm / 그릇 옆 6cm 
@@ -437,7 +437,20 @@ class JointPose:
 
                       [0.69 -1.57, 0, 0, 90])
 
-    def pick_side_pose(self, table='kitchen_table'):
+    def pick_side_pose(self, table='kitchen_table_pnu'):
+        target_table_height = self.table_dimension[table][2]
+        robot_default_height = 0.3
+        offset = 0.03
+        arm_lift_joint = target_table_height - robot_default_height + offset
+
+        self.set_pose(['arm_lift_joint',
+                       'arm_flex_joint',
+                       'arm_roll_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, -1.57, 0, 0, 0])
+        
+    def pick_milk_pose(self, table='kitchen_table_pnu'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
         offset = 0.03
