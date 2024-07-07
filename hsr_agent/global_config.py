@@ -68,8 +68,7 @@ if PNU: # 240630 mjgu 추가
     TABLE_DIMENSION = {
         # width, depth, height
         'breakfast_table_pnu': [0.735, 1.18, 0.73], # (나무색) 240630 mjgu 추가
-        'kitchen_table_pnu': [40, 80.2, 60.2], #(흰색) 240630 mjgu 추가
-        
+        'kitchen_table_pnu': [0.4, 0.802, 0.602], #(흰색) 240630 mjgu 추가
     }
 
 

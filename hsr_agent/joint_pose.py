@@ -7,11 +7,12 @@ from tmc_manipulation_msgs.srv import (
 
 from sensor_msgs.msg import JointState
 
-
+ 
 
 class JointPose:
     def __init__(self, table_dimension, gripper):
-        self.table_dimension = table_dimension
+    
+        self.table_dimension = table_dimension   
         self.kithchen_table = table_dimension['kitchen_table_pnu']
         self.breakfast_table = table_dimension['breakfast_table_pnu']
 
@@ -343,7 +344,7 @@ class JointPose:
                       [0.4, 0, -1.57, 0, 1.57])
 
 
-    def pick_bowl_max_pose(self, table='kitchen_table', height=0):  # added height parameter by Minjun at June 11th, 2023
+    def pick_bowl_max_pose(self, table='kitchen_table_pnu', height=0):  # added height parameter by Minjun at June 11th, 2023
         #modifed by BYUNGJU on 03 June 2024, for clean the table.s
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
@@ -361,7 +362,7 @@ class JointPose:
         # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609 
    
         
-    def pick_up_bowl_pose(self, table='kitchen_table'):
+    def pick_up_bowl_pose(self, table='kitchen_table_pnu'):
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -375,9 +376,24 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1, -1.57, 1.57])
+
+    def pick_up_bowl_pose_low(self, table='kitchen_table_pnu'):
+        target_table_height = self.table_dimension[table][2]
+        table_to_gripper = 0.12
+        robot_default_height = 0.11
+        offset = 0.3
+        arm_lift_joint = target_table_height + table_to_gripper - robot_default_height - offset
+        if arm_lift_joint > 0.69:
+            arm_lift_joint = 0.69
+        self.set_pose(['arm_lift_joint',
+                       'arm_roll_joint',
+                       'arm_flex_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, 0, -1, -1.57, 1.57])
         
 
-    def bring_bowl_pose(self, table='kitchen_table'): #240630 mjgu
+    def bring_bowl_pose(self, table='kitchen_table_pnu'): #240630 mjgu
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
@@ -390,7 +406,22 @@ class JointPose:
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
                       [arm_lift_joint, 0, -1.57, -1.57, 1.57]) # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609
-        
+
+    def bring_bowl_pose_low(self, table='kitchen_table_pnu'): #240630 mjgu
+        target_table_height = self.table_dimension[table][2]
+        table_to_gripper = 0.12
+        robot_default_height = 0.11
+        offset = 0.1
+        arm_lift_joint = target_table_height + table_to_gripper - robot_default_height - offset
+        if arm_lift_joint > 0.69:
+            arm_lift_joint = 0.69
+        self.set_pose(['arm_lift_joint',
+                       'arm_roll_joint',
+                       'arm_flex_joint',
+                       'wrist_flex_joint',
+                       'wrist_roll_joint'],
+                      [arm_lift_joint, 0, -1.57, -1.57, 1.57])
+
     def pouring_pose (self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0
@@ -398,22 +429,13 @@ class JointPose:
         # 시리얼은 그릇 바로 옆에 딱 붙여야 함 .
         # 시리얼 할 때는 arm_lift_up이 대략 0.52정도가 적당해보임
         # wrist_roll 90은 정면 들고 서있기, 180은 붓기임
-
-
         self.set_pose(['arm_lift_joint',
                        'arm_flex_joint',
                        'arm_roll_joint',
                        'wrist_flex_joint',
                        'wrist_roll_joint'],
-<<<<<<< HEAD
-<<<<<<< HEAD
-                      [arm_lift_joint, 0, -1.0472, -1.57, 1.57]) # 현재 arm_flex_joint = - 60 degree / 기존 wrist_flex_joint = -90 degree (-1.57) 240609
-=======
+
                       [0.69 -1.57, 0, 0, 90])
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
-=======
-                      [0.69 -1.57, 0, 0, 90])
->>>>>>> a51efe73c67d77b6e6345963d17756dbdb4d5776
 
     def pick_side_pose(self, table='kitchen_table'):
         target_table_height = self.table_dimension[table][2]

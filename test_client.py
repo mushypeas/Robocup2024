@@ -104,9 +104,11 @@ if __name__ == '__main__':
         elif command == 'pick_bowl_pose_last':
             agent.pose.pick_bowl_pose_last(table='breakfast_table')
         elif command == 'pick_bowl_max_pose':
-            agent.pose.pick_bowl_max_pose(table='kitchen_table')
+            agent.pose.pick_bowl_max_pose(table='kitchen_table_pnu')
         elif command == 'pick_up_bowl_pose':
-            agent.pose.pick_up_bowl_pose(table='kitchen_table')
+            agent.pose.pick_up_bowl_pose(table='kitchen_table_pnu')
+        elif command == 'pick_up_bowl_pose_low':
+            agent.pose.pick_up_bowl_pose_low(table='kitchen_table_pnu')
         elif command == 'place_bowl_pose':
             agent.pose.place_bowl_pose(table='kitchen_table')
         elif command == 'pick_plate_pose_fold':
@@ -118,6 +120,8 @@ if __name__ == '__main__':
             agent.pose.put_plate_dish_washer(table='dishwasher')
         elif command == 'bring_bowl_pose':
             agent.pose.bring_bowl_pose()
+        elif command == 'bring_bowl_pose_low':
+            agent.pose.bring_bowl_pose_low()
         elif command == 'spill_cereal_pose':
             object_height = 0.14  # [m]
             agent.pose.spill_object_pose(object_height, table='kitchen_table')
@@ -185,7 +189,7 @@ if __name__ == '__main__':
         elif command == 'handle_down':
             agent.pose.door_handle_down_pose()
         elif command == 'detect_3d_safe':
-             print(agent.yolo_module.detect_3d_safe('식탁용식기세척기'))
+             print(agent.yolo_module.detect_3d_safe('kitchen_table_pnu'))
         elif command == 'yolo_bbox':
             print(agent.yolo_module.yolo_bbox)
         elif command == 'find_type_by_id':
