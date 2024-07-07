@@ -13,7 +13,7 @@ if AIIS:
     print('[GLOBAL CONFIG] AIIS mode')
     # real robot
     ABS_POSITION = {
-        'insp_target': [6.2869, 3.5307, 0],
+        'insp_target': [3.8115, -7.2256, 2.1715],
         'arena_out': [-2.487, 5.65, -1.561],
         'zero': [0.0, 0.0, 0.0],
         'dev_front': [-1.018, 0.190, -3.061],

@@ -22,7 +22,7 @@ if __name__ == '__main__':
         elif command == 'inspection':
             agent.move_abs_safe('insp_target')
         elif command == 'zero':
-            agent.move_abs('zero')
+            agent.move_abs_safe('zero')
         elif command == 'dev_front':
             agent.move_abs('dev_front')
         elif command == 'table_front':

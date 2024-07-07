@@ -22,6 +22,9 @@ from hsr_agent.tts import TTS
 from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
+# stt
+# from module.stt.stt_client import stt_client
+from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -343,51 +346,57 @@ class Agent:
         time_trapped = time.time()
         while self.move_base.base_action_client.get_state() != GoalStatus.SUCCEEDED:
             # print("state", self.move_base.base_action_client.get_state())
-            if time.time() - self.last_moved_time > giveup_timeout:
-                rospy.logwarn('Giveup moving!')
-                self.move_base.base_action_client.cancel_all_goals()
-                return True
+            # if time.time() - self.last_moved_time > giveup_timeout:
+            #     rospy.logwarn('Giveup moving!')
+            #     self.move_base.base_action_client.cancel_all_goals()
+            #     return True
             if self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
                 time_trapped = time.time()
                 rospy.logwarn('Something Ahead !')
                 self.move_base.base_action_client.cancel_all_goals()
-                while self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
-                    if time.time() - self.last_moved_time > giveup_timeout:
-                        rospy.logwarn('Giveup moving!')
-                        self.move_base.base_action_client.cancel_all_goals()
-                        return True
-                    # 5초 이상 안움직이면 회전해서 빠져 나가게끔 하자
-                    # move rel
-                    rospy.logwarn('Still something in region')
-                    if time.time() - time_trapped > timeout:
-                        cur_pose = self.get_pose()
-                        if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
-                            self.move_base.base_action_client.cancel_all_goals()
-                            self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
-                            return True
-                        rospy.logwarn("move backward")
-                        self.move_rel(-0.5, 0, wait=True)
-                        break
-                    rospy.sleep(0.1)
-                time_trapped = time.time()
-                # goal.target_pose.header.stamp = rospy.Time.now()
+                self.move_rel(0,0,0, wait=True)
+                rospy.sleep(5)
                 self.move_base.base_action_client.send_goal(goal)
 
-            else:
-                if time.time() - time_trapped > timeout:
-                    time_trapped = time.time()
-                    if self.isstopped:
-                        rospy.loginfo("timeout, send goal again")
-                        self.move_base.base_action_client.cancel_all_goals()
-                        cur_pose = self.get_pose()
-                        if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
-                            print(np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)))
-                            self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
 
-                            return True
-                        # goal.target_pose.header.stamp = rospy.Time.now()
-                        self.move_base.base_action_client.send_goal(goal)
-            rospy.sleep(0.01)
+            #     self.move_base.base_action_client.cancel_all_goals()
+            #     while self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
+            #         if time.time() - self.last_moved_time > giveup_timeout:
+            #             rospy.logwarn('Giveup moving!')
+            #             self.move_base.base_action_client.cancel_all_goals()
+            #             return True
+            #         # 5초 이상 안움직이면 회전해서 빠져 나가게끔 하자
+            #         # move rel
+            #         rospy.logwarn('Still something in region')
+            #         if time.time() - time_trapped > timeout:
+            #             cur_pose = self.get_pose()
+            #             if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
+            #                 self.move_base.base_action_client.cancel_all_goals()
+            #                 self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
+            #                 return True
+            #             rospy.logwarn("move backward")
+            #             self.move_rel(-0.5, 0, wait=True)
+            #             break
+            #         rospy.sleep(0.1)
+            #     time_trapped = time.time()
+            #     # goal.target_pose.header.stamp = rospy.Time.now()
+            #     self.move_base.base_action_client.send_goal(goal)
+
+            # else:
+            #     if time.time() - time_trapped > timeout:
+            #         time_trapped = time.time()
+            #         if self.isstopped:
+            #             rospy.loginfo("timeout, send goal again")
+            #             self.move_base.base_action_client.cancel_all_goals()
+            #             cur_pose = self.get_pose()
+            #             if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
+            #                 print(np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)))
+            #                 self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
+
+            #                 return True
+            #             # goal.target_pose.header.stamp = rospy.Time.now()
+            #             self.move_base.base_action_client.send_goal(goal)
+            # rospy.sleep(0.01)
         return True
 
     def move_abs_safe(self, position, thresh=0.01, timeout=3.0, giveup_timeout=50.0, angle=30):
