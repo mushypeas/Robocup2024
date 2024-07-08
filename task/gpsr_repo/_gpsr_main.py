@@ -575,6 +575,16 @@ class GPSR:
 
 # MAIN
 def gpsr(agent):
+    yolov10_path = "/home/tidy/Robocup2024/yolov10.sh"
+    yolov7_pose_path = "/home/tidy/Robocup2024/yolov7_pose.sh"
+    
+    yolov10_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov10_path}; exec bash']
+    yolov7_pose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov7_pose_path}; exec bash']
+
+    yolov10_process = subprocess.Popen(yolov10_command)
+    yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
+
+    
     g = GPSR(agent)
 
     # inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
