@@ -357,11 +357,11 @@ class HumanFollowing:
                 mid_x = width // 2
 
                 print("min_y+100 : ", min_y+100)
-                left_values = depth[max(min_y + y_top, 0):min_y + y_top, :mid_x]
+                left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
                 left_background_count = np.mean(left_values[np.where(left_values < 1.0)])
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
-                right_values = depth[max(min_y + y_top, 0):min_y + y_top, mid_x:]
+                right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
                 right_background_count = np.mean(right_values[np.where(right_values < 1.0)])    
                 # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
                 print("right_background_count", right_background_count)
