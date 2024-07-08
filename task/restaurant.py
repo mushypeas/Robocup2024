@@ -50,6 +50,8 @@ center_index = lidar_index // 2
 ## YOLO img size
 yolo_img_height = 480
 yolo_img_width = 640
+
+doing_lookup = False
 '''
 
 foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
@@ -60,18 +62,16 @@ foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
 class MoveBaseStandalone:
     def __init__(self):
         self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
-        self.cur_vel_sub = rospy.Subscriber('/base_velocity', Twist, self._cur_vel_callback)
-
         self.base_action_client.wait_for_server(timeout=2)
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
         self.listener = tf.TransformListener()
-        self.last_moved_time = time.time()
+        self.last_checked_time = time.time()
+        self.last_checked_pos = [0, 0]
         # reset map
         # rospy.wait_for_service('/reset_map')
-
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -79,19 +79,6 @@ class MoveBaseStandalone:
         self.dists = data_np
         self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
-
-    def _cur_vel_callback(self, msg):
-        x, y, z = msg.linear.x, msg.linear.y, msg.linear.z
-        xw, yw, zw = msg.angular.x, msg.angular.y, msg.angular.z
-        self.cur_vel = [x, y, zw]
-        # rospy.loginfo("{:.3f}{:.3f}{:.3f}{:.3f}{:.3f}{:.3f}".format(x,y,z,xw,yw,zw))
-        if x == 0 and y == 0 and z == 0 and zw == 0:
-            self.isstopped = True
-        else:
-            self.isstopped = False
-
-        if round(x, 3) != 0 or round(y, 3):
-            self.last_moved_time = time.time()
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -185,7 +172,7 @@ class MoveBaseStandalone:
         self.base_action_client.wait_for_server(5)
         theta = 0.
         rotate_delta = 30.
-        r = 1.0 # 0.5
+        r = 0.5 # 0.5
         spin_count = 0
 
         while not rospy.is_shutdown():
@@ -208,12 +195,13 @@ class MoveBaseStandalone:
             
             # Retry navigation to the customer until it success
             while not rospy.is_shutdown():
-
                 rospy.sleep(0.1)
                 action_state = self.base_action_client.get_state()
-                if action_state == GoalStatus.SUCCEEDED:
+
+                if action_state == GoalStatus.SUCCEEDED and not doing_lookup:
                     rospy.loginfo("Navigation Succeeded.")
                     return _goal_x, _goal_y, _goal_yaw
+                
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                     rospy.logwarn("Invalid Navigation Target")
                     agent.say("I am searching the valid pathway. Please hold.")
@@ -229,8 +217,10 @@ class MoveBaseStandalone:
                     if spin_count % 8 == 0:
                         r += 0.1
                     break
+
                 else:
-                    if (time.time() - self.last_moved_time) > 3:
+                    cur_pos = self.get_pose()
+                    if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                         agent.move_base.base_action_client.cancel_all_goals()
                         try:
                             candidates = self.candidates
@@ -240,9 +230,15 @@ class MoveBaseStandalone:
                         while not best_interval:
                             best_interval = self.get_best_candidate(candidates)
                         self.move_best_interval(best_interval)
-                        # rospy.sleep(3)
+                        self.last_checked_pos = self.get_pose()
+                        self.last_checked_time = time.time()
+
+
+                        if abs(_goal_x - self.last_checked_pos[0]) < r and abs(_goal_y - self.last_checked_pos[1]) < r:
+                            rospy.loginfo("Navigation Succeeded.")
+                            return _goal_x, _goal_y, _goal_yaw
+
                         self.base_action_client.send_goal(goal)
-                    pass
 
     def get_pose(self):
         while not rospy.is_shutdown():
@@ -301,7 +297,7 @@ class MoveBaseStandalone:
         avg_rad = (start_rad + end_rad) / 2
         
         # if self.human_rad:
-        return -abs(avg_rad - 481) #current center
+        return -abs(avg_rad) #current center
         
         # else:
         #     ### TODO: heuristic function when human_yaw is None ###
@@ -419,6 +415,7 @@ def restaurant(agent):
             robot_ori = 0.
 
             while True:
+                doing_lookup = True
                 # HRI: tell customers to wave their hand
                 first_lookup += 1
                 if first_lookup % 3 == 0:
@@ -437,6 +434,8 @@ def restaurant(agent):
                     agent.say('Please wave your hand to order')
                     rospy.sleep(3.)
                     start_time = now
+
+                doing_lookup = False
 
                 # Wait message of OpenPose results
                 # Continue if no valid input received
