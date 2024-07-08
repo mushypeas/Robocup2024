@@ -16,7 +16,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 if is_yolov10==False:
     yolo_weight_path = 'weight/best_0704.pt'
     # yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-    yolo_classnames_path = 'weight/best_for_final.cn'
+    yolo_classnames_path = 'weight/best_0704.cn'
 
 
 if is_yolov10:
