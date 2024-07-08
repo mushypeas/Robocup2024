@@ -8,7 +8,7 @@ import time
 import math
 import subprocess
 
-
+from cv_bridge import CvBridge
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped, Twist
 from sklearn.cluster import KMeans
@@ -61,6 +61,7 @@ class MoveBaseStandalone:
     def __init__(self):
         self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
         self.base_action_client.wait_for_server(timeout=2)
+        self.bridge = CvBridge()
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
@@ -151,6 +152,7 @@ class MoveBaseStandalone:
 
     def barrier_stop(self, agent, barrier_stop_thres=0.5): #jnpahk
         depth = agent.depth_image
+        depth = depth[depth!=0]
         if np.any(depth < barrier_stop_thres):
             return True
         else:
@@ -159,8 +161,10 @@ class MoveBaseStandalone:
     
     def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
         depth = agent.depth_image
+        depth = depth[:,:]
         h, w = self.seg_img.shape
-        seg_img = self.seg_img[:, w*4 : w//4 * 3]
+        # seg_img = self.seg_img[:, w*4 : w//4 * 3]
+        seg_img = self.seg_img[:,:]
 
         valid_depth_mask = depth > 0
         human_mask = (seg_img == 15) & valid_depth_mask
