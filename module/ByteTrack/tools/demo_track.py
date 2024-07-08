@@ -95,7 +95,7 @@ def make_parser():
         "--aspect_ratio_thresh", type=float, default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value."
     )
-    parser.add_argument('--min_box_area', type=float, default=100000, help='filter out tiny boxes')
+    parser.add_argument('--min_box_area', type=float, default=1000, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
     return parser
 
@@ -164,7 +164,7 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
     print('human_id: ', human_id)
     # tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
-    if frame_id < 1000 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
+    if frame_id < 10 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
         height, width, _ = ros_img.shape
         bar_width = width // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
         ros_img[:, :bar_width] = 0
