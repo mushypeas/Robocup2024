@@ -172,6 +172,7 @@ class MoveBaseStandalone:
         human_depth_values = depth[human_y, human_x]
 
         if human_depth_values.size != 0 and (np.min(human_depth_values) < human_stop_thres): 
+            print("human detected. finish.")
             return True
         else:
             return False
