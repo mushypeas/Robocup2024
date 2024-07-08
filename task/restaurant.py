@@ -8,20 +8,23 @@ import time
 import math
 import subprocess
 
+
 from actionlib_msgs.msg import GoalStatus
-from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
-from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped, Twist
 from sklearn.cluster import KMeans
 from std_msgs.msg import Int16MultiArray
+from sensor_msgs.msg import LaserScan
 from utils.marker_maker import MarkerMaker
 from playsound import playsound
 from std_srvs.srv import Trigger
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
 
 
 
 min_interval_arc_len = 1.0
 unit_rad = 0.25 * ( math.pi / 180 )
-avg_dist_move_dist_ratio = 5
+avg_dist_move_dist_ratio = 3
 
 def calculate_human_rad(human_center_x, yolo_img_width):
     human_center_bias = human_center_x - yolo_img_width / 2
@@ -57,12 +60,15 @@ foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
 class MoveBaseStandalone:
     def __init__(self):
         self.base_action_client = SimpleActionClient('/move_base', MoveBaseAction, "base_action_client")
+        self.cur_vel_sub = rospy.Subscriber('/base_velocity', Twist, self._cur_vel_callback)
+
         self.base_action_client.wait_for_server(timeout=2)
         # jykim
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        
+        self.listener = tf.TransformListener()
+        self.last_moved_time = time.time()
         # reset map
         # rospy.wait_for_service('/reset_map')
 
@@ -74,7 +80,18 @@ class MoveBaseStandalone:
         self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
 
+    def _cur_vel_callback(self, msg):
+        x, y, z = msg.linear.x, msg.linear.y, msg.linear.z
+        xw, yw, zw = msg.angular.x, msg.angular.y, msg.angular.z
+        self.cur_vel = [x, y, zw]
+        # rospy.loginfo("{:.3f}{:.3f}{:.3f}{:.3f}{:.3f}{:.3f}".format(x,y,z,xw,yw,zw))
+        if x == 0 and y == 0 and z == 0 and zw == 0:
+            self.isstopped = True
+        else:
+            self.isstopped = False
 
+        if round(x, 4) != 0 or round(y, 4) != 0:
+            self.last_moved_time = time.time()
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -213,7 +230,8 @@ class MoveBaseStandalone:
                         r += 0.1
                     break
                 else:
-                    if (time.time() - self.agent.last_moved_time) > 7:
+                    if (time.time() - self.last_moved_time) > 3:
+                        agent.move_base.base_action_client.cancel_all_goals()
                         try:
                             candidates = self.candidates
                         except AttributeError:
@@ -222,10 +240,31 @@ class MoveBaseStandalone:
                         while not best_interval:
                             best_interval = self.get_best_candidate(candidates)
                         self.move_best_interval(best_interval)
+                        rospy.sleep(3)
+                        self.base_action_client.send_goal(goal)
                     pass
 
+    def get_pose(self):
+        while not rospy.is_shutdown():
+            try:
+                (trans, rot) = self.listener.lookupTransform('map',
+                                                             'base_footprint',
+                                                             rospy.Time(0))
+                break
+            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
+                continue
+
+        euler_angles = tf.transformations.euler_from_quaternion(rot)
+        yaw = euler_angles[2]
+
+        return [trans[0], trans[1], yaw]
+    
     def move_rel(self, x, y, yaw=0):
-        self.agent.move_rel(x, y, yaw=yaw)
+        cur_x, cur_y, cur_yaw = self.get_pose()
+        goal_x = cur_x + x
+        goal_y = cur_y + y
+        goal_yaw = cur_yaw + yaw
+        self.move_abs(None, goal_x, goal_y, goal_yaw)
 
 
     def move_abs(self, agent, goal_x, goal_y, goal_yaw=None):
