@@ -64,8 +64,8 @@ def clean_the_table(agent: Agent):
 
     if door_open_mode:
         agent.door_open()
+        agent.move_rel(2.0, 0, wait=True)
     
-    agent.move_rel(2.0, 0, wait=True)
     agent.say('start clean the table', show_display=True)
     import pdb; pdb.set_trace()
 

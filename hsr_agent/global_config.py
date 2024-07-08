@@ -6,25 +6,26 @@ from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
+is_yolov10 = False
+
 # data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
+if is_yolov10==False:
+    yolo_weight_path = 'weight/best_0704.pt'
+    # yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
+    yolo_classnames_path = 'weight/best_for_final.cn'
 
-##### yolo v7########
-# yolo_weight_path = 'weight/best_0704.pt'
-# yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-# yolo_classnames_path = 'weight/best_for_final.cn'
-###################
 
-##### yolo v10########
-yolo_weight_path = 'weight/best_0704.pt'
-yolo_classnames_path = 'weight/YOLOV10-M-SNU-0703.cn'
-###################
+if is_yolov10:
+    yolo_weight_path = 'weight/pnu_final.pt'
+    yolo_classnames_path = 'weight/pnu_final.cn'
+
 
 try:
-    OBJECT_LIST = make_object_list(yolo_classnames_path)
+        OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
 except:
     print('Error: Cannot load object list')
     pass

@@ -1,10 +1,12 @@
 import os
 from object_list_dict import name_to_grasping_type
 
-def make_object_list(yolo_classname_path):
+def make_object_list(yolo_classname_path, is_yolov10=True):
     # yolo_classname path
-
-    file_path = os.path.join('/home/tidy/Robocup2024/module/yolov7', yolo_classname_path)
+    if not is_yolov10:
+        file_path = os.path.join('/home/tidy/Robocup2024/module/yolov7', yolo_classname_path)
+    if is_yolov10:
+        file_path = os.path.join('/home/tidy/Robocup2024/module/yolov10', yolo_classname_path)
 
     with open(file_path, 'r', encoding='utf-8') as f:
         class_names = [line.strip() for line in f.readlines()]
