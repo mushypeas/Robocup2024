@@ -45,7 +45,7 @@ class custom_Yolov10:
         self.pc = ros_numpy.numpify(point_msg)
 
     def ready(self):
-        self.model = YOLOv10("best.pt")  #path for weight file
+        self.model = YOLOv10("weight/yolov10m_240706_v3.pt")  #path for weight file
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
