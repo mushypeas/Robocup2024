@@ -63,55 +63,72 @@ Outstanding performance (see sec. 2.3.3) 117
 
 <Pose 12개 총 정리 - run 순서에 따름>
 1. table_search_pose_low() : kitchen_table_pnu 와 같은 낮은 테이블 search pose임. head_tilt가 -15~-20도
-    def search_item 진입
-    def pick_item 진입
-    bowl picking 시작
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   def search_item 진입  |
+        |     def pick_item 진입    |
+        |   bowl picking 시작     |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 2. bring_bowl_pose : 인형뽑기 pose. ㄱ자 형태 (kitchen_table_pnu)
 3. bring_bowl_pose_low : table에 맞춰 offset으로 설정한만큼 더 내려감.(kitchen_table_pnu)
 2. bring_bowl_pose : grasp()후, 2번 pose로 돌아오기
 4. table_search_pose_breakfast_initial : 팔접고 breakfast_table로 이동
-    breakfast_table로 이동
-
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   breakfast_table로 이동 |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 5. place_bowl_pose : breakfast_table에 bowl 내려놓기  (45도 정도 기울어진 놓기)
 4. table_search_pose_breakfast_initial : 팔접고 다시 kitchen_table로 이동
-    kitchen_table로 이동
-
-    def search_item 진입
-    def pick_item 진입
-    cereal picking 시작
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   kitchen_table로 이동   |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   def search_item 진입  |
+        |   def pick_item 진입    |
+        |   cereal picking 시작   |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 
 6. pick_milk_pose : 팔 쭉 뻗어서 cereal & milk 집는 포즈
 4. table_search_pose_breakfast_initial : 팔접고 breakfast_table로 이동
-    breakfast_table로 이동
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |  breakfast_table로 이동  |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ    
 7. spill_object_pose : cereal & milk holding 중
 8. spill_safety_pose : spill 방지용으로 pouring 시 bowl에 가깝게 내려가기
 7. spill_object_pose : 붓고 원래대로 다시 돌아옴. holding pose
 9. arm_lift_object_table_down : cereal & milk 살짝 아래로 조심스럽게 두기
 4. table_search_pose_breakfast_initial : 팔접고 다시 kitchen_table로 이동
-    kitchen_table로 이동
-
-    def search_item 진입
-    def pick_item 진입
-    milk picking 시작
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   kitchen_table로 이동   |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ        
+        |   def search_item 진입  |
+        |   def pick_item 진입    |
+        |   milk picking 시작     |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 6. pick_milk_pose : 팔 쭉 뻗어서 cereal & milk 집는 포즈
 4. table_search_pose_breakfast_initial : 팔접고 breakfast_table로 이동
-    breakfast_table로 이동
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |  breakfast_table로 이동  |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 
 7. spill_object_pose : cereal & milk holding 중
 8. spill_safety_pose : spill 방지용으로 pouring 시 bowl에 가깝게 내려가기
 7. spill_object_pose : 붓고 원래대로 다시 돌아옴. holding pose
 9. arm_lift_object_table_down : cereal & milk 살짝 아래로 조심스럽게 두기
 4. table_search_pose_breakfast_initial : 팔접고 다시 kitchen_table로 이동
-    kitchen_table로 이동
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |   kitchen_table로 이동   |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
 10. pick_spoon_pose_low : bring_bowl_pose에서 wrist만 90도 돌린 pose
 11. pick_down_spoon_pose : pick_spoon_pose_low에서 아래로만 내려가는 pose
 4. table_search_pose_breakfast_initial : 팔접고 breakfast_table로 이동
-    breakfast_table로 이동
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+        |  breakfast_table로 이동  |
+        ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 
 12. place_top_pose : spoon placing pose
 9. arm_lift_object_table_down : 조심스럽게 내려놓기
 
 
 <Test_client pose test>
 
-1. table_search_pose_low = 'low table'
+1. table_search_pose_low = 'low_table'
 2. bring_bowl_pose = 'bring_bowl_pose'
 3. bring_bowl_pose_low = 'bring_bowl_pose_low'
 4. table_search_pose_breakfast_initial = 'pose1'

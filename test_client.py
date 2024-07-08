@@ -116,7 +116,7 @@ if __name__ == '__main__':
         elif command == 'pick_up_bowl_pose_low':
             agent.pose.pick_up_bowl_pose_low(table='kitchen_table_pnu')
         elif command == 'place_bowl_pose':
-            agent.pose.place_bowl_pose(table='kitchen_table')
+            agent.pose.place_bowl_pose(table='breakfast_table_pnu')
         elif command == 'pick_plate_pose_fold':
             agent.pose.pick_plate_pose_fold(table='kitchen_table')
         elif command == 'place_object_pose':
@@ -129,7 +129,7 @@ if __name__ == '__main__':
         elif command == 'bring_bowl_pose_low':
             agent.pose.bring_bowl_pose_low()
         elif command == 'spill_object_pose':
-            agent.pose.spill_object_pose()
+            agent.pose.spill_object_pose(object_height=0.14, table='breakfast_table_snu')
         elif command == 'spill_safety_pose':
             agent.pose.spill_safety_pose()
         elif command == 'spill_cereal_pose':
