@@ -140,8 +140,6 @@ def clean_the_table(agent: Agent):
                 agent.pose.bring_bowl_pose(table=pick_table) # 살짝 들림
                 agent.open_gripper()
 
-                agent.move_rel(0.10,0,wait=True)
-
                 agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.05, wait=True)
 
                 agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
@@ -212,7 +210,6 @@ def clean_the_table(agent: Agent):
                 is_picked = agent.pose.check_grasp()
                 print(f"2.4 grasp value of item '{item}': {is_picked}")
             
-            agent.pose.table_search_pose()
             
 
 

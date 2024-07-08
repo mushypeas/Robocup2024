@@ -6,7 +6,7 @@ from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
-is_yolov10 = False
+is_yolov10 = True
 
 # data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
@@ -20,8 +20,10 @@ if is_yolov10==False:
 
 
 if is_yolov10:
-    yolo_weight_path = 'weight/pnu_final.pt'
-    yolo_classnames_path = 'weight/pnu_final.cn'
+#     yolo_weight_path = 'weight/pnu_final.pt'
+#     yolo_classnames_path = 'weight/pnu_final.cn'
+    yolo_weight_path = 'weight/collectedbysnu_240704and05.pt'
+    yolo_classnames_path = 'weight/collectedbysnu_240704and05.cn'
 
 
 try:
