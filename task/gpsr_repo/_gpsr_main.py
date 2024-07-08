@@ -581,7 +581,7 @@ def gpsr(agent):
     yolov10_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov10_path}; exec bash']
     yolov7_pose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov7_pose_path}; exec bash']
 
-    yolov10_process = subprocess.Popen(yolov10_command)
+    # yolov10_process = subprocess.Popen(yolov10_command)
     yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
 
     
