@@ -90,7 +90,7 @@ class MoveBaseStandalone:
         else:
             self.isstopped = False
 
-        if round(x, 4) != 0 or round(y, 4) != 0:
+        if round(x, 3) != 0 or round(y, 3):
             self.last_moved_time = time.time()
 
     def find_candidates(self):
@@ -240,7 +240,7 @@ class MoveBaseStandalone:
                         while not best_interval:
                             best_interval = self.get_best_candidate(candidates)
                         self.move_best_interval(best_interval)
-                        rospy.sleep(3)
+                        # rospy.sleep(3)
                         self.base_action_client.send_goal(goal)
                     pass
 
@@ -261,8 +261,8 @@ class MoveBaseStandalone:
     
     def move_rel(self, x, y, yaw=0):
         cur_x, cur_y, cur_yaw = self.get_pose()
-        goal_x = cur_x + x
-        goal_y = cur_y + y
+        goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
+        goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
         goal_yaw = cur_yaw + yaw
         self.move_abs(None, goal_x, goal_y, goal_yaw)
 
