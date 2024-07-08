@@ -172,7 +172,7 @@ class MoveBaseStandalone:
         self.base_action_client.wait_for_server(5)
         theta = 0.
         rotate_delta = 30.
-        r = 0.5 # 0.5
+        r = 0.3 # 0.5
         spin_count = 0
 
         while not rospy.is_shutdown():
@@ -234,7 +234,7 @@ class MoveBaseStandalone:
                         self.last_checked_time = time.time()
 
 
-                        if abs(_goal_x - self.last_checked_pos[0]) < r and abs(_goal_y - self.last_checked_pos[1]) < r:
+                        if abs(_goal_x - self.last_checked_pos[0]) < r + 0.1 and abs(_goal_y - self.last_checked_pos[1]) < r + 0.1:
                             rospy.loginfo("Navigation Succeeded.")
                             return _goal_x, _goal_y, _goal_yaw
 
