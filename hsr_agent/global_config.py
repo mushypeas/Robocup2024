@@ -29,17 +29,16 @@ except:
     print('Error: Cannot load object list')
     pass
 
-FINAL = True
+PNU = True
 
 
-if FINAL:
-    print('[GLOBAL CONFIG] FINAL mode')
-    # real robot
+if PNU:
+    print('[GLOBAL CONFIG] PNU mode')
+
     ABS_POSITION = {
-
         # CTT
         'pos_target_table' : [5.2366, -1.3278, 0.0333],
-        'pos_dishwasher': [5.703, -2.9454, -1.5737]
+        'pos_dishwasher': [5.703, -2.7454, -1.5737]
 
     }
 
