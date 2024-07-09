@@ -416,7 +416,7 @@ class Agent:
 
     # tts
     def say(self, sentence, show_display=False):
-        self.tts.say(sentence)
+        # self.tts.say(sentence)
         print(sentence)
         if show_display:
             self.head_show_text(sentence)
