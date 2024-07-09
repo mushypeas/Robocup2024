@@ -49,7 +49,7 @@ class HSR_Yolov10:
             self.yolo_img_publish(img)
 
     def ready(self):
-        self.model = YOLOv10("weight/yolov10m_best.pt")  # path for weight file
+        self.model = YOLOv10(yolo_weight_path)  # path for weight file
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
