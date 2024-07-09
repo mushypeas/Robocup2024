@@ -8,6 +8,8 @@ import numpy as np
 from collections import deque
 from sklearn.preprocessing import StandardScaler
 import random
+import os
+import signal
 
 import rospy
 from std_msgs.msg import Int16MultiArray, String, ColorRGBA
@@ -63,7 +65,7 @@ class HumanFollowing:
         self.human_box_list = [None] # for human_reid_and_follower
         self.bridge = CvBridge()
         self.show_byte_track_image = True
-        self.byte_img = None
+        # self.byte_img = None
         self.track_queue = deque()
         self.start_time = time.time()
         # self.angle_queue = deque(maxlen=20)
@@ -94,6 +96,7 @@ class HumanFollowing:
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
         self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_rect_color', Image, self._rgb_callback)
+        # self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw', Image, self._rgb_callback)
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
         rospy.loginfo("LOAD HUMAN FOLLOWING")
@@ -123,7 +126,7 @@ class HumanFollowing:
 
     def _byte_cb(self, data):
         img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-        self.byte_img = img
+        # self.byte_img = img
         h, w, c = img.shape
         self.image_size = h * w
         self.image_shape = (h, w)
@@ -186,41 +189,41 @@ class HumanFollowing:
 
 
                
-        human_info_ary = copy.deepcopy(self.human_box_list)
-        depth = np.asarray(self.d2pc.depth)
-        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
-        self.calc_z = calc_z
-        self.twist = twist
-        _depth = self.barrier_check()
-        _depth = _depth[_depth != 0]
-        _depth = np.mean(_depth)
+        # human_info_ary = copy.deepcopy(self.human_box_list)
+        # depth = np.asarray(self.d2pc.depth)
+        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+        # self.calc_z = calc_z
+        # self.twist = twist
+        # _depth = self.barrier_check()
+        # _depth = _depth[_depth != 0]
+        # _depth = np.mean(_depth)
 
-        if calc_z > np.mean(self.calcz_queue) + 500:
-            calc_z = _depth * 1000
-            self.calcz_queue.append(calc_z)
+        # if calc_z > np.mean(self.calcz_queue) + 500:
+        #     calc_z = _depth * 1000
+        #     self.calcz_queue.append(calc_z)
 
-        else:
-            self.calcz_queue.append(calc_z)
+        # else:
+        #     self.calcz_queue.append(calc_z)
 
 
 
-        if twist.linear.x == 0 and twist.angular.z == 0:
+        # if twist.linear.x == 0 and twist.angular.z == 0:
 
-            if self.stt_destination(self.stt_option, calc_z):
-                return True
+        #     if self.stt_destination(self.stt_option, calc_z):
+        #         return True
 
-            return False
+        #     return False
 
-        target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
-        self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
-            # 2.4 move to human
-        self.last_human_pos = target_xyyaw
-        # if calc_z > 1000:
-        #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
-        #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
-        #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+        # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+        # self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
         #     # 2.4 move to human
-        # target_yaw = target_xyyaw[2]
+        # self.last_human_pos = target_xyyaw
+        # # if calc_z > 1000:
+        # #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+        # #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
+        # #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+        # #     # 2.4 move to human
+        # # target_yaw = target_xyyaw[2]
 
 
 
@@ -353,7 +356,7 @@ class HumanFollowing:
         _depth = self.barrier_check(y_top=y_top, x_var=320)
         origin_depth = _depth
         _depth = _depth[_depth != 0]
-        if len(_depth) > 10 and time.time() - self.barrier_move_time > 1:
+        if len(_depth) > 10 and time.time() - self.barrier_move_time > 1 and calc_z is not None:
             _depth = np.partition(_depth, min(10, len(_depth)))
 
             _depth = np.mean(_depth[:min(10, len(_depth))])
@@ -955,22 +958,20 @@ class HumanFollowing:
             self.last_chance = 1
         
         human_info_ary = copy.deepcopy(self.human_box_list)
-        # depth = np.asarray(self.d2pc.depth)
-        # twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
-        # # twist, calc_z = self.twist, self.calc_z
-        # _depth = self.barrier_check()
-        # _depth = _depth[_depth != 0]
-        # _depth = np.mean(_depth)
+        depth = np.asarray(self.d2pc.depth)
+        twist, calc_z = self.human_reid_and_follower.follow(human_info_ary, depth)
+        # twist, calc_z = self.twist, self.calc_z
+        _depth = self.barrier_check()
+        _depth = _depth[_depth != 0]
+        _depth = np.mean(_depth)
 
-        # if calc_z > np.mean(self.calcz_queue) + 500:
-        #     calc_z = _depth * 1000
-        #     self.calcz_queue.append(calc_z)
+        if calc_z > np.mean(self.calcz_queue) + 500:
+            calc_z = _depth * 1000
+            self.calcz_queue.append(calc_z)
 
-        # else:
-        #     self.calcz_queue.append(calc_z)
+        else:
+            self.calcz_queue.append(calc_z)
 
-        calc_z = self.calc_z
-        twist = self.twist
 
 
         if self.check_human_pos(human_info_ary):  # If human is on the edge of the screen
@@ -1039,10 +1040,10 @@ class HumanFollowing:
 
             #     return False
     
-            # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
-            # self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
-            #     # 2.4 move to human
-            # self.last_human_pos = target_xyyaw
+            target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+            self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+                # 2.4 move to human
+            self.last_human_pos = target_xyyaw
             # # if calc_z > 1000:
             # #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
             # #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
@@ -1053,7 +1054,7 @@ class HumanFollowing:
 
 
             # self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
-            target_xyyaw =  self.last_human_pos
+            # target_xyyaw =  self.last_human_pos
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)      
             # rospy.sleep(.5)
             cur_pos = self.agent.get_pose(print_option=False)
@@ -1761,8 +1762,7 @@ def carry_my_luggage(agent):
     seg_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {seg_path}; exec bash']
 
     byte_process = subprocess.Popen(byte_command)
-    seg_process = subprocess.Popen(seg_command)
-
+    os.kill(yolo_process.pid, signal.SIGKILL)
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
@@ -1808,6 +1808,7 @@ def carry_my_luggage(agent):
             print("VIEWPOINT CONTROLLER ON")
             stop_client.call(EmptyRequest())
             break
+    seg_process = subprocess.Popen(seg_command)
 
     # 3. reach destination
     print('3. Please take your bag')
