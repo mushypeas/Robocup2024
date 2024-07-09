@@ -1,5 +1,8 @@
 task_iteration = 3
 
+yolo_weight_path = 'weight/gpsr_pnu.pt'
+yolo_classnames_path = 'weight/gpsr_pnu.cn'
+
 ABS_POSITION = {
     "gpsr_instruction_point": [2.024, -2.309, -0.018],
     "bed": [5.532, -6.343, -0.716],

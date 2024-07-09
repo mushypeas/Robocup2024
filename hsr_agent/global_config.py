@@ -13,8 +13,18 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-yolo_classnames_path = 'weight/best_for_final.cn'
+yolo_weight_path = 'weight/gpsr_pnu.pt'
+yolo_classnames_path = 'weight/gpsr_pnu.cn'
+
+try:
+    sys.path.append('task/gpsr_repo')
+    import gpsr_config
+    yolo_weight_path = gpsr_config.yolo_weight_path
+    yolo_classnames_path = gpsr_config.yolo_classnames_path
+except Exception as e:
+    print(e)
+    print('Skip loading gpsr_config yolo_weight_path, yolo_classnames_path')
+    pass
 
 # YOLO classnames load
 try:
@@ -439,5 +449,7 @@ try:
     sys.path.append('task/gpsr_repo')
     import gpsr_config
     ABS_POSITION.update(gpsr_config.ABS_POSITION)
-except:
+except Exception as e:
+    print(e)
+    print('Skip loading gpsr_config ABS_POSITION')
     pass
