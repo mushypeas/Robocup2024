@@ -315,7 +315,7 @@ class HumanFollowing:
 
                         
             # Right lidar
-            right_values = self.agent.ranges[self.agent.center_idx - 450 : self.agent.center_idx - 50] #성공한거: 330, 50
+            right_values = self.agent.ranges[self.agent.center_idx - 450 : self.agent.center_idx - 50] #성공한거: 330,50
             right_lidar_values = right_values[np.where(right_values < 0.65)] # 성공한거 : 0.6, 0.7
             if right_lidar_values.size == 0:
                 right_lidar = 4.0
@@ -1823,7 +1823,7 @@ def carry_my_luggage(agent):
             print("before escape barrier, current calc_z: ", calc_z)
             # human_following.escape_barrier_back(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
             # human_following.escape_tiny()
-            human_following.escape_tiny_canny_back()
+            human_following.escape_tiny_canny()
 
 
             agent.move_abs_coordinate(cur_track, wait=False)
