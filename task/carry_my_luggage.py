@@ -315,8 +315,8 @@ class HumanFollowing:
 
                         
             # Right lidar
-            right_values = self.agent.ranges[self.agent.center_idx - 330 : self.agent.center_idx - 50]
-            right_lidar_values = right_values[np.where(right_values < 0.7)] # 성공한거 : 0.6
+            right_values = self.agent.ranges[self.agent.center_idx - 450 : self.agent.center_idx - 50] #성공한거: 330, 50
+            right_lidar_values = right_values[np.where(right_values < 0.65)] # 성공한거 : 0.6, 0.7
             if right_lidar_values.size == 0:
                 right_lidar = 4.0
             else:
@@ -324,8 +324,8 @@ class HumanFollowing:
 
 
             # Left lidar
-            left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 330]
-            left_lidar_values = left_values[np.where(left_values < 0.7)]
+            left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 450]
+            left_lidar_values = left_values[np.where(left_values < 0.65)]
             if left_lidar_values.size == 0:
                 left_lidar = 4.0
             else:
@@ -345,7 +345,7 @@ class HumanFollowing:
             pos = (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)
 
-            if (calc_z!=0 and _depth < 1.0  and _depth< (thres+0.1) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
+            if (calc_z!=0 and _depth < 1.0  and _depth< (thres+0.2) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
                 _num_rotate = _num_rotate + 1
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
@@ -382,12 +382,12 @@ class HumanFollowing:
                 
                 if left_background_count < right_background_count :
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.15,0, wait=False) #then, HSR is intended to move left (pos)
+                    self.agent.move_rel(0.1,0.15,0, wait=False) #then, HSR is intended to move left (pos)
                     rospy.sleep(0.2)
 
                 elif left_background_count  > right_background_count:
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.15,0, wait=False) #then, HSR is intended to move right (neg)
+                    self.agent.move_rel(0.1,-0.15,0, wait=False) #then, HSR is intended to move right (neg)
                     rospy.sleep(0.2)
 
 

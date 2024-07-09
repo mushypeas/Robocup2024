@@ -325,8 +325,12 @@ class Agent:
             return (ratio > 0.1)
             '''
             return np.any(insp_area > 200)
+        
 
-    def move_abs_coordinate_safe(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
+    
+    
+
+    def move_abs_coordinate_safe_inspection(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
         rospy.loginfo(f"Moving to {coordinate}")
         goal_x, goal_y, goal_yaw = coordinate
         self.move_base.base_action_client.wait_for_server(2)
@@ -359,44 +363,78 @@ class Agent:
                 self.move_base.base_action_client.send_goal(goal)
 
 
+
+    def move_abs_coordinate_safe(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
+        rospy.loginfo(f"Moving to {coordinate}")
+        goal_x, goal_y, goal_yaw = coordinate
+        self.move_base.base_action_client.wait_for_server(2)
+        pose = PoseStamped()
+        pose.header.frame_id = "map"
+        pose.pose.position = Point(goal_x, goal_y, 0)
+        quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
+        pose.pose.orientation = Quaternion(*quat)
+        # send message to the action server
+        goal = MoveBaseGoal()
+        goal.target_pose = pose
+        # goal.target_pose.header.stamp = rospy.Time.now()
+        # before_moved_time = self.last_moved_time
+
+        self.move_base.base_action_client.send_goal(goal)
+        rospy.sleep(1)
+        time_trapped = time.time()
+        while self.move_base.base_action_client.get_state() != GoalStatus.SUCCEEDED:
+            # print("state", self.move_base.base_action_client.get_state())
+            # if time.time() - self.last_moved_time > giveup_timeout:
+            #     rospy.logwarn('Giveup moving!')
             #     self.move_base.base_action_client.cancel_all_goals()
-            #     while self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
-            #         if time.time() - self.last_moved_time > giveup_timeout:
-            #             rospy.logwarn('Giveup moving!')
-            #             self.move_base.base_action_client.cancel_all_goals()
-            #             return True
-            #         # 5초 이상 안움직이면 회전해서 빠져 나가게끔 하자
-            #         # move rel
-            #         rospy.logwarn('Still something in region')
-            #         if time.time() - time_trapped > timeout:
-            #             cur_pose = self.get_pose()
-            #             if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
-            #                 self.move_base.base_action_client.cancel_all_goals()
-            #                 self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
-            #                 return True
-            #             rospy.logwarn("move backward")
-            #             self.move_rel(-0.5, 0, wait=True)
-            #             break
-            #         rospy.sleep(0.1)
-            #     time_trapped = time.time()
-            #     # goal.target_pose.header.stamp = rospy.Time.now()
-            #     self.move_base.base_action_client.send_goal(goal)
+            #     return True
+            if self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
+                time_trapped = time.time()
+                rospy.logwarn('Something Ahead !')
+                # self.move_base.base_action_client.cancel_all_goals()
+                # self.move_rel(0,0,0, wait=True)
+                # rospy.sleep(5)
+                # self.move_base.base_action_client.send_goal(goal)
 
-            # else:
-            #     if time.time() - time_trapped > timeout:
-            #         time_trapped = time.time()
-            #         if self.isstopped:
-            #             rospy.loginfo("timeout, send goal again")
-            #             self.move_base.base_action_client.cancel_all_goals()
-            #             cur_pose = self.get_pose()
-            #             if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
-            #                 print(np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)))
-            #                 self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
 
-            #                 return True
-            #             # goal.target_pose.header.stamp = rospy.Time.now()
-            #             self.move_base.base_action_client.send_goal(goal)
-            # rospy.sleep(0.01)
+                self.move_base.base_action_client.cancel_all_goals()
+                while self.inspection_obstacle_ahead(thresh=thresh, angle=angle):
+                    if time.time() - self.last_moved_time > giveup_timeout:
+                        rospy.logwarn('Giveup moving!')
+                        self.move_base.base_action_client.cancel_all_goals()
+                        return True
+                    # 5초 이상 안움직이면 회전해서 빠져 나가게끔 하자
+                    # move rel
+                    rospy.logwarn('Still something in region')
+                    if time.time() - time_trapped > timeout:
+                        cur_pose = self.get_pose()
+                        if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
+                            self.move_base.base_action_client.cancel_all_goals()
+                            self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
+                            return True
+                        rospy.logwarn("move backward")
+                        self.move_rel(-0.5, 0, wait=True)
+                        break
+                    rospy.sleep(0.1)
+                time_trapped = time.time()
+                # goal.target_pose.header.stamp = rospy.Time.now()
+                self.move_base.base_action_client.send_goal(goal)
+
+            else:
+                if time.time() - time_trapped > timeout:
+                    time_trapped = time.time()
+                    if self.isstopped:
+                        rospy.loginfo("timeout, send goal again")
+                        self.move_base.base_action_client.cancel_all_goals()
+                        cur_pose = self.get_pose()
+                        if np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)) < .15:
+                            print(np.linalg.norm(np.asarray(cur_pose[:2], dtype=np.float32) - np.asarray([goal_x, goal_y], dtype=np.float32)))
+                            self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
+
+                            return True
+                        # goal.target_pose.header.stamp = rospy.Time.now()
+                        self.move_base.base_action_client.send_goal(goal)
+            rospy.sleep(0.01)
         return True
 
     def move_abs_safe(self, position, thresh=0.01, timeout=3.0, giveup_timeout=50.0, angle=30):
@@ -404,6 +442,13 @@ class Agent:
         # goal_x, goal_y, goal_yaw = self.move_base.abs_position[position]
         self.move_abs_coordinate_safe(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
         # self.move_base.base_action_client.wait_for_server(2)
+
+    def move_abs_safe_inspection(self, position, thresh=0.01, timeout=3.0, giveup_timeout=50.0, angle=30):
+        rospy.loginfo(f'Moving to {position}')
+        # goal_x, goal_y, goal_yaw = self.move_base.abs_position[position]
+        self.move_abs_coordinate_safe_inspection(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
+        # self.move_base.base_action_client.wait_for_server(2)
+
 
     def move_abs_by_point(self, position):
         self.move_base.move_abs_by_point(position)
