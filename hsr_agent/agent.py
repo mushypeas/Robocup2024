@@ -413,9 +413,7 @@ class Agent:
 
 
     def tts_pnu(self, text):
-        speech = gTTS(text=text, lang='en', slow=False)
-        speech.save("pnu.mp3")
-        subprocess.run(["mpg123", "-q", "pnu.mp3"])
+        print(text)
 
     # tts
     def say(self, sentence, show_display=False):

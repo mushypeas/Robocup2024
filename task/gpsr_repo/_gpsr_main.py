@@ -340,18 +340,18 @@ class GPSR:
                 output = self.pose_model(input_tensor)
 
             # Print the output
-            _, predicted_label = torch.max(output.data, 1)
+            confidence, predicted_label = torch.max(output.data, 1)
 
             predicted = predicted_label.item()
 
             if predicted == 0:
-                human_poses.append('sitting')
+                human_poses.append(('sitting', confidence))
             elif predicted == 1:
-                human_poses.append('standing')
+                human_poses.append(('standing', confidence))
             elif predicted == 2:
-                human_poses.append('lying')
+                human_poses.append(('lying', confidence))
 
-        return human_poses
+        return human_poses[0][0]
 
     
     def getGest(self):
@@ -384,7 +384,7 @@ class GPSR:
             elif predicted == 3:
                 human_gests.append(('pointing left', confidence))
 
-        return human_gests
+        return human_gests[0][0]
         
     
     def getCloth(self):
@@ -584,7 +584,6 @@ def gpsr(agent):
     # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
     # inputText = "Tell me how many lying persons are in the kitchen" #countPrsInRoom
     # inputText = "Find a food in the kitchen then grasp it and put it on the bed" #findObjInRoom
-    #############################  DONE  #############################
     # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
     # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
     # inputText = "Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen" #goToLoc
