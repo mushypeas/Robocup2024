@@ -15,10 +15,7 @@ import cv2
 import torch
 import numpy as np
 
-from std_msgs.msg import Int16MultiArray, String, Float32MultiArray
-
-from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Twist
+from std_msgs.msg import Int16MultiArray, Float32MultiArray
 
 import torch
 import torch.nn.functional as F
@@ -118,54 +115,6 @@ class GPSR:
 ##############################################################
 ##############################################################
 
-        # FOLLOW
-        self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
-        self.following = False
-        self.person_distance = None
-        self.person_angle = None
-
-    # FOLLOW FUNCTION
-    def follow(self):
-        byte_path = "/home/tidy/Robocup2024/byte.sh"
-        byte_command = ['gnome-terminal', '--', 'bash', '-c', f'{byte_path}; exec bash']
-        byte_process = subprocess.Popen(byte_command)
-
-        bag_search_limit_time = 15
-        goal_radius = 0.5
-        pose_save_time_period = 3
-        start_location = self.agent.get_pose(print_option=False)
-        bag_height = 0.25
-        stop_rotate_velocity = 1.2 #1.2
-        try_bag_picking = False #True
-        try_bytetrack = False
-        map_mode = False
-        stt_option = False #True
-        yolo_success = True
-        tilt_angle = 20
-        
-
-        # Capture target
-        demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
-
-        human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
-                                                    frame_shape=(480, 640),
-                                                    stop_thres=.4,
-                                                    linear_max=.3,
-                                                    angular_max=.2,
-                                                    tilt_angle=tilt_angle)
-        human_following = HumanFollowing(self.agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option)
-
-        while not rospy.is_shutdown():
-            end_following = human_following.follow_human(time.time(), pose_save_time_period)
-            if end_following:
-                human_following.show_byte_track_image = False
-                stop_client = rospy.ServiceProxy('/viewpoint_controller/start', Empty)
-                print("VIEWPOINT CONTROLLER ON")
-                stop_client.call(EmptyRequest())
-                break
-
-    def followToLoc(self, loc):
-        self.follow()
 
 ##############################################################
 ##############################################################
