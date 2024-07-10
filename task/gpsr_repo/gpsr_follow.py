@@ -1,9 +1,42 @@
 import rospy
 from sensor_msgs.msg import LaserScan
 
-Class GPSRFollow:
-    def __init__(self, agent):
+import math
+import numpy as np
+
+min_interval_arc_len = 1.0
+unit_rad = 0.25 * ( math.pi / 180 )
+avg_dist_move_dist_ratio = 5
+
+def calculate_human_rad(human_center_x, yolo_img_width):
+    human_center_bias = human_center_x - yolo_img_width / 2
+    return -human_center_bias / 640
+
+def index_to_rad(idx):
+    return (idx - center_index) * unit_rad
+
+################ Maybe Constant? ################
+
+## main frequency
+main_freq = 1
+main_period = 1.0 / main_freq
+
+## LiDAR dist
+min_dist = 1.0
+max_dist = 5.0
+
+## LiDAR index
+lidar_index = 963
+center_index = lidar_index // 2
+
+## YOLO img size
+yolo_img_height = 480
+yolo_img_width = 640
+
+class GPSRFollow:
+    def __init__(self, agent, gpsr):
         self.agent = agent
+        self.gpsr = gpsr
 
         self.human_rad = None
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
@@ -15,27 +48,23 @@ Class GPSRFollow:
         self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
 
-    def _human_yolo_callback(self, data):
-        yolo_data = data.data
-        
-        if yolo_data[0] == -1:
-            self.human_box_list = [None]
-            self.human_rad = None
-            
-        else:
-            human_id = yolo_data[0]
-            human_x = yolo_data[1]
-            human_y = yolo_data[2]
-            human_w = yolo_data[3]
-            human_h = yolo_data[4]
-            target_score = yolo_data[5]
-            
-            self.human_box_list = [human_id, np.asarray([human_x, human_y, human_w, human_h], dtype=np.int64), target_score]
-            
-            human_center_x = human_x + human_w // 2
-            human_rad_in_cam = calculate_human_rad(human_center_x, yolo_img_width)
-            
-            self.human_rad = human_rad_in_cam
+        human_keypoints = self.gpsr.human_keypoints
+        num_features = 55
+        split_kpts = [human_keypoints[i:i + num_features] for i in range(0, len(human_keypoints), num_features)]
+
+        max_area = -1
+        max_idx = 0
+
+        for idx, kpts in enumerate(split_kpts):
+            human_w = kpts[2] - kpts[0]
+            human_h = kpts[3] - kpts[1]
+
+            if human_w * human_h > max_area:
+                max_area = human_w * human_h
+                max_idx = idx
+
+        human_center_x = split_kpts[max_idx][0] + split_kpts[max_idx][2] // 2
+        self.human_rad = calculate_human_rad(human_center_x, yolo_img_width)
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
