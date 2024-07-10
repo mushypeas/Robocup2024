@@ -36,8 +36,6 @@ class PoseEstimator:
         try:
             cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
             self.process_image(cv_image)
-        except CvBridgeError as e:
-            rospy.logerr(f"CvBridge Error: {e}")
         except Exception as e:
             rospy.logerr(f"Error in image_callback: {e}")
 

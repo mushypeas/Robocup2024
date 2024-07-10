@@ -119,7 +119,6 @@ class GPSR:
 
     # human keypoints callback
     def hk_cb(self, msg):
-        print("msg", msg)
         self.human_keypoints = msg.data
 
     ### HELP Functions ###
@@ -345,14 +344,16 @@ class GPSR:
             predicted = predicted_label.item()
 
             if predicted == 0:
-                human_poses.append(('sitting', confidence))
+                human_poses.append(('sitting person', confidence))
             elif predicted == 1:
-                human_poses.append(('standing', confidence))
+                human_poses.append(('standing person', confidence))
             elif predicted == 2:
-                human_poses.append(('lying', confidence))
+                human_poses.append(('lying person', confidence))
+
+        if len(human_poses) == 0:
+            return "no person"
 
         return human_poses[0][0]
-
     
     def getGest(self):
         num_features = 51
@@ -376,14 +377,17 @@ class GPSR:
             predicted = predicted_label.item()
 
             if predicted == 0:
-                human_gests.append(('raising left', confidence))
+                human_gests.append(('person raising their left arm', confidence))
             elif predicted == 1:
-                human_gests.append(('raising right', confidence))
+                human_gests.append(('person raising their right arm', confidence))
             elif predicted == 2:
-                human_gests.append(('pointing right', confidence))
+                human_gests.append(('person pointing to the right', confidence))
             elif predicted == 3:
-                human_gests.append(('pointing left', confidence))
+                human_gests.append(('person pointing to the left', confidence))
 
+
+        if len(human_gests) == 0:
+            return "no person"
         return human_gests[0][0]
         
     
@@ -461,8 +465,6 @@ class GPSR:
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
-        self.identify()
-        return
 
         self.agent.pose.head_tilt(5)
         poseCount = 0
@@ -477,6 +479,7 @@ class GPSR:
                 if feature != gestPosePers:
                     print(f"No {gestPosePers} detected")
                     self.move_rel(0, 0, 0.5)
+                    self.agent.pose.head_tilt(5)
                     rospy.sleep(1)
                     continue
 
@@ -498,6 +501,7 @@ class GPSR:
                 if feature != gestPosePers:
                     print(f"No {gestPosePers} detected")
                     self.move_rel(0, 0, 0.5)
+                    self.agent.pose.head_tilt(5)
                     rospy.sleep(1)
                     continue
 
