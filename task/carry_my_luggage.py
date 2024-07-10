@@ -347,7 +347,7 @@ class HumanFollowing:
 
     def escape_barrier(self, calc_z):
 
-        calc_z = self.calc_z
+        # calc_z = self.calc_z
 
         cur_pose = self.agent.get_pose(print_option=False)
  
@@ -356,7 +356,7 @@ class HumanFollowing:
         _depth = self.barrier_check(y_top=y_top, x_var=320)
         origin_depth = _depth
         _depth = _depth[_depth != 0]
-        if len(_depth) > 10 and time.time() - self.barrier_move_time > 1 and calc_z is not None:
+        if len(_depth) > 10 :
             _depth = np.partition(_depth, min(10, len(_depth)))
 
             _depth = np.mean(_depth[:min(10, len(_depth))])
@@ -757,12 +757,12 @@ class HumanFollowing:
                     print('Tiny object. I\'ll avoid it.')
                     # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
                     if right_background_count > left_background_count:
-                        self.agent.move_rel(0.0,-0.5,0, wait=False) ## move right is neg
+                        self.agent.move_rel(0.5,-0.5,0, wait=False) ## move right is neg
                         rospy.sleep(3)
                         # self.agent.move_rel(0.3,0,0, wait=False)
                         # rospy.sleep(1)
                     else:
-                        self.agent.move_rel(0.0,0.5,0, wait=False)
+                        self.agent.move_rel(0.5,0.5,0, wait=False)
                         rospy.sleep(3)
                         # self.agent.move_rel(0.3,0,0, wait=False)
                         # rospy.sleep(1)
@@ -906,7 +906,7 @@ class HumanFollowing:
 
             self.escape_barrier(calc_z)
             # self.escape_tiny()
-            self.escape_tiny_canny()
+            # self.escape_tiny_canny()
 
 
 
@@ -989,56 +989,56 @@ class HumanFollowing:
         #########
         # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
             # change angular.z
-            # loc = self.check_human_pos(human_info_ary, location=True)
-            # if loc == 'lll':
-            #     print("left!!!!!!")
-            #     print("left!!!!!!")
-            #     print("left!!!!!!")
-            #     print("left!!!!!!")
-            #     print("left!!!!!!")
-            #     print("left!!!!!!")
-            #     # twist.angular.z = -self.stop_rotate_velocity
-            #     # +가 왼쪽으로 돌림
-            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
-            #     rospy.sleep(.5)
-            # if loc == 'll':
+            loc = self.check_human_pos(human_info_ary, location=True)
+            if loc == 'lll':
+                print("left!!!!!!")
+                print("left!!!!!!")
+                print("left!!!!!!")
+                print("left!!!!!!")
+                print("left!!!!!!")
+                print("left!!!!!!")
+                # twist.angular.z = -self.stop_rotate_velocity
+                # +가 왼쪽으로 돌림
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                rospy.sleep(.5)
+            if loc == 'll':
+                print("left")
+                # twist.angular.z = -self.stop_rotate_velocity
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                rospy.sleep(.5)
+            # if loc == 'l':
             #     print("left")
             #     # twist.angular.z = -self.stop_rotate_velocity
-            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
             #     rospy.sleep(.5)
-            # # if loc == 'l':
-            # #     print("left")
-            # #     # twist.angular.z = -self.stop_rotate_velocity
-            # #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
-            # #     rospy.sleep(.5)
-            # # if loc == 'r':
-            # #     print("right")
-            # #     # twist.angular.z = +self.stop_rotate_velocity
-            # #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
-            # #     rospy.sleep(.5)
-            # if loc == 'rr':
+            # if loc == 'r':
             #     print("right")
             #     # twist.angular.z = +self.stop_rotate_velocity
-            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
             #     rospy.sleep(.5)
-            # if loc == 'rrr':
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     print("right")
-            #     # twist.angular.z = +self.stop_rotate_velocity
-            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
-            #     rospy.sleep(.5)
-            # if twist.linear.x == 0 and twist.angular.z == 0:
+            if loc == 'rr':
+                print("right")
+                # twist.angular.z = +self.stop_rotate_velocity
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                rospy.sleep(.5)
+            if loc == 'rrr':
+                print("right")
+                print("right")
+                print("right")
+                print("right")
+                print("right")
+                print("right")
+                print("right")
+                print("right")
+                # twist.angular.z = +self.stop_rotate_velocity
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                rospy.sleep(.5)
+            if twist.linear.x == 0 and twist.angular.z == 0:
 
-            #     if self.stt_destination(self.stt_option, calc_z):
-            #         return True
+                if self.stt_destination(self.stt_option, calc_z):
+                    return True
 
-            #     return False
+                return False
     
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
