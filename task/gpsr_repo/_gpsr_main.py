@@ -161,6 +161,8 @@ class GPSR:
 
             moved_time = time.time()
 
+    def followToLoc(self, loc):
+        self.follow()
 ##############################################################
 ##############################################################
 ##############################################################
@@ -497,7 +499,7 @@ class GPSR:
                 break
 
             else:
-                self.move_rel(0, 0, math.pi/4)
+                self.move_rel(0, 0, math.pi/8)
                 rospy.sleep(1)
 
 
@@ -510,7 +512,7 @@ class GPSR:
 
             while True:
                 feature = self.getPose()
-                print("feature", feature)
+                print("gestpose", gestPosePers, "feature", feature)
 
                 if feature != gestPosePers:
                     print(f"No {gestPosePers} detected")
@@ -530,7 +532,7 @@ class GPSR:
 
             while True:
                 feature = self.getGest()
-                print("feature", feature)
+                print("gestpose", gestPosePers, "feature", feature)
 
         
                 if feature != gestPosePers:
