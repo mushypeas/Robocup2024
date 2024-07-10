@@ -369,7 +369,11 @@ class GPSR:
 
         print('human_poses', human_poses)
 
-        return human_poses
+
+        if getAll:
+            return human_poses
+        
+        return human_poses[0][0]
     
 
     def getGest(self, getAll=False):
@@ -419,7 +423,10 @@ class GPSR:
 
         print('human_gests', human_gests)
 
-        return human_gests
+        if getAll:
+            return human_gests
+        
+        return human_gests[0][0]
         
     
     def getCloth(self):
