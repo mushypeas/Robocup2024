@@ -1,5 +1,6 @@
 import rospy
 from sensor_msgs.msg import LaserScan
+from std_msgs.msg import Float32MultiArray
 
 import math
 import numpy as np
@@ -23,11 +24,11 @@ yolo_img_width = 640
 
 min_interval_arc_len = 1.0
 unit_rad = 0.23 * ( math.pi / 180 )
-avg_dist_move_dist_ratio = 5
+avg_dist_move_dist_ratio = 3.0
 
 def calculate_human_rad(human_center_x, yolo_img_width):
     human_center_bias = human_center_x - yolo_img_width / 2
-    return -human_center_bias / 1500
+    return -human_center_bias / 1000
 
 def index_to_rad(idx):
     return (idx - center_index) * unit_rad
@@ -40,7 +41,7 @@ class GPSRFollow:
 
         self.human_rad = None
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
+        self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self._hkpts_cb)
 
 
     def _lidar_callback(self, data):
@@ -145,7 +146,7 @@ class GPSRFollow:
     def move_rel(self, x, y, yaw=0):
         self.agent.move_rel(x, y, yaw=yaw)
 
-    def heuristic(self, start_rad, end_rad, avg_dist):
+    def heuristic(self, start_rad, end_rad, min_dist):
         avg_rad = (start_rad + end_rad) / 2
         
         if self.human_rad:
@@ -166,18 +167,24 @@ class GPSRFollow:
     def move_best_interval(self, interval):
         start_rad = interval[0]
         end_rad = interval[1]
-        avg_dist = interval[2]
+        min_dist = interval[2]
+
+        print("min_dist", min_dist)
         
-        move_dist = avg_dist / avg_dist_move_dist_ratio
+        move_dist = min_dist / avg_dist_move_dist_ratio
         avg_rad = (start_rad + end_rad) / 2
 
-        if self.
+        if self.human_rad and min_dist < 0.5:
+            rospy.loginfo("you are too close")
+            move_x = 0
+            move_y = 0
+            move_yaw = self.human_rad / 2
 
-        if self.human_rad and self.human_rad > start_rad and self.human_rad < end_rad:
+        elif self.human_rad and self.human_rad > start_rad and self.human_rad < end_rad:
             rospy.loginfo("Human is in the interval")
             move_x = move_dist * math.cos(self.human_rad)
             move_y = move_dist * math.sin(self.human_rad)
-            move_yaw = self.human_rad
+            move_yaw = self.human_rad / 2
 
         elif self.human_rad:
             rospy.loginfo("Human is not in the interval")
