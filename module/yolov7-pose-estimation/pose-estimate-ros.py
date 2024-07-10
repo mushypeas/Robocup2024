@@ -24,6 +24,8 @@ class PoseEstimator:
         
         self.bridge = CvBridge()
         self.pose_pub = rospy.Publisher('human_keypoints', Float32MultiArray, queue_size=10)
+        self.bbox_pub = rospy.Publisher('human_bounding_boxes', Float32MultiArray, queue_size=10)
+        
         self.image_sub = rospy.Subscriber(opt.img_topic, Image, self.image_callback)
 
         self.frame_count = 0
@@ -55,11 +57,11 @@ class PoseEstimator:
             output_data, _ = self.model(image)
 
         output_data = non_max_suppression_kpt(output_data,
-                                              0.25,
-                                              0.65,
-                                              nc=self.model.yaml['nc'],
-                                              nkpt=self.model.yaml['nkpt'],
-                                              kpt_label=True)
+                                            0.25,
+                                            0.65,
+                                            nc=self.model.yaml['nc'],
+                                            nkpt=self.model.yaml['nkpt'],
+                                            kpt_label=True)
 
         output = output_to_keypoint(output_data)
 
@@ -68,27 +70,42 @@ class PoseEstimator:
         im0 = cv2.cvtColor(im0, cv2.COLOR_RGB2BGR)
 
         pose_data = []
+        bbox_data = []
 
         for i, pose in enumerate(output_data):
             if len(output_data):
                 for det_index, (*xyxy, conf, cls) in enumerate(reversed(pose[:,:6])):
+                    bbox = [float(x) for x in xyxy]  # 바운딩 박스 좌표
                     kpts = pose[det_index, 6:]
                     person_data = kpts.tolist()  # numpy array를 list로 변환
                     pose_data.append(person_data)
+                    bbox_data.append(bbox)
 
-        # Float32MultiArray 메시지 생성
-        msg = Float32MultiArray()
-        msg.layout.dim = [MultiArrayDimension(), MultiArrayDimension()]
-        msg.layout.dim[0].label = "person"
-        msg.layout.dim[0].size = len(pose_data)
-        msg.layout.dim[0].stride = len(pose_data) * len(pose_data[0]) if pose_data else 0
-        msg.layout.dim[1].label = "keypoint"
-        msg.layout.dim[1].size = len(pose_data[0]) if pose_data else 0
-        msg.layout.dim[1].stride = len(pose_data[0]) if pose_data else 0
-        msg.data = [item for sublist in pose_data for item in sublist]
+        # Float32MultiArray 메시지 생성 (키포인트용)
+        kpt_msg = Float32MultiArray()
+        kpt_msg.layout.dim = [MultiArrayDimension(), MultiArrayDimension()]
+        kpt_msg.layout.dim[0].label = "person"
+        kpt_msg.layout.dim[0].size = len(pose_data)
+        kpt_msg.layout.dim[0].stride = len(pose_data) * len(pose_data[0]) if pose_data else 0
+        kpt_msg.layout.dim[1].label = "keypoint"
+        kpt_msg.layout.dim[1].size = len(pose_data[0]) if pose_data else 0
+        kpt_msg.layout.dim[1].stride = len(pose_data[0]) if pose_data else 0
+        kpt_msg.data = [item for sublist in pose_data for item in sublist]
 
-        self.pose_pub.publish(msg)
-        rospy.loginfo(f"Published pose data for {len(pose_data)} person(s)")
+        # Float32MultiArray 메시지 생성 (바운딩 박스용)
+        bbox_msg = Float32MultiArray()
+        bbox_msg.layout.dim = [MultiArrayDimension(), MultiArrayDimension()]
+        bbox_msg.layout.dim[0].label = "person"
+        bbox_msg.layout.dim[0].size = len(bbox_data)
+        bbox_msg.layout.dim[0].stride = len(bbox_data) * 4  # x1, y1, x2, y2
+        bbox_msg.layout.dim[1].label = "coordinate"
+        bbox_msg.layout.dim[1].size = 4
+        bbox_msg.layout.dim[1].stride = 4
+        bbox_msg.data = [coord for bbox in bbox_data for coord in bbox]
+
+        self.pose_pub.publish(kpt_msg)
+        self.bbox_pub.publish(bbox_msg)
+        rospy.loginfo(f"Published pose and bbox data for {len(pose_data)} person(s)")
 
         end_time = time.time()
         fps = 1 / (end_time - start_time)

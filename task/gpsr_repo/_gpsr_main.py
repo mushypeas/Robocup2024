@@ -39,6 +39,9 @@ class GPSR:
         self.color_list = color_list
         self.clothe_list = clothe_list
         self.clothes_list = clothes_list
+
+        self.gesture_person_list = gesture_person_list
+        self.pose_person_list = pose_person_list
         
 
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
@@ -46,7 +49,9 @@ class GPSR:
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
-        self.image_sub = rospy.Subscriber('human_keypoints', Float32MultiArray, self.hk_cb)
+
+        self.kpts_sub = rospy.Subscriber('human_keypoints', Float32MultiArray, self.hkpts_cb)
+        self.bbox_sub = rospy.Subscriber('human_bounding_boxes', Float32MultiArray, self.hbbox_cb)
 
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
@@ -111,8 +116,11 @@ class GPSR:
         rospy.loginfo(msg.data)
 
     # human keypoints callback
-    def hk_cb(self, msg):
+    def hkpts_cb(self, msg):
         self.human_keypoints = msg.data
+
+    def hbbox_cb(self, msg):
+        self.human_bbox = msg.data
 
     ### HELP Functions ###
         
@@ -333,6 +341,8 @@ class GPSR:
                 output = self.pose_model(input_tensor)
 
             # Print the output
+            print(output.data)
+
             confidence, predicted_label = torch.max(output.data, 1)
 
             predicted = predicted_label.item()
