@@ -56,3 +56,8 @@ def gpsr_test(agent):
 
         if cmd == "follow":
             g.follow()
+
+        if cmd == 'count':
+            input_gestPose = input("What gesture or pose do you want to count?: ")
+            cnt = g.countGestPosePers(input_gestPose)
+            print(f"the count is: {cnt}")

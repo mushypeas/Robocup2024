@@ -52,8 +52,7 @@ class GPSR:
 
         rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
 
-        self.kpts_sub = rospy.Subscriber('human_keypoints', Float32MultiArray, self.hkpts_cb)
-        self.bbox_sub = rospy.Subscriber('human_bounding_boxes', Float32MultiArray, self.hbbox_cb)
+        self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
 
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
@@ -120,9 +119,6 @@ class GPSR:
     # human keypoints callback
     def hkpts_cb(self, msg):
         self.human_keypoints = msg.data
-
-    def hbbox_cb(self, msg):
-        self.human_bbox = msg.data
 
     ### HELP Functions ###
         
@@ -327,18 +323,23 @@ class GPSR:
         userName = self.cluster(userName, self.names_list)
         return userName
 
-    def getPose(self):
+    def getPose(self, getAll=False):
         self.agent.pose.head_tilt(gpsr_human_head_tilt)
         rospy.sleep(0.5)
 
-        num_features = 51
-        keypoint_data = self.human_keypoints
-        split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
+        num_features = 55  # 4 (XYXY) + 51 (keypoints)
+        combined_data = self.human_keypoints
+        print(len(combined_data))
+        split_data = [combined_data[i:i + num_features] for i in range(0, len(combined_data), num_features)]
 
         human_poses = []
 
-        for input_data in split_data:
-            input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+        for data in split_data:
+            print(data)
+            bbox = data[:4]  # XYXY 좌표
+            keypoints = data[4:]  # 키포인트 데이터
+
+            input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 
             # Perform the inference
             with torch.no_grad():
@@ -356,30 +357,37 @@ class GPSR:
             confidence = confidence.item()
             predicted = predicted_label.item()
 
+            pose_label = ''
             if predicted == 0:
-                human_poses.append(('sitting person', confidence))
+                pose_label = 'sitting person'
             elif predicted == 1:
-                human_poses.append(('standing person', confidence))
+                pose_label = 'standing person'
             elif predicted == 2:
-                human_poses.append(('lying person', confidence))
+                pose_label = 'lying person'
+
+            human_poses.append((pose_label, confidence, bbox))
 
         print('human_poses', human_poses)
 
         return human_poses
     
 
-    def getGest(self):
+    def getGest(self, getAll=False):
         self.agent.pose.head_tilt(gpsr_human_head_tilt)
-        rospy.sleep(1)
+        rospy.sleep(0.5)
 
-        num_features = 51
-        keypoint_data = self.human_keypoints
-        split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
+        num_features = 55  # 4 (XYXY) + 51 (keypoints)
+        combined_data = self.human_keypoints
+        print(len(combined_data))
+        split_data = [combined_data[i:i + num_features] for i in range(0, len(combined_data), num_features)]
 
         human_gests = []
 
-        for input_data in split_data:
-            input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+        for data in split_data:
+            print(data)
+            bbox = data[:4]  # XYXY 좌표
+            keypoints = data[4:]  # 키포인트 데이터
+            input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 
             # Perform the inference
             with torch.no_grad():
@@ -388,25 +396,29 @@ class GPSR:
             # Apply softmax to get probabilities
             probabilities = F.softmax(output, dim=1)
             
+            # Print the probabilities
+            print("Probabilities:", probabilities.data)
+
             # Get the highest probability and its index
             confidence, predicted_label = torch.max(probabilities, 1)
             
             confidence = confidence.item()
             predicted = predicted_label.item()
 
+            gest_label = ''
             if predicted == 0:
-                human_gests.append(('person raising their left arm', confidence))
+                gest_label = 'person raising their left arm'
             elif predicted == 1:
-                human_gests.append(('person raising their right arm', confidence))
+                gest_label = 'person raising their right arm'
             elif predicted == 2:
-                human_gests.append(('person pointing to the right', confidence))
+                gest_label = 'person pointing to the right'
             elif predicted == 3:
-                human_gests.append(('person pointing to the left', confidence))
+                gest_label = 'person pointing to the left'
+
+            human_gests.append((gest_label, confidence, bbox))
 
         print('human_gests', human_gests)
 
-        if len(human_gests) == 0:
-            return "no person"
         return human_gests
         
     
@@ -538,15 +550,19 @@ class GPSR:
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
-        if gestPosePers in ['standing', 'lying', 'sitting']:
-            image = self.img()
-            personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="pose", key=gestPosePers)
+        if gestPosePers in self.pose_person_list:
+            Pers = self.getPose(getAll=True)
+            posePers = [per for per in Pers if per[0] == gestPosePers]
+            return len(posePers)
 
-        else:
-            image = self.img()
-            personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="gest", key=gestPosePers)
+        elif gestPosePers in self.gesture_person_list:
+            Pers = self.getGest(getAll=True)
+            gestPers = [per for per in Pers if per[0] == gestPosePers]
+            return len(gestPers)
         
-        return personCount
+        else:
+            rospy.logwarn("No such gesture or pose")
+            return 0
     
     # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
