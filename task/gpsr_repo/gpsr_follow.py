@@ -4,18 +4,6 @@ from sensor_msgs.msg import LaserScan
 import math
 import numpy as np
 
-min_interval_arc_len = 1.0
-unit_rad = 0.25 * ( math.pi / 180 )
-avg_dist_move_dist_ratio = 5
-
-def calculate_human_rad(human_center_x, yolo_img_width):
-    human_center_bias = human_center_x - yolo_img_width / 2
-    return -human_center_bias / 640
-
-def index_to_rad(idx):
-    return (idx - center_index) * unit_rad
-
-################ Maybe Constant? ################
 
 ## main frequency
 main_freq = 1
@@ -33,6 +21,18 @@ center_index = lidar_index // 2
 yolo_img_height = 480
 yolo_img_width = 640
 
+min_interval_arc_len = 1.0
+unit_rad = 0.23 * ( math.pi / 180 )
+avg_dist_move_dist_ratio = 5
+
+def calculate_human_rad(human_center_x, yolo_img_width):
+    human_center_bias = human_center_x - yolo_img_width / 2
+    return -human_center_bias / 1500
+
+def index_to_rad(idx):
+    return (idx - center_index) * unit_rad
+
+
 class GPSRFollow:
     def __init__(self, agent, gpsr):
         self.agent = agent
@@ -40,6 +40,8 @@ class GPSRFollow:
 
         self.human_rad = None
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
+        self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
+
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -48,12 +50,18 @@ class GPSRFollow:
         self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
 
-        human_keypoints = self.gpsr.human_keypoints
+    def _hkpts_cb(self, data):
+        human_keypoints = data.data
         num_features = 55
         split_kpts = [human_keypoints[i:i + num_features] for i in range(0, len(human_keypoints), num_features)]
 
-        max_area = -1
-        max_idx = 0
+        if not split_kpts:
+            self.last_human_rad = self.human_rad
+            self.human_rad = None
+            return
+
+        max_area = 20000
+        max_idx = -1
 
         for idx, kpts in enumerate(split_kpts):
             human_w = kpts[2] - kpts[0]
@@ -63,7 +71,13 @@ class GPSRFollow:
                 max_area = human_w * human_h
                 max_idx = idx
 
+        if max_idx == -1:
+            self.last_human_rad = self.human_rad
+            self.human_rad = None
+            return
+
         human_center_x = split_kpts[max_idx][0] + split_kpts[max_idx][2] // 2
+
         self.human_rad = calculate_human_rad(human_center_x, yolo_img_width)
 
     def find_candidates(self):
@@ -113,6 +127,8 @@ class GPSRFollow:
             number_seg = int(interval_arc_len / min_interval_arc_len)
             idx_len = end_idx - start_idx
 
+            segments.append([start_rad, end_rad, min_dist])
+
             for j in range(number_seg):
                 new_start_idx = start_idx + int(idx_len * j / number_seg)
                 new_end_idx = start_idx + int(idx_len * (j + 1) / number_seg)
@@ -154,11 +170,30 @@ class GPSRFollow:
         
         move_dist = avg_dist / avg_dist_move_dist_ratio
         avg_rad = (start_rad + end_rad) / 2
-        
-        move_x = move_dist * math.cos(avg_rad)
-        move_y = move_dist * math.sin(avg_rad)
-        if self.human_rad:
+
+        if self.
+
+        if self.human_rad and self.human_rad > start_rad and self.human_rad < end_rad:
+            rospy.loginfo("Human is in the interval")
+            move_x = move_dist * math.cos(self.human_rad)
+            move_y = move_dist * math.sin(self.human_rad)
             move_yaw = self.human_rad
+
+        elif self.human_rad:
+            rospy.loginfo("Human is not in the interval")
+            move_x = move_dist * math.cos(avg_rad)
+            move_y = move_dist * math.sin(avg_rad)
+            move_yaw = avg_rad
+
         else:
-            move_yaw = 0
+            rospy.logwarn("Human not detected")
+            move_x = 0
+            move_y = 0
+            if self.last_human_rad:
+                move_yaw = self.last_human_rad
+                self.last_human_rad = None
+            else:
+                rospy.logwarn("No last human rad")
+                move_yaw = 0
+        
         self.move_rel(move_x, move_y, yaw=move_yaw)
