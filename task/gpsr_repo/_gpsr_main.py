@@ -24,6 +24,7 @@ import numpy as np
 import Levenshtein
 import math
 import time
+import subprocess
 
 objects_data = readData(objects_file_path)
 
@@ -118,11 +119,23 @@ class GPSR:
     def follow(self):
         f = GPSRFollow(self.agent, self)
 
+        self.say("come close")
+        rospy.sleep(2)
+
         moved_time = time.time()
+
+        moved_count = 0
 
         while not rospy.is_shutdown():
             if time.time() - moved_time < main_period:
                 continue
+
+            moved_count += 1
+
+            if moved_count > 30:
+                self.say("I follow you enough")
+                rospy.sleep(1.5)
+                return
 
             try:
                 candidates = f.candidates
@@ -650,17 +663,23 @@ def gpsr(agent):
         rospy.sleep(2.5)
 
         inputText = g.hear(7.)
+
         agent.say(f"Given Command is {inputText}")
 
+        try:            
+            # parse InputText 
+            cmdName, params = ultimateParser(inputText)
+
+            cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
             
-        # parse InputText 
-        cmdName, params = ultimateParser(inputText)
+            cmdFunc = g.cmdNameTocmdFunc[cmdName]
 
-        cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
+            g.instructor_point = g.agent.get_pose(print_option=False)
+            cmdFunc(g, params)
+
+            g.move('gpsr_instruction_point')
         
-        cmdFunc = g.cmdNameTocmdFunc[cmdName]
-
-        g.instructor_point = g.agent.get_pose(print_option=False)
-        cmdFunc(g, params)
-
-        g.move('gpsr_instruction_point')
+        except:
+            g.say("Sorry. Another command please.")
+            rospy.sleep(2)
+            pass
