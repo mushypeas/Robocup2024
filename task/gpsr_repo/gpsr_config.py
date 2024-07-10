@@ -40,13 +40,14 @@ ABS_POSITION = {
 }
 
 objects_file_path = 'CompetitionTemplate/objects/test.md'
+
 rooms_list = ["living room", "bedroom", "kitchen", "office", "bathroom"]
 names_list = ['Adel', 'Angel', 'Axel', 'Charlie', 'Jane', 'Jules', 'Morgan', 'Paris', 'Robin', 'Simone']
 
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
 pose_person_list = ["sitting person", "standing person", "lying person"]
-# Ugly...
+
 gesture_person_plural_list = ["waving persons", "persons raising their left arm", "persons raising their right arm",
                                 "persons pointing to the left", "persons pointing to the right"]
 pose_person_plural_list = ["sitting persons", "standing persons", "lying persons"]

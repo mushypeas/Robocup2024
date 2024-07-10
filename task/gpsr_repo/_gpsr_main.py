@@ -37,16 +37,20 @@ class GPSR:
         self.loc_list = list(ABS_POSITION.keys())
         self.rooms_list = rooms_list
         self.names_list = names_list
+
+        self.gesture_person_list = gesture_person_list
+        self.pose_person_list = pose_person_list
+        self.gesture_person_plural_list = gesture_person_plural_list
+        self.pose_person_plural_list = pose_person_plural_list
+        self.person_info_list = person_info_list
+        self.object_comp_list = object_comp_list
+
         self.talk_list = talk_list
         self.question_list = question_list
         self.color_list = color_list
         self.clothe_list = clothe_list
         self.clothes_list = clothes_list
-
-        self.gesture_person_list = gesture_person_list
-        self.pose_person_list = pose_person_list
         
-
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
         
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
@@ -98,6 +102,7 @@ class GPSR:
         
         # CLIP
         # self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+
         # 학습된 모델 로드
         self.pose_model = PoseClassifier(51)
         self.pose_model.load_state_dict(torch.load('module/yolov7-pose-estimation/pose_classifier_1.pth'))
@@ -107,22 +112,19 @@ class GPSR:
         self.gest_model.load_state_dict(torch.load('module/yolov7-pose-estimation/gest_classifier_1.pth'))
         self.gest_model.eval()
 
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+
         # FOLLOW
-        # self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
-        # self.following = False
-        # self.person_distance = None
-        # self.person_angle = None
+        self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
+        self.following = False
+        self.person_distance = None
+        self.person_angle = None
 
-    # CALLBACKS
-    def _knee_pose_callback(self, msg):
-        rospy.loginfo(msg.data)
-
-    # human keypoints callback
-    def hkpts_cb(self, msg):
-        self.human_keypoints = msg.data
-
-    ### HELP Functions ###
-        
+    # FOLLOW FUNCTION
     def follow(self):
         byte_path = "/home/tidy/Robocup2024/byte.sh"
         byte_command = ['gnome-terminal', '--', 'bash', '-c', f'{byte_path}; exec bash']
@@ -165,6 +167,22 @@ class GPSR:
     def followToLoc(self, loc):
         self.follow()
 
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+
+
+    # CALLBACKS
+    def _knee_pose_callback(self, msg):
+        rospy.loginfo(msg.data)
+
+    # human keypoints callback
+    def hkpts_cb(self, msg):
+        self.human_keypoints = msg.data
+
+    ### HELP Functions ###
     def get_yolo_bbox(self, category=None):
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
@@ -379,6 +397,9 @@ class GPSR:
         if getAll:
             return human_poses
         
+        if len(human_poses) == 0:
+            return "no person"
+        
         return human_poses[0][0]
     
 
@@ -431,6 +452,9 @@ class GPSR:
 
         if getAll:
             return human_gests
+        
+        if len(human_gests) == 0:
+            return "no person"
         
         return human_gests[0][0]
         
@@ -487,7 +511,7 @@ class GPSR:
     def identifyByGestPose(self, gestPosePers):
         poseCount = 0
 
-        if gestPosePers in ['standing', 'lying', 'sitting']:
+        if gestPosePers in self.pose_person_list:
             print("Identify by pose")
 
             while True:
@@ -507,7 +531,7 @@ class GPSR:
                     poseCount += 1
 
         # Gesture
-        else:
+        elif gestPosePers in self.gesture_person_list:
             print("Identify by gesture")
 
             while True:
@@ -526,6 +550,10 @@ class GPSR:
 
                 else:
                     poseCount += 1
+
+        else:
+            rospy.logwarn("No such gesture or pose")
+            return
 
         self.say(f"I found a person who is {gestPosePers}. Let's go.")
         rospy.sleep(3)
@@ -650,6 +678,8 @@ def gpsr(agent):
         cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
         
         cmdFunc = g.cmdNameTocmdFunc[cmdName]
+
+        g.instructor_point = g.agent.get_pose(print_option=False)
         cmdFunc(g, params)
 
         g.move('gpsr_instruction_point')
