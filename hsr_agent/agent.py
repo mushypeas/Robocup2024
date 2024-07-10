@@ -23,7 +23,7 @@ from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
 # stt
-# from module.stt.stt_client import stt_client
+from module.stt.stt_client import stt_client 
 # from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
 import numpy as np
 from utils.distancing import distancing
@@ -104,7 +104,8 @@ class Agent:
         if is_sim:
             static_topic_name = '/static_obstacle_ros_map'
         else:   
-            static_topic_name = '/static_obstacle_map_ref'
+            # static_topic_name = '/static_obstacle_map_ref'
+            static_topic_name = '//static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=10.0)
         # map meta-info
@@ -461,7 +462,7 @@ class Agent:
 
     # tts
     def say(self, sentence, show_display=False):
-        # self.tts.say(sentence)
+        self.tts.say(sentence)
         print(sentence)
         if show_display:
             self.head_show_text(sentence)
