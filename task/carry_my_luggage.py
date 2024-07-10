@@ -1783,7 +1783,7 @@ def carry_my_luggage(agent):
     seg_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {seg_path}; exec bash']
 
     byte_process = subprocess.Popen(byte_command)
-    os.kill(yolo_process.pid, signal.SIGKILL)
+    # os.kill(yolo_process.pid, signal.SIGKILL)
 
     if not yolo_success or not try_bag_picking:
        # no try bag picking
