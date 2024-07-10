@@ -5,8 +5,14 @@ def make_object_list(yolo_classname_path):
     # yolo_classname path
     file_path = os.path.join('module', 'yolov10', yolo_classname_path)
 
-    with open(file_path, 'r', encoding='utf-8') as f:
-        class_names = [line.strip() for line in f.readlines()]
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            class_names = [line.strip() for line in f.readlines()]
+    except FileNotFoundError:
+        file_path = os.path.join('..', '..', 'module', 'yolov10', yolo_classname_path)
+        with open(file_path, 'r', encoding='utf-8') as f:
+            class_names = [line.strip() for line in f.readlines()]
+
         
     OBJECT_LIST = []
         

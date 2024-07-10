@@ -4,6 +4,10 @@ import json
 sys.path.append('hsr_agent')
 from global_config_utils import make_object_list
 
+sys.path.append('task/gpsr_repo')
+sys.path.append('../../task/gpsr_repo')
+import gpsr_config
+
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
 # data topic name.
@@ -17,8 +21,6 @@ yolo_weight_path = 'weight/gpsr_pnu.pt'
 yolo_classnames_path = 'weight/gpsr_pnu.cn'
 
 try:
-    sys.path.append('task/gpsr_repo')
-    import gpsr_config
     yolo_weight_path = gpsr_config.yolo_weight_path
     yolo_classnames_path = gpsr_config.yolo_classnames_path
 except Exception as e:
@@ -446,8 +448,6 @@ elif False:
     ARENA_EDGES = [[0.96,-2.14], [10,-1.9], [9.93, 5.04], [0.925, 4.73]]
 
 try:
-    sys.path.append('task/gpsr_repo')
-    import gpsr_config
     ABS_POSITION.update(gpsr_config.ABS_POSITION)
 except Exception as e:
     print(e)
