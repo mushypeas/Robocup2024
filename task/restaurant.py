@@ -492,8 +492,8 @@ def restaurant(agent):
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
 
-    head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
-    head_map_client.update_configuration({"enable": True})
+    # head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
+    # head_map_client.update_configuration({"enable": True})
 
     slam_args = ['tidyboy_nav_stack', 'hector.launch']
     nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
