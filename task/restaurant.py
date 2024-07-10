@@ -13,7 +13,7 @@ from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped, Twist
 from sklearn.cluster import KMeans
 from std_msgs.msg import Int16MultiArray
-from sensor_msgs.msg import LaserScan
+from sensor_msgs.msg import LaserScan, Image
 from utils.marker_maker import MarkerMaker
 from playsound import playsound
 from std_srvs.srv import Trigger
@@ -68,6 +68,11 @@ class MoveBaseStandalone:
         self.listener = tf.TransformListener()
         self.last_checked_time = time.time()
         self.last_checked_pos = [0, 0]
+
+        self.seg_img = None # jnpahk
+
+
+        rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         # reset map
         # rospy.wait_for_service('/reset_map')
 
@@ -77,6 +82,12 @@ class MoveBaseStandalone:
         self.dists = data_np
         self.indices_in_range = np.where(self.dists > min_dist)[0].tolist()
         self.candidates = self.find_candidates()
+
+
+    def _segment_cb(self, data): #jnpahk
+
+        data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
+        self.seg_img = data_img
 
     def find_candidates(self):
         indices_in_range = self.indices_in_range
@@ -136,6 +147,30 @@ class MoveBaseStandalone:
                 segments.append([new_start_rad, new_end_rad, new_min_dist])
 
         return segments
+    
+
+    def barrier_stop(self, agent, barrier_stop_thres=0.5): #jnpahk
+        depth = agent.depth_image
+        if np.any(depth < barrier_stop_thres):
+            return True
+        else:
+            return False
+
+    
+    def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
+        depth = agent.depth_image
+        h, w = self.seg_img.shape
+        seg_img = self.seg_img[:, w*4 : w//4 * 3]
+
+        valid_depth_mask = depth > 0
+        human_mask = (seg_img == 15) & valid_depth_mask
+        human_y, human_x = np.where(human_mask)
+        human_depth_values = depth[human_y, human_x]
+
+        if human_depth_values.size != 0 and (np.min(human_depth_values) < human_stop_thres): 
+            return True
+        else:
+            return False
 
 
     def turn_around(self, angle=180):
@@ -195,6 +230,13 @@ class MoveBaseStandalone:
                 #rospy.sleep(3.0)
                 rospy.logwarn("Move zero aborted/rejected. Turn around.")
                 self.base_action_client.send_goal(goal)
+
+            elif self.barrier_stop(agent): #jnpahk
+                rospy.logwarn("Barrier detected. Turn around.")
+                agent.move_base.base_action_client.cancel_all_goals()
+                self.turn_around()
+                self.base_action_client.send_goal(goal)
+            
             else:
                 cur_pos = self.get_pose()
                 if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
@@ -219,7 +261,7 @@ class MoveBaseStandalone:
 
                     self.move_best_interval(best_interval)
 
-                    if abs(self.last_checked_pos[0]) < 0.3 and abs(self.last_checked_pos[1]) < 0.3:
+                    if abs(self.last_checked_pos[0]) < 0.5 and abs(self.last_checked_pos[1]) < 0.5:
                         rospy.loginfo("Success move zero by distancing")
                         return 
 
@@ -262,7 +304,7 @@ class MoveBaseStandalone:
                 rospy.sleep(0.1)
                 action_state = self.base_action_client.get_state()
 
-                if action_state == GoalStatus.SUCCEEDED and not doing_lookup:
+                if (action_state == GoalStatus.SUCCEEDED and not doing_lookup) or self.human_stop(agent): #jnpahk
                     rospy.loginfo("Move Customer Succeeded.")
                     return _goal_x, _goal_y, _goal_yaw
                 
@@ -282,6 +324,12 @@ class MoveBaseStandalone:
                         r += 0.1
 
                     break
+
+                elif self.barrier_stop(agent): #jnpahk
+                    rospy.logwarn("Barrier detected. Turn around.")
+                    agent.move_base.base_action_client.cancel_all_goals()
+                    self.turn_around()
+                    self.base_action_client.send_goal(goal)
 
                 else:
                     cur_pos = self.get_pose()
@@ -485,6 +533,7 @@ def nav_target_from_pc(pc, table, robot_ori, K=100):
 
 
 def restaurant(agent):
+
     rospy.loginfo('Initialize Hector SLAM')
     # Kill existing nodes and replace them with others
     os.system('rosnode kill /pose_integrator')
@@ -492,8 +541,10 @@ def restaurant(agent):
     uuid = roslaunch.rlutil.get_or_generate_uuid(None, False)
     roslaunch.configure_logging(uuid)
 
-    # head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
-    # head_map_client.update_configuration({"enable": True})
+    #jnpahk depth camera on
+
+    head_map_client = dynamic_reconfigure.client.Client("/tmc_map_merger/inputs/head_rgbd_sensor")
+    head_map_client.update_configuration({"enable": True})
 
     slam_args = ['tidyboy_nav_stack', 'hector.launch']
     nav_args  = ['tidyboy_nav_stack', 'nav_stack.launch']
@@ -516,8 +567,21 @@ def restaurant(agent):
     marker_maker = MarkerMaker('/snu/robot_path_visu')
 
     openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
-    yolo_process = subprocess.Popen(['bash', openpose_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
+    seg_path = "/home/tidy/Robocup2024/seg.sh"
+    
+    openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
+    seg_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {seg_path}; exec bash']
+
+    byte_process = subprocess.Popen(openpose_command)
+    seg_process = subprocess.Popen(seg_command)
+    
     print('OpenPose process started')
+    print('Segmentation DeepLab process started')
+
+
+
+
+
 
     for _ in range(10):
         try:
