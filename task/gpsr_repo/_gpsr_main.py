@@ -21,6 +21,8 @@ from sensor_msgs.msg import LaserScan
 from geometry_msgs.msg import Twist
 
 import torch
+import torch.nn.functional as F
+
 import numpy as np
 import Levenshtein
 
@@ -324,8 +326,11 @@ class GPSR:
         userName = self.hear()
         userName = self.cluster(userName, self.names_list)
         return userName
-    
+
     def getPose(self):
+        self.agent.pose.head_tilt(gpsr_human_head_tilt)
+        rospy.sleep(0.5)
+
         num_features = 51
         keypoint_data = self.human_keypoints
         split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
@@ -333,18 +338,22 @@ class GPSR:
         human_poses = []
 
         for input_data in split_data:
-
             input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 
             # Perform the inference
             with torch.no_grad():
                 output = self.pose_model(input_tensor)
 
-            # Print the output
-            print(output.data)
+            # Apply softmax to get probabilities
+            probabilities = F.softmax(output, dim=1)
+            
+            # Print the probabilities
+            print("Probabilities:", probabilities.data)
 
-            confidence, predicted_label = torch.max(output.data, 1)
-
+            # Get the highest probability and its index
+            confidence, predicted_label = torch.max(probabilities, 1)
+            
+            confidence = confidence.item()
             predicted = predicted_label.item()
 
             if predicted == 0:
@@ -356,12 +365,13 @@ class GPSR:
 
         print('human_poses', human_poses)
 
-        if len(human_poses) == 0:
-            return "no person"
-
-        return human_poses[0][0]
+        return human_poses
     
+
     def getGest(self):
+        self.agent.pose.head_tilt(gpsr_human_head_tilt)
+        rospy.sleep(1)
+
         num_features = 51
         keypoint_data = self.human_keypoints
         split_data = [keypoint_data[i:i + num_features] for i in range(0, len(keypoint_data), num_features)]
@@ -369,15 +379,17 @@ class GPSR:
         human_gests = []
 
         for input_data in split_data:
-
             input_tensor = torch.tensor(input_data, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
 
             # Perform the inference
             with torch.no_grad():
                 output = self.gest_model(input_tensor)
-
-            # Print the output
-            confidence, predicted_label = torch.max(output.data, 1)
+            
+            # Apply softmax to get probabilities
+            probabilities = F.softmax(output, dim=1)
+            
+            # Get the highest probability and its index
+            confidence, predicted_label = torch.max(probabilities, 1)
             
             confidence = confidence.item()
             predicted = predicted_label.item()
@@ -395,12 +407,12 @@ class GPSR:
 
         if len(human_gests) == 0:
             return "no person"
-        return human_gests[0][0]
+        return human_gests
         
     
     def getCloth(self):
         noPersonCount = 0
-        self.agent.pose.head_tilt(5)
+        self.agent.pose.head_tilt(gpsr_human_head_tilt)
 
         while True:
             image = self.img()
@@ -439,7 +451,6 @@ class GPSR:
         maxPersonCount = 7
 
         while True:
-            self.agent.pose.head_tilt(5)
             image = self.img()
             personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
 
@@ -472,8 +483,6 @@ class GPSR:
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
-
-        self.agent.pose.head_tilt(5)
         poseCount = 0
 
         if gestPosePers in ['standing', 'lying', 'sitting']:
@@ -486,7 +495,6 @@ class GPSR:
                 if feature != gestPosePers:
                     print(f"No {gestPosePers} detected")
                     self.move_rel(0, 0, 0.5)
-                    self.agent.pose.head_tilt(5)
                     rospy.sleep(1)
                     continue
 
@@ -508,7 +516,6 @@ class GPSR:
                 if feature != gestPosePers:
                     print(f"No {gestPosePers} detected")
                     self.move_rel(0, 0, 0.5)
-                    self.agent.pose.head_tilt(5)
                     rospy.sleep(1)
                     continue
 
@@ -524,7 +531,6 @@ class GPSR:
     # 옷으로 찾기
     def identifyByClothing(self, Clothes):
         self.say(f"who wear {Clothes}, please come closer to me.")
-        self.agent.pose.head_tilt(5)
         
         rospy.sleep(4)
 

@@ -1,4 +1,5 @@
 task_iteration = 3
+gpsr_human_head_tilt = -2
 
 yolo_weight_path = 'weight/gpsr_pnu.pt'
 yolo_classnames_path = 'weight/gpsr_pnu.cn'
@@ -41,9 +42,6 @@ ABS_POSITION = {
 objects_file_path = 'CompetitionTemplate/objects/test.md'
 rooms_list = ["living room", "bedroom", "kitchen", "office", "bathroom"]
 names_list = ['Adel', 'Angel', 'Axel', 'Charlie', 'Jane', 'Jules', 'Morgan', 'Paris', 'Robin', 'Simone']
-
-
-
 
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
