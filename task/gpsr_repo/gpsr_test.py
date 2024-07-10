@@ -57,6 +57,12 @@ def gpsr_test(agent):
         if cmd == "follow":
             g.follow()
 
+        if cmd == 'clusterObj':
+            name = input("What name do you want to cluster?: ")
+            arr = g.object_names
+            print(g.cluster(name, arr))
+
+
         if cmd == 'count':
             input_gestPose = input("What gesture or pose do you want to count?: ")
             cnt = g.countGestPosePers(input_gestPose)

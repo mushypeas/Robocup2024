@@ -288,10 +288,15 @@ class GPSR:
         rospy.sleep(3)
         userSpeech = self.hear(7.)
         additionalPrompt = "Answer easy and short as you can, less than 20 words."
-        robotAns = chat(userSpeech + additionalPrompt)
+        try:
+            robotAns = chat(userSpeech + additionalPrompt)
+        except Exception as e:
+            print(e)
+            print("Error in quiz")
+            robotAns = "Question is hard! Good luck."
+
         self.say(robotAns)
         rospy.sleep(7)
-        # [TODO] improve how the quiz can be answered
 
     def cluster(self, word, arr):
         if word in arr:
@@ -309,7 +314,7 @@ class GPSR:
         
         except Exception as e:
             print(e)
-            print("Error in clustering")
+            print("Error in clustering with API")
 
             distances = [(Levenshtein.distance(word, a), a) for a in arr]
             closest_match = min(distances, key=lambda x: x[0])
