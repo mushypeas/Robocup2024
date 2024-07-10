@@ -884,8 +884,8 @@ class HumanFollowing:
                 if 'yes' in answer:
                     return True
                 elif 'no' in answer:
-                    self.agent.say('Okay! I will follow you', show_display=True)
-                    print('Okay! Please wait, I will follow you')
+                    self.agent.say('Okay! Please come in front me, I will follow you', show_display=True)
+                    print('Okay! Please come in front me, I will follow you')
                     self.show_byte_track_image = True
                     self.agent.last_moved_time = time.time()
                     cur_track = self.track_queue[len(self.track_queue)-1]
