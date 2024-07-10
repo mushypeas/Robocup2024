@@ -25,6 +25,7 @@ import torch.nn.functional as F
 
 import numpy as np
 import Levenshtein
+import math
 
 objects_data = readData(objects_file_path)
 
@@ -471,39 +472,16 @@ class GPSR:
         
 
     def identify(self):
-        noPersonCount = 0
-        maxPersonCount = 7
-
         while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-
-            if noPersonCount > maxPersonCount:
-                print("No person detected, finish getGest")
-                self.move_rel(0, 0, 1.2)
+            if self.human_keypoints:
+                self.say("I found you")
                 rospy.sleep(1)
-                noPersonCount = 0
-            
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+                break
 
-            print(f"Person detected: {personCount[0]}")
+            else:
+                self.move_rel(0, 0, math.pi/4)
+                rospy.sleep(1)
 
-            for i in range(maxPersonCount):
-                image = self.img()
-                personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-
-                if personCount[0] != "no person":
-                    break
-
-            if i == maxPersonCount - 1:
-                continue
-            
-            self.say("I found you")
-            rospy.sleep(1)
-            break
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
