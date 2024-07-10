@@ -1667,7 +1667,7 @@ class BagInspection:
                 self.agent.grasp()
             self.agent.pose.move_to_go()
             # self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
-            #self.agent.move_abs_coordinate(before_pick_pose, wait=True)
+            self.agent.move_abs_coordinate(before_pick_pose, wait=True)
             self.agent.move_rel(0, 0, -yaw, wait=False)
         # self.agent.say("I am ready to follow you", show_display=True)
         # rospy.sleep(2)
