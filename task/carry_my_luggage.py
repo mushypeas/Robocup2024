@@ -405,12 +405,25 @@ class HumanFollowing:
             pos = (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)
 
-            if (calc_z!=0 and _depth < 0.7  and _depth< (thres+0.2) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
+            if (calc_z!=0 and _depth < 1.0  and _depth< (thres+0.2) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
                 _num_rotate = _num_rotate + 1
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                
 
                 depth_barrier = True
                 depth = self.agent.depth_image
@@ -456,18 +469,23 @@ class HumanFollowing:
             if  (depth_barrier is False and left_lidar < thres or right_lidar < thres ) and not (abs(left_lidar - right_lidar) < 0.1 ) and not pos:
                 
                 print("Lidar BARRIER")
-                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+
+                # self.agent.ranges[]
                 # if left_edge_lidar > 0.7 or right_edge_lidar >  0.7:
+                random_prob = random.uniform(0, 1)
+                move_front = 0.15 if random_prob > 0.5 else 0.0
+
                 if left_lidar > right_lidar : 
                     self.barrier_move_time = time.time()
-                    self.agent.move_rel(0.15,0.15,0, wait=False)
+                    self.agent.move_rel(move_front,0.15,0, wait=False)
                     rospy.sleep(0.1)
                 elif left_lidar < right_lidar:
                     self.barrier_move_time = time.time()
-                    self.agent.move_rel(0.15,-0.15,0, wait=False)
+                    self.agent.move_rel(move_front,-0.15,0, wait=False)
                     rospy.sleep(0.1)
 
         # else:
@@ -1056,7 +1074,7 @@ class HumanFollowing:
             # self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)
             # target_xyyaw =  self.last_human_pos
             self.agent.move_rel(target_xyyaw[0], target_xyyaw[1], target_xyyaw[2], wait=False)      
-            # rospy.sleep(.5)
+            # rospy.sleep(.1)
             cur_pos = self.agent.get_pose(print_option=False)
             if round((time.time() - start_time) % pose_save_time_period) == 0:
                 if self.save_one_time:
@@ -1846,7 +1864,8 @@ def carry_my_luggage(agent):
             cur_track = track_queue[len(track_queue)-i-1]
             calc_z= 2000
 
-            depth = np.asarray(now_d2pc.depth)
+            depth = np.asarray(human_following.seg_img)
+
             depth_slice = depth[:, :]
             seg_img = human_following.seg_img[:, :]
             valid_depth_mask = depth_slice > 0

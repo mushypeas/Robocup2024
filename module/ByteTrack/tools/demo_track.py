@@ -274,17 +274,22 @@ class Bytetrack_ros:
                 self.cur_human_idx = human_info_ary[0]
                 print("self.cur_human_idx: ", self.cur_human_idx)
                 self.target_feature = human_info_ary[3]
+                if human_info_ary[1] is not None:
+                    x, y, w, h = int(human_info_ary[1][0]), int(human_info_ary[1][1]), int(human_info_ary[1][2]), int(human_info_ary[1][3])
+                    print('Target box: ', x, y, w, h)
+                    intary = Int16MultiArray()
+                    intary.data = [int(human_info_ary[0]), x, y, w, h, int(human_info_ary[2])]
+                    self.yolo_pub.publish(intary)
 
-                x, y, w, h = int(human_info_ary[1][0]), int(human_info_ary[1][1]), int(human_info_ary[1][2]), int(human_info_ary[1][3])
-                print('Target box: ', x, y, w, h)
-                intary = Int16MultiArray()
-                intary.data = [int(human_info_ary[0]), x, y, w, h, int(human_info_ary[2])]
-                self.yolo_pub.publish(intary)
-
-                if x < 0: x = 0
-                if y < 0: y = 0
-                bbox_msg = self.bridge.cv2_to_imgmsg(self.rgb_img[y:y + h, x:x + w], encoding='bgr8')
-                self.target_img_pub.publish(bbox_msg)
+                    if x < 0: x = 0
+                    if y < 0: y = 0
+                    bbox_msg = self.bridge.cv2_to_imgmsg(self.rgb_img[y:y + h, x:x + w], encoding='bgr8')
+                    self.target_img_pub.publish(bbox_msg)
+                else:
+                    intary = Int16MultiArray()
+                    intary.data = [-1]
+                    self.yolo_pub.publish(intary)
+                    
             else:
                 intary = Int16MultiArray()
                 intary.data = [-1]
