@@ -117,8 +117,35 @@ class GPSR:
     def follow(self):
         f = GPSRFollow(self.agent, self)
 
-        while True:
-            f.move_best_interval()
+        moved_time = time.time()
+
+        while not rospy.is_shutdown():
+            if time.time() - moved_time < main_period:
+                continue
+
+            try:
+                candidates = f.candidates
+            except AttributeError:
+                continue
+
+            print("candidates: ", candidates)
+
+            if not candidates:
+                ## TODO (better) ##
+                ### If there is no candidate, what should we do? ###
+                ### go back, turn around, etc... ###
+                f.move_rel(0, 0, yaw=math.pi / 2)
+                moved_time = time.time()
+                continue
+
+            best_interval = f.get_best_candidate(candidates)
+
+            while not best_interval:
+                best_interval = f.get_best_candidate(candidates)
+            
+            f.move_best_interval(best_interval)
+
+            moved_time = time.time()
 
 ##############################################################
 ##############################################################
