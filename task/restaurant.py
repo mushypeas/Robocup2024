@@ -181,7 +181,7 @@ class MoveBaseStandalone:
             return False
 
     
-    def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
+    def human_stop(self, agent, human_stop_thres=1.3): #jnpahk
         depth = agent.depth_image / 1000
         # depth = depth[depth>0]
 
@@ -513,7 +513,7 @@ class MoveBaseStandalone:
                     rospy.logwarn("Move best interval Aborted/Rejected.")
                     self.turn_around()
                     return False
-                elif self.barrier_stop(): #jnpahk
+                elif self.barrier_stop(agent): #jnpahk
                     rospy.logwarn("Barrier detected. Turn around.")
                     agent.move_base.base_action_client.cancel_all_goals()
 
