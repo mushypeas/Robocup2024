@@ -95,7 +95,7 @@ def receptionist(agent):
     # second guest 소개 시 고개를 몇도 돌려야 하는지? scan_position과 scan_bypass_position 각도 차이
     # second_guest_head_pan_degree = -180 # PNU
     #################### 2024 Eindhoven
-    second_guest_head_pan_degree = -180
+    second_guest_head_pan_degree = -180 # MAYBE OK
 
     stt_sentence_mode = False # 1st trial - False, 2nd trial - True
 
@@ -103,8 +103,9 @@ def receptionist(agent):
     calibration_mode = False
 
     #################### cloth threshold ####################
+    # cloth_threshold = 0.15
+    #################### 2024 Eindhoven # NOT YET
     cloth_threshold = 0.15
-    #################### 2024 Eindhoven
 
     #################### face threshold ####################
     # face_threshold = 40 #38
@@ -112,11 +113,11 @@ def receptionist(agent):
     # face_threshold = 40 # left, right
     # face_threshold2 = 25 # middle
     # PNU
-    face_threshold = 30 # left, right
+    # face_threshold = 30 # left, right
+    # face_threshold2 = 35 # middle
+    #################### 2024 Eindhoven # NOT YET
+    face_threshold = 30 # left
     face_threshold2 = 35 # middle
-    #################### 2024 Eindhoven
-    # left
-    # middle
     face_threshold3 = 30 # right
 
     # sofa_range, door_range 둘 다 CheckSeat에 parameter로 주지만 사용하지 않음.
@@ -137,9 +138,10 @@ def receptionist(agent):
     # chair_point_angle = 50
     # head_pan_angle = [45, 25-3, 10-3, -10-5, -25-5, -45-2, -65] # after mid term
     # head_pan_angle = [45-5, 25-4, 10-5, -10-5, -25+3, -45+3, -65+5] # final term
-    head_pan_angle = [50, 35, 15, 0, -23] # PNU
-    #################### 2024 Eindhoven
-    
+    # head_pan_angle = [50, 35, 15, 0, -23] # PNU
+    #################### 2024 Eindhoven # NOT YET
+    head_pan_angle = [50, 35, 15, 0, -23]
+
     # seat_scan이 중심 바라보도록 하는게 중요
     # 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
     # 팔 왼쪽에 있으므로 각도 보정 필요! 최대 +-5도
@@ -156,15 +158,16 @@ def receptionist(agent):
     # face_list = pd.read_csv("./module/human_attribute/face_detection/data.csv")
     # name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
     # drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
-    #################### 2024 Eindhoven
+    #################### 2024 Eindhoven # ALMOST OK
     name_list = ['emma', 'fleur', 'gabriëlle', 'harrie', 'hayley', 'jesse', 'john', 'julia', 'kevin', 'laura', 'liam', 'lucas', 'noah', 'peter', 'robin', 'sara', 'sophie', 'susan', 'william']
     drink_list = ['cola', 'ice tea', 'water', 'milk', 'big coke', 'fanta', 'dubbelfris']
 
     #################### host information ####################
+    # name_host = 'john'
+    # drink_host = 'milk'
+    #################### 2024 Eindhoven # NOT YET
     name_host = 'john'
     drink_host = 'milk'
-    #################### 2024 Eindhoven
-    
 
     if calibration_mode or not calibration_mode:
         name1 = 'juno'
@@ -179,6 +182,7 @@ def receptionist(agent):
     attr = Attribute(cloth_threshold, calibration_mode)
     # cs = CheckSeat(face_threshold, face_threshold2, sofa_range, door_range, head_pan_angle, sofa_point_angle, calibration_mode)
     # cs = CheckSeat(face_threshold, face_threshold2, head_pan_angle, calibration_mode)
+    #################### 2024 Eindhoven
     cs = CheckSeat(face_threshold, face_threshold2, face_threshold3, head_pan_angle, calibration_mode)
     face_attr = FaceAttribute()
 
