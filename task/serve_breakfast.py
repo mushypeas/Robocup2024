@@ -5,16 +5,20 @@ from hsr_agent.agent import Agent
  
 ################# Final (Eindhoven ver.) ################################ 
 
-# Initial location 출발
+# 출발장소 : Entrance
 # picking_location 좌표 : [ ]
 
 # < Location >
-# kitchen_table : [ ]
-# breakfast_table : [   ]
+# kitchen_table = kitchen_counter : [ ]
+# breakfast_table = dinner table : [   ]
  
 # < Dimension >
-# kitchen_table : pick_up table [   ]
-# breakfast_table : placing table, [    ]
+# kitchen_table = kitchen_counter -> pick_up table [   ]
+# breakfast_table = dinner table -> placing table [    ]
+
+# <Item >
+# Cereal : 0.291 * 0.055 * 0.26
+# Milk : 0.075 * 0.07 * 0.098 (앞) / 0.114 (뒤)
 #########################################################################
 
   
@@ -36,8 +40,8 @@ class ServeBreakfast:
         self.item_list = ['bowl','cereal','milk','spoon']
         
         # !!! Measured Distances !!!
-        self.dist_to_pick_table = 0.93
-        self.dist_to_place_table = 0.97
+        self.dist_to_pick_table = 0.8
+        self.dist_to_place_table = 0.8
         self.item_height = {     # 실제 object 높이는 여기서 설정
             'cereal': 0.138,
             'milk': 0.13, 
@@ -64,18 +68,17 @@ class ServeBreakfast:
             'spoon': [0, -0.16, 0]
         }
 
-        self.pick_table = 'kitchen_table' 
+        self.pick_table = 'kitchen_counter' 
         self.pick_table_depth = self.agent.table_dimension[self.pick_table][1] 
         self.pick_table_height = self.agent.table_dimension[self.pick_table][2]
         self.pick_table_head_angle = np.arctan(
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'breakfast_table' 
+        self.place_table = 'dinner_table'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
     # def picking_test_mode(self, item, table_base_xyz):
-
     #     if item == 'bowl':
     #         # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
     #         table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
@@ -155,7 +158,7 @@ class ServeBreakfast:
             
             rospy.sleep(0.2) # give some time for the YOLO to update
             table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
-                table='breakfast_table_pnu',
+                table='breakfast_counter',
                 dist=self.dist_to_pick_table,
                 depth=self.pick_table_depth,
                 item_list=item_list
@@ -309,6 +312,7 @@ class ServeBreakfast:
         # self.agent.door_open()
         # self.agent.say('Hi, I will serve breakfast for you!')
         # rospy.sleep(2)
+        # self.agent.move_rel (0, 3)
         # self.agent.move_abs('picking_location_pnu')
         # self.agent.say('I will move to picking location')
  

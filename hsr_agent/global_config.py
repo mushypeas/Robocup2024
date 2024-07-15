@@ -5,7 +5,6 @@ from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
-# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
@@ -20,10 +19,10 @@ try:
 except:
     pass
 
-AIIS = False
+Robocup = True
+PNU = False
 FINAL = False
-PNU = False # 240630 mjgu 추가
-REAL = True #240710
+AIIS = False
 
 
 global config 
@@ -51,17 +50,17 @@ if REAL: # 240710 mjgu 추가
 
     ABS_POSITION_REAL = {
         # serve breakfast
-        'initial' :[0.0053, 0.0243, -0.0228],          # 240710
-        'picking_location': [4.3083, -1.5883, 0.0044], # 240710
-        'kitchen_table' : [6.5185, -2.7109, -1.536],   # 240710
-        'breakfast_table': [5.3689, -1.3234, 0.0665],  # 240710
+        'Entrance' :[0,0,0],  # Door 1        
+        'picking_location': [0,0,0], # Entrance에서 직진 -> 좌회전 -> 직진 후 kitchen에 진입한 곳
+        'kitchen_counter' : [0,0,0], # pick_up_location
+        'dinner_table': [0,0,0], # pouring and placing_location
     }
 
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.80, 0.40, 0.602],   # 240710
-        'breakfast_table': [0.735, 1.18, 0.73], # 240710
+        'kitchen_counter': [0.61, 1.82, 0.91],   
+        'dinner_table': [0.78, 2.0 , 0.772], 
     }
 
 
@@ -78,8 +77,7 @@ if REAL: # 240710 mjgu 추가
 
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]] # 수정 필요
 
 
 if PNU: # 240630 mjgu 추가
@@ -88,10 +86,10 @@ if PNU: # 240630 mjgu 추가
     ABS_POSITION_PNU = {
 
         # serve breakfast
-        'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
-        'picking_location_pnu': [4.3083, -1.5883, 0.0044], # (kitchen_table 근처) 240630 mjgu 추가
-        'kitchen_table_pnu' : [6.5185, -2.7109, -1.536], # 240630 mjgu 추가
-        'breakfast_table_pnu': [5.3689, -1.3234, 0.0665], # 240630 mjgu 추가
+        'Entrance_location' :[0.0053, 0.0243, -0.0228], 
+        'picking_location': [4.3083, -1.5883, 0.0044], 
+        'kitchen_table_pnu' : [6.5185, -2.7109, -1.536],
+        'breakfast_table_pnu': [5.3689, -1.3234, 0.0665], 
     }
 
 
