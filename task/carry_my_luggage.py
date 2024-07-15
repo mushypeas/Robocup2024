@@ -437,7 +437,7 @@ class HumanFollowing:
                 # left_background_count = np.mean(left_values)
                 # left_values = depth[:, :mid_x // 2]
                 # print("left values : ", np.mean(left_values))
-                left_background_count = np.sum(left_values/1000 < 2.0)
+                left_background_count = np.sum(left_values < 2000)
                 # if left_background_count == 0:
                 #     left_background_count = 4.0
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
@@ -445,7 +445,7 @@ class HumanFollowing:
                 right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
                 # right_background_count = np.mean(right_values)
                 # right_values = depth[:, mid_x * 3 // 2:]
-                right_background_count = np.sum(right_values/1000 < 2.0)
+                right_background_count = np.sum(right_values < 2000)
                 # if right_background_count == 0:
                 #     right_background_count = 4.0    
                 # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
@@ -1703,7 +1703,7 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
-    try_bag_picking = False #True
+    try_bag_picking = True #True
     try_bytetrack = False
     map_mode = False
     stt_option = False #True
