@@ -183,18 +183,18 @@ class MoveBaseStandalone:
     
     def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
         depth = agent.depth_image / 1000
-        depth = depth[depth>0]
+        # depth = depth[depth>0]
 
         h, w = self.seg_img.shape
         # seg_img = self.seg_img[:, w*4 : w//4 * 3]
         seg_img = self.seg_img[:,:]
 
-        valid_depth_mask = depth > 0
-        human_mask = (seg_img == 15) & valid_depth_mask
+        # valid_depth_mask = depth > 0
+        human_mask = (seg_img == 15) 
         human_y, human_x = np.where(human_mask)
         human_depth_values = depth[human_y, human_x]
 
-        if human_depth_values.size != 0 and (np.min(human_depth_values) < human_stop_thres): 
+        if human_depth_values[human_depth_values>0].size != 0 and (np.min(human_depth_values[human_depth_values>0]) < human_stop_thres): 
             print("human detected. finish.")
             return True
         else:
@@ -699,12 +699,15 @@ def restaurant(agent):
                     continue
                 # rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
                 agent.head_show_text(f'{item_parsed}')
+                print('item parsed', item_parsed)
                 rospy.sleep(1.)
                 agent.say('Is this your order? Please say Yes or No to confirm after the ding sound', show_display=True)
 
                 rospy.sleep(6.)
                 result = agent.stt(3.)
                 confirm_parsed = cluster(result, ['yes', 'no'])
+                print('item parsed', confirm_parsed)
+
                 if confirm_parsed != 'yes':
                     agent.say('I am sorry that I misunderstand your order. Please answer me again.', show_display=True)
                     agent.head_show_text('Speech Recognition Failed!')
