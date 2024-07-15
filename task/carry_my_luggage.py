@@ -1607,6 +1607,7 @@ def head_map_cb(config):
 
 
 def carry_my_luggage(agent):
+    print("help")
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.3
@@ -1620,13 +1621,14 @@ def carry_my_luggage(agent):
     stt_option = False #True
     yolo_success = True
     tilt_angle = 20
-    
+    print("1")
 
     # Capture target
     demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
 
     ## class instantiation
     bag_inspection = BagInspection(agent)
+    print("2")
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
@@ -1635,6 +1637,7 @@ def carry_my_luggage(agent):
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
     human_following = HumanFollowing(agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option)
+    print("3")
     #####################
     # 0. start
     agent.say('start carry my luggage!')

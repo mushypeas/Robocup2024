@@ -38,6 +38,7 @@ if __name__ == '__main__':
         from task.inspection import inspection
         inspection(agent)
     elif task_id == '1':
+        print("carry_my_luggage")
         from task.carry_my_luggage import carry_my_luggage
         carry_my_luggage(agent)
     elif task_id == '2':
