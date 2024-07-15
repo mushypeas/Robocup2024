@@ -1,0 +1,11 @@
+table_front 1 (Clean the Table): [5.802, 4.458, 0.0142]
+table_front 2 (Clean the Table): [5.804, 3.88, 0.0038]
+table_front 3 (Clean the Table): [5.758, 3.2933, 0.015]
+table_front 4 (Clean the Table): [[6.743, 2.227, 1.5668]]
+table_front 5 (Clean the Table): [7.887, 3.304, 3.131]
+table_front 6 (Clean the Table): [7.8916, 3.9417, 3.1048]
+table_front 7 (Clean the Table): [7.864, 4.463, 3.098]
+dishwasher front [8.2223, 3.6259, 0.087]
+        'grocery_shelf': [5.5606, 5.0325, 3.1196],
+        'grocery_shelf_door': [5.5625, 5.1279, 3.1168],
+        'grocery_table': [5.5607, 3.8897, -0.0091]
