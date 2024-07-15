@@ -100,10 +100,7 @@ class Agent:
         # yolo
         self.yolo_module = YoloModule(OBJECT_LIST)
         # jykim static-map
-        if is_sim:
-            static_topic_name = '/static_obstacle_ros_map'
-        else:
-            static_topic_name = '//static_obstacle_ros_map'
+        static_topic_name = '/static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
