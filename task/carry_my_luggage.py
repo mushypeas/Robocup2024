@@ -96,7 +96,7 @@ class HumanFollowing:
 
         rospy.Subscriber(bytetrack_topic, Image, self._byte_cb)
         rospy.Subscriber('/snu/carry_my_luggage_yolo', Int16MultiArray, self._human_yolo_cb)
-        self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_rect_color', Image, self._rgb_callback)
+        # self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/rgb/image_rect_color', Image)
         # self.rgb_sub = rospy.Subscriber('/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw', Image, self._rgb_callback)
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         rospy.Subscriber('/snu/yolo_conf', Int16MultiArray, self._tiny_cb)
@@ -167,7 +167,8 @@ class HumanFollowing:
 
         if yolo_y_list:
             yolo_item_y_largest_idx = np.argmax(yolo_y_list)
-            self.tiny_object_yolo = (yolo_x_list[yolo_item_y_largest_idx], yolo_y_list[yolo_item_y_largest_idx])
+            if yolo_y_list[yolo_item_y_largest_idx] > 300 and yolo_y_list[yolo_item_y_largest_idx] < 440:
+                self.tiny_object_yolo = (yolo_x_list[yolo_item_y_largest_idx], yolo_y_list[yolo_item_y_largest_idx])
 
 
 
@@ -236,40 +237,40 @@ class HumanFollowing:
         
 
 
-    def _rgb_callback(self, data): ## jnpahk tiny_object_edge 검출 용
-        frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 250, 350)
-        rows, cols = edges.shape
-        f = np.fft.fft2(edges)
-        fshift = np.fft.fftshift(f)
+    # def _rgb_callback(self, data): ## jnpahk tiny_object_edge 검출 용
+    #     # frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
+        # gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        # edges = cv2.Canny(gray, 250, 350)
+        # rows, cols = edges.shape
+        # f = np.fft.fft2(edges)
+        # fshift = np.fft.fftshift(f)
 
-        crow, ccol = rows // 2, cols // 2
-        mask = np.zeros((rows, cols), np.float32)
-        sigma = 50  # Standard deviation for Gaussian filter
-        x, y = np.ogrid[:rows, :cols]
-        mask = np.exp(-((x - crow) ** 2 + (y - ccol) ** 2) / (2 * sigma ** 2))
+        # crow, ccol = rows // 2, cols // 2
+        # mask = np.zeros((rows, cols), np.float32)
+        # sigma = 50  # Standard deviation for Gaussian filter
+        # x, y = np.ogrid[:rows, :cols]
+        # mask = np.exp(-((x - crow) ** 2 + (y - ccol) ** 2) / (2 * sigma ** 2))
 
-        fshift = fshift * mask
-        f_ishift = np.fft.ifftshift(fshift)
-        img_back = np.fft.ifft2(f_ishift)
-        img_back = np.abs(img_back)
+        # fshift = fshift * mask
+        # f_ishift = np.fft.ifftshift(fshift)
+        # img_back = np.fft.ifft2(f_ishift)
+        # img_back = np.abs(img_back)
         
-        img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
-        img_back = np.uint8(img_back)
+        # img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
+        # img_back = np.uint8(img_back)
 
-        kernel = np.ones((1, 1), np.uint8)
-        img_back = cv2.dilate(img_back, kernel, iterations=1)
-        img_back = cv2.erode(img_back, kernel, iterations=1)
+        # kernel = np.ones((1, 1), np.uint8)
+        # img_back = cv2.dilate(img_back, kernel, iterations=1)
+        # img_back = cv2.erode(img_back, kernel, iterations=1)
 
-        morph = img_back
+        # morph = img_back
 
-        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        # contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-        tiny_exist = False
-        tiny_loc = None
+        # tiny_exist = False
+        # tiny_loc = None
 
-        self.contours = contours
+        # self.contours = contours
 
         ###########확인용 publish#########
         # morph = cv2.bitwise_not(morph)
@@ -692,7 +693,7 @@ class HumanFollowing:
         #     w = self.human_box_list[1][2]
         #     h = self.human_box_list[1][3]
         #     center = [y + int(h/2), x + int(w/2)] # (y,x)
-        contours = self.contours
+        # contours = self.contours
 
         tiny_exist = False
         tiny_loc = None
@@ -709,19 +710,19 @@ class HumanFollowing:
         # else:
         #     human_y_max = 440
 
-        for contour in contours:
-            area = cv2.contourArea(contour)
-            if 200 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
-                # print(area)
-                x, y, w, h = cv2.boundingRect(contour)
-                # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-                # if y > human_y_max and y > 440 and x > 240 and x < 400:
-                if y+h//2 > 300 and y+h//2 < 450 and x+w//2 > 230 and x+w//2 < 410:
+        # for contour in contours:
+        #     area = cv2.contourArea(contour)
+        #     if 2000 < area < 5000:  # 면적 기준으로 작은 물체 필터링 (적절히 조절 가능)
+        #         # print(area)
+        #         x, y, w, h = cv2.boundingRect(contour)
+        #         # cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        #         # if y > human_y_max and y > 440 and x > 240 and x < 400:
+        #         if y+h//2 > 300 and y+h//2 < 450 and x+w//2 > 230 and x+w//2 < 410:
 
-                    tiny_exist = True
-                    print('Tiny object.')
-                    # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
-                    break
+        #             tiny_exist = True
+        #             print('Tiny object.')
+        #             # cv2.rectangle(morph, (x, y), (x + w, y + h), (255, 255, 255), 2)
+        #             break
 
 
         if len(self.calcz_queue) > 1 and self.calcz_queue[-1] is not None and self.tiny_object_yolo is not None :
@@ -732,59 +733,59 @@ class HumanFollowing:
             # yolo_item_y_largest_idx = self.yolo_item_y_largest_idx
 
             yolo_x, yolo_y = self.tiny_object_yolo
-            if tiny_exist and abs(yolo_x - x) < 30 and abs(yolo_y - y) < 30 :
+            # if tiny_exist and abs(yolo_x - x) < 30 and abs(yolo_y - y) < 30 :
 
-                depth = self.agent.depth_image
+            depth = self.agent.depth_image
 
-                # seg_img = self.seg_img
-                # height, width = seg_img.shape
-                mid_x = 320
+            # seg_img = self.seg_img
+            # height, width = seg_img.shape
+            mid_x = 320
 
-                left_background_count = np.mean(depth[100-20:100+20, :x])
-                print("left_background_count", left_background_count)
-                right_background_count = np.mean(depth[100-20:100+20, x+w:])
-                print("right_background_count", right_background_count)
+            left_background_count = np.mean(depth[100-20:100+20, :x])
+            print("left_background_count", left_background_count)
+            right_background_count = np.mean(depth[100-20:100+20, x+w:])
+            print("right_background_count", right_background_count)
 
 
-                left_edge_background_count = np.mean(depth[100-20:100+20, :mid_x//2])
-                right_edge_background_count = np.mean(depth[100-20:100+20, (mid_x*3//2):])
-                # _depth = self.barrier_check()
-                # # _depth = np.mean(_depth)
-                # _depth = _depth[_depth != 0]
-                # _depth = np.mean(_depth)
-                if left_edge_background_count > 2000 or right_edge_background_count > 2000:
+            left_edge_background_count = np.mean(depth[100-20:100+20, :mid_x//2])
+            right_edge_background_count = np.mean(depth[100-20:100+20, (mid_x*3//2):])
+            # _depth = self.barrier_check()
+            # # _depth = np.mean(_depth)
+            # _depth = _depth[_depth != 0]
+            # _depth = np.mean(_depth)
+            if left_edge_background_count > 2000 or right_edge_background_count > 2000:
 
-                    # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    print('Tiny object. I\'ll avoid it.')
-                    # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                    if right_background_count > left_background_count:
-                        self.agent.move_rel(0.5,-0.5,0, wait=False) ## move right is neg
-                        rospy.sleep(3)
-                        # self.agent.move_rel(0.3,0,0, wait=False)
-                        # rospy.sleep(1)
-                    else:
-                        self.agent.move_rel(0.5,0.5,0, wait=False)
-                        rospy.sleep(3)
-                        # self.agent.move_rel(0.3,0,0, wait=False)
-                        # rospy.sleep(1)
+                # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                print('Tiny object. I\'ll avoid it.')
+                # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
+                if right_background_count > left_background_count:
+                    self.agent.move_rel(0.5,-0.5,0, wait=False) ## move right is neg
+                    rospy.sleep(3)
+                    # self.agent.move_rel(0.3,0,0, wait=False)
+                    # rospy.sleep(1)
+                else:
+                    self.agent.move_rel(0.5,0.5,0, wait=False)
+                    rospy.sleep(3)
+                    # self.agent.move_rel(0.3,0,0, wait=False)
+                    # rospy.sleep(1)
 
 
 
@@ -1807,7 +1808,7 @@ def carry_my_luggage(agent):
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
     # rospy.sleep(15)
-    agent.say("If you are arrived at the destination", 
+    agent.say("If you arrive at the destination", 
     show_display=True)
     rospy.sleep(3)
     agent.say("Please stand still.", show_display=True)
