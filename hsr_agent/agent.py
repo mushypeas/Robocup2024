@@ -105,7 +105,7 @@ class Agent:
             static_topic_name = '/static_obstacle_ros_map'
         else:   
             # static_topic_name = '/static_obstacle_map_ref'
-            static_topic_name = '//static_obstacle_ros_map'
+            static_topic_name = '/static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=10.0)
         # map meta-info

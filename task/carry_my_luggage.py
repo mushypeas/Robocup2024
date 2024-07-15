@@ -1709,7 +1709,7 @@ def carry_my_luggage(agent):
     stt_option = False #True
     yolo_success = True
     tilt_angle = 20
-    
+    print('cml')
 
     # Capture target
     demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
