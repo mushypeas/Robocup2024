@@ -172,7 +172,7 @@ class MoveBaseStandalone:
     
 
     def barrier_stop(self, agent, barrier_stop_thres=0.5): #jnpahk
-        depth = agent.depth_image
+        depth = agent.depth_image / 1000
         if np.any(depth < barrier_stop_thres):
             return True
         else:
@@ -180,7 +180,7 @@ class MoveBaseStandalone:
 
     
     def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
-        depth = agent.depth_image
+        depth = agent.depth_image / 1000
         h, w = self.seg_img.shape
         seg_img = self.seg_img[:, w*4 : w//4 * 3]
 
@@ -699,7 +699,6 @@ def restaurant(agent):
                 rospy.sleep(6.)
                 result = agent.stt(3.)
                 confirm_parsed = cluster(result, ['yes', 'no'])
-                confirm_parsed = 'yes'
                 if confirm_parsed != 'yes':
                     agent.say('I am sorry that I misunderstand your order. Please answer me again.', show_display=True)
                     agent.head_show_text('Speech Recognition Failed!')
