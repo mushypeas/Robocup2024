@@ -20,6 +20,15 @@ from std_srvs.srv import Trigger
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import dynamic_reconfigure.client
 
+cleaning_supplies = ["soap", "dishwasher_tab", "washcloth", "sponges"]
+drinks = ["cola", "ice_tea", "water", "milk", "big_coke", "fanta", "dubbelfris"]
+food = ["cornflakes", "pea_soup", "curry", "pancake_mix", "hagelslag", "sausages", "mayonaise"]
+decorations = ["candle"]
+fruits = ["pear", "plum", "peach", "lemon", "orange", "strawberry", "banana", "apple"]
+snacks = ["stroopwafel", "candy", "liquorice", "crisps", "pringles", "tictac"]
+dishes = ["spoon", "plate", "cup", "fork", "bowl", "knife"]
+
+object_list = cleaning_supplies + drinks + food + decorations + fruits + snacks + dishes
 
 min_interval_arc_len = 1.0
 unit_rad = 0.25 * ( math.pi / 180 )
