@@ -32,8 +32,8 @@ def make_parser():
     parser.add_argument("--path", default="./videos/palace.mp4", help="path to images or video")
     parser.add_argument("--camid", type=int, default=0, help="webcam demo camera id")
     parser.add_argument("--save_result", action="store_true", help="whether to save the inference result of image/video")
-    parser.add_argument("-f", "--exp_file", default='module/ByteTrack/exps/example/mot/yolox_nano_mix_det.py', type=str, help="pls input your expriment description file")
-    parser.add_argument("-c", "--ckpt", default='module/ByteTrack/pretrained/bytetrack_nano_mot17.pth.tar', type=str, help="ckpt for eval")
+    parser.add_argument("-f", "--exp_file", default='module/ByteTrack/exps/example/mot/yolox_s_mix_det.py', type=str, help="pls input your expriment description file")
+    parser.add_argument("-c", "--ckpt", default='module/ByteTrack/pretrained/bytetrack_s_mot17.pth.tar', type=str, help="ckpt for eval")
     parser.add_argument("--device", default="gpu", type=str, help="device to run our model, can either be cpu or gpu")
     parser.add_argument("--conf", default=None, type=float, help="test conf")
     parser.add_argument("--nms", default=None, type=float, help="test nms threshold")
@@ -46,7 +46,7 @@ def make_parser():
     parser.add_argument("--track_buffer", type=int, default=30000, help="the frames for keep lost tracks")
     parser.add_argument("--match_thresh", type=float, default=0.8, help="matching threshold for tracking")
     parser.add_argument("--aspect_ratio_thresh", type=float, default=1.6, help="threshold for filtering out boxes of which aspect ratio are above the given value.")
-    parser.add_argument('--min_box_area', type=float, default=5000, help='filter out tiny boxes')
+    parser.add_argument('--min_box_area', type=float, default=10000, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
     return parser
 

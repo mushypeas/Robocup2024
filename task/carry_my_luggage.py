@@ -368,7 +368,7 @@ class HumanFollowing:
 
             t = np.unravel_index(min_index, origin_depth.shape)
             min_y, min_x = t
-            escape_radius = 0.2
+            escape_radius = 2.0
 
             rospy.loginfo(f"rect depth min : {_depth}")
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
@@ -406,7 +406,7 @@ class HumanFollowing:
             pos = (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)
 
-            if (calc_z!=0 and _depth < 1.0  and _depth< (thres+0.2) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
+            if (calc_z!=0 and _depth < 1.0  and _depth< (thres) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
                 _num_rotate = _num_rotate + 1
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
@@ -437,7 +437,7 @@ class HumanFollowing:
                 # left_background_count = np.mean(left_values)
                 left_values = depth[:, :mid_x]
                 # print("left values : ", np.mean(left_values))
-                left_background_count = np.sum(left_values/1000 < thres)
+                left_background_count = np.sum(left_values/1000 < thres + 0.1)
                 # if left_background_count == 0:
                 #     left_background_count = 4.0
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
@@ -456,14 +456,14 @@ class HumanFollowing:
                 if left_background_count < right_background_count :
                     self.barrier_move_time = time.time()
                     print("left side is empty")
-                    self.agent.move_rel(0.0,0.15,0, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(0.1)
+                    self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
+                    rospy.sleep(0.2)
 
                 elif left_background_count  > right_background_count:
                     self.barrier_move_time = time.time()
                     print("right side is empty")
-                    self.agent.move_rel(0.0,-0.15,0, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(0.1)
+                    self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
+                    rospy.sleep(0.2)
 
 
 
@@ -1020,12 +1020,12 @@ class HumanFollowing:
                 print("left!!!!!!")
                 # twist.angular.z = -self.stop_rotate_velocity
                 # +가 왼쪽으로 돌림
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
                 rospy.sleep(.5)
             if loc == 'll':
                 print("left")
                 # twist.angular.z = -self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+                self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
                 rospy.sleep(.5)
             # if loc == 'l':
             #     print("left")
@@ -1040,7 +1040,7 @@ class HumanFollowing:
             if loc == 'rr':
                 print("right")
                 # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
                 rospy.sleep(.5)
             if loc == 'rrr':
                 print("right")
@@ -1052,7 +1052,7 @@ class HumanFollowing:
                 print("right")
                 print("right")
                 # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
                 rospy.sleep(.5)
             if twist.linear.x == 0 and twist.angular.z == 0:
 
@@ -1703,13 +1703,13 @@ def carry_my_luggage(agent):
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
-    try_bag_picking = True #True
+    try_bag_picking = False #True
     try_bytetrack = False
     map_mode = False
     stt_option = False #True
     yolo_success = True
     tilt_angle = 20
-    print('cml')
+    
 
     # Capture target
     demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
@@ -1719,7 +1719,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.2,
+                                                   stop_thres=.6,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -1814,7 +1814,7 @@ def carry_my_luggage(agent):
     rospy.sleep(2.5)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
     agent.say("Please go very slowly, and Keep the one meter between us!", show_display=True)
-    rospy.sleep(5)
+    rospy.sleep(4)
     human_following.freeze_for_humanfollowing()
     rospy.loginfo("start human following")
     agent.say("Come in front of me\nThen I will follow you", show_display=True)
