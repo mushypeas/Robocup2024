@@ -19,19 +19,23 @@ from playsound import playsound
 from std_srvs.srv import Trigger
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 import dynamic_reconfigure.client
+import Levenshtein
 
+
+## To Check ##
+cleaning_supplies = ["soap", "dishwasher_tab", "washcloth", "sponges"]
+drinks = ["cola", "ice_tea", "water", "milk", "big_coke", "fanta", "dubbelfris"]
+food = ["cornflakes", "pea_soup", "curry", "pancake_mix", "hagelslag", "sausages", "mayonaise"]
+decorations = ["candle"]
+fruits = ["pear", "plum", "peach", "lemon", "orange", "strawberry", "banana", "apple"]
+snacks = ["stroopwafel", "candy", "liquorice", "crisps", "pringles", "tictac"]
+dishes = ["spoon", "plate", "cup", "fork", "bowl", "knife"]
+
+object_list = cleaning_supplies + drinks + food + decorations + fruits + snacks + dishes
 
 min_interval_arc_len = 1.0
 unit_rad = 0.25 * ( math.pi / 180 )
 avg_dist_move_dist_ratio = 3
-
-def calculate_human_rad(human_center_x, yolo_img_width):
-    human_center_bias = human_center_x - yolo_img_width / 2
-    return -human_center_bias / 640
-
-def index_to_rad(idx):
-    return (idx - center_index) * unit_rad
-
 ################ Maybe Constant? ################
 ## main frequency
 main_freq = 1
@@ -56,6 +60,24 @@ foo@bar:~/robocup2024/module/waver_detector$> python run_openpose.py
 
 
 '''
+
+## TO Check func ##
+
+def cluster(word, arr):
+    distances = [(Levenshtein.distance(word, a), a) for a in arr]
+    closest_match = min(distances, key=lambda x: x[0])
+    return closest_match[1]
+
+def calculate_human_rad(human_center_x, yolo_img_width):
+    human_center_bias = human_center_x - yolo_img_width / 2
+    return -human_center_bias / 640
+
+def index_to_rad(idx):
+    return (idx - center_index) * unit_rad
+
+
+
+## main ##
 
 class MoveBaseStandalone:
     def __init__(self):
@@ -151,8 +173,8 @@ class MoveBaseStandalone:
     
 
     def barrier_stop(self, agent, barrier_stop_thres=0.5): #jnpahk
-        depth = agent.depth_image
-        depth = depth[depth!=0]
+        depth = agent.depth_image / 1000
+        depth = depth[depth>0]
         if np.any(depth < barrier_stop_thres):
             return True
         else:
@@ -160,8 +182,9 @@ class MoveBaseStandalone:
 
     
     def human_stop(self, agent, human_stop_thres=0.7): #jnpahk
-        depth = agent.depth_image
-        depth = depth[:,:]
+        depth = agent.depth_image / 1000
+        depth = depth[depth>0]
+
         h, w = self.seg_img.shape
         # seg_img = self.seg_img[:, w*4 : w//4 * 3]
         seg_img = self.seg_img[:,:]
@@ -667,9 +690,8 @@ def restaurant(agent):
                 agent.say('Please say items you like to order in proper format after the ding sound', show_display=True)
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
-                # result = agent.stt(5.)
-                # raw, item_parsed = result
-                item_parsed = 'apple'
+                result = agent.stt(5.)
+                item_parsed = cluster(result, object_list)
                 if len(item_parsed) == 0:
                     agent.say('I am sorry that I could not recognize what you said. Please answer me again.', show_display=True)
                     agent.head_show_image('STT Fail')
@@ -681,8 +703,8 @@ def restaurant(agent):
                 agent.say('Is this your order? Please say Yes or No to confirm after the ding sound', show_display=True)
 
                 rospy.sleep(6.)
-                # _, confirm_parsed = agent.stt(3.)
-                confirm_parsed = 'yes'
+                result = agent.stt(3.)
+                confirm_parsed = cluster(result, ['yes', 'no'])
                 if confirm_parsed != 'yes':
                     agent.say('I am sorry that I misunderstand your order. Please answer me again.', show_display=True)
                     agent.head_show_text('Speech Recognition Failed!')
