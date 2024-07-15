@@ -287,7 +287,7 @@ class MoveBaseStandalone:
                             self.turn_around()
                             maware_count = 0
 
-                    self.move_best_interval(best_interval)
+                    self.move_best_interval(best_interval, agent)
 
                     if abs(self.last_checked_pos[0]) < 0.5 and abs(self.last_checked_pos[1]) < 0.5:
                         rospy.loginfo("Success move zero by distancing")
@@ -380,7 +380,7 @@ class MoveBaseStandalone:
                                 self.turn_around()
                                 maware_count = 0
 
-                        self.move_best_interval(best_interval)
+                        self.move_best_interval(best_interval, agent)
 
                         if abs(_goal_x - self.last_checked_pos[0]) < r + 0.1 and abs(_goal_y - self.last_checked_pos[1]) < r + 0.1:
                             rospy.loginfo("Finish move customer by distancing.")
@@ -461,7 +461,7 @@ class MoveBaseStandalone:
         best_idx = np.argmax(heuristic_values)
         return candidates[best_idx]
     
-    def move_best_interval(self, interval):
+    def move_best_interval(self, interval, agent):
 
         start_rad = interval[0]
         end_rad = interval[1]
@@ -507,10 +507,21 @@ class MoveBaseStandalone:
                 if action_state == GoalStatus.SUCCEEDED:
                     rospy.loginfo("Move best interval Succeeded.")
                     return True
+                
+                
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                     rospy.logwarn("Move best interval Aborted/Rejected.")
                     self.turn_around()
                     return False
+                elif self.barrier_stop(): #jnpahk
+                    rospy.logwarn("Barrier detected. Turn around.")
+                    agent.move_base.base_action_client.cancel_all_goals()
+
+                    self.turn_around()
+                    self.base_action_client.send_goal(goal)
+                
+
+                
                 else:
                     cur_pos = self.get_pose()
                     if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
@@ -691,6 +702,7 @@ def restaurant(agent):
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
                 result = agent.stt(5.)
+                print('stt_result', result)
                 item_parsed = cluster(result, object_list)
                 if len(item_parsed) == 0:
                     agent.say('I am sorry that I could not recognize what you said. Please answer me again.', show_display=True)
@@ -705,6 +717,7 @@ def restaurant(agent):
 
                 rospy.sleep(6.)
                 result = agent.stt(3.)
+                print('stt_result', result)
                 confirm_parsed = cluster(result, ['yes', 'no'])
                 print('item parsed', confirm_parsed)
 
