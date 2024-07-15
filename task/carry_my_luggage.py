@@ -433,18 +433,18 @@ class HumanFollowing:
                 mid_x = 320
 
                 print("min_y+100 : ", min_y+100)
-                # left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
+                left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
                 # left_background_count = np.mean(left_values)
-                left_values = depth[:, :mid_x]
+                # left_values = depth[:, :mid_x // 2]
                 # print("left values : ", np.mean(left_values))
                 left_background_count = np.sum(left_values/1000 < 2.0)
                 # if left_background_count == 0:
                 #     left_background_count = 4.0
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
                 print("left_background_count", left_background_count)
-                # right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
+                right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
                 # right_background_count = np.mean(right_values)
-                right_values = depth[:, mid_x:]
+                # right_values = depth[:, mid_x * 3 // 2:]
                 right_background_count = np.sum(right_values/1000 < 2.0)
                 # if right_background_count == 0:
                 #     right_background_count = 4.0    
