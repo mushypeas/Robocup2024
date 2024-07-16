@@ -26,6 +26,8 @@ def egpsr(agent):
         g.move(cur_room)
 
         g.identify()
+        
+        ## TODO ##
 
         agent.say("Give a command after the ding sound.")
         rospy.sleep(2.5)
@@ -37,7 +39,9 @@ def egpsr(agent):
         # parse InputText 
         cmdName, params = ultimateParser(inputText)
 
-        cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
-        
+        cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())        
         cmdFunc = g.cmdNameTocmdFunc[cmdName]
+        
+        g.return_point = g.agent.get_pose()
+        
         cmdFunc(g, params)

@@ -115,6 +115,8 @@ class GPSR:
         self.gest_model.load_state_dict(torch.load('module/yolov7-pose-estimation/gest_classifier_1.pth'))
         self.gest_model.eval()
 
+        self.return_point = ABS_POSITION['gpsr_instruction_point']
+
 ##############################################################
 ##############################################################
 ##############################################################
@@ -693,9 +695,6 @@ def gpsr(agent):
             cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
             
             cmdFunc = g.cmdNameTocmdFunc[cmdName]
-
-            g.instructor_point = g.agent.get_pose(print_option=False)
-            cmdFunc(g, params)
 
             g.move('gpsr_instruction_point')
         

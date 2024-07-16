@@ -26,7 +26,7 @@ def bringMeObjFromPlcmt(g, params):
     g.pick(obj)
 
     # [3] Give the object to the person
-    g.move('gpsr_instruction_point')
+    g.agent.move_abs_coordinate(g.return_point)
     g.deliver()
 
     g.task_finished_count += 1
