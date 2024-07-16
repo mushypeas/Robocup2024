@@ -95,7 +95,7 @@ def receptionist(agent):
     # second guest 소개 시 고개를 몇도 돌려야 하는지? scan_position과 scan_bypass_position 각도 차이
     # second_guest_head_pan_degree = -180 # PNU
     #################### 2024 Eindhoven
-    second_guest_head_pan_degree = -180 # MAYBE OK
+    second_guest_head_pan_degree = -180 # NOT YET BUT MAYBE OK
 
     stt_sentence_mode = False # 1st trial - False, 2nd trial - True
 
@@ -104,7 +104,7 @@ def receptionist(agent):
 
     #################### cloth threshold ####################
     # cloth_threshold = 0.15
-    #################### 2024 Eindhoven # NOT YET
+    #################### 2024 Eindhoven # NOT YET BUT NOTHING TO CHANGE
     cloth_threshold = 0.15
 
     #################### face threshold ####################
@@ -158,14 +158,14 @@ def receptionist(agent):
     # face_list = pd.read_csv("./module/human_attribute/face_detection/data.csv")
     # name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
     # drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
-    #################### 2024 Eindhoven # ALMOST OK
+    #################### 2024 Eindhoven # ALMOST OK ... Too dutch style names "gabriëlle, fleur, jesse, dubbelfris", stt may not be good
     name_list = ['emma', 'fleur', 'gabriëlle', 'harrie', 'hayley', 'jesse', 'john', 'julia', 'kevin', 'laura', 'liam', 'lucas', 'noah', 'peter', 'robin', 'sara', 'sophie', 'susan', 'william']
     drink_list = ['cola', 'ice tea', 'water', 'milk', 'big coke', 'fanta', 'dubbelfris']
 
     #################### host information ####################
     # name_host = 'john'
     # drink_host = 'milk'
-    #################### 2024 Eindhoven # NOT YET
+    #################### 2024 Eindhoven # TEMPORAIRLY OK
     name_host = 'john'
     drink_host = 'milk'
 
