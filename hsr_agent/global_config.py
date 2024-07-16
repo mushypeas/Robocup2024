@@ -1,9 +1,10 @@
 import os
 import sys
+sys.path.append('../../hsr_agent')
 sys.path.append('hsr_agent')
 from global_config_utils import make_object_list
 
-is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
+# is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
@@ -11,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt' 
+yolo_weight_path = 'weight/0715v2.pt' 
 yolo_classnames_path = 'weight/best_for_final.cn'
 
 try:
@@ -20,9 +21,8 @@ except:
     pass
 
 Robocup = True
-PNU = False
-FINAL = False
-PNU = False # 240630 mjgu 추가
+# FINAL = False
+# PNU = False # 240630 mjgu 추가
 
 
 global config 
@@ -60,8 +60,8 @@ if Robocup: # 240710 mjgu 추가
         'kitchen_cabinet': [0.792, 0.285, 1.058],
         'dish_washer': [0.60, 0.595, 0.85],
         'dinner_table': [0.78, 2.00, 0.772],
-        'test_table' [0.8, 0.8, 0.815], # dinner table보다 4cm 높음 
-    }
+        'test_table' : [0.8, 0.8, 0.815], # dinner table보다 4cm 높음 
+        }
 
 
     OBJECT_TYPES = [
@@ -235,80 +235,80 @@ if Robocup: # 240710 mjgu 추가
 #     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
 
 # elif is_sim: # sim mode
-    print('[GLOBAL CONFIG] Sim mode. WARNING!!!!!!!!!!')
-    PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
+    # print('[GLOBAL CONFIG] Sim mode. WARNING!!!!!!!!!!')
+    # PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
-    # gazebo
-    ABS_POSITION = {
-        'arena_out': [-2.45, 5.1, -1.5708],
-        'zero': [0.0, 0.0, 0.0],
-        'start_1': [-1.0916, 2.541, -1.487],
-        'dev_front': [-1.018, 0.190, -3.061],
-        'breakfast_table': [-1.3, 0.65, -3.1416],
-        'table_front': [0.2, 0.0, 0.0],
-        'table_side': [1.5, -1.00, 1.5708],
-        'shelf_front': [7.245, 1.051, 0],
-        'sofa_view': [-0.008, -0.043, -0.801],
-        'door_handle': [-2.327, 3.75, 1.61],
-        'handle_front': [0.311, -0.009, 0.016],
-        'dishwasher_gpsr': [6.531, 0.946, 1.57],
-        'side_table': [3.291, 0.7065, 1.57],
-        'grocery_table': [3.291, 0.7065, 1.57],  # dist = 0.9
-        'kitchen_table': [1.5916, -2.7794, 0.0313], # dist = 0.6 /mjgu
-        'kitchen_table_ready' : [1.0016, -2.7794, 0.0313], # dist = 2.0 /mjgu
-        'pantry': [7.245, 1.051, 0],  # dist = 0.9
-        'desk': [2.52, -3.815, -1.57],  # dist = 0.9
-        'gpsr_start': [1.3372, 1.1288, 0.5792],
-        'shelf': [5.4, -4.93, -1.57],  # dist = 0.9
-        'bedside_table': [7.615, -4.56, 0],  # dist = 0.6
-        'sink': [6.1375, -1.91, 3.14],  # dist = 0.6
-        'cabinet': [3.45, -4.44, 0]  # dist = 0.6
-    }
+    # # gazebo
+    # ABS_POSITION = {
+    #     'arena_out': [-2.45, 5.1, -1.5708],
+    #     'zero': [0.0, 0.0, 0.0],
+    #     'start_1': [-1.0916, 2.541, -1.487],
+    #     'dev_front': [-1.018, 0.190, -3.061],
+    #     'breakfast_table': [-1.3, 0.65, -3.1416],
+    #     'table_front': [0.2, 0.0, 0.0],
+    #     'table_side': [1.5, -1.00, 1.5708],
+    #     'shelf_front': [7.245, 1.051, 0],
+    #     'sofa_view': [-0.008, -0.043, -0.801],
+    #     'door_handle': [-2.327, 3.75, 1.61],
+    #     'handle_front': [0.311, -0.009, 0.016],
+    #     'dishwasher_gpsr': [6.531, 0.946, 1.57],
+    #     'side_table': [3.291, 0.7065, 1.57],
+    #     'grocery_table': [3.291, 0.7065, 1.57],  # dist = 0.9
+    #     'kitchen_table': [1.5916, -2.7794, 0.0313], # dist = 0.6 /mjgu
+    #     'kitchen_table_ready' : [1.0016, -2.7794, 0.0313], # dist = 2.0 /mjgu
+    #     'pantry': [7.245, 1.051, 0],  # dist = 0.9
+    #     'desk': [2.52, -3.815, -1.57],  # dist = 0.9
+    #     'gpsr_start': [1.3372, 1.1288, 0.5792],
+    #     'shelf': [5.4, -4.93, -1.57],  # dist = 0.9
+    #     'bedside_table': [7.615, -4.56, 0],  # dist = 0.6
+    #     'sink': [6.1375, -1.91, 3.14],  # dist = 0.6
+    #     'cabinet': [3.45, -4.44, 0]  # dist = 0.6
+    # }
     
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
+    # TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
-    TABLE_DIMENSION = {
-        # width, depth, height
-        'kitchen_table': [0.8, 0.8, 0.72],
-        'desk': [1.505, 0.705, 0.8],
-        'side table': [0.495, 0.495, 0.395],
-        'sink': [0.515, 0.455, 0.945],
-        'dishwasher_gpsr': [0.6, 0.6, 0.84],
-        'cabinet': [0.9, 0.46, 0.66],
-        'shelf': [0.26, 0.36, 0.445],
-        'shelf_1f': [0.26, 0.36, 0.445],
-        'shelf_2f': [0.26, 0.36, 0.735],
-        'shelf_3f': [0.26, 0.36, 1.06],
-        'shelf_4f': [0.26, 0.36, 1.4],
-        'storage_rack': [0.445, 0.9, 0.42],
-        'storage_rack_1f': [0.445, 0.9, 0.42],
-        'storage_rack_2f': [0.445, 0.9, 0.88],
-        'storage_rack_3f': [0.445, 0.9, 1.34],
-        'pantry': [0.76, 0.26, 0.45],
-        'pantry_1f': [0.76, 0.26, 0.45],
-        'pantry_2f': [0.76, 0.26, 0.74],
-        'pantry_3f': [0.76, 0.26, 1.06],
-        'pantry_4f': [0.76, 0.26, 1.405],
-        'bedside_table': [0.5, 0.45, 0.575],
-        'breakfast_table': [0.6, 0.4, 0.625],
-        'grocery_table': [0.495, 0.495, 0.40],
-        'grocery_table_pose': [0.495, 0.495, 0.42],
-        'grocery_table_pose1': [0.495, 0.495, 0.45],
-        'grocery_table_pose2': [0.495, 0.495, 0.46],
-        'dishwasher_handle': [0.60, 0.60, 0.84],  # [0.6, 0.4, 0.8]
-        'door_handle': [0, 0, 0.96],
-    }
+    # TABLE_DIMENSION = {
+    #     # width, depth, height
+    #     'kitchen_table': [0.8, 0.8, 0.72],
+    #     'desk': [1.505, 0.705, 0.8],
+    #     'side table': [0.495, 0.495, 0.395],
+    #     'sink': [0.515, 0.455, 0.945],
+    #     'dishwasher_gpsr': [0.6, 0.6, 0.84],
+    #     'cabinet': [0.9, 0.46, 0.66],
+    #     'shelf': [0.26, 0.36, 0.445],
+    #     'shelf_1f': [0.26, 0.36, 0.445],
+    #     'shelf_2f': [0.26, 0.36, 0.735],
+    #     'shelf_3f': [0.26, 0.36, 1.06],
+    #     'shelf_4f': [0.26, 0.36, 1.4],
+    #     'storage_rack': [0.445, 0.9, 0.42],
+    #     'storage_rack_1f': [0.445, 0.9, 0.42],
+    #     'storage_rack_2f': [0.445, 0.9, 0.88],
+    #     'storage_rack_3f': [0.445, 0.9, 1.34],
+    #     'pantry': [0.76, 0.26, 0.45],
+    #     'pantry_1f': [0.76, 0.26, 0.45],
+    #     'pantry_2f': [0.76, 0.26, 0.74],
+    #     'pantry_3f': [0.76, 0.26, 1.06],
+    #     'pantry_4f': [0.76, 0.26, 1.405],
+    #     'bedside_table': [0.5, 0.45, 0.575],
+    #     'breakfast_table': [0.6, 0.4, 0.625],
+    #     'grocery_table': [0.495, 0.495, 0.40],
+    #     'grocery_table_pose': [0.495, 0.495, 0.42],
+    #     'grocery_table_pose1': [0.495, 0.495, 0.45],
+    #     'grocery_table_pose2': [0.495, 0.495, 0.46],
+    #     'dishwasher_handle': [0.60, 0.60, 0.84],  # [0.6, 0.4, 0.8]
+    #     'door_handle': [0, 0, 0.96],
+    # }
 
-    LOCATION_MAP = {
-        "bedroom": ['bed', 'bedside_table', 'shelf'],
-        "kitchen": ['pantry', 'trashbin', 'dishwasher', 'potted_plant', 'kitchen_table', 'chairs',
-                    'refrigerator', 'sink'],
-        "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
-        "living room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
-    }
+    # LOCATION_MAP = {
+    #     "bedroom": ['bed', 'bedside_table', 'shelf'],
+    #     "kitchen": ['pantry', 'trashbin', 'dishwasher', 'potted_plant', 'kitchen_table', 'chairs',
+    #                 'refrigerator', 'sink'],
+    #     "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
+    #     "living room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
+    # }
     
-    # TODO AREA_EDGES FOR sim_mode must be updated
-    ARENA_EDGES = [[1.167, -0.2321], [7.0443, -0.1863], [7.015, 2.5457], [8.2162, 2.6681], [8.2485, 6.0065], \
-                   [5.6399, 5.8781], [5.5177, 3.6958], [4.7759, 3.6698], [4.7012, 2.4829], [0.9986, 2.0893]]
+    # # TODO AREA_EDGES FOR sim_mode must be updated
+    # ARENA_EDGES = [[1.167, -0.2321], [7.0443, -0.1863], [7.015, 2.5457], [8.2162, 2.6681], [8.2485, 6.0065], \
+    #                [5.6399, 5.8781], [5.5177, 3.6958], [4.7759, 3.6698], [4.7012, 2.4829], [0.9986, 2.0893]]
     
 
