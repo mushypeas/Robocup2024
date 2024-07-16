@@ -256,6 +256,8 @@ class GPSR:
         self.agent.open_gripper()
 
     def deliver(self):
+        self.say("take this.")
+        rospy.sleep(1.5)
         self.agent.pose.neutral_pose()
         self.agent.open_gripper()
 
