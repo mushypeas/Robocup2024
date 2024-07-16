@@ -13,8 +13,6 @@ class JointPose:
     def __init__(self, table_dimension, gripper):
     
         self.table_dimension = table_dimension   
-        self.kithchen_table_pnu = table_dimension['kitchen_table_pnu']
-        self.breakfast_table_pnu = table_dimension['breakfast_table_pnu']
 
         self.gripper = gripper
         self.joint_value = {}

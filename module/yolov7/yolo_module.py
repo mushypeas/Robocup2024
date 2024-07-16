@@ -12,7 +12,7 @@ from sklearn.cluster import DBSCAN
 
 import sys
 sys.path.append('../../../robocup2024')
-from hsr_agent.global_config import OBJECT_LIST, TINY_OBJECTS, TABLE_DIMENSION, ABS_POSITION_PNU
+from hsr_agent.global_config import OBJECT_LIST, TINY_OBJECTS, TABLE_DIMENSION, ABS_POSITION_Robocup
 from module.yolov7.utils_yolo.axis_transform import Axis_transform
 
 

@@ -13,11 +13,12 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
 yolo_weight_path = 'weight/0715v2.pt' 
-yolo_classnames_path = 'weight/best_for_final.cn'
+yolo_classnames_path = 'weight/0715v2.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
 except:
+    print('Error: Cannot load object list')
     pass
 
 Robocup = True
@@ -30,7 +31,7 @@ global config
 if Robocup: # 240710 mjgu 추가
     print('[GLOBAL CONFIG] !!!Robocup mode!!!')
 
-    ABS_POSITION_REAL = {
+    ABS_POSITION_Robocup = {
         # serve breakfast
         'Entrance' :[0, 0, 0],          
         'picking_location': [7.4391, 4.3351, 3.1374], # (좌표 8) dinner table 앞 60cm 지점

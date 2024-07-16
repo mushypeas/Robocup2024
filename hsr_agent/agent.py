@@ -88,23 +88,20 @@ class Agent:
 
 
         # hsr module instantiate
-        self.move_base = MoveBase(ABS_POSITION_PNU)
+        self.move_base = MoveBase(ABS_POSITION_Robocup) #
         self.gripper = Gripper()
         self.pose = JointPose(TABLE_DIMENSION, self.gripper)
         self.tts = TTS()
 
         # object
         self.object_list = OBJECT_LIST
-        self.location_map = LOCATION_MAP  # for gpsr
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
         # yolo
         self.yolo_module = YoloModule(OBJECT_LIST)
         # jykim static-map
-        if is_sim:
-            static_topic_name = '/static_obstacle_ros_map'
-        else:
-            static_topic_name = '//static_obstacle_ros_map'
+
+        static_topic_name = '/static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
