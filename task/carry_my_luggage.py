@@ -86,6 +86,7 @@ class HumanFollowing:
         self._depth = None
         self.depth = None
         self.twist = None
+        self.barrier_direction = None
         self.barrier_move_time = time.time()
         self.data_header = None
         self.last_chance = 1
@@ -381,22 +382,24 @@ class HumanFollowing:
 
 
                         
-            # Right lidar
+            # # Right lidar
             right_values = self.agent.ranges[self.agent.center_idx - 330 : self.agent.center_idx - 50] #성공한거: 330,50
-            right_lidar_values = right_values[np.where(right_values < 0.65)] # 성공한거 : 0.6, 0.7
+            # right_lidar_values = right_values[np.where(right_values > 0.65)] # 성공한거 : 0.6, 0.7
+            right_lidar_values = right_values[np.where(right_values > 2.0)] # 240716 대회현장 : 그냥 좌우 라이다보고 더 먼곳으로
             if right_lidar_values.size == 0:
-                right_lidar = 4.0
+                right_lidar = 2.0
             else:
-                right_lidar = np.min(right_lidar_values)
+                right_lidar = np.mean(right_lidar_values)
 
 
-            # Left lidar
+            # # Left lidar
             left_values = self.agent.ranges[self.agent.center_idx + 50: self.agent.center_idx + 330]
-            left_lidar_values = left_values[np.where(left_values < 0.65)]
+            # left_lidar_values = left_values[np.where(left_values < 0.65)]
+            left_lidar_values = left_values[np.where(left_values > 2.0)]
             if left_lidar_values.size == 0:
-                left_lidar = 4.0
+                left_lidar = 2.0
             else:
-                left_lidar = np.min(left_lidar_values)
+                left_lidar = np.mean(left_lidar_values)
 
 
             thres = calc_z/ 1000.0 -0.3
@@ -412,7 +415,8 @@ class HumanFollowing:
             pos = (self.start_location[0] - escape_radius < cur_pose[0] < self.start_location[0] + escape_radius and \
             self.start_location[1] - escape_radius < cur_pose[1] < self.start_location[1] + escape_radius)
 
-            if (calc_z!=0 and _depth < 1.0  and _depth< (thres) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
+            # if (calc_z!=0 and _depth < 1.0  and _depth< (thres) and not ((abs(left_lidar - right_lidar) < 0.1 ) and (left_lidar < thres and right_lidar < thres)) and not pos):
+            if (calc_z!=0 and _depth < 1.0  and _depth< (thres) and not pos):
                 _num_rotate = _num_rotate + 1
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
@@ -430,46 +434,60 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                
+                if self.barrier_direction is None:
 
-                depth_barrier = True
-                depth = self.agent.depth_image
+                # depth_barrier = True
+                # depth = self.agent.depth_image
 
 
-                mid_x = 320
+                # mid_x = 320
 
-                print("min_y+100 : ", min_y+100)
-                left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
-                # left_background_count = np.mean(left_values)
-                # left_values = depth[:, :mid_x // 2]
-                # print("left values : ", np.mean(left_values))
-                left_background_count = np.sum(100 < left_values and  left_values < 2000)
-                # if left_background_count == 0:
-                #     left_background_count = 4.0
-                # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
-                print("left_background_count", left_background_count)
-                right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
-                # right_background_count = np.mean(right_values)
-                # right_values = depth[:, mid_x * 3 // 2:]
-                right_background_count = np.sum(100 < right_values and right_values < 2000)
-                # if right_background_count == 0:
-                #     right_background_count = 4.0    
-                # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
-                print("right_background_count", right_background_count)
+                # print("min_y+100 : ", min_y+100)
+                # left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
+                # # left_background_count = np.mean(left_values)
+                # # left_values = depth[:, :mid_x // 2]
+                # # print("left values : ", np.mean(left_values))
+                # left_background_count = np.sum(100 < left_values and  left_values < 2000)
+                # # if left_background_count == 0:
+                # #     left_background_count = 4.0
+                # # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
+                # print("left_background_count", left_background_count)
+                # right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
+                # # right_background_count = np.mean(right_values)
+                # # right_values = depth[:, mid_x * 3 // 2:]
+                # right_background_count = np.sum(100 < right_values and right_values < 2000)
+                # # if right_background_count == 0:
+                # #     right_background_count = 4.0    
+                # # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
+                # print("right_background_count", right_background_count)
 
-                print("Barrier checking....")
-                
-                if left_background_count < right_background_count :
-                    self.barrier_move_time = time.time()
-                    print("left side is empty")
-                    self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
-                    rospy.sleep(0.2)
+                # print("Barrier checking....")
+                    
+                    if left_lidar > right_lidar : 
+                        self.barrier_move_time = time.time()
+                        print("right side is empty")
+                        self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
+                        rospy.sleep(0.2)
+                        self.barrier_direction = 'right'
 
-                elif left_background_count  > right_background_count:
-                    self.barrier_move_time = time.time()
-                    print("right side is empty")
-                    self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
-                    rospy.sleep(0.2)
+                    elif left_lidar < right_lidar:
+                        self.barrier_move_time = time.time()
+                        print("left side is empty")
+                        self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
+                        rospy.sleep(0.2)
+                        self.barrier_direction = 'left'
+
+                else:
+                    if self.barrier_direction == 'right'
+                        self.agent.move_rel(0.0,0.4,0, wait=False)
+                        rospy.sleep(0.2)
+                    elif self.barrier_direction == 'left'
+                        self.agent.move_rel(0.0,-0.4,0, wait=False)
+                        rospy.sleep(0.2)
+
+
+            else:
+                self.barrier_direction = None
 
 
 
@@ -1674,9 +1692,9 @@ class BagInspection:
             self.agent.pose.move_to_go()
             self.agent.pose.wrist_flex(-30)
             self.agent.pose.arm_roll(90)
-            # self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
-            self.agent.move_abs_coordinate(before_pick_pose, wait=True)
-            self.agent.move_rel(0, 0, -yaw, wait=False)
+            self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
+            # self.agent.move_abs_coordinate(before_pick_pose, wait=True)
+            self.agent.move_rel(0, 0, -yaw, wait=True)
         # self.agent.say("I am ready to follow you", show_display=True)
         # rospy.sleep(2)
 
@@ -1815,18 +1833,18 @@ def carry_my_luggage(agent):
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
     # rospy.sleep(15)
+    agent.say("Please Come in front of me.", show_display=True)
+    rospy.sleep(1.5)
     agent.say("If you arrive at the destination", 
     show_display=True)
     rospy.sleep(3)
     agent.say("Please stand still.", show_display=True)
     rospy.sleep(2.5)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
-    agent.say("Please go very slowly, and Keep the one meter between us!", show_display=True)
+    agent.say("Please go slowly, and Keep the one meter between us!", show_display=True)
     rospy.sleep(4)
     human_following.freeze_for_humanfollowing()
     rospy.loginfo("start human following")
-    agent.say("Come in front of me\nThen I will follow you", show_display=True)
-    rospy.sleep(1.5)
     start_time = time.time()
     agent.last_moved_time = time.time() # reset the last_moved_time
     while not rospy.is_shutdown():
