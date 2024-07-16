@@ -342,7 +342,7 @@ class HumanFollowing:
             #     center_x = center[1]
 
             if (looking_downside):
-                _depth = self.agent.depth_image[y_top:240, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
+                _depth = self.agent.depth_image[y_top:360, max(320-x_var,0):min(320+x_var, 640)] / 1000 # 480, 640, [0:340, 50:590]
             else: # no tilt
                 _depth = self.agent.depth_image[200:0, 280:640] / 1000
 
@@ -363,7 +363,7 @@ class HumanFollowing:
         y_top= 0
         _depth = self.barrier_check(y_top=y_top, x_var=320)
         origin_depth = _depth
-        _depth = _depth[_depth != 0 and _depth > 500]
+        _depth = _depth[_depth != 0]
         if len(_depth) > 10 :
             _depth = np.partition(_depth, min(10, len(_depth)))
 
@@ -384,7 +384,7 @@ class HumanFollowing:
                         
             # # Right lidar
             right_values = self.agent.ranges[self.agent.center_idx - 330 : self.agent.center_idx - 50] #성공한거: 330,50
-            # right_lidar_values = right_values[np.where(right_values > 0.65)] # 성공한거 : 0.6, 0.7
+            # right_lidar_values = right_values[np.where(right_values < 0.65)] # 성공한거 : 0.6, 0.7
             right_lidar_values = right_values[np.where(right_values > 2.0)] # 240716 대회현장 : 그냥 좌우 라이다보고 더 먼곳으로
             if right_lidar_values.size == 0:
                 right_lidar = 2.0
@@ -437,10 +437,10 @@ class HumanFollowing:
                 if self.barrier_direction is None:
 
                 # depth_barrier = True
-                # depth = self.agent.depth_image
+                    depth = self.agent.depth_image
 
 
-                # mid_x = 320
+                    mid_x = 320
 
                 # print("min_y+100 : ", min_y+100)
                 # left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
@@ -463,26 +463,68 @@ class HumanFollowing:
 
                 # print("Barrier checking....")
                     
-                    if left_lidar > right_lidar : 
+
+                    # ################240717 LIDAR VERSION##############
+                    # if left_lidar > right_lidar : 
+                    #     self.barrier_move_time = time.time()
+                    #     print("left side is empty")
+                    #     self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
+                    #     rospy.sleep(0.2)
+                    #     self.barrier_direction = 'left'
+
+                    # elif left_lidar < right_lidar:
+                    #     self.barrier_move_time = time.time()
+                    #     print("right side is empty")
+                    #     self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
+                    #     rospy.sleep(0.2)
+                    #     self.barrier_direction = 'right'
+                    # ################240717 LIDAR VERSION##############
+
+
+                    ###############240717 DEPTH VERSION##############
+                    # left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
+                    left_values = depth[:360, :mid_x]
+                    # left_background_count = np.mean(left_values)
+                    # left_values = depth[:, :mid_x // 2]
+                    # print("left values : ", np.mean(left_values))
+                    left_background_count = np.sum(left_values < 1100)
+                    # if left_background_count == 0:
+                    #     left_background_count = 4.0
+                    # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
+                    print("left_background_count", left_background_count)
+                    # right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
+                    right_values = depth[:360, mid_x:]
+                    # right_background_count = np.mean(right_values)
+                    # right_values = depth[:, mid_x * 3 // 2:]
+                    right_background_count = np.sum(right_values < 1100)
+                    # if right_background_count == 0:
+                    #     right_background_count = 4.0    
+                    # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
+                    print("right_background_count", right_background_count)
+
+
+                    if left_background_count > right_background_count : 
                         self.barrier_move_time = time.time()
                         print("right side is empty")
-                        self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (pos)
+                        self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (pos)
                         rospy.sleep(0.2)
                         self.barrier_direction = 'right'
 
-                    elif left_lidar < right_lidar:
+                    elif left_background_count < right_background_count:
                         self.barrier_move_time = time.time()
                         print("left side is empty")
-                        self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (neg)
+                        self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (neg)
                         rospy.sleep(0.2)
                         self.barrier_direction = 'left'
+                    ################240717 LIDAR VERSION##############
+
 
                 else:
                     if self.barrier_direction == 'right'
-                        self.agent.move_rel(0.0,0.4,0, wait=False)
+                        self.agent.move_rel(0.0,-0.4,0, wait=False)
                         rospy.sleep(0.2)
                     elif self.barrier_direction == 'left'
-                        self.agent.move_rel(0.0,-0.4,0, wait=False)
+                        self.agent.move_rel(0.0,0.4,0, wait=False)
                         rospy.sleep(0.2)
 
 
