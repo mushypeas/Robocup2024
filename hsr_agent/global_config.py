@@ -23,45 +23,45 @@ except:
 AIIS = False
 FINAL = False
 PNU = False # 240630 mjgu 추가
-REAL = True #240710
+Robocup = True #240710
 
 
 global config 
 
-* 한 번에 가긴 함
-** 혹시 몰라 적은 코드
-
-좌표 1. 문 앞에서 직진 3m 정도 한 지점 [3.3894, 0.1851, 0.0061]
-좌표 2. 좌표 1에서 좌측 3m 정도 간 지점 [3.356, 3.1656, 0.044]
-좌표 3. 좌표 2에서 앞으로 1m 정도 간 지점 (kitchen_basket이 pickup table일 경우 60cm 앞 평행한 지점 [4.8702, 3.4057, -0.0066]
-좌표 4. kitchen_basket 앞 60cm 지점 [4.8601, 5.3832, -3.1016]
-좌표 5. 좌표 4에서 dinner_table 앞 60cm 지점 [5.1436, 4.2293, 0.0502]
-좌표 6. dish washer 앞 60cm 지점 [8.1305, 4.1887, 0.0141]
-좌표 7. kitchen 뭐시기 앞 80cm 지점 [7.9502, 5.3833, 0.0163]
-좌표 8. dinner table 앞 60cm 지점 (좌표 5의 반대편) [7.4391, 4.3351, 3.1374]
-좌표 9. dinner table 옆 80cm~1m 지점 (안전하게 가기 위한 체크 포인트) [6.226, 2.2863, 0.0322]
-
-하지만, 좌표 6로 바로 잘 감.
-
-*** 다른 방의 가구를 가져와서 사용할 가능성이 존재함. 
-ex) living room에 있는 원탁 테이블 (낮지만 원탁임)
-
-if REAL: # 240710 mjgu 추가
-    print('[GLOBAL CONFIG] REAL mode')
+if Robocup: # 240710 mjgu 추가
+    print('[GLOBAL CONFIG] !!!Robocup mode!!!')
 
     ABS_POSITION_REAL = {
         # serve breakfast
-        'initial' :[0.0053, 0.0243, -0.0228],          # 240710
-        'picking_location': [4.3083, -1.5883, 0.0044], # 240710
-        'kitchen_table' : [6.5185, -2.7109, -1.536],   # 240710
-        'breakfast_table': [5.3689, -1.3234, 0.0665],  # 240710
+        'Entrance' :[0, 0, 0],          
+        'picking_location': [7.4391, 4.3351, 3.1374], # (좌표 8) dinner table 앞 60cm 지점
+        'kitchen_counter' : [8.1305, 4.1887, 0.0141], # 80cm 앞. pick_table 후보 1
+        'kitchen_cabinet' : [4.8601, 5.3832, -3.1016], # 60cm 앞. pick_table 후보 2
+        'dish_washer' : [8.1305, 4.1887, 0.0141], # 60cm 앞. pick_table 후보 3
+        'dinner_table_counter': [5.3689, -1.3234, 0.0665], # (좌표 5) 60m 앞
+        'dinner_table_cabinet': [5.3689, -1.3234, 0.0665], # (좌표 8) 60m 앞
     }
 
+        # 좌표 1. 문 앞에서 직진 3m 정도 한 지점 [3.3894, 0.1851, 0.0061]
+        # 좌표 2. 좌표 1에서 좌측 3m 정도 간 지점 [3.356, 3.1656, 0.044]
+        # 좌표 3. 좌표 2에서 앞으로 1m 정도 간 지점 (kitchen_basket이 pickup table일 경우 60cm 앞 평행한 지점 [4.8702, 3.4057, -0.0066]
+        # 좌표 4. kitchen_cabinet 앞 60cm 지점 [4.8601, 5.3832, -3.1016]
+        # 좌표 5. 좌표 4에서 dinner_table 앞 60cm 지점 [5.1436, 4.2293, 0.0502]
+        # 좌표 6. dish washer 앞 60cm 지점 [8.1305, 4.1887, 0.0141]
+        # 좌표 7. kitchen counter 앞 80cm 지점 [7.9502, 5.3833, 0.0163]
+        # 좌표 8. dinner table 앞 60cm 지점 (좌표 5의 반대편) [7.4391, 4.3351, 3.1374]
+        # 좌표 9. dinner table 옆 80cm~1m 지점 (안전하게 가기 위한 체크 포인트) [6.226, 2.2863, 0.0322]
+
+        # *** 다른 방의 가구를 가져와서 사용할 가능성이 존재함. 
+        # ex) living room에 있는 원탁 테이블 (낮지만 원탁임)
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'kitchen_table': [0.80, 0.40, 0.602],   # 240710
-        'breakfast_table': [0.735, 1.18, 0.73], # 240710
+        'kitchen_counter': [0.61, 1.82, 0.91],
+        'kitchen_cabinet': [0.792, 0.285, 1.058],
+        'dish_washer': [0.60, 0.595, 0.85],
+        'dinner_table': [0.78, 2.00, 0.772],
+        'test_table' [0.8, 0.8, 0.815] # dinner table보다 4cm 높음 
     }
 
 
@@ -82,161 +82,161 @@ if REAL: # 240710 mjgu 추가
     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
 
 
-if PNU: # 240630 mjgu 추가
-    print('[GLOBAL CONFIG] PNU mode')
-    # real robot
-    ABS_POSITION_PNU = {
+# if PNU: # 240630 mjgu 추가
+#     print('[GLOBAL CONFIG] PNU mode')
+#     # real robot
+#     ABS_POSITION_PNU = {
 
-        # serve breakfast
-        'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
-        'picking_location_pnu': [4.3083, -1.5883, 0.0044], # (kitchen_table 근처) 240630 mjgu 추가
-        'kitchen_table_pnu' : [6.5185, -2.7109, -1.536], # 240630 mjgu 추가
-        'breakfast_table_pnu': [5.3689, -1.3234, 0.0665], # 240630 mjgu 추가
-    }
-
-
-    TABLE_DIMENSION = {
-        # width, depth, height
-        'breakfast_table_pnu': [0.735, 1.18, 0.73], # (나무색) 240630 mjgu 추가
-        'kitchen_table_pnu': [0.80, 0.40, 0.602], #(흰색) 240630 mjgu 추가
-    }
+#         # serve breakfast
+#         'initial_location_pnu' :[0.0053, 0.0243, -0.0228], # (세면대 방 출발선) 240630 mjgu 추가
+#         'picking_location_pnu': [4.3083, -1.5883, 0.0044], # (kitchen_table 근처) 240630 mjgu 추가
+#         'kitchen_table_pnu' : [6.5185, -2.7109, -1.536], # 240630 mjgu 추가
+#         'breakfast_table_pnu': [5.3689, -1.3234, 0.0665], # 240630 mjgu 추가
+#     }
 
 
-    OBJECT_TYPES = [
-        "cleaning",  # 0
-        "drink",  # 1
-        "food",  # 2
-        "fruit",  # 3
-        "toy",  # 4
-        "snack",  # 5
-        "dish",  # 6
-        "bag",  # 7
-    ]
-
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
-
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+#     TABLE_DIMENSION = {
+#         # width, depth, height
+#         'breakfast_table_pnu': [0.735, 1.18, 0.73], # (나무색) 240630 mjgu 추가
+#         'kitchen_table_pnu': [0.80, 0.40, 0.602], #(흰색) 240630 mjgu 추가
+#     }
 
 
-if FINAL:
-    print('[GLOBAL CONFIG] FINAL mode')
-    # real robot
-    ABS_POSITION = {
-        # serve breakfast
-        'kitchen_table' : [3.0768, -1.1441, -0.0054], #2.9286, -1.1145, 0.0052 (가까움)
-        'breakfast_table': [2.4481, -1.4913, -3.0755],
-    }
+#     OBJECT_TYPES = [
+#         "cleaning",  # 0
+#         "drink",  # 1
+#         "food",  # 2
+#         "fruit",  # 3
+#         "toy",  # 4
+#         "snack",  # 5
+#         "dish",  # 6
+#         "bag",  # 7
+#     ]
+
+#     TINY_OBJECTS = ['spoon', 'fork', 'knife']
+
+#     # added by lsh
+#     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
 
 
-    TABLE_DIMENSION = {
-        # width, depth, height
-        'breakfast_table': [0.595, 0.595, 0.845],
-        'kitchen_table': [0.89, 0.89, 0.735],
+# if FINAL:
+#     print('[GLOBAL CONFIG] FINAL mode')
+#     # real robot
+#     ABS_POSITION = {
+#         # serve breakfast
+#         'kitchen_table' : [3.0768, -1.1441, -0.0054], #2.9286, -1.1145, 0.0052 (가까움)
+#         'breakfast_table': [2.4481, -1.4913, -3.0755],
+#     }
+
+
+#     TABLE_DIMENSION = {
+#         # width, depth, height
+#         'breakfast_table': [0.595, 0.595, 0.845],
+#         'kitchen_table': [0.89, 0.89, 0.735],
         
-    }
+#     }
 
 
-    OBJECT_TYPES = [
-        "cleaning",  # 0
-        "drink",  # 1
-        "food",  # 2
-        "fruit",  # 3
-        "toy",  # 4
-        "snack",  # 5
-        "dish",  # 6
-        "bag",  # 7
-    ]
+#     OBJECT_TYPES = [
+#         "cleaning",  # 0
+#         "drink",  # 1
+#         "food",  # 2
+#         "fruit",  # 3
+#         "toy",  # 4
+#         "snack",  # 5
+#         "dish",  # 6
+#         "bag",  # 7
+#     ]
 
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
+#     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+#     # added by lsh
+#     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
 
-    # added by sujin
+#     # added by sujin
 
-if AIIS:
-    print('[GLOBAL CONFIG] AIIS mode')
-    # real robot
-    ABS_POSITION = {
-        'insp_target': [6.2869, 3.5307, 0],
-        'arena_out': [-2.487, 5.65, -1.561],
-        'zero': [0.0, 0.0, 0.0],
-        'dev_front': [-1.018, 0.190, -3.061],
-        'table_front': [6.6449, 0.3005, 0.0422],
-        'table_side': [7.3455, -1.0624, 1.551],
-        'table_back': [8.6478, 0.0623, 3.1025],
-        'sofa_view': [-0.008, -0.043, -0.801],
-        'door_handle': [1.4227, 1.1802, -1.5106],
+# if AIIS:
+#     print('[GLOBAL CONFIG] AIIS mode')
+#     # real robot
+#     ABS_POSITION = {
+#         'insp_target': [6.2869, 3.5307, 0],
+#         'arena_out': [-2.487, 5.65, -1.561],
+#         'zero': [0.0, 0.0, 0.0],
+#         'dev_front': [-1.018, 0.190, -3.061],
+#         'table_front': [6.6449, 0.3005, 0.0422],
+#         'table_side': [7.3455, -1.0624, 1.551],
+#         'table_back': [8.6478, 0.0623, 3.1025],
+#         'sofa_view': [-0.008, -0.043, -0.801],
+#         'door_handle': [1.4227, 1.1802, -1.5106],
 
 
-        # storing grocery
-        'grocery_table': [-0.7854, -0.2033, -1.548],
-        'grocery_shelf': [-1.091, -0.1197, 1.6165],
+#         # storing grocery
+#         'grocery_table': [-0.7854, -0.2033, -1.548],
+#         'grocery_shelf': [-1.091, -0.1197, 1.6165],
 
-        # serve breakfast
-        'breakfast_table': [5.1527, 0.2285, 0.0], # mjgu 240530
-        'kitchen_table' : [6.086, -1.1229, 0.0], # mjgu 240530
-        # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
+#         # serve breakfast
+#         'breakfast_table': [5.1527, 0.2285, 0.0], # mjgu 240530
+#         'kitchen_table' : [6.086, -1.1229, 0.0], # mjgu 240530
+#         # 필요할 경우 우회 지점 설정 -> 'breakfast_table_bypass_testday' : [1.7554, 0.9174, 3.1374], #mjgu 240505
 
-        # clean the table
+#         # clean the table
 
-        'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
-        'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
-        'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
-        'rack_close_position2': [1.6463, -0.9664, -1.5655],
-        'rack_close_position3': [1.6434, -0.9569, -1.9500],
+#         'dishwasher_front': [2.6256, -1.7107, 3.0623], #bjkim2 0505
+#         'clean_table_front' : [5.2608, 0.2969, -0.0126], #bjkim2 0505 # HEIGHT SHOULD BE REALLLLLLY PRECISE
+#         'rack_close_position1': [2.0321, -0.9574, -1.5822], #bjkim 0512
+#         'rack_close_position2': [1.6463, -0.9664, -1.5655],
+#         'rack_close_position3': [1.6434, -0.9569, -1.9500],
 
 
    
-        # AIIS
-        # 'bedroom_search': [-2.5427, 0.216, 1.2345],
-        # 'kitchen_search': [0.6884, -1.0065, -0.7347],
-        # 'living_room_search': [0.6534, -0.6374, 0.9569],
-        # 'study_search': [0.027, 0.3138, -2.1569],
+#         # AIIS
+#         # 'bedroom_search': [-2.5427, 0.216, 1.2345],
+#         # 'kitchen_search': [0.6884, -1.0065, -0.7347],
+#         # 'living_room_search': [0.6534, -0.6374, 0.9569],
+#         # 'study_search': [0.027, 0.3138, -2.1569],
 
-        # 0505
-        'kitchen_search': [3.2691, 0.3223, -2.1086],
-        'living_room_search': [5.932, -0.357, -0.4455],
-        'study_search': [5.2668, 1.273, 2.5436],
-        'bedroom_search': [6.9826, 3.0422, -0.6487],
-
-
-        # final
-        'final_kitchen_table' : [7.0491, -0.1961, 0.0064],
-        'final_round_table' : [6.9514, -1.5522, -1.5492],
-    }
+#         # 0505
+#         'kitchen_search': [3.2691, 0.3223, -2.1086],
+#         'living_room_search': [5.932, -0.357, -0.4455],
+#         'study_search': [5.2668, 1.273, 2.5436],
+#         'bedroom_search': [6.9826, 3.0422, -0.6487],
 
 
-    TABLE_DIMENSION = {
-        # width, depth, height
-
-        'kitchen_table': [0.89, 0.89, 0.735],
-        'breakfast_table': [0.595, 0.595, 0.845],
-        'grocery_table': [0.65, 1.2, 0.42],
-
-        # final
-        'final_kitchen_table': [1.505, 0.705, 0.8],
-    }
+#         # final
+#         'final_kitchen_table' : [7.0491, -0.1961, 0.0064],
+#         'final_round_table' : [6.9514, -1.5522, -1.5492],
+#     }
 
 
-    OBJECT_TYPES = [
-        "cleaning",  # 0
-        "drink",  # 1
-        "food",  # 2
-        "fruit",  # 3
-        "toy",  # 4
-        "snack",  # 5
-        "dish",  # 6
-        "bag",  # 7
-    ]
+#     TABLE_DIMENSION = {
+#         # width, depth, height
 
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
+#         'kitchen_table': [0.89, 0.89, 0.735],
+#         'breakfast_table': [0.595, 0.595, 0.845],
+#         'grocery_table': [0.65, 1.2, 0.42],
 
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+#         # final
+#         'final_kitchen_table': [1.505, 0.705, 0.8],
+#     }
 
-elif is_sim: # sim mode
+
+#     OBJECT_TYPES = [
+#         "cleaning",  # 0
+#         "drink",  # 1
+#         "food",  # 2
+#         "fruit",  # 3
+#         "toy",  # 4
+#         "snack",  # 5
+#         "dish",  # 6
+#         "bag",  # 7
+#     ]
+
+#     TINY_OBJECTS = ['spoon', 'fork', 'knife']
+
+#     # added by lsh
+#     ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+
+# elif is_sim: # sim mode
     print('[GLOBAL CONFIG] Sim mode. WARNING!!!!!!!!!!')
     PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
