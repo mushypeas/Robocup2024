@@ -39,10 +39,15 @@ ABS_POSITION = {
     "bathroom": [2.873, -2.994, 1.622],
 }
 
-objects_file_path = 'CompetitionTemplate/objects/test.md'
+objects_file_path = 'CompetitionTemplate/objects/objects.md'
 
 rooms_list = ["living room", "bedroom", "kitchen", "office", "bathroom"]
 names_list = ['Adel', 'Angel', 'Axel', 'Charlie', 'Jane', 'Jules', 'Morgan', 'Paris', 'Robin', 'Simone']
+
+############################################################
+############################################################
+############################################################
+############################################################
 
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
