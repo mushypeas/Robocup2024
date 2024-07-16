@@ -787,7 +787,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
-    def spill_conflakes_pose(self, table = 'dinner_table'): #120도 ,마이너스는 110이 최대임
+    def spill_cornflakes_pose(self, table = 'dinner_table'): #120도 ,마이너스는 110이 최대임
         target_table_height = self.table_dimension[table][2]
         offset = 0.18 # object to table
         robot_default_height = 0.3        
@@ -831,7 +831,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
 
-    def spill_safety_conflakes_pose(self, table='dinner_table'): # mjgu. target table 달라질 경우 수정 필요
+    def spill_safety_cornflakes_pose(self, table='dinner_table'): # mjgu. target table 달라질 경우 수정 필요
         self.wrist_roll(120)
         rospy.sleep(1)
         target_table_height = self.table_dimension[table][2]
