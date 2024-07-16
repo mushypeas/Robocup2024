@@ -16,12 +16,6 @@ class CommandGenerator:
         self.object_categories_plural = object_categories_plural
         self.object_categories_singular = object_categories_singular
 
-        for loc_name in sorted(list(set(self.location_names + self.room_names + self.placement_location_names))):
-            print(f"\"{loc_name}\": ,")
-
-        for object_name in self.object_names:
-            print(f"{object_name}")
-
     verb_dict = {
         "take": ["take", "get", "grasp", "fetch"],
         "place": ["put", "place"],
@@ -84,12 +78,13 @@ class CommandGenerator:
         color_clothes_list = color_clothes_list + [a + " " + b]
 
     def generate_command_start(self, cmd_category="", difficulty=0):
-        cmd_list = ["goToLoc", "takeObjFromPlcmt", "findPrsInRoom", "findObjInRoom", "meetPrsAtBeac", "countObjOnPlcmt",
-                    "countPrsInRoom", "tellPrsInfoInLoc", "tellObjPropOnPlcmt", "talkInfoToGestPrsInRoom",
-                    "answerToGestPrsInRoom", "followNameFromBeacToRoom", "guideNameFromBeacToBeac",
-                    "guidePrsFromBeacToBeac", "guideClothPrsFromBeacToBeac", "bringMeObjFromPlcmt",
-                    "tellCatPropOnPlcmt", "greetClothDscInRm", "greetNameInRm", "meetNameAtLocThenFindInRm",
-                    "countClothPrsInRoom", "countClothPrsInRoom", "tellPrsInfoAtLocToPrsAtLoc", "followPrsAtLoc"]
+        cmd_list = []
+        # cmd_list = ["goToLoc", "takeObjFromPlcmt", "findPrsInRoom", "findObjInRoom", "meetPrsAtBeac", "countObjOnPlcmt",
+        #             "countPrsInRoom", "tellPrsInfoInLoc", "tellObjPropOnPlcmt", "talkInfoToGestPrsInRoom",
+        #             "answerToGestPrsInRoom", "followNameFromBeacToRoom", "guideNameFromBeacToBeac",
+        #             "guidePrsFromBeacToBeac", "guideClothPrsFromBeacToBeac", "bringMeObjFromPlcmt",
+        #             "tellCatPropOnPlcmt", "greetClothDscInRm", "greetNameInRm", "meetNameAtLocThenFindInRm",
+        #             "countClothPrsInRoom", "countClothPrsInRoom", "tellPrsInfoAtLocToPrsAtLoc", "followPrsAtLoc"]
 
         # HRI and people perception commands
         person_cmd_list = ["goToLoc", "findPrsInRoom", "meetPrsAtBeac", "countPrsInRoom", "tellPrsInfoInLoc",
@@ -107,9 +102,6 @@ class CommandGenerator:
             cmd_list = object_cmd_list
         else:
             cmd_list = person_cmd_list if random.random() > 0.5 else object_cmd_list
-            
-        # [TODO] delete this!
-        cmd_list = ["findObjInRoom"]
 
         command = random.choice(cmd_list)
         # command = "" # To debug commands
@@ -230,7 +222,7 @@ class CommandGenerator:
         elif command == "deliverObjToNameAtBeac":
             command_string = "{deliverVerb} it {deliverPrep} {name} {inLocPrep} the {room}"
         elif command == "talkInfo":
-            command_string = "{talkVerb} {talk}"
+            command_string = "{talkVerb} {talk}}"
         elif command == "answerQuestion":
             command_string = "{answerVerb} a {question}"
         elif command == "followPrs":

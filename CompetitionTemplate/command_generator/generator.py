@@ -1,7 +1,7 @@
 import random
 import re
 import warnings
-import qrcode 
+import qrcode
 from PIL import Image, ImageDraw, ImageFont
 from gpsr_commands import CommandGenerator
 from egpsr_commands import EgpsrCommandGenerator
@@ -91,8 +91,6 @@ if __name__ == "__main__":
 
     objects_data = read_data(objects_file_path)
     object_names, object_categories_plural, object_categories_singular = parse_objects(objects_data)
-
-    print(object_categories_plural)
 
     generator = CommandGenerator(names, location_names, placement_location_names, room_names, object_names,
                                  object_categories_plural, object_categories_singular)
