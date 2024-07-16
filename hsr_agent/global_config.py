@@ -12,8 +12,8 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/0715v2.pt' 
-yolo_classnames_path = 'weight/0715v2.cn'
+yolo_weight_path = 'weight/0716v1.pt' 
+yolo_classnames_path = 'weight/classnames.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
