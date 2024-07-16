@@ -320,11 +320,10 @@ class ServeBreakfast:
         ### task start ###
 
         # self.agent.door_open()
-        # self.agent.say('Hi, I will serve breakfast for you!')
-        # rospy.sleep(2)
-        # self.agent.move_rel (0, 3)
+        self.agent.say('Hi, I will serve breakfast for you!')
+        rospy.sleep(2)
         # self.agent.move_abs('picking_location')
-        # self.agent.say('I will move to picking location')
+        self.agent.say('I will move to picking location')
  
         picked_items = []
 
@@ -387,4 +386,4 @@ class ServeBreakfast:
                 rospy.logwarn('Placing item...')
                 self.place_item(item=item)
                 self.agent.pose.table_search_pose_breakfast_initial()
-                self.agent.move_rel(-0.2, 0, wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
+                # self.agent.move_rel(-0.2, 0, wait=False) 
