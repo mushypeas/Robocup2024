@@ -26,9 +26,9 @@ ABS_POSITION = {
     'inspection': [4.8333, 2.7961, 1.6308],
 
     # storing grocery
-    'grocery_table': [4.9945, -1.2884, 0.0201],
-    'grocery_shelf': [5.3142, -0.125, 1.5797],
-    'grocery_shelf_door': [5.4142, -0.125, 1.5797],
+    'grocery_table': [5.6348, 4.481, -0.0264],
+    'grocery_shelf': [5.6019, 4.9918, 3.127],
+    'grocery_shelf_door': [5.7569, 5.07, 3.13],
 
     #clean the table
     '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
@@ -59,7 +59,7 @@ ABS_POSITION = {
 
 TABLE_DIMENSION = {
     # width, depth, height
-    'grocery_table': [0.738, 2.00, 0.772],
+    'grocery_table': [0.738, 1.00, 0.772],
     'grocery_shelf': [
         [0.792, 0.285, 0],
         [0.792, 0.285, 0.413],
