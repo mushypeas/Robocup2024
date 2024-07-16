@@ -375,7 +375,7 @@ class HumanFollowing:
 
             t = np.unravel_index(min_index, origin_depth.shape)
             min_y, min_x = t
-            escape_radius = 1.0
+            escape_radius = 0.2
 
             rospy.loginfo(f"rect depth min : {_depth}")
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
@@ -434,7 +434,8 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if self.barrier_direction is None:
+                # if self.barrier_direction is None:
+                if True:
 
                 # depth_barrier = True
                     depth = self.agent.depth_image
@@ -519,17 +520,17 @@ class HumanFollowing:
                     ################240717 LIDAR VERSION##############
 
 
-                else:
-                    if self.barrier_direction == 'right'
-                        self.agent.move_rel(0.0,-0.4,0, wait=False)
-                        rospy.sleep(0.2)
-                    elif self.barrier_direction == 'left'
-                        self.agent.move_rel(0.0,0.4,0, wait=False)
-                        rospy.sleep(0.2)
+                # else:
+                #     if self.barrier_direction == 'right':
+                #         self.agent.move_rel(0.0,-0.4,0, wait=False)
+                #         rospy.sleep(0.2)
+                #     elif self.barrier_direction == 'left':
+                #         self.agent.move_rel(0.0,0.4,0, wait=False)
+                #         rospy.sleep(0.2)
 
 
-            else:
-                self.barrier_direction = None
+            # else:
+            #     self.barrier_direction = None
 
 
 
@@ -806,20 +807,21 @@ class HumanFollowing:
             # height, width = seg_img.shape
             mid_x = 320
 
-            left_background_count = np.mean(depth[100-20:100+20, :x])
-            print("left_background_count", left_background_count)
-            right_background_count = np.mean(depth[100-20:100+20, x+w:])
-            print("right_background_count", right_background_count)
+            # left_background_count = np.mean(depth[100-20:100+20, :x])
+            # print("left_background_count", left_background_count)
+            # right_background_count = np.mean(depth[100-20:100+20, x+w:])
+            # print("right_background_count", right_background_count)
 
 
-            left_edge_background_count = np.mean(depth[100-20:100+20, :mid_x//2])
-            right_edge_background_count = np.mean(depth[100-20:100+20, (mid_x*3//2):])
-            # _depth = self.barrier_check()
-            # # _depth = np.mean(_depth)
-            # _depth = _depth[_depth != 0]
+            # left_edge_background_count = np.mean(depth[100-20:100+20, :mid_x//2])
+            # right_edge_background_count = np.mean(depth[100-20:100+20, (mid_x*3//2):])
+            # # _depth = self.barrier_check()
+            # # # _depth = np.mean(_depth)
+            # # _depth = _depth[_depth != 0]
             # _depth = np.mean(_depth)
-            if left_edge_background_count > 2000 or right_edge_background_count > 2000:
-
+            # if left_edge_background_count > 2000 or right_edge_background_count > 2000:
+            if True:
+# 
                 # if (self.human_box_list[0] is not None) and (center[1] < 180 or center[1] > 500):
                 print('Tiny object. I\'ll avoid it.')
                 print('Tiny object. I\'ll avoid it.')
@@ -841,12 +843,12 @@ class HumanFollowing:
                 print('Tiny object. I\'ll avoid it.')
                 print('Tiny object. I\'ll avoid it.')
                 # self.agent.say('Tiny object. I\'ll avoid it.', show_display=False)
-                if right_background_count > left_background_count:
-                    self.agent.move_rel(0.5,-0.5,0, wait=False) ## move right is neg
-                    rospy.sleep(3)
-                    # self.agent.move_rel(0.3,0,0, wait=False)
+                # if yolo_x < 320:
+                #     self.agent.move_rel(0.5,-0.5,0, wait=False) ## move right is neg
+                #     rospy.sleep(3)
+                #     # self.agent.move_rel(0.3,0,0, wait=False)
                     # rospy.sleep(1)
-                else:
+                if True:
                     self.agent.move_rel(0.5,0.5,0, wait=False)
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,0, wait=False)
@@ -1096,7 +1098,7 @@ class HumanFollowing:
             # if loc == 'l':
             #     print("left")
             #     # twist.angular.z = -self.stop_rotate_velocity
-            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+                                                                                                                                                                              #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
             #     rospy.sleep(.5)
             # if loc == 'r':
             #     print("right")
@@ -1983,7 +1985,7 @@ def carry_my_luggage(agent):
 
             agent.move_abs_coordinate(cur_track, wait=False)
             
-            rospy.sleep(3)
+            rospy.sleep(2.5)
             print('go to arena')
 
 
