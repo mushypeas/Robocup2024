@@ -464,7 +464,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
         
-    def pick_milk_pose(self, table='breakfast_counter'):
+    def pick_milk_pose(self, table='kitchen_counter'):
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
         offset = 0.03
@@ -477,7 +477,7 @@ class JointPose:
                        'wrist_roll_joint'],
                       [arm_lift_joint, -1.57, 0, 0, 0])
         
-    def pick_spoon_pose_low(self, table='breakfast_counter'): #240630 mjgu
+    def pick_spoon_pose_low(self, table='kitchen_counter'): #240630 mjgu
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11

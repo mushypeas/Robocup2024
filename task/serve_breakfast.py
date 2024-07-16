@@ -2,13 +2,14 @@ import rospy
 import numpy as np
 from std_srvs.srv import Empty, EmptyRequest
 from hsr_agent.agent import Agent
+import math
  
 ################# Final (Eindhoven ver.) ################################ 
 
 # 출발장소 : Entrance
 # picking_location 좌표 : [ ]
 
-# < Location >
+# < Loction >
 # kitchen_table = kitchen_counter : [ ]
 # breakfast_table = dinner table : [   ]
  
@@ -26,6 +27,7 @@ class ServeBreakfast:
 
     def __init__(self, agent: Agent):
         self.agent = agent
+        # self.agent.move_rel = self.move_rel_temp
 
         # !!! Test params !!!
         self.is_picking_test_mode = False
@@ -40,7 +42,7 @@ class ServeBreakfast:
         #      0.075 * 0.07 * 0.114 (뒤)
         # Cornflakes 0.291 * 0.055 * 0.26
 
-        self.item_list = ['bowl','cornflakes','milk','spoon','fork','knife']
+        self.item_list = ['bowl','cornflakes','milk','spoon','fork']
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.8
@@ -60,8 +62,8 @@ class ServeBreakfast:
 
 
         self.pour_offsets = { # [x, y, angle] 
-            'cornflakes': [0.0, -0.08, 120], # bowl 왼쪽 끝에 맞춰서 따르기
-            'milk': [0.0, -0.08, 80], # bowl 왼쪽 끝에 맞춰서 따르기
+            'cornflakes': [0.0, -0.08, 110], # bowl 왼쪽 끝에 맞춰서 따르기
+            'milk': [0.0, -0.08, 130], # bowl 왼쪽 끝에 맞춰서 따르기
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height], bowl을 테이블에서 약간 오른쪽에 두도록 함  / placing_table에는 순서대로 'milk, cereal, bowl, spoon'이 놓이도록 함.
@@ -147,6 +149,14 @@ class ServeBreakfast:
     #     self.agent.move_rel(-0.6, 0, wait=False)
     #     rospy.sleep(1) # wait manually
 
+    # def move_rel_temp(self, x, y, yaw=0, wait=0):
+    #     cur_x, cur_y, cur_yaw = self.agent.get_pose()
+    #     goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
+    #     goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
+    #     goal_yaw = cur_yaw + yaw
+
+    #     self.agent.move_abs_coordinate((goal_x, goal_y, goal_yaw))
+
     def search_item(self, item, picked_items):
         table_item_list = np.zeros(0)
         table_search_attempts = 0
@@ -161,7 +171,7 @@ class ServeBreakfast:
             
             rospy.sleep(0.2) # give some time for the YOLO to update
             table_item_list = np.array(self.agent.yolo_module.detect_3d_safe(
-                table='breakfast_counter',
+                table='kitchen_counter',
                 dist=self.dist_to_pick_table,
                 depth=self.pick_table_depth,
                 item_list=item_list
@@ -236,7 +246,7 @@ class ServeBreakfast:
             #     self.agent.open_gripper(wait=False)
 
         else:
-            if item == 'spoon' or 'fork' or 'knife':
+            if item == 'spoon' or 'fork':
                 # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
                 self.agent.pose.pick_up_spoon_pose(table=self.pick_table)
@@ -254,23 +264,15 @@ class ServeBreakfast:
             #     self.agent.open_gripper(wait=False)
 
     def pour_item(self, item):
-        table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])]
-    
-        if item == 'cornflakes':
-            self.agent.pose.spill_cornflakes_pose(table=self.place_table) # 이게 필요한가?
-            self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
-            self.agent.pose.spill_safety_cornflakes_pose() # spill 방지용 -> 살짝 내려가기
-            self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
-            self.agent.pose.wrist_roll(0) # 붓기 완료
-            self.agent.pose.spill_cornflakes_pose(table=self.place_table) # 다시 올라오기
 
-        elif item == 'milk':
-            self.agent.pose.spill_milk_pose(table=self.place_table) # 이것도 필요한가
-            self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
-            self.agent.pose.spill_safety_milk_pose() # spill 방지용 -> 살짝 내려가기
-            self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
-            self.agent.pose.wrist_roll(0) # 붓기 완료
-            self.agent.pose.spill_milk_pose(table=self.place_table) # 다시 올라오기
+        table_base_xyz = [item_offset + bowl_offset for item_offset, bowl_offset in zip(self.pour_offsets[item], self.place_offsets['bowl'])] 
+        self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table)
+        self.agent.move_rel(table_base_xyz[0]+self.pour_offsets[item][0], table_base_xyz[1]+self.pour_offsets[item][1], wait=True)
+        self.agent.pose.spill_safety_pose() # (spill 방지용) 살짝 내려갔다가
+        self.agent.pose.wrist_roll(self.pour_offsets[item][2]) # 붓는 중
+        self.agent.pose.wrist_roll(0) # 붓기 완료
+        self.agent.pose.spill_object_pose(self.item_height[item]/2, table=self.place_table) # (spill 방지용) 다시 올라오기
+
 
     def place_item(self, item):
 
@@ -282,7 +284,7 @@ class ServeBreakfast:
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
             self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
         
-        elif item == 'spoon' or 'fork' or 'knife':
+        elif item == 'spoon':
             table_base_xyz = [axis + bias for axis, bias in zip(self.place_offsets[item], self.place_offsets['bowl'])]
             self.agent.pose.place_top_pose(0.05, table=self.place_table)
             self.agent.move_rel(table_base_xyz[0], table_base_xyz[1], wait=True)
@@ -321,9 +323,10 @@ class ServeBreakfast:
 
         # self.agent.door_open()
         self.agent.say('Hi, I will serve breakfast for you!')
-        rospy.sleep(2)
-        # self.agent.move_abs('picking_location')
-        self.agent.say('I will move to picking location')
+        # rospy.sleep(2)
+        # self.agent.move_rel (0, 3)
+        self.agent.move_abs('picking_location')
+        # self.agent.say('I will move to picking location')
  
         picked_items = []
 
@@ -367,23 +370,23 @@ class ServeBreakfast:
                 else:
                     rospy.logwarn(f'Failed to grasp {item}! Retrying...')
 
-                # if self.picking_test_mode:
+            # if self.picking_test_mode:
                 # self.agent.open_gripper()
                 # continue
 
-                ## 3. Go to place_location
-                rospy.logwarn('Going to place_location...')
-                self.agent.say('I will move to a different location. Please be careful.')
-                #self.agent.move_rel(0, 0, wait=True)           
-                self.agent.move_abs_safe(self.place_table)
-                # self.agent.move_rel(-0.4, 0)
-                # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
+            ## 3. Go to place_location
+            rospy.logwarn('Going to place_location...')
+            self.agent.say('I will move to a different location. Please be careful.')
+            self.agent.move_rel(0, -1.0, wait=True)            
+            self.agent.move_abs_safe(self.place_table)
+            self.agent.move_rel(-0.4, 0)
+            # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
-                if item in ['cornflakes', 'milk']:
-                    self.pour_item(item=item)
+            if item in ['cornflakes', 'milk']:
+                self.pour_item(item=item)
 
-                # self.agent.move_rel(-0.4,0, wait=True)
-                rospy.logwarn('Placing item...')
-                self.place_item(item=item)
-                self.agent.pose.table_search_pose_breakfast_initial()
-                # self.agent.move_rel(-0.2, 0, wait=False) 
+            self.agent.move_rel(-0.4,0, wait=True)
+            rospy.logwarn('Placing item...')
+            self.place_item(item=item)
+            self.agent.pose.table_search_pose_breakfast_initial()
+            self.agent.move_rel(-0.6, -0.3, wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
