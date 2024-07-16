@@ -84,13 +84,13 @@ if __name__ == '__main__':
         elif command == 'place_side_shelf_pose':
             agent.pose.place_side_pose('shelf_1f')
         elif command == 'reach_left':
-            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=3, side='left')
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
         elif command == 'reach_right':
-            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=3, side='right')
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
         elif command == 'cling_left':
-            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=3, side='left')
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
         elif command == 'cling_right':
-            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=3, side='right')
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
         elif command == 'pick_top_pose':
             agent.pose.pick_top_pose(table='breakfast_table')
         elif command == 'pick_top_pose_breakfast_table':

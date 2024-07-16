@@ -21,8 +21,8 @@ class StoringGroceries:
         self.closed_shelf_side = 'right' # ['right', 'left']
         self.open_shelf_floor = 2
         self.prior_categories = ['drink', 'fruit', 'food', 'snack']
-        self.ignore_items = ['bowl', 'dish', 'plate', 'coke_big', 'candle', 'soap', 'banana']
-        # self.ignore_items = ['bowl', 'dish', 'plate', 'coke_big', 'candle', 'soap', 'banana']
+        self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag']
+        # self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag']
         self.item_list = None
         # self.item_list = ['bowl']
 
@@ -62,24 +62,6 @@ class StoringGroceries:
 
         self.shelf_item_dict = {}
         self.grasp_failure_count = np.zeros(1000, dtype=int)  # 1000 is an arbitraty large number
-
-
-    # Specifically made for Eindhoven
-    def yoloname_to_realname(self, yolo_name):
-        if yolo_name == 'coke_can':
-            return 'cola'
-        elif yolo_name == 'coke_big':
-            return 'big_coke'
-        elif yolo_name == 'friss':
-            return 'dubbelfris'
-        elif yolo_name.startswith('_apple'):
-            return 'apple'
-        elif yolo_name.startswith('crisps_'):
-            return 'crisps'
-        elif yolo_name.startswith('candy_'):
-            return 'candy'
-        else:
-            return yolo_name
 
 
     def open_shelf(self, side=None):
@@ -263,11 +245,11 @@ class StoringGroceries:
             self.prior_categories = self.shelf_item_dict.keys()
             rospy.loginfo(f'New category : {item_type} (Current item: {item_name})')
             item_floor = self.shelf_item_dict[item_type]['floor']
-            self.agent.say(f'Placing a new category object, {self.yoloname_to_realname(item_name)}, on shelf floor {item_floor}...')
+            self.agent.say(f'Placing a new category object, {item_name}, on shelf floor {item_floor}...')
         else:  # for known category objects
             item_floor = self.shelf_item_dict[item_type]['floor']
             rospy.loginfo(f'Known category : {item_type} (Current item: {item_name})')
-            self.agent.say(f'Placing {self.yoloname_to_realname(item_name)},\n next to {self.yoloname_to_realname(self.shelf_item_dict[item_type]["name"])},\n on shelf floor {item_floor}...', show_display=True)
+            self.agent.say(f'Placing {item_name},\n next to {self.shelf_item_dict[item_type]["name"]},\n on shelf floor {item_floor}...', show_display=True)
 
         # Get axis of the shelf the item belongs
         try:
@@ -373,7 +355,7 @@ class StoringGroceries:
 
                 # 3-3. Pick item
                 rospy.logwarn('Picking item...')
-                self.agent.say(f'I will pick a {self.yoloname_to_realname(table_item_name)},\nwhich is a {table_item_type}.', show_display=True)
+                self.agent.say(f'I will pick a {table_item_name},\nwhich is a {table_item_type}.', show_display=True)
                 self.pick_item(grasping_type, table_base_xyz)
                 self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
 
@@ -381,7 +363,7 @@ class StoringGroceries:
                 has_grasped = self.check_grasp(grasping_type)
                 if has_grasped:
                     rospy.loginfo(f'Successfuly grasped {table_item_name}!')
-                    self.agent.say(f'Picked a {self.yoloname_to_realname(table_item_name)},\nwhich is a {table_item_type}!', show_display=True)
+                    self.agent.say(f'Picked a {table_item_name},\nwhich is a {table_item_type}!', show_display=True)
                 else:
                     rospy.logwarn(f'Failed to grasp {table_item_name}! Retrying...')
                     self.grasp_failure_count[table_item_id] += 1
