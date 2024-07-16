@@ -693,10 +693,9 @@ def gpsr(agent):
             cmdName, params = ultimateParser(inputText)
 
             cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
-            
             cmdFunc = g.cmdNameTocmdFunc[cmdName]
-
-            g.move('gpsr_instruction_point')
+            
+            cmdFunc(g, params)
         
         except:
             g.say("Sorry. Another command please.")
