@@ -36,6 +36,9 @@ class ServeBreakfast:
             'cornflakes': True,
             'milk': True,
         }
+        # Milk 0.075 * 0.07 * 0.098 (앞) # 500ml,우유가 비대칭적인 모양임. 뒤로 갈수록 길어짐.
+        #      0.075 * 0.07 * 0.114 (뒤)
+        # Cornflakes 0.291 * 0.055 * 0.26
 
         self.item_list = ['bowl','cornflakes','milk','spoon','fork']
         
@@ -43,8 +46,8 @@ class ServeBreakfast:
         self.dist_to_pick_table = 0.8
         self.dist_to_place_table = 0.8
         self.item_height = {     # 실제 object 높이는 여기서 설정
-            'cornflakes': 0.138,
-            'milk': 0.13, 
+            'cornflakes': 0.28,
+            'milk': 0.114,
         }
 
         # !!! Hard-Coded Offsets !!!    # [x, y, height] / 최대한 offset을 쓰지 않는 방향으로 하되, 실제 시험장에서는 어쩔 수 없이 사용할 수는 있음.

@@ -9,6 +9,8 @@ from collections import deque
 import cv2
 import time
 
+
+
 if __name__ == '__main__':
     rospy.init_node('test_client_hsr')
     axis_transform = Axis_transform()
@@ -103,7 +105,7 @@ if __name__ == '__main__':
         # placing_test
 
         elif command == 'place_bowl_pose':
-            agent.pose.place_bowl_pose(table='dinner_table')
+            agent.pose.place_bowl_pose(table='test_table')
         elif command == 'bring_bowl_pose':
             agent.pose.bring_bowl_pose()
         elif command == 'bring_bowl_pose_low':
@@ -114,13 +116,15 @@ if __name__ == '__main__':
 
         # pouring_test
 
-        elif command == 'spill_object_pose':
-            agent.pose.spill_object_pose(object_height=0.14, table='dinner_table')
-        elif command == 'spill_safety_pose':
+        elif command == 'spill_milk_pose':
+            agent.pose.spill_milk_pose()
+        elif command == 'spill_conflakes_pose':
+            agent.pose.spill_conflakes_pose()
+        elif command == 'spill_safety_milk':
+            agent.pose.spill_safety_milk_pose()
+        elif command == 'spill_safety_conflakes':
             agent.pose.spill_safety_pose()
-        elif command == 'spill_cereal_pose':
-            object_height = 0.14  # [m]
-            agent.pose.spill_object_pose(object_height, table='dinner_table')
+
 
 
         elif command == 'point_seat_pose':
@@ -176,9 +180,8 @@ if __name__ == '__main__':
             agent.pose.place_shelf_pose('shelf_1f')
         elif command == 'place_shelf_pose_2f':
             agent.pose.place_shelf_pose('shelf_2f')
-
         elif command == 'arm_lift_object_table_down':
-            agent.pose.arm_lift_object_table_down()
+            agent.pose.arm_lift_object_table_down(object_height=0.114)
         elif command == 'arm_lift_object_table_down_spoon':
             agent.pose.place_top_pose(0.05, table='dinner_table')
             agent.pose.arm_lift_object_table_down(0.23, table='dinner_table')
