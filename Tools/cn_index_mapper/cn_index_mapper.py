@@ -3,38 +3,17 @@ import os
 # 이전 class_names와 이후 class_names 리스트
 
 old_class_names = [
-    "pink_milk", "blue_milk", "coke", "banana", "apple", "carrot", "strawberry", "sweet_potato",
-    "lemon", "cheezit", "strawberry_jello", "chocolate_jello", "sugar", "mustard", "spam",
-    "tomato_soup", "fork", "plate", "knife", "bowl", "spoon", "blue_mug", "tennis_ball",
-    "soft_scrub", "yellow_bag", "blue_bag", "white_bag", "plum", "peach", "orange", "cucudas",
-    "red_mug", "cocoa", "energy_drink", "pnu_milk", "cereal", "haribo", "plum_juice"
+    'yellow_bag','white_bag'
 ]
 
 new_class_names = [
-    "bowl",
-    "spoon",
-    "blue_milk",
-    "cucudas",
-    "yellow_bag",
-    "blue_bag",
-    "white_bag",
-    "apple",
-    "orange",
-    "banana",
-    "plum",
-    "pink_milk",
-    "tomato_soup",
-    "tennis_ball",
-    "knife",
-    "fork",
-    "plate",
-    "red_mug",
-    "mustard",
-    "lemon",
-    "strawberry_jello",
-    "chocolate_jello",
-    "spam",
-    "cheezit"
+   'friss', 'water', 'fanta', 'coke_can', 'milk', 'ice_tea', 'coke_big',
+    'banana', 'apple', 'strawberry', 'pear', 'peach', 'lemon', 'orange', 'plum',
+    'pringles', 'crisps_red', 'candy_red', 'candy_purple', 'liquorice', 'stroopwaffles',
+    'tictac', 'pea_soup', 'cornflakes', 'mayonnaise', 'curry', 'hagelslag_blue', 
+    'hagelslag_red', 'pancake_mix', 'sausage', 'plate', 'fork', 'bowl', 'spoon',
+    'mug', 'knife', 'soap', 'candle', '_apple_red', '_apple_yellow', '__tulip', 
+    '__pastilles','yellow_bag','white_bag'
 ]
 
 # 이전 class index를 이후 class index로 변환하는 매핑 딕셔너리 생성

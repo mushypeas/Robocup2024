@@ -9,6 +9,8 @@ Tools/BoundingBox_Tool/jykim/
 test/image
 *.weights
 *.jpg
+*.png
+*.txt
 *.ckpt
 *.caffemodel
 venv/

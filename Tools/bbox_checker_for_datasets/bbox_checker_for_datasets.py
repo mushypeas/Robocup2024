@@ -42,7 +42,7 @@ def process_image(image_path, bbox_data_path):
 
 # Get list of image files
 image_files = [f for f in os.listdir(image_dir) if f.endswith('.png') or f.endswith('.jpg')]
-selected_images = random.sample(image_files, 3)
+selected_images = random.sample(image_files, 100)
 
 # Process selected images
 for image_file in selected_images:
