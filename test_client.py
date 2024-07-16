@@ -65,11 +65,11 @@ if __name__ == '__main__':
             agent.pose.table_search_pose_breakfast()
         elif command == 'low_table': # 높이 0.6m 정도
             agent.pose.table_search_pose_low()
-        elif command == 'high_table': # 높이 0.8m 정도
-            agent.pose.table_search_pose_high()
+
 
         # picking_test
-
+        elif command == 'side_pick': # arm_lift_up
+            agent.pose.table_side_pick()
         elif command == 'pick_side_pose':
             agent.pose.pick_side_pose(table='kitchen_table_counter') # test
         elif command == 'pick_side_pose_breakfast_table':
