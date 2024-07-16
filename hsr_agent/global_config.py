@@ -44,14 +44,16 @@ if Eindhoven:
         # 'pos_target_table' : [6.3748, 2.6865, 1.5975],# 병주가 직접땀. 재문파트가 이쌍했음.
         'pos_target_table' : [5.3226, 3.6826, -0.0141], # 병주가 직접땀. 재문파트가 이쌍했음. 3번 position
         'pos_dishwasher': [7.5986, 4.116, 0.0285] # 병주가 직접땀. 재문파트가 이쌍했음.
+        
 
     }
 
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'tab_target_table': [0.78, 2.00, 0.785] ,
-        'tab_dishwasher' : [0.600, 0.610, 0.340] # 병주가 직접 둘째날 아침에 잰거임. 아주 정확하지 않을수도 있음.
+        'tab_target_table': [0.78, 2.00, 0.82] ,
+        'tab_dishwasher' : [0.600, 0.610, 0.340], # 병주가 직접 둘째날 아침에 잰거임. 아주 정확하지 않을수도 있음.
+        'breakfast_table': [0.78, 2.00, 0.785]
         
     }
 
