@@ -27,7 +27,6 @@ class WhisperSTT:
         print(f"\nSTT Result: {result['text']}\n")
         return result
 
-
 if __name__=="__main__":
     rospy.init_node('stt_server_mic', anonymous=False, disable_signals=True)
     stt = WhisperSTT()

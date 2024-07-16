@@ -181,7 +181,7 @@ class MoveBaseStandalone:
             return False
 
     
-    def human_stop(self, agent, human_stop_thres=1.3): #jnpahk
+    def human_stop(self, agent, human_stop_thres=1.0): #jnpahk
         depth = agent.depth_image / 1000
         # depth = depth[depth>0]
 
