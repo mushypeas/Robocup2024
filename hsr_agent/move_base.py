@@ -133,7 +133,7 @@ class MoveBase:
         rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
 
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "base_link"
         pose.pose.position = Point(x, y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)

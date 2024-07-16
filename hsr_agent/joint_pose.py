@@ -364,7 +364,7 @@ class JointPose:
         target_table_height = self.table_dimension[table][2]
         table_to_gripper = 0.12
         robot_default_height = 0.11
-        offset = 0.07
+        offset = 0.05
         arm_lift_joint = target_table_height + table_to_gripper - robot_default_height + offset
         if arm_lift_joint > 0.69:
             arm_lift_joint = 0.69
