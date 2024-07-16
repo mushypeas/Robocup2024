@@ -253,11 +253,25 @@ class GPSR:
 
     def place(self, loc):
         self.agent.pose.neutral_pose()
+        self.say(f"I want to place it to {loc}, please help me")
+        rospy.sleep(3)
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
         self.agent.open_gripper()
 
     def deliver(self):
         self.say("take this.")
         rospy.sleep(1.5)
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
         self.agent.pose.neutral_pose()
         self.agent.open_gripper()
 
@@ -522,6 +536,7 @@ class GPSR:
                     continue
 
                 if poseCount == 2:
+                    self.identify()
                     break
 
                 else:
@@ -543,6 +558,7 @@ class GPSR:
                     continue
 
                 if poseCount == 2:
+                    self.identify()
                     break
 
                 else:
@@ -550,13 +566,16 @@ class GPSR:
 
         else:
             rospy.logwarn("No such gesture or pose")
-            return
+            self.identify()
 
         self.say(f"I found a person who is {gestPosePers}. Let's go.")
         rospy.sleep(3)
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
+        self.say("every guys, please come in my sight.")
+        rospy.sleep(4)       
+        
         if gestPosePers in self.pose_person_list:
             Pers = self.getPose(getAll=True)
             posePers = [per for per in Pers if per[0] == gestPosePers]
@@ -574,7 +593,6 @@ class GPSR:
     # 옷으로 찾기
     def identifyByClothing(self, Clothes):
         self.say(f"who wear {Clothes}, please come closer to me.")
-        
         rospy.sleep(4)
 
         self.identify()
