@@ -142,7 +142,7 @@ def clean_the_table(agent: Agent):
 
                 agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.07, wait=True)
 
-                agent.pose.pick_bowl_max_pose(table=pick_table, height=0.1) # 90도 가까움, -0.1 for 2023
+                agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
                 agent.grasp()
                 rospy.sleep(0.5)
 
