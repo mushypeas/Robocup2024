@@ -169,6 +169,11 @@ class HumanFollowing:
             yolo_item_y_largest_idx = np.argmax(yolo_y_list)
             if yolo_y_list[yolo_item_y_largest_idx] > 300 and yolo_y_list[yolo_item_y_largest_idx] < 440:
                 self.tiny_object_yolo = (yolo_x_list[yolo_item_y_largest_idx], yolo_y_list[yolo_item_y_largest_idx])
+            else:
+                self.tiny_object_yolo = None
+
+        else:
+            self.tiny_object_yolo = None
 
 
 
@@ -369,7 +374,7 @@ class HumanFollowing:
 
             t = np.unravel_index(min_index, origin_depth.shape)
             min_y, min_x = t
-            escape_radius = 2.0
+            escape_radius = 1.0
 
             rospy.loginfo(f"rect depth min : {_depth}")
             rospy.loginfo(f"calc_z  : {calc_z / 1000.0}")
@@ -1720,7 +1725,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.6,
+                                                   stop_thres=.7,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
