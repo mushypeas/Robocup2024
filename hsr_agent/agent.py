@@ -411,16 +411,12 @@ class Agent:
             print([round(cur_p[0], 4), round(cur_p[1], 4), round(cur_p[2], 4)])
         return self.move_base.get_pose()
 
-
-    def tts_pnu(self, text):
-        print(text)
-
     # tts
     def say(self, sentence, show_display=False):
-        self.tts_pnu(sentence)
+        self.tts.say(sentence)
         if show_display:
             self.head_show_text(sentence)
-
+            
     # stt
     def stt(self, sec=5., mode=None):
         # return stt_client_hsr_mic(sec=sec, mode=mode)
