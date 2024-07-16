@@ -129,22 +129,26 @@ class StoringGroceries:
             rospy.loginfo(f"Item center: {shelf_item_cent_x}, {shelf_item_cent_y}, {shelf_item_cent_z}")
 
         # 2. add new category in shelf_item_dict
-
         new_category_floor = np.argmin(object_cnts_by_floor)
-        shelf_item_dict_keys = list(self.shelf_item_dict.keys())
-        for key in shelf_item_dict_keys:
-            if self.shelf_item_dict[key]['floor'] == new_category_floor:
-                shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z = self.shelf_item_dict[key]['center']
-                if shelf_item_cent_y > 0:
-                    shelf_item_cent_y -= self.new_category_dist
-                else:
-                    shelf_item_cent_y += self.new_category_dist
+        if object_cnts_by_floor[new_category_floor] == 0:
+            new_shelf_item_cent_x = self.shelf_dist[0]
+            new_shelf_item_cent_y = 0
+            new_shelf_item_cent_z = self.shelf_heights[new_category_floor] + 0.05
+        else:
+            shelf_item_dict_keys = list(self.shelf_item_dict.keys())
+            for key in shelf_item_dict_keys:
+                if self.shelf_item_dict[key]['floor'] == new_category_floor:
+                    new_shelf_item_cent_x, new_shelf_item_cent_y, new_shelf_item_cent_z = self.shelf_item_dict[key]['center']
+                    if shelf_item_cent_y > 0:
+                        new_shelf_item_cent_y -= self.new_category_dist
+                    else:
+                        new_shelf_item_cent_y += self.new_category_dist
                 break
 
         rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         self.shelf_item_dict['new'] = {
             'name': '-',
-            'center': [shelf_item_cent_x, shelf_item_cent_y, shelf_item_cent_z],
+            'center': [new_shelf_item_cent_x, new_shelf_item_cent_y, new_shelf_item_cent_z],
             'floor': new_category_floor,
         }
 
@@ -174,7 +178,7 @@ class StoringGroceries:
             grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
 
             # Only grasp items of available categories that have failed less than 3 times
-            if self.grasp_failure_count[table_item_id] <= 2 and\
+            if self.grasp_failure_count[table_item_id] <= 1 and\
                 table_item_type in self.prior_categories and\
                 table_item_name not in self.ignore_items:
                 break
