@@ -667,18 +667,27 @@ def restaurant(agent):
                 '''
                 This topic contains the coordinate of every bounding box that the module detects.
                 data ← [*box_0_top_left_x, box_0_top_left_y, box_0_bottom_right_x, box_0_bottom_right_y, … ,
-                 box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
+                box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
                 '''
                 if len(msg.data) == 0: continue
 
                 table_arr = np.array(msg.data)
-                table_arr = table_arr.reshape(len(table_arr)//34, 17, 2) ## num of people? 
+                table_arr = table_arr.reshape(len(table_arr) // 34, 17, 2)  # num of people? 
                 pc = agent.pc
                 if pc is None: continue
 
-                # Select random customer and move
-                # If fails due to NaN results many times, move forward
-                target = table_arr[np.random.randint(len(table_arr))]
+                # Calculate the area of each bounding box and find the index of the largest one
+                areas = []
+                for box in table_arr:
+                    top_left_x, top_left_y = box[0]
+                    bottom_right_x, bottom_right_y = box[1]
+                    area = (bottom_right_x - top_left_x) * (bottom_right_y - top_left_y)
+                    areas.append(area)
+                
+                largest_box_index = np.argmax(areas)
+                target = table_arr[largest_box_index]
+                
+                # Select the target customer with the largest bounding box
                 failure_count = 0
 
                 Dx, Dy = nav_target_from_pc(pc, target, robot_ori)
