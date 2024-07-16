@@ -8,8 +8,8 @@ DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-yolo_classnames_path = 'weight/best_for_final.cn'
+yolo_weight_path = 'weight/0716v2.pt'
+yolo_classnames_path = 'weight/classnames.cn'
 
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
