@@ -100,7 +100,7 @@ def receptionist(agent):
     stt_sentence_mode = False # 1st trial - False, 2nd trial - True
 
     # open_door_mode = False
-    calibration_mode = False
+    calibration_mode = True
 
     #################### cloth threshold ####################
     # cloth_threshold = 0.15
@@ -140,7 +140,7 @@ def receptionist(agent):
     # head_pan_angle = [45-5, 25-4, 10-5, -10-5, -25+3, -45+3, -65+5] # final term
     # head_pan_angle = [50, 35, 15, 0, -23] # PNU
     #################### 2024 Eindhoven # NOT YET
-    head_pan_angle = [50, 35, 15, 0, -23]
+    head_pan_angle = [10, -17, -45]
 
     # seat_scan이 중심 바라보도록 하는게 중요
     # 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
@@ -186,7 +186,7 @@ def receptionist(agent):
     cs = CheckSeat(face_threshold, face_threshold2, face_threshold3, head_pan_angle, calibration_mode)
     face_attr = FaceAttribute()
 
-    
+    # 주 석
     ### main scenario ###
     agent.pose.move_pose()
     agent.pose.head_pan(0)
@@ -447,6 +447,7 @@ def receptionist(agent):
     
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
+    ### 주 석
 
     agent.pose.move_pose()
     agent.move_abs_safe(scan_position)
