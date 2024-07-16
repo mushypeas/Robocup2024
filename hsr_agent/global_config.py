@@ -34,12 +34,12 @@ if Robocup: # 240710 mjgu 추가
     ABS_POSITION_Robocup = {
         # serve breakfast
         'Entrance' :[0, 0, 0],          
-        'picking_location': [7.4391, 4.3351, 3.1374], # (좌표 8) dinner table 앞 60cm 지점
-        'kitchen_counter' : [8.1305, 4.1887, 0.0141], # 80cm 앞. pick_table 후보 1
+        'picking_location': [8.1305, 4.1887, 0.0141], # (좌표 6) dish washer 앞 60cm 지점
+        'kitchen_counter' : [7.9502, 5.3833, 0.0163], # 80cm 앞. pick_table 후보 1
         'kitchen_cabinet' : [4.8601, 5.3832, -3.1016], # 60cm 앞. pick_table 후보 2
         'dish_washer' : [8.1305, 4.1887, 0.0141], # 60cm 앞. pick_table 후보 3
         'dinner_table_counter': [5.3689, -1.3234, 0.0665], # (좌표 5) 60m 앞
-        'dinner_table_cabinet': [5.3689, -1.3234, 0.0665], # (좌표 8) 60m 앞
+        'dinner_table_cabinet': [5.1436, 4.2293, 0.0502], # (좌표 8) 60m 앞
     }
 
         # 좌표 1. 문 앞에서 직진 3m 정도 한 지점 [3.3894, 0.1851, 0.0061]

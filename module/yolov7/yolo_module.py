@@ -177,7 +177,7 @@ class YoloModule:
             object_pc = object_pc.reshape(-1, 3)
             points_by_base_link = self.axis_transform.tf_camera_to_base(object_pc, multi_dimention=True)
 
-            table_height = ABS_POSITION_PNU[table][2]
+            table_height = ABS_POSITION_Robocup[table][2]
             height_offset = 0.01
             front_threshold = dist + depth
 

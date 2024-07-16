@@ -68,7 +68,7 @@ class ServeBreakfast:
             'spoon': [0, -0.16, 0]
         }
 
-        self.pick_table = 'kitchen_counter' 
+        self.pick_table = 'kitchen_counter' # kitchen_cabinet or dish_washer
         self.pick_table_depth = self.agent.table_dimension[self.pick_table][1] 
         self.pick_table_height = self.agent.table_dimension[self.pick_table][2]
         self.pick_table_head_angle = np.arctan(
@@ -195,18 +195,18 @@ class ServeBreakfast:
 
 
     def pick_item(self, item, table_base_xyz):
+        # pick_table = 'kitchen_counter'
+        # if pick_table == 'kitchen_counter':
+        # elif pick_table == 'kitchen_cabinet':
+        # elif pick_table == 'dish_washer':
 
         if item == 'bowl':
-            # import pdb; pdb.set_trace(), 한 줄씩 체크하는 용도
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
+            self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
-            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            # self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-            self.agent.pose.bring_bowl_pose_low(table=self.pick_table)    
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True) 
             self.agent.grasp()
-            self.agent.pose.bring_bowl_pose(table=self.pick_table)
             self.agent.move_rel(-0.3, 0, wait=False)
 
             # picking test mode 추가
@@ -218,7 +218,7 @@ class ServeBreakfast:
         elif item in ['cornflakes', 'milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
-            self.agent.pose.pick_milk_pose(table=self.pick_table)
+            self.agent.pose.pick_side_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
             # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
             self.agent.move_rel(table_base_xyz[0], 0, wait=True)
@@ -236,13 +236,12 @@ class ServeBreakfast:
             if item == 'spoon' or 'fork':
                 # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
-                self.agent.pose.pick_spoon_pose_low(table=self.pick_table)
+                self.agent.pose.pick_up_spoon_pose(table=self.pick_table)
                 self.agent.open_gripper(wait=False)
                 self.agent.move_rel(0, table_base_xyz[1], wait=True)
-                self.agent.move_rel(table_base_xyz[0], 0, wait=True)
-                self.agent.pose.pick_down_spoon_pose(table=self.pick_table)        
+                self.agent.move_rel(table_base_xyz[0], 0, wait=True)       
                 self.agent.grasp(wait=False)
-                rospy.sleep(0.5) # wait for grasping manually
+                rospy.sleep(0.5)
 
 
             # picking test mode 추가
@@ -313,7 +312,7 @@ class ServeBreakfast:
         # self.agent.say('Hi, I will serve breakfast for you!')
         # rospy.sleep(2)
         # self.agent.move_rel (0, 3)
-        # self.agent.move_abs('picking_location_pnu')
+        # self.agent.move_abs('picking_location')
         # self.agent.say('I will move to picking location')
  
         picked_items = []
@@ -325,8 +324,9 @@ class ServeBreakfast:
             ## Try picking until an item is grasped
             while not has_grasped:
                 rospy.logwarn('Go to pick_location...')
-                self.agent.say('I will move to a different location. Please be careful.')
-                self.agent.move_abs(self.pick_table)
+                self.agent.say('I am moving. Please be careful.')
+                # self.agent.move_abs(self.pick_table)
+                # self.agent.move_abs[8.3447, 4.1044, -0.0287]
                 self.agent.move_rel(-0.2,0)
                 self.agent.pose.table_search_pose_low()
                 # self.agent.pose.table_search_pose_low(head_tilt=self.pick_table_head_angle)
