@@ -39,7 +39,7 @@ from utils.axis_transform import Axis_transform
 from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
-from module.stt.whisper_stt import whisper_stt
+# from module.stt.whisper_stt import whisper_stt
 
 
 class Agent:
