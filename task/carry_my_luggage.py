@@ -1185,7 +1185,7 @@ class BagInspection:
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
 
         #Subscribe to take a bag
-        self.yolo_bag_list = [24, 25, 26]
+        self.yolo_bag_list = [42, 43] ########TODO: bag index 맞는지?
         self.d2pc = Depth2PC()
 
         yolo_topic = '/snu/yolo_img'
@@ -1196,7 +1196,7 @@ class BagInspection:
 
         self.axis_transform = Axis_transform()
 
-        self.bag_yolo_data = [24, 25, 26]
+        self.bag_yolo_data = [42, 43]
         self.conf_threshold = .75 # write in percent
 
     def get_bag_by_x(self, arr):
