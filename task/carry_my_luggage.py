@@ -86,7 +86,8 @@ class HumanFollowing:
         self._depth = None
         self.depth = None
         self.twist = None
-        self.barrier_direction = None
+        self.barrier_direction = 'm' #'l' 'r'
+        self.barrier_num = 0
         self.barrier_move_time = time.time()
         self.data_header = None
         self.last_chance = 1
@@ -434,8 +435,8 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                # if self.barrier_direction is None:
-                if True:
+                if self.barrier_direction is 'm'':
+                # if True:
 
                 # depth_barrier = True
                     depth = self.agent.depth_image
@@ -507,17 +508,25 @@ class HumanFollowing:
                     if left_background_count > right_background_count : 
                         self.barrier_move_time = time.time()
                         print("right side is empty")
-                        self.agent.move_rel(0.0,-0.4,0, wait=False) #then, HSR is intended to move right (pos)
-                        rospy.sleep(0.2)
-                        self.barrier_direction = 'right'
+                        self.agent.move_rel(0.0,-0.6,0, wait=False) #then, HSR is intended to move right (pos)
+                        rospy.sleep(0.1)
+                        self.barrier_num += 1
 
                     elif left_background_count < right_background_count:
                         self.barrier_move_time = time.time()
                         print("left side is empty")
-                        self.agent.move_rel(0.0,0.4,0, wait=False) #then, HSR is intended to move left (neg)
-                        rospy.sleep(0.2)
-                        self.barrier_direction = 'left'
+                        self.agent.move_rel(0.0,0.6,0, wait=False) #then, HSR is intended to move left (neg)
+                        rospy.sleep(0.1)
+                        self.barrier_num += 1
                     ################240717 LIDAR VERSION##############
+
+                elif self.barrier_direction is 'l':
+                    self.agent.move_rel(0.0,0.6,0, wait=False) #then, HSR is intended to move left (neg)
+                    rospy.sleep(0.1)
+                
+                elif self.barrier_direction is 'r':
+                    self.agent.move_rel(0.0,-0.6,0, wait=False) #then, HSR is intended to move right (pos)
+                    rospy.sleep(0.1)
 
 
                 # else:
@@ -848,11 +857,17 @@ class HumanFollowing:
                 #     rospy.sleep(3)
                 #     # self.agent.move_rel(0.3,0,0, wait=False)
                     # rospy.sleep(1)
-                if True:
-                    self.agent.move_rel(0.5,0.5,0, wait=False)
+                if self.barrier_direction is 'l':
+                    self.agent.move_rel(0.5,-0.5,0, wait=False)
                     rospy.sleep(3)
                     # self.agent.move_rel(0.3,0,0, wait=False)
                     # rospy.sleep(1)
+                elif self.barrier_direction is 'r':
+                    self.agent.move_rel(0.5,0.5,0, wait=False)
+                    rospy.sleep(3)
+                else:
+                    self.agent.move_rel(0.5,0.5,0, wait=False)
+                    rospy.sleep(3)
 
 
 
@@ -1736,9 +1751,9 @@ class BagInspection:
             self.agent.pose.move_to_go()
             self.agent.pose.wrist_flex(-30)
             self.agent.pose.arm_roll(90)
-            self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
+            self.agent.move_rel(-mov_x, -mov_y, -yaw, wait=True)
             # self.agent.move_abs_coordinate(before_pick_pose, wait=True)
-            self.agent.move_rel(0, 0, -yaw, wait=True)
+            # self.agent.move_rel(0, 0, -yaw, wait=True)
         # self.agent.say("I am ready to follow you", show_display=True)
         # rospy.sleep(2)
 
@@ -1769,7 +1784,7 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.3
-    pose_save_time_period = 4
+    pose_save_time_period = 3
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
@@ -1789,7 +1804,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.7,
+                                                   stop_thres=.85,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -1985,7 +2000,7 @@ def carry_my_luggage(agent):
 
             agent.move_abs_coordinate(cur_track, wait=False)
             
-            rospy.sleep(2.5)
+            rospy.sleep(2.2)
             print('go to arena')
 
 
