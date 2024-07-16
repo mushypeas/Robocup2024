@@ -554,14 +554,6 @@ class GPSR:
 
         self.say(f"I found a person who is {gestPosePers}. Let's go.")
         rospy.sleep(3)
-    
-    # 옷으로 찾기
-    def identifyByClothing(self, Clothes):
-        self.say(f"who wear {Clothes}, please come closer to me.")
-        
-        rospy.sleep(4)
-
-        self.identify()
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
@@ -578,6 +570,14 @@ class GPSR:
         else:
             rospy.logwarn("No such gesture or pose")
             return 0
+        
+    # 옷으로 찾기
+    def identifyByClothing(self, Clothes):
+        self.say(f"who wear {Clothes}, please come closer to me.")
+        
+        rospy.sleep(4)
+
+        self.identify()
     
     # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
@@ -587,13 +587,12 @@ class GPSR:
         return personCount
     
     def getHumanAttribute(self):
-        # [TODO] Implement how the human attributes can be extracted
-        return None
+        return self.getCloth()
+        
     
     # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
     def identifyByHumanAttribute(self, humanAttribute):
-        # [TODO] Implement how the human attributes can be identified
-        pass
+        self.identifyByClothing(humanAttribute)
     
     def objIdToName(self, id):
         return self.agent.yolo_module.find_name_by_id(id)
