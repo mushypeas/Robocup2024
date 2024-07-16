@@ -5,7 +5,6 @@ from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
 
-# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
@@ -20,10 +19,10 @@ try:
 except:
     pass
 
-AIIS = False
+Robocup = True
+PNU = False
 FINAL = False
 PNU = False # 240630 mjgu 추가
-Robocup = True #240710
 
 
 global config 
@@ -61,7 +60,7 @@ if Robocup: # 240710 mjgu 추가
         'kitchen_cabinet': [0.792, 0.285, 1.058],
         'dish_washer': [0.60, 0.595, 0.85],
         'dinner_table': [0.78, 2.00, 0.772],
-        'test_table' [0.8, 0.8, 0.815] # dinner table보다 4cm 높음 
+        'test_table' [0.8, 0.8, 0.815], # dinner table보다 4cm 높음 
     }
 
 
@@ -78,8 +77,7 @@ if Robocup: # 240710 mjgu 추가
 
     TINY_OBJECTS = ['spoon', 'fork', 'knife']
 
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
+    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]] # 수정 필요
 
 
 # if PNU: # 240630 mjgu 추가
