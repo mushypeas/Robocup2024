@@ -30,21 +30,21 @@ def clean_the_table(agent: Agent):
     # MODE PARAMETERS #
     no_distancing_mode = True
     picking_mode = True
-    placing_mode = True
+    placing_mode = False
     door_open_mode = False
     rack_close_mode = True
 
-    item_list = [ 'bowl', 'blue_mug','fork', 'spoon', 'knife', 'plate' ]
+    item_list = [ 'bowl', 'fork', 'spoon', 'knife', 'plate','mug' ]
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
     short_move = 2.0
 
     cutlery_box_position = [0.2, 0.1]
-    place_position_dict = {'blue_mug': [0.2, -0.10], 'bowl': [0.2, 0], 'plate': [0.2, 0], 'fork': cutlery_box_position,
+    place_position_dict = {'mug': [0.2, -0.10], 'bowl': [0.2, 0], 'plate': [0.2, 0], 'fork': cutlery_box_position,
                     'knife': cutlery_box_position, 'spoon': cutlery_box_position}
 
-    is_using_check_grasp_dict = {'blue_mug': True, 'bowl': True, 'plate': True,
+    is_using_check_grasp_dict = {'mug': True, 'bowl': True, 'plate': True,
                                  'fork': False, 'knife': False, 'spoon': False}     # do not use check_grasp for motions that scrapes the table
     miss_count = 0
     is_picked = False
@@ -140,7 +140,7 @@ def clean_the_table(agent: Agent):
                 agent.pose.bring_bowl_pose(table=pick_table) # 살짝 들림
                 agent.open_gripper()
 
-                agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.05, wait=True)
+                agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.07, wait=True)
 
                 agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
                 agent.grasp()
@@ -153,7 +153,7 @@ def clean_the_table(agent: Agent):
                 agent.move_rel(-0.2, 0)
 
 
-            elif item == 'blue_mug':
+            elif item == 'mug':
 
                 agent.pose.pick_side_pose_by_height(height = (0.73 - 0.02))
                 
