@@ -33,17 +33,17 @@ class ServeBreakfast:
         self.is_placing_test_mode = False
 
         self.attemp_pouring = {
-            'cereal': True,
+            'cornflakes': True,
             'milk': True,
         }
 
-        self.item_list = ['bowl','cereal','milk','spoon']
+        self.item_list = ['bowl','cornflakes','milk','spoon','fork']
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.8
         self.dist_to_place_table = 0.8
         self.item_height = {     # 실제 object 높이는 여기서 설정
-            'cereal': 0.138,
+            'cornflakes': 0.138,
             'milk': 0.13, 
         }
 
@@ -51,19 +51,19 @@ class ServeBreakfast:
         self.pick_front_bias = [0.0, 0.00, 0.0] 
         self.pick_top_bias = [0.00, 0.00, 0.0]  
         self.pick_bowl_bias = [0.0, 0.00, 0.0]
-        self.pick_cereal_bias = [0.0, 0.00, 0.0]
+        self.pick_cornflakes_bias = [0.0, 0.00, 0.0]
         self.pick_milk_bias = [0.0, 0.00, 0.0]
         self.pick_spoon_bias = [0.0, 0.00, 0.0]      
 
 
         self.pour_offsets = { # [x, y, angle] 
-            'cereal': [0.0, -0.08, 110], # bowl 왼쪽 끝에 맞춰서 따르기
+            'cornflakes': [0.0, -0.08, 110], # bowl 왼쪽 끝에 맞춰서 따르기
             'milk': [0.0, -0.08, 130], # bowl 왼쪽 끝에 맞춰서 따르기
         }
         self.arm_lift_height = 0.68
         self.place_offsets = { # [x, y, height], bowl을 테이블에서 약간 오른쪽에 두도록 함  / placing_table에는 순서대로 'milk, cereal, bowl, spoon'이 놓이도록 함.
             'bowl': [self.dist_to_place_table, -0.1, 0],
-            'cereal': [0, 0.2, 0],
+            'cornflakes': [0, 0.2, 0],
             'milk': [0, 0.1, 0],
             'spoon': [0, -0.16, 0]
         }
@@ -215,7 +215,7 @@ class ServeBreakfast:
             #     self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
             #     self.agent.open_gripper(wait=False)
 
-        elif item in ['cereal', 'milk']:
+        elif item in ['cornflakes', 'milk']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_milk_pose(table=self.pick_table)
@@ -233,7 +233,7 @@ class ServeBreakfast:
             #     self.agent.open_gripper(wait=False)
 
         else:
-            if item == 'spoon':
+            if item == 'spoon' or 'fork':
                 # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
                 self.agent.pose.pick_spoon_pose_low(table=self.pick_table)
@@ -268,7 +268,7 @@ class ServeBreakfast:
             self.agent.pose.place_bowl_pose()
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True)
 
-        elif item in ['cereal', 'milk']:
+        elif item in ['cornflakes', 'milk']:
             self.agent.move_rel(self.place_offsets[item][0], self.place_offsets[item][1], wait=True) # 옆에 두기
             self.agent.pose.arm_lift_object_table_down(self.item_height[item]/2, table=self.place_table)
         
@@ -369,7 +369,7 @@ class ServeBreakfast:
             self.agent.move_rel(-0.4, 0)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
 
-            if item in ['cereal', 'milk']:
+            if item in ['cornflakes', 'milk']:
                 self.pour_item(item=item)
 
             self.agent.move_rel(-0.4,0, wait=True)
