@@ -3,8 +3,8 @@ from object_list_dict import name_to_grasping_type, name_to_itemtype
 
 def make_object_list(yolo_classname_path):
     # yolo_classname path
-    file_path = os.path.join('module', 'yolov7', yolo_classname_path)
-    file_path_bs = os.path.join('..', '..', 'module', 'yolov7', yolo_classname_path)
+    file_path = os.path.join('module', 'yolov10', yolo_classname_path)
+    file_path_bs = os.path.join('..', '..', 'module', 'yolov10', yolo_classname_path)
 
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
