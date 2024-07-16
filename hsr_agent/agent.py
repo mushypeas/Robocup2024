@@ -331,7 +331,7 @@ class Agent:
     
     
 
-    def move_abs_coordinate_safe_inspection(self, coordinate, thresh=0.35, timeout=5.0, giveup_timeout=8.0, angle=45):
+    def move_abs_coordinate_safe_inspection(self, coordinate, thresh=0.95, timeout=5.0, giveup_timeout=8.0, angle=45):
         rospy.loginfo(f"Moving to {coordinate}")
         goal_x, goal_y, goal_yaw = coordinate
         self.move_base.base_action_client.wait_for_server(2)
@@ -444,7 +444,7 @@ class Agent:
         self.move_abs_coordinate_safe(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
         # self.move_base.base_action_client.wait_for_server(2)
 
-    def move_abs_safe_inspection(self, position, thresh=0.01, timeout=3.0, giveup_timeout=50.0, angle=30):
+    def move_abs_safe_inspection(self, position, thresh=0.91, timeout=3.0, giveup_timeout=50.0, angle=30):
         rospy.loginfo(f'Moving to {position}')
         # goal_x, goal_y, goal_yaw = self.move_base.abs_position[position]
         self.move_abs_coordinate_safe_inspection(self.move_base.abs_position[position], thresh, timeout, giveup_timeout, angle)
