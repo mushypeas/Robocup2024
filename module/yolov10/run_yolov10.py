@@ -52,7 +52,7 @@ class custom_Yolov10:
 
     def ready(self):
         # self.model = YOLOv10("240621_v10m.pt")  #path for weight file
-        self.model = YOLOv10("/home/tidy/Robocup2024/module/yolov10/weight/best_cml.pt")  #path for weight file #240716 : cml만 학습한 weight. 수정필요 TODO
+        self.model = YOLOv10("/home/tidy/Robocup2024/module/yolov10/weight/best.pt")  #path for weight file #240716 : cml만 학습한 weight. 수정필요 TODO -> 전체로 변경?
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
