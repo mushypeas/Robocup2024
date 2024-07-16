@@ -86,7 +86,7 @@ class HumanFollowing:
         self._depth = None
         self.depth = None
         self.twist = None
-        self.barrier_direction = 'm' #'l' 'r'
+        self.barrier_direction = 'r' #'l' 'm'
         self.barrier_num = 0
         self.barrier_move_time = time.time()
         self.data_header = None
@@ -435,7 +435,7 @@ class HumanFollowing:
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
                 print("!!!!!!!!!!!!!!!!!BARRIER!!!!!!!!!!!!!!!!!")
-                if self.barrier_direction is 'm'':
+                if self.barrier_direction is 'm':
                 # if True:
 
                 # depth_barrier = True
