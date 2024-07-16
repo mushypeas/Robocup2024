@@ -1,28 +1,23 @@
+## stt_client.py
+        
+import time
 import rospy
-import numpy as np
-import sounddevice as sd
-from robocup2023_stt.srv import SpeechToText
-from .codebook_parser import parser
-#from codebook_parser import parser
 from playsound import playsound
+from std_msgs.msg import Float32, String
 
-def stt_client(sec=5, FS=16000):
+def stt_client(sec=5):
 
-    '''
-    Outer functions should call this client method only
-    '''
-    rospy.wait_for_service(f'/tidyboy_stt_cloud')
-    client = rospy.ServiceProxy(f'/tidyboy_stt_cloud', SpeechToText)
-    record = sd.rec(int(FS * sec), samplerate=FS, channels=1)
-    playsound('../../Tools/xtioncam_capture/ding_3x.mp3')
-    rospy.loginfo('record start')
-    sd.wait()
-    rospy.loginfo('record end')
-    record = record * np.iinfo(np.int16).max
-    record = record.astype(np.int16).flatten()
-    stt = client(record)
-    answer = parser(stt.result)
-    return stt.result, answer
+    pub_request = rospy.Publisher('/mic_request', Float32, queue_size=10)
+    while not rospy.is_shutdown():
+        playsound('./Tools/xtioncam_capture/ding_3x.mp3')
+        rospy.loginfo('record start')
+        st = time.time()
+        topic = Float32(); topic.data = sec
+        while time.time() - st <= 0.1:
+            pub_request.publish(topic)
+        result = rospy.wait_for_message('/stt_result', String)
+        rospy.loginfo('record end')
+        return result.data
 
 
 if __name__ == '__main__':
