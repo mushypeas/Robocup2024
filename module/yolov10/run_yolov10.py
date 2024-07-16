@@ -52,7 +52,7 @@ class custom_Yolov10:
 
     def ready(self):
         # self.model = YOLOv10("240621_v10m.pt")  #path for weight file
-        self.model = YOLOv10("/home/tidy/Robocup2024/module/yolov10/weight/best.pt")  #path for weight file #240716 : cml만 학습한 weight. 수정필요 TODO -> 전체로 변경?
+        self.model = YOLOv10("/home/tidy/Robocup2024/module/yolov10/weight/0715v2.pt")  #path for weight file #240716 : cml만 학습한 weight. 수정필요 TODO -> 전체로 변경?
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
@@ -115,7 +115,7 @@ class custom_Yolov10:
 
 def get_opt():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weight/best_0704.pt', help='model.pt path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default='/home/tidy/Robocup2024/module/yolov10/weight/0715v2.pt', help='model.pt path(s)')
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')

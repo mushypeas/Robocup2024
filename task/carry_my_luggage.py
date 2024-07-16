@@ -362,7 +362,7 @@ class HumanFollowing:
         y_top= 0
         _depth = self.barrier_check(y_top=y_top, x_var=320)
         origin_depth = _depth
-        _depth = _depth[_depth != 0]
+        _depth = _depth[_depth != 0 and _depth > 500]
         if len(_depth) > 10 :
             _depth = np.partition(_depth, min(10, len(_depth)))
 
@@ -443,7 +443,7 @@ class HumanFollowing:
                 # left_background_count = np.mean(left_values)
                 # left_values = depth[:, :mid_x // 2]
                 # print("left values : ", np.mean(left_values))
-                left_background_count = np.sum(left_values < 2000)
+                left_background_count = np.sum(100 < left_values and  left_values < 2000)
                 # if left_background_count == 0:
                 #     left_background_count = 4.0
                 # left_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, :mid_x//2])
@@ -451,7 +451,7 @@ class HumanFollowing:
                 right_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, mid_x:]
                 # right_background_count = np.mean(right_values)
                 # right_values = depth[:, mid_x * 3 // 2:]
-                right_background_count = np.sum(right_values < 2000)
+                right_background_count = np.sum(100 < right_values and right_values < 2000)
                 # if right_background_count == 0:
                 #     right_background_count = 4.0    
                 # right_edge_background_count = np.mean(depth[max(min_y+y_top-20, 0):min_y+y_top+20, (mid_x*3//2):])
@@ -473,27 +473,27 @@ class HumanFollowing:
 
 
 
-            if  (depth_barrier is False and left_lidar < thres or right_lidar < thres ) and not (abs(left_lidar - right_lidar) < 0.1 ) and not pos:
+            # if  (depth_barrier is False and left_lidar < thres or right_lidar < thres ) and not (abs(left_lidar - right_lidar) < 0.1 ) and not pos:
                 
-                print("Lidar BARRIER")
-                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
-                print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+            #     print("Lidar BARRIER")
+            #     print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+            #     print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+            #     print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
+            #     print("!!!!!!!!!!!!!!!!!Lidar BARRIER!!!!!!!!!!!!!!!!!")
 
-                # self.agent.ranges[]
-                # if left_edge_lidar > 0.7 or right_edge_lidar >  0.7:
-                random_prob = random.uniform(0, 1)
-                move_front = 0.15 if random_prob > 0.5 else 0.0
+            #     # self.agent.ranges[]
+            #     # if left_edge_lidar > 0.7 or right_edge_lidar >  0.7:
+            #     random_prob = random.uniform(0, 1)
+            #     move_front = 0.15 if random_prob > 0.5 else 0.0
 
-                if left_lidar > right_lidar : 
-                    self.barrier_move_time = time.time()
-                    self.agent.move_rel(move_front,0.15,0, wait=False)
-                    rospy.sleep(0.1)
-                elif left_lidar < right_lidar:
-                    self.barrier_move_time = time.time()
-                    self.agent.move_rel(move_front,-0.15,0, wait=False)
-                    rospy.sleep(0.1)
+            #     if left_lidar > right_lidar : 
+            #         self.barrier_move_time = time.time()
+            #         self.agent.move_rel(move_front,0.15,0, wait=False)
+            #         rospy.sleep(0.1)
+            #     elif left_lidar < right_lidar:
+            #         self.barrier_move_time = time.time()
+            #         self.agent.move_rel(move_front,-0.15,0, wait=False)
+            #         rospy.sleep(0.1)
 
         # else:
         #     self.agent.move_rel(0,0,self.stop_rotate_velocity, wait=False)
@@ -1672,6 +1672,8 @@ class BagInspection:
                     rospy.sleep(1)
                 self.agent.grasp()
             self.agent.pose.move_to_go()
+            self.agent.pose.wrist_flex(-30)
+            self.agent.pose.arm_roll(90)
             # self.agent.move_rel(-mov_x, -mov_y, 0, wait=True)
             self.agent.move_abs_coordinate(before_pick_pose, wait=True)
             self.agent.move_rel(0, 0, -yaw, wait=False)
