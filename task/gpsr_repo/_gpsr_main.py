@@ -51,10 +51,14 @@ class GPSR:
         self.clothes_list = clothes_list
         
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
+        print("object_names", self.object_names)
+        print("object_categories_plural", self.object_categories_plural)
+        print("object_categories_singular", self.object_categories_singular)
         
         self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
-
-        rospy.Subscriber('/snu/openpose/knee', Int16MultiArray, self._knee_pose_callback)
+        print("category2objDict", self.category2objDict)
+        print("categoryPlur2Sing", self.categoryPlur2Sing)
+        print("categorySing2Plur", self.categorySing2Plur)
 
         self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
 
@@ -168,12 +172,7 @@ class GPSR:
 ##############################################################
 ##############################################################
 ##############################################################
-
-
     # CALLBACKS
-    def _knee_pose_callback(self, msg):
-        rospy.loginfo(msg.data)
-
     # human keypoints callback
     def hkpts_cb(self, msg):
         self.human_keypoints = msg.data
