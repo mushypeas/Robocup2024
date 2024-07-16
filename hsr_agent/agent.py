@@ -96,16 +96,12 @@ class Agent:
         self.object_list = OBJECT_LIST
         self.tiny_object_list = TINY_OBJECTS
         self.heavy_object_list = HEAVY_OBJECTS
-        self.location_map = LOCATION_MAP  # for gpsr
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
         # yolo
         self.yolo_module = YoloModule(OBJECT_LIST)
         # jykim static-map
-        if is_sim:
-            static_topic_name = '/static_obstacle_ros_map'
-        else:
-            static_topic_name = '//static_obstacle_ros_map'
+        static_topic_name = '/static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
@@ -129,9 +125,6 @@ class Agent:
         self.cur_vel = [0.0, 0.0, 0.0] # x,y,yaw
         self.axis_transform = Axis_transform()
 
-        # return if the point is in arena
-        self.arena_check = InArena(ARENA_EDGES)
-        # for carry my luggage (todo)
         rospy.loginfo('HSR agent is ready.')
 
     def _rgb_callback(self, data):
