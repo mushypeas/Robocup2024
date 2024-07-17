@@ -206,7 +206,7 @@ class GPSR:
         
     def guide(self, loc):
         print("GPSR Guide Start")
-        self.say(f"Please follow me")
+        self.say("Please follow me")
         rospy.sleep(1)
         self.agent.move_abs(loc)
         self.say("Bye bye.")
@@ -236,19 +236,15 @@ class GPSR:
         self.pick(obj)
 
     def pick(self, obj):
-        # find object
-        # [TODO] Implement how the object can be picked up
-        # self.agent.pose.pick_side_pose('grocery_table_pose2')
-        # self.agent.open_gripper()
-        # self.agent.move_rel(0, 0.5, wait=True)
-        # self.agent.move_rel(0.05, 0, wait=True)
-        # self.agent.grasp()
-        # self.agent.pose.pick_side_pose('grocery_table_pose1')
-
-        self.agent.say(f"GIVE {obj} to me")
+        self.say(f"GIVE {obj} to me")
         rospy.sleep(3)
         self.agent.open_gripper()
-        rospy.sleep(5)
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
         self.agent.grasp()
 
         print(f"[PICK] {obj} is picked up")
@@ -352,7 +348,6 @@ class GPSR:
             closest_match = min(distances, key=lambda x: x[0])
             return closest_match[1]
             
-    # TODO
     def getName(self):
         self.say("Please say your name after ding sound")
         rospy.sleep(3)
@@ -415,7 +410,6 @@ class GPSR:
         
         return human_poses[0][0]
     
-
     def getGest(self, getAll=False):
         self.agent.pose.head_tilt(gpsr_human_head_tilt)
         rospy.sleep(0.5)
@@ -471,7 +465,6 @@ class GPSR:
         
         return human_gests[0][0]
         
-    
     def getCloth(self):
         noPersonCount = 0
         self.agent.pose.head_tilt(gpsr_human_head_tilt)
@@ -495,19 +488,6 @@ class GPSR:
 
         return feature
         
-    # 이름을 가진 사람 앞에서 멈추기
-    def identifyByName(self, name):
-        self.say(f"{name}, please come closer to me.")
-        rospy.sleep(3)
-        self.say("three")
-        rospy.sleep(1)
-        self.say("two")
-        rospy.sleep(1)
-        self.say("one")
-        rospy.sleep(1)
-        # [TODO] Implement how the name can be identified
-        
-
     def identify(self, type='default', pose=None, gest=None):
         maware_count = 0
         while True:
@@ -545,6 +525,17 @@ class GPSR:
         self.say("I found you")
         rospy.sleep(1)
 
+    # 이름을 가진 사람 앞에서 멈추기
+    def identifyByName(self, name):
+        self.say(f"{name}, please come closer to me.")
+        rospy.sleep(3)
+        self.say("three")
+        rospy.sleep(1)
+        self.say("two")
+        rospy.sleep(1)
+        self.say("one")
+        rospy.sleep(1)
+        # [TODO] Implement how the name can be identified
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
@@ -598,7 +589,6 @@ class GPSR:
     def getHumanAttribute(self):
         return self.getCloth()
         
-    
     # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
     def identifyByHumanAttribute(self, humanAttribute):
         self.identifyByClothing(humanAttribute)
