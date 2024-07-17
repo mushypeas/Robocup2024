@@ -41,65 +41,65 @@ class CheckSeat():
         user_location_list = []
         user_face_data_list = []
 
-        #################### left view # MAY BE DELETED
-        # agent.pose.head_pan(self.head_pan_angle[0])
-        # agent.pose.head_pan(45) # 0609 # PNU
-        #################### 2024 Eindhoven # OK
-        agent.pose.head_pan(45) # OK
-        rospy.sleep(1)
+        # #################### left view # MAY BE DELETED
+        # # agent.pose.head_pan(self.head_pan_angle[0])
+        # # agent.pose.head_pan(45) # 0609 # PNU
+        # #################### 2024 Eindhoven # OK
+        # agent.pose.head_pan(45) # OK
+        # rospy.sleep(1)
 
-        if self.calibration_mode:
-            # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
-            # self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
-            # self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
-            # self.check_calibration_mode(agent, self.face_threshold, [160, 520]) # PNU
-            #################### 2024 Eindhoven # TEMPORARILY OK
-            self.check_calibration_mode(agent, self.face_threshold, [110, 580])
-        # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
-        # user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
-        # user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
-        # user_locations, user_face_data = self.check(agent, self.face_threshold, [160, 520]) # PNU
-        #################### 2024 Eindhoven # TEMPORARILY OK
-        user_locations, user_face_data = self.check(agent, self.face_threshold, [110, 580])
-        if user_locations != None:
-            user_location_list.extend(user_locations)
-            user_face_data_list.extend(user_face_data)
+        # if self.calibration_mode:
+        #     # self.check_calibration_mode(agent, self.face_threshold, [140, 620])
+        #     # self.check_calibration_mode(agent, self.face_threshold, [200, 560]) # 0514
+        #     # self.check_calibration_mode(agent, self.face_threshold, [180, 600]) # 0609
+        #     # self.check_calibration_mode(agent, self.face_threshold, [160, 520]) # PNU
+        #     #################### 2024 Eindhoven # TEMPORARILY OK
+        #     self.check_calibration_mode(agent, self.face_threshold, [110, 580])
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold, [140, 620])
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold, [200, 560]) # 0514
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold, [180, 600]) # 0609
+        # # user_locations, user_face_data = self.check(agent, self.face_threshold, [160, 520]) # PNU
+        # #################### 2024 Eindhoven # TEMPORARILY OK
+        # user_locations, user_face_data = self.check(agent, self.face_threshold, [110, 580])
+        # if user_locations != None:
+        #     user_location_list.extend(user_locations)
+        #     user_face_data_list.extend(user_face_data)
 
-            # 기존코드 # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
-            # for user in user_locations:
-            #     if self.door_range <= user[0] < width / 2:
-            #         seat_info[0][0] = 1
-            #     elif width / 2 <= user[0] < width:
-            #         seat_info[1][0] = 1
+        #     # 기존코드 # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
+        #     # for user in user_locations:
+        #     #     if self.door_range <= user[0] < width / 2:
+        #     #         seat_info[0][0] = 1
+        #     #     elif width / 2 <= user[0] < width:
+        #     #         seat_info[1][0] = 1
 
-            # # 0514
-            # for user in user_locations:
-            #     if 200 <= user[0] < 360:
-            #         seat_info[0][0] = 1
-            #     elif 360 <= user[0] < 560:
-            #         seat_info[1][0] = 1
+        #     # # 0514
+        #     # for user in user_locations:
+        #     #     if 200 <= user[0] < 360:
+        #     #         seat_info[0][0] = 1
+        #     #     elif 360 <= user[0] < 560:
+        #     #         seat_info[1][0] = 1
 
-            # # 0609
-            # for user in user_locations:
-            #     if 180 <= user[0] < 440:
-            #         seat_info[0][0] = 1
-            #     elif 440 <= user[0] < 600:
-            #         seat_info[1][0] = 1
+        #     # # 0609
+        #     # for user in user_locations:
+        #     #     if 180 <= user[0] < 440:
+        #     #         seat_info[0][0] = 1
+        #     #     elif 440 <= user[0] < 600:
+        #     #         seat_info[1][0] = 1
 
-            # # PNU
-            # for user in user_locations:
-            #     if 160 <= user[0] < 340:
-            #         seat_info[0][0] = 1
-            #     elif 340 <= user[0] < 520:
-            #         seat_info[1][0] = 1
+        #     # # PNU
+        #     # for user in user_locations:
+        #     #     if 160 <= user[0] < 340:
+        #     #         seat_info[0][0] = 1
+        #     #     elif 340 <= user[0] < 520:
+        #     #         seat_info[1][0] = 1
 
-            #################### 2024 Eindhoven # TEMPORARILY OK
-            for user in user_locations:
-                if 110 <= user[0] < 370:
-                    seat_info[0][0] = 1
-                elif 370 <= user[0] < 580:
-                    seat_info[1][0] = 1
-        #################### left view # MAY BE DELETED
+        #     #################### 2024 Eindhoven # TEMPORARILY OK
+        #     for user in user_locations:
+        #         if 110 <= user[0] < 370:
+        #             seat_info[0][0] = 1
+        #         elif 370 <= user[0] < 580:
+        #             seat_info[1][0] = 1
+        # #################### left view # MAY BE DELETED
 
         #################### middle view
         agent.pose.head_pan(0)
@@ -153,11 +153,16 @@ class CheckSeat():
             #         seat_info[4][0] = 1
 
             #################### 2024 Eindhoven # TEMPORARILY OK
-            for user in user_locations:
+            for user in user_locations: # NO LEFT SEAT
                 if 60 <= user[0] < 320:
-                    seat_info[2][0] = 1
+                    seat_info[0][0] = 1
                 elif 320 <= user[0] < 590:
-                    seat_info[3][0] = 1
+                    seat_info[1][0] = 1
+            # for user in user_locations: # TWO LEFT SEATS
+            #     if 60 <= user[0] < 320:
+            #         seat_info[2][0] = 1
+            #     elif 320 <= user[0] < 590:
+            #         seat_info[3][0] = 1
 
                 # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
                 #     seat_info[2][0] = 1
@@ -220,11 +225,17 @@ class CheckSeat():
             #         seat_info[6][0] = 1
 
             #################### 2024 Eindhoven # TEMPOARILY OK
-            for user in user_locations:
+            for user in user_locations: # NO LEFT SEATS
                 if 100 <= user[0] < 540:
-                    seat_info[4][0] = 1
+                    seat_info[2][0] = 1
                 # elif 170 <= user[0] < 330:
                 #     seat_info[5][0] = 1
+            # for user in user_locations: # TWO LEFT SEATS 
+            #     if 100 <= user[0] < 540:
+            #         seat_info[4][0] = 1
+            #     # elif 170 <= user[0] < 330:
+            #     #     seat_info[5][0] = 1
+            
 
 
         # # save host face image
@@ -332,8 +343,8 @@ class CheckSeat():
         # for i in [2, 3, 1, 4, 0, 5, 6]:
         # for i in [2, 3, 1, 4, 0]:
         #################### 2024 Eindhoven # TEMPORARILY OK
-        # for i in [1, 0, 2]: # NO LEFT SEAT
-        for i in [3, 2, 4, 1, 0]: # ADDITIONAL TWO LEFT SEATS
+        for i in [1, 0, 2]: # NO LEFT SEAT
+        # for i in [3, 2, 4, 1, 0]: # ADDITIONAL TWO LEFT SEATS
             
             if seat_info[i][0] != 1:
                 if i == 0:
