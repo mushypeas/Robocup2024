@@ -1975,7 +1975,7 @@ def carry_my_luggage(agent):
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     print("seg human!!!!!!!!!!!!!!!!!!")
                     rospy.sleep(3)
-                    if calc_z > 300.0: #0.3m보다 멀면 살짝 앞으로 이동
+                    if calc_z > 400.0: #0.3m보다 멀면 살짝 앞으로 이동
                         agent.move_rel(0.1,0,0, wait=False)
                         rospyl.sleep(2)
                     human_info_ary = copy.deepcopy(human_following.human_box_list)
