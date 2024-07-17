@@ -17,7 +17,7 @@ class CheckSeat():
     # def __init__(self, face_threshold, face_threshold2, head_pan_angle, calibration_mode):
     def __init__(self, face_threshold, face_threshold2, face_threshold3, head_pan_angle, calibration_mode):
 
-        self.fc = FaceCropper(min_face_detector_confidence=0.3, min_landmark_detector_confidence=0.3)
+        self.fc = FaceCropper(min_face_detector_confidence=0.1, min_landmark_detector_confidence=0.7)
         self.face_id = FaceId()
         self.face_threshold = face_threshold
         self.face_threshold2 = face_threshold2

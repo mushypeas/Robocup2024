@@ -58,7 +58,7 @@ if FINAL:
         #################### 2024 Eindhoven # OK
         'start': [2.6694, 0.0088, 3.1294],
         'cloth_scan': [2.6694, 0.0088, 3.1294],
-        'seat_scan': [7.0773, -1.1188, -0.084],
+        'seat_scan': [7.2618, -1.1397, -0.0927],
         'seat_scan_bypass': [7.0752, -1.0906, 2.8539],
 
         # stickler for the rules
