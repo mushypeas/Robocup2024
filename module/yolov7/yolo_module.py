@@ -153,7 +153,7 @@ class YoloModule:
         return None
     
 
-    def detect_3d_safer(self, height, dist=0.6, depth=0.8, item_list=None):
+    def detect_3d_safer(self, height, dist=0.6, depth=0.8, item_list=None, ignore_items=None):
         _pc = self.pc.reshape(480, 640)
         pc_np = np.array(_pc.tolist())[:, :, :3]
         if self.object_len != len(self.yolo_bbox):
@@ -171,6 +171,9 @@ class YoloModule:
                 cent_x, cent_y, item_width, item_height, class_id = item
                 class_name = self.find_name_by_id(class_id)
                 if item_list is not None and class_name not in item_list:
+                    rospy.logwarn(f"Ignoring {class_name}...")
+                    continue
+                if ignore_items is not None and class_name in ignore_items:
                     rospy.logwarn(f"Ignoring {class_name}...")
                     continue
                 start_x = cent_x - (item_width // 2)
