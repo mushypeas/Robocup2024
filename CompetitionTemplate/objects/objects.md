@@ -1,4 +1,4 @@
-# Class cleaning_supplies
+# Class cleaning_supplies (cleaning_supplies)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
@@ -8,7 +8,7 @@
 | sponges  |  ![](known_objects/cleaning_supplies/sponges.jpg) |
 
 
-# Class drinks
+# Class drinks (drinks)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
@@ -21,7 +21,7 @@
 | dubbelfris  |  ![](known_objects/drinks/dubbelfris.jpg) |
 
 
-# Class food
+# Class food (food)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
@@ -34,14 +34,14 @@
 | mayonaise  |  ![](known_objects/food/mayonaise.jpg) |
 
 
-# Class decorations
+# Class decorations (decorations)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
 | candle  |  ![](known_objects/decorations/candle.jpg) |
 
 
-# Class fruits
+# Class fruits (fruits)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
@@ -55,7 +55,7 @@
 | apple  |  ![](known_objects/fruits/apple.png) |
 
 
-# Class snacks
+# Class snacks (snacks)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:
@@ -67,7 +67,7 @@
 | tictac  |  ![](known_objects/snacks/tictac.jpg) |
 
 
-# Class dishes
+# Class dishes (dishes)
 
 | Objectname               |  Image                   |
 :-------------------------:|:-------------------------:

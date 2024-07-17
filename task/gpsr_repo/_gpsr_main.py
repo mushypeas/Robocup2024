@@ -46,6 +46,8 @@ class GPSR:
         self.color_list = color_list
         self.clothe_list = clothe_list
         self.clothes_list = clothes_list
+
+        print('objdata', objects_data)
         
         self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
         print("object_names", self.object_names)
