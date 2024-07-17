@@ -185,7 +185,7 @@ if __name__ == '__main__':
         elif command == 'handle_down':
             agent.pose.door_handle_down_pose()
         elif command == 'detect_3d':
-             print(agent.yolo_module.detect_3d('final_kitchen_table'))
+             print(agent.yolo_module.detect_3d('grocery_table'))
         elif command == 'yolo_bbox':
             print(agent.yolo_module.yolo_bbox)
         elif command == 'find_type_by_id':

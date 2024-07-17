@@ -59,7 +59,7 @@ ABS_POSITION = {
 
 TABLE_DIMENSION = {
     # width, depth, height
-    'grocery_table': [0.738, 1.00, 0.772],
+    'grocery_table': [1.00, 0.738, 0.78],
     'grocery_shelf': [
         [0.792, 0.285, 0],
         [0.792, 0.285, 0.413],

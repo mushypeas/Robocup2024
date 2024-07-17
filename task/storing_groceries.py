@@ -27,17 +27,17 @@ class StoringGroceries:
         # self.item_list = ['bowl']
 
         ## !!! Measured Distances !!!
-        self.table_dist = 0.90
+        self.table_dist = 0.98
         self.shelf_dist = 1.06
         self.place_dist = 0.12
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf'][0][0] * 0.9
                                 - self.place_dist * 2) / 2
 
         ## !!! Hard-Coded Offsets !!!
-        self.pick_front_bias = [0.03, 1.15, -0.02] # [x, y_ratio, height]
+        self.pick_front_bias = [0.03, 1.05, -0.02] # [x, y_ratio, height]
         self.pick_top_bias = [0.1, 0, -0.015]
         self.pick_bowl_bias = [0.0, 0.00, -0.10]
-        self.place_x_bias = [None, 0.0, 0.0, 0.0]
+        self.place_x_bias = [None, -0.36, -0.35, -0.32]
 
         self.open_shelf_location = 'grocery_shelf_door'
         self.open_shelf_move_y = 0.10
@@ -70,7 +70,7 @@ class StoringGroceries:
 
         # 1. reach into door
         self.agent.pose.reach_shelf_door_pose(shelf=self.place_shelf, floor=self.open_shelf_floor, side=side)
-        reach_move_x = self.shelf_dist - 0.58 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
+        reach_move_x = self.shelf_dist - 0.57 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
         if side == 'left':
             reach_move_y = -self.open_shelf_move_y
             open_move_yaw = self.open_shelf_move_yaw
@@ -90,7 +90,7 @@ class StoringGroceries:
         self.agent.move_rel(open_move_x, open_move_y, open_move_yaw, wait=True)
 
         # 3. move back to searcing position
-        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=False)
+        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=True)
 
 
     def search_shelf(self):
@@ -313,7 +313,6 @@ class StoringGroceries:
         ## 2. Search shelf
         rospy.logwarn('Examining items in shelf...')
         self.agent.say('Examining items in shelf.', show_display=True)
-        self.agent.pose.head_tilt(angle=self.shelf_head_angle)
         rospy.sleep(2) # give some time for the YOLO to update
         self.search_shelf()
         

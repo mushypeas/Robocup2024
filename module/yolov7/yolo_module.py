@@ -183,7 +183,7 @@ class YoloModule:
                     height_offset = 0.01
                     rospy.loginfo(f'Tiny object : {OBJECT_LIST[class_id]}')
                 else:
-                    height_offset = -0.01
+                    height_offset = -0.02
 
                 height_threshold = [height - height_offset, 1.5]
                 front_threshold = dist + depth
