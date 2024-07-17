@@ -7,29 +7,30 @@ yolo_classnames_path = 'weight/gpsr_pnu.cn'
 ## Official Github
 
 ABS_POSITION = {
+    'gpsr_instruction_point': [5.237, 0.330, 0.666], ## living room
     ## locations
-    'hallway cabinet': [0, 0, 0],
-    'entrance': [0, 0, 0],
-    'desk': [0, 0, 0],
-    'shelf': [0, 0, 0],
-    'coathanger': [0, 0, 0],
-    'exit': [0, 0, 0],
-    'TV table': [0, 0, 0],
-    'lounge chair': [0, 0, 0],
-    'lamp': [0, 0, 0],
-    'couch': [0, 0, 0],
-    'coffee table': [0, 0, 0],
-    'trashcan': [0, 0, 0],
-    'kitchen cabinet': [0, 0, 0],
-    'dinner table': [0, 0, 0],
-    'dishwasher': [0, 0, 0],
-    'kitchen counter': [0, 0, 0],
+    'hallway cabinet': [1.844, -1.643, -3.129],
+    'entrance': [-0.375, 0.042, -0.001],
+    'desk': [2.105, 2.877, -1.544],
+    'shelf': [2.105, 4.063, 3.092], ## not sure
+    'coathanger': [2.702, -0.657, 1.594],
+    'exit': [3.889, 6.493, 1.555],
+    'TV table': [5.730, -1.832, 3.113],
+    'lounge chair': [6.903, -1.614, -0.013],
+    'lamp': [6.903, -1.614, -0.013],
+    'couch': [9.195, 0.481, -1.526],
+    'coffee table': [7.087, -0.358, -0.684],
+    'trashcan': [5.279, 1.830, -2.469],
+    'kitchen cabinet': [5.620, 5.047, 3.131],
+    'dinner table': [5.535, 3.848, -0.022],
+    'dishwasher': [8.415, 3.729, -0.054],
+    'kitchen counter': [8.557, 4.859, -0.054],
     
     ## rooms
-    'hallway': [0, 0, 0],
-    'office': [0, 0, 0],
-    'kitchen': [0, 0, 0],
-    'living room': [0, 0, 0]
+    'hallway': [1.709, -2.260, 0.707],
+    'office': [1.584, 5.545, -1.036],
+    'kitchen': [8.569, 1.708, 2.376],
+    'living room': [5.237, 0.330, 0.666]
 }
 
 objects_file_path = 'CompetitionTemplate/objects/objects.md'
