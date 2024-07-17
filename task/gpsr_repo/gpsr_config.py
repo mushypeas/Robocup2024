@@ -4,39 +4,32 @@ gpsr_human_head_tilt = 0.0
 yolo_weight_path = 'weight/gpsr_pnu.pt'
 yolo_classnames_path = 'weight/gpsr_pnu.cn'
 
-ABS_POSITION = {
-    "gpsr_instruction_point": [2.024, -2.309, -0.018],
-    "bed": [5.532, -6.343, -0.716],
-    "bedside table": [5.532, -6.343, -0.716],
-    "shelf": [2.565, -2.458, -3.072],
-    "trashbin": [6.243, 0.243, 0.852],
-    "dishwasher": [6.421, -2.626, -1.449],
-    "potted plant": [6.421, -2.626, -1.449],
-    "kitchen table": [4.979, -1.283, -0.088],
-    "chairs": [3.505, -4.892, -3.091],
-    "pantry": [5.288, -0.300, 1.606],
-    "refrigerator": [6.285, -6.537, -0.094],
-    "sink": [5.288, -0.300, 1.606], 
-    "cabinet": [5.288, -0.300, 1.606],
-    "coatrack": [5.288, -0.300, 1.606],
-    "desk": [3.505, -4.892, -3.091],
-    "armchair": [3.505, -4.892, -3.091],
-    "desk lamp": [3.505, -4.892, -3.091],
-    "waste basket": [6.243, 0.243, 0.852],
-    "tv stand": [2.896, -2.714, -2.395],
-    "storage rack": [5.288, -0.300, 1.606],
-    "lamp": [3.505, -4.892, -3.091],
-    "side tables": [3.505, -4.892, -3.091],
-    "sofa": [3.129, -1.708, 1.596],
-    "bookshelf": [3.306, -6.430, -1.552],
-    "entrance": [0, 0, 0],
-    "exit": [0, 0, 0],
+## Official Github
 
-    "bedroom": [4.665, -4.642, -0.752],
-    "kitchen": [4.375, -3.410, 1.028],
-    "office": [3.863, -4.498, -2.332],
-    "living room": [2.873, -2.994, 1.622],
-    "bathroom": [2.873, -2.994, 1.622],
+ABS_POSITION = {
+    ## locations
+    'hallway cabinet': [0, 0, 0],
+    'entrance': [0, 0, 0],
+    'desk': [0, 0, 0],
+    'shelf': [0, 0, 0],
+    'coathanger': [0, 0, 0],
+    'exit': [0, 0, 0],
+    'TV table': [0, 0, 0],
+    'lounge chair': [0, 0, 0],
+    'lamp': [0, 0, 0],
+    'couch': [0, 0, 0],
+    'coffee table': [0, 0, 0],
+    'trashcan': [0, 0, 0],
+    'kitchen cabinet': [0, 0, 0],
+    'dinner table': [0, 0, 0],
+    'dishwasher': [0, 0, 0],
+    'kitchen counter': [0, 0, 0],
+    
+    ## rooms
+    'hallway': [0, 0, 0],
+    'office': [0, 0, 0],
+    'kitchen': [0, 0, 0],
+    'living room': [0, 0, 0]
 }
 
 objects_file_path = 'CompetitionTemplate/objects/objects.md'
@@ -47,13 +40,14 @@ names_list = [
     "Hayley", "Susan", "Fleur", "Gabrielle", "Robin", 
     "John", "Liam", "Lucas", "William", "Kevin", 
     "Jesse", "Noah", "Harrie", "Peter", "Robin"
-]
-## Gabriëlle
+] #Gabriëlle
 
 ############################################################
 ############################################################
 ############################################################
 ############################################################
+
+## Command Generator
 
 gesture_person_list = ["waving person", "person raising their left arm", "person raising their right arm",
                            "person pointing to the left", "person pointing to the right"]
