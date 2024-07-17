@@ -18,10 +18,10 @@ class StoringGroceries:
         self.place_only_mode = False
         
         ## !!! Environment params !!!
-        self.closed_shelf_side = 'right' # ['right', 'left']
+        self.closed_shelf_side = 'left' # ['right', 'left']
         self.open_shelf_floor = 2
         self.prior_categories = ['drink', 'fruit', 'food', 'snack']
-        self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag']
+        self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag', 'sausages']
         # self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag']
         self.item_list = None
         # self.item_list = ['bowl']
@@ -34,10 +34,10 @@ class StoringGroceries:
                                 - self.place_dist * 2) / 2
 
         ## !!! Hard-Coded Offsets !!!
-        self.pick_front_bias = [0.03, 1.05, -0.02] # [x, y_ratio, height]
+        self.pick_front_bias = [0.05, 1.05, -0.03] # [x, y_ratio, height]
         self.pick_top_bias = [0.1, 0, -0.015]
         self.pick_bowl_bias = [0.0, 0.00, -0.10]
-        self.place_x_bias = [None, -0.36, -0.35, -0.32]
+        self.place_x_bias = [None, -0.30, -0.30, -0.20]
 
         self.open_shelf_location = 'grocery_shelf_door'
         self.open_shelf_move_y = 0.10
@@ -141,7 +141,7 @@ class StoringGroceries:
                         new_shelf_item_cent_y -= self.new_category_dist
                     else:
                         new_shelf_item_cent_y += self.new_category_dist
-                break
+                    break
 
         rospy.loginfo(f"New Category Floor: {new_category_floor}F")
         self.shelf_item_dict['new'] = {
