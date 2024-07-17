@@ -269,7 +269,12 @@ class CheckSeat():
             host_idx = self.face_id.check_host(self.host_face_data, user_face_data_list)
         else:
             host_idx = 0
-            self.host_face_data = user_face_data_list[0]
+            if len(user_face_data_list):
+                self.host_face_data = user_face_data_list[0]
+            else:
+                print('!!!fucked up!!! open dummy data')
+                # when no face detected, open image from ./face_detection/face_img_debug using PIL.Image
+                self.host_face_data = Image.open(f"./face_detection/face_img_debug/0.png")
         print('check_seat check_empty_seat host_idx: ', host_idx)
 
         user_searched_idx = 0

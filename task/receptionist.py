@@ -101,11 +101,11 @@ def receptionist(agent):
     stt_sentence_mode = True # 1st trial - False, 2nd trial - True
 
     # open_door_mode = False
-    calibration_mode = True
+    calibration_mode = False
 
     #################### cloth threshold ####################
     # cloth_threshold = 0.15
-    #################### 2024 Eindhoven # NOT YET BUT NOTHING TO CHANGE
+    #################### 2024 Eindhoven # OK (NOTHING CHANGED)
     cloth_threshold = 0.15
 
     #################### face threshold ####################
@@ -208,8 +208,8 @@ def receptionist(agent):
     rospy.sleep(4)
 
     agent.pose.head_tilt(10)
-    agent.say('Hello, I am tidy boy.\n Please look at my face and\n stand to the guideline', show_display=True)
-    rospy.sleep(5)
+    agent.say('Hello.\n Please look at my face and\n stand to the guideline', show_display=True)
+    rospy.sleep(4)
 
     ### face attribute ###
     try:
@@ -496,7 +496,7 @@ def receptionist(agent):
     rospy.sleep(1.3)
     cs.gaze_seat(agent, first_2b_seated)
     agent.say(f'{name_host}\'s favorite drink\n is {drink_host}', show_display=True)
-    rospy.sleep(1.8)
+    rospy.sleep(3)
 
     # 6. meet the second guest
     # 6-1. go to door position
@@ -504,7 +504,7 @@ def receptionist(agent):
     agent.pose.head_pan(0)
     agent.move_abs_safe(cloth_position)
     # rospy.sleep(8)
-    rospy.sleep(4)
+    rospy.sleep(5)
 
     ### open door X ###
 
