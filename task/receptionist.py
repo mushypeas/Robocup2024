@@ -141,8 +141,8 @@ def receptionist(agent):
     # head_pan_angle = [45-5, 25-4, 10-5, -10-5, -25+3, -45+3, -65+5] # final term
     # head_pan_angle = [50, 35, 15, 0, -23] # PNU
     #################### 2024 Eindhoven # TEMPORARILY OK BUT CHECK NEEDED
-    head_pan_angle = [10, -17, -45] # NO LEFT SEAT
-    # head_pan_angle = [45, 30, 10, -17, -45] # ADDITIONAL TWO LEFT SEATS
+    # head_pan_angle = [10, -17, -50] # NO LEFT ////SEAT
+    head_pan_angle = [65, 50, 30, 10, -17, -50, -75, -105] # 
 
     # seat_scan이 중심 바라보도록 하는게 중요
     # 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
