@@ -166,7 +166,8 @@ class StoringGroceries:
                 height=self.table_height,
                 dist=self.table_dist,
                 depth=self.table_depth,
-                item_list=self.item_list
+                item_list=self.item_list,
+                ignore_items=self.ignore_items,
             )
         )
         table_item_list_sorted = table_item_list[table_item_list[:, 0].argsort()]
@@ -177,10 +178,9 @@ class StoringGroceries:
             table_item_type = self.agent.object_type_list[self.agent.yolo_module.find_type_by_id(table_item_id)]
             grasping_type = self.agent.yolo_module.find_grasping_type_by_id(table_item_id)
 
-            # Only grasp items of available categories that have failed less than 3 times
+            # Only grasp items of available categories that have failed less than 2 times
             if self.grasp_failure_count[table_item_id] <= 1 and\
-                table_item_type in self.prior_categories and\
-                table_item_name not in self.ignore_items:
+                table_item_type in self.prior_categories:
                 break
 
         rospy.loginfo(f"Table item name:  {table_item_name}")
@@ -364,6 +364,7 @@ class StoringGroceries:
                 self.agent.pose.table_search_pose(head_tilt=self.table_head_angle)
 
                 # 3-4. Check if grasping is successful
+                rospy.sleep(1)
                 has_grasped = self.check_grasp(grasping_type)
                 if has_grasped:
                     rospy.loginfo(f'Successfuly grasped {table_item_name}!')
