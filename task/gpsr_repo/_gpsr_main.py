@@ -5,7 +5,6 @@ from gpsr_cmds import *
 from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
-# from gpsr_clip import *
 from gpsr_config import *
 from gpsr_follow import *
 from gpsr_model_class import *
@@ -13,14 +12,12 @@ from gpsr_model_class import *
 from PIL import Image
 import cv2
 import torch
-import numpy as np
 
-from std_msgs.msg import Int16MultiArray, Float32MultiArray
+from std_msgs.msg import Float32MultiArray
 
 import torch
 import torch.nn.functional as F
 
-import numpy as np
 import Levenshtein
 import math
 import time
@@ -629,31 +626,7 @@ def gpsr(agent):
     # yolov10_process = subprocess.Popen(yolov10_command)
     yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
 
-    
     g = GPSR(agent)
-
-    # inputText = "Bring me an apple from the desk" #bringMeOjbFromPlcmt
-    # inputText = "Tell me how many drinks there are on the desk" #countObjOnPlcmt
-    # inputText = "Tell me what is the biggest food on the desk" #tellCatPropOnPlcmt
-    # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
-    # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
-    # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
-    # inputText = "Tell me how many lying persons are in the kitchen" #countPrsInRoom
-    # inputText = "Find a food in the kitchen then grasp it and put it on the bed" #findObjInRoom
-    # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
-    # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
-    # inputText = "Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen" #goToLoc
-    # inputText = "Introduce yourself to the person wearing an orange coat in the bedroom and answer a quiz" #greetClothDscInRm
-    # inputText = "Say hello to Jules in the living_room and tell the time" #greetNameInRm
-    # inputText = "Take the person wearing a white shirt from the living_room to the kitchen_table" #guideClothPrsFromBeacToBeac
-    # inputText = "Lead Paris from the lamp to the kitchen" #guideNameFromBeacToBeac
-    # inputText = "Lead the person raising their right arm from the bookshelf to the office" #guidePrsFromBeacToBeac
-    # inputText = "Meet Charlie at the shelf then find them in the living room" #meetNameAtLocThenFindInRm
-    # inputText = "Meet Jules in the living room and follow them" #meetPrsAtBeac
-    # inputText = "Take a cola from the desk and put it on the sofa" #takeObjFromPlcmt
-    # inputText = "Tell the day of the week to the person pointing to the left in the kitchen" #talkInfoToGestPrsInRoom
-    # inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
-    # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
 
     while g.task_finished_count < task_iteration:
 
