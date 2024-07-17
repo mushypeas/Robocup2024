@@ -505,7 +505,7 @@ class HumanFollowing:
                     print("right_background_count", right_background_count)
 
 
-                    if left_background_count > right_background_count : 
+                    if left_background_count > right_background_count or self.barrier_num > 20 : 
                         self.barrier_move_time = time.time()
                         print("right side is empty")
                         self.agent.move_rel(0.0,-0.6,0, wait=False) #then, HSR is intended to move right (pos)
@@ -518,6 +518,8 @@ class HumanFollowing:
                         self.agent.move_rel(0.0,0.6,0, wait=False) #then, HSR is intended to move left (neg)
                         rospy.sleep(0.1)
                         self.barrier_num += 1
+
+
                     ################240717 LIDAR VERSION##############
 
                 elif self.barrier_direction is 'l':
