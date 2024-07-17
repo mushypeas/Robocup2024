@@ -1786,7 +1786,7 @@ def carry_my_luggage(agent):
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.3
-    pose_save_time_period = 3
+    pose_save_time_period = 2
     start_location = agent.get_pose(print_option=False)
     bag_height = 0.25
     stop_rotate_velocity = 1.2 #1.2
