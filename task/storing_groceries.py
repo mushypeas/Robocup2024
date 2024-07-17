@@ -11,7 +11,7 @@ class StoringGroceries:
 
         ## !!! Mode params !!!
         # Set everything to False for actual task
-        self.ignore_arena_door = False
+        self.ignore_arena_door = True
         self.ignore_shelf_door = False
         
         self.picking_only_mode = False
@@ -27,8 +27,8 @@ class StoringGroceries:
         # self.item_list = ['bowl']
 
         ## !!! Measured Distances !!!
-        self.table_dist = 0.85
-        self.shelf_dist = 0.86
+        self.table_dist = 0.90
+        self.shelf_dist = 1.06
         self.place_dist = 0.12
         self.new_category_dist = (self.agent.table_dimension['grocery_shelf'][0][0] * 0.9
                                 - self.place_dist * 2) / 2
@@ -40,7 +40,7 @@ class StoringGroceries:
         self.place_x_bias = [None, 0.0, 0.0, 0.0]
 
         self.open_shelf_location = 'grocery_shelf_door'
-        self.open_shelf_move_y = 0.12
+        self.open_shelf_move_y = 0.10
         self.open_shelf_move_yaw = 0.05
 
         self.pick_table = 'grocery_table'
@@ -55,9 +55,7 @@ class StoringGroceries:
         self.shelf_width = self.agent.table_dimension[self.place_shelf][0][0]
         self.shelf_heights = [shelf_dim[2] for shelf_dim in self.agent.table_dimension['grocery_shelf']]
 
-        self.shelf_head_angle = np.arctan(
-            ((self.shelf_heights[1] + self.shelf_heights[2]) / 2 - 1.1) / self.shelf_dist # 1.1: HSR height
-        )
+        self.shelf_head_angle = -18.0
         print(f"shelf_head_angle: {self.shelf_head_angle}")
 
         self.shelf_item_dict = {}
@@ -72,7 +70,7 @@ class StoringGroceries:
 
         # 1. reach into door
         self.agent.pose.reach_shelf_door_pose(shelf=self.place_shelf, floor=self.open_shelf_floor, side=side)
-        reach_move_x = self.shelf_dist - 0.52 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
+        reach_move_x = self.shelf_dist - 0.58 # 0.52 is the min distance from base to gripper when in cling_shelf_door_pose
         if side == 'left':
             reach_move_y = -self.open_shelf_move_y
             open_move_yaw = self.open_shelf_move_yaw
@@ -131,7 +129,7 @@ class StoringGroceries:
         # 2. add new category in shelf_item_dict
         new_category_floor = np.argmin(object_cnts_by_floor)
         if object_cnts_by_floor[new_category_floor] == 0:
-            new_shelf_item_cent_x = self.shelf_dist[0]
+            new_shelf_item_cent_x = self.shelf_dist
             new_shelf_item_cent_y = 0
             new_shelf_item_cent_z = self.shelf_heights[new_category_floor] + 0.05
         else:
