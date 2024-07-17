@@ -508,63 +508,52 @@ class GPSR:
         # [TODO] Implement how the name can be identified
         
 
-    def identify(self):
+    def identify(self, type='default', pose=None, gest=None):
+        maware_count = 0
         while True:
-            if self.human_keypoints:
-                self.say("I found you")
-                rospy.sleep(1)
+            ### Check identify Type
+            if type == 'default':
+                if self.human_keypoints:
+                    break
+            
+            if type == 'pose':
+                human_poses = self.getPose(getAll=True)
+                if pose in human_poses:
+                    break
+                
+            if type == 'gest':
+                human_gests = self.getGest(getAll=True)
+                if gest in human_gests:
+                    break
+                
+                
+            ### To many maware? finish
+            if maware_count == 6:
                 break
-
-            else:
+            
+            ### Move to find human
+            if maware_count % 3 == 0:
                 self.move_rel(0, 0, math.pi/8)
-                rospy.sleep(1)
+            elif maware_count % 3 == 1:
+                self.move_rel(0, 0, -math.pi/4)
+            elif maware_count % 3 == 2:
+                self.move_rel(0, 0, math.pi/8)
+                
+            maware_count += 1
+            rospy.sleep(1)
+                
+        self.say("I found you")
+        rospy.sleep(1)
 
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
-        poseCount = 0
-
         if gestPosePers in self.pose_person_list:
-            print("Identify by pose")
-
-            while True:
-                feature = self.getPose()
-                print("gestpose", gestPosePers, "feature", feature)
-
-                if feature != gestPosePers:
-                    print(f"No {gestPosePers} detected")
-                    self.move_rel(0, 0, 0.5)
-                    rospy.sleep(1)
-                    continue
-
-                if poseCount == 2:
-                    self.identify()
-                    break
-
-                else:
-                    poseCount += 1
+            self.identify(type='pose', pose=gestPosePers)
 
         # Gesture
         elif gestPosePers in self.gesture_person_list:
-            print("Identify by gesture")
-
-            while True:
-                feature = self.getGest()
-                print("gestpose", gestPosePers, "feature", feature)
-
-        
-                if feature != gestPosePers:
-                    print(f"No {gestPosePers} detected")
-                    self.move_rel(0, 0, 0.5)
-                    rospy.sleep(1)
-                    continue
-
-                if poseCount == 2:
-                    self.identify()
-                    break
-
-                else:
-                    poseCount += 1
+            self.identify(type='gest', gest=gestPosePers)
 
         else:
             rospy.logwarn("No such gesture or pose")
