@@ -433,9 +433,9 @@ class Agent:
             rospy.sleep(1.0)
             print('door closed')
         self.say('door open'); rospy.sleep(1)
-        self.say('three'); rospy.sleep(1)
-        self.say('two');   rospy.sleep(1)
-        self.say('one');   rospy.sleep(1)
+        self.say('three'); rospy.sleep(0.5)
+        self.say('two');   rospy.sleep(0.5)
+        self.say('one');   rospy.sleep(0.5)
         return True
 
     def head_show_image(self, file_name='images/snu.png'):

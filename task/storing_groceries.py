@@ -11,7 +11,7 @@ class StoringGroceries:
 
         ## !!! Mode params !!!
         # Set everything to False for actual task
-        self.ignore_arena_door = True
+        self.ignore_arena_door = False
         self.ignore_shelf_door = False
         
         self.picking_only_mode = False
@@ -295,17 +295,22 @@ class StoringGroceries:
             self.agent.door_open()
             rospy.logwarn('Start Storing Groceries')
             self.agent.say('Start Storing Groceries', show_display=True)
-            rospy.sleep(1)
-            self.agent.move_rel(1.0, 0, wait=True) # Advance 1 meter twice
-            self.agent.move_rel(1.0, 0, wait=True) # to prevent arena door collision
+            # self.agent.move_rel(2.0, 0, wait=True) # Advance 2 meters
+            self.agent.move_abs_safe('living_living_1')
+            self.agent.move_abs_safe('living_living_2')
+
         else:
             rospy.logwarn('Start Storing Groceries')
             self.agent.say('Start Storing Groceries', show_display=True)
+            self.agent.move_abs_safe('living_living')
 
         ## 1. Open shelf door
         if not self.ignore_shelf_door:
-            # self.agent.move_abs_safe(self.open_shelf_location)
+            self.agent.say(f'Please close the \n {self.closed_shelf_side} shelf door.')
+            self.agent.move_abs_safe(self.open_shelf_location)
             self.open_shelf(side=self.closed_shelf_side)
+            self.agent.say(f'Please remove all \n big and tiny objects \n on the table.')
+            rospy.sleep(1)
 
         rospy.logwarn('Going to place_location...')
         self.agent.move_abs_safe(self.place_shelf)
