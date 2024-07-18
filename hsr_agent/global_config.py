@@ -39,13 +39,17 @@ if Eindhoven:
     print('[GLOBAL CONFIG] Eindhoven mode')
 
     ABS_POSITION = {
-        'pos_dining_table_1' :  [1,1,1],
-        'pos_dining_table_2' :  [1,1,1],
-        'pos_dining_table_3' :  [1,1,1],
-        'pos_dining_table_4' :  [1,1,1],
-        'pos_dining_table_5' :  [7.8103, 3.2688, 3.1361],
-        'pos_dining_table_6' :  [1,1,1],
-        'pos_dining_table_7' :  [1,1,1],
+        'living_living_1': [3.8317, -0.2223, 1.5071],
+        'living_living_2': [3.7858, 2.9424, 0.111],
+        'living_living_3': [6.6616, 1.6903, 0.3479],
+
+        'pos_dining_table_1' :  [5.905, 4.5752, -0.0291],
+        'pos_dining_table_2' :  [5.8859, 3.9397, -0.0196],
+        'pos_dining_table_3' :  [5.8413, 3.3573, -0.0137],
+        'pos_dining_table_4' :  [6.9409, 2.2648, 1.5593],
+        'pos_dining_table_5' :  [8.0103, 3.2688, 3.1361], #[8.0432, 3.8641, 3.0866]
+        'pos_dining_table_6' :  [8.0103, 3.9088, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
+        'pos_dining_table_7' :  [8.0103, 4.5088, 3.1361], # 임의 계산 from pos5 182 267
 
         # 'pos_office_table_1' : [1,1,1],
         # 'pos_office_table_2' : [1,1,1],

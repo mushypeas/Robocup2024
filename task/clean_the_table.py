@@ -9,7 +9,7 @@ def clean_the_table(agent: Agent):
 
     ### task params #############################################
     # ABS_POSITIONS #
-    pick_position = 'pos_dining_table_5'
+    pick_position = 'pos_dining_table_6'
     place_position = 'pos_dishwasher'
     # close_position1 = 'rack_close_position1'
     # close_position2 = 'rack_close_position2'
@@ -30,8 +30,8 @@ def clean_the_table(agent: Agent):
     # MODE PARAMETERS #
     no_distancing_mode = True
     picking_mode = True
-    placing_mode = True
-    door_open_mode = True
+    placing_mode = False
+    door_open_mode = False
     rack_close_mode = True
 
     item_list = ['bowl',  'fork', 'spoon', 'knife', 'cup', 'plate']
@@ -67,6 +67,9 @@ def clean_the_table(agent: Agent):
     if door_open_mode:
         agent.door_open()
         agent.move_rel(2.0, 0, wait=True)
+        agent.move_abs_safe('living_living_1')
+        agent.move_abs_safe('living_living_2')
+        agent.move_abs_safe('living_living_3')
     
     agent.say('start clean the table', show_display=True)
     # import pdb; pdb.set_trace()
@@ -163,13 +166,14 @@ def clean_the_table(agent: Agent):
 
             elif item == 'cup':
 
-                agent.pose.pick_side_pose_by_height(height = 0.78) # dining table의 경우 (0.77 + 0.01)
+                agent.pose.pick_side_pose_by_height(height = 0.77) # dining table의 경우 (0.77 + 0.01)
                 # agent.pose.pick_side_pose_by_height(height = 0.76) # office table의 경우 (0.75 + 0.01)
                 # agent.pose.pick_side_pose_by_height(height = 0.49) # livingroom table의 경우 (0.48 + 0.01)
                 
                 # agent.pose.pick_side_cup_pose(table=pick_table)
                 agent.open_gripper()
-                agent.move_rel(base_xyz[0]+0.20, base_xyz[1] + 0.03, wait=True)
+                agent.move_rel(0, base_xyz[1] + 0.03, wait=True)
+                agent.move_rel(base_xyz[0]+0.20, 0, wait=True)
                 
                 agent.grasp()
 
