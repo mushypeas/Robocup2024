@@ -497,6 +497,14 @@ class GPSR:
         return "black t shirt"
         
     def identify(self, type='default', pose=None, gest=None):
+        
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
+        self.move_rel(0, 0, -math.pi/4)
+        rospy.sleep(1)
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
+        
         maware_count = 0
         while True:
             ### Check identify Type
@@ -540,6 +548,12 @@ class GPSR:
     def identifyByName(self, name):
         self.say(f"{name}, please come closer to me.")
         rospy.sleep(3) 
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
+        self.move_rel(0, 0, -math.pi/4)
+        rospy.sleep(1)
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
         self.say(f"I found you {name}")
         rospy.sleep(1.5)
 
