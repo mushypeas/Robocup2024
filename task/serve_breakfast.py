@@ -336,14 +336,12 @@ class ServeBreakfast:
 
         ### task start ###
 
-        self.agent.door_open()
-        self.agent.say('Hi, I will serve breakfast for you!')
-        # rospy.sleep(2)
-        # self.agent.move_rel (0, 3)
-        self.agent.move_abs_safe('hallway')
-        self.agent.move_abs_safe('livingroom')
-        import pdb; pdb.set_trace()
+        # self.agent.door_open()
+        # self.agent.say('Hi, I will serve breakfast for you!')
+        # self.agent.move_abs_safe('hallway')
+        # self.agent.move_abs_safe('livingroom')
         self.agent.move_abs('picking_location')
+        import pdb; pdb.set_trace()
         # self.agent.say('I will move to picking location')
  
         picked_items = []
