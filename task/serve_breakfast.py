@@ -80,7 +80,7 @@ class ServeBreakfast:
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'dinner_table'
+        self.place_table = 'dinner_table_cabinet'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
     # def picking_test_mode(self, item, table_base_xyz):
@@ -377,7 +377,7 @@ class ServeBreakfast:
             ## 3. Go to place_location
             rospy.logwarn('Going to place_location...')
             self.agent.say('I will move to a different location. Please be careful.')
-            self.agent.move_rel(0, -1.0, wait=True)            
+            # self.agent.move_rel(0, -1.0, wait=True)            
             self.agent.move_abs_safe(self.place_table)
             self.agent.move_rel(-0.4, 0)
             # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.

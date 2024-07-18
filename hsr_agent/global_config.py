@@ -61,6 +61,8 @@ if Robocup: # 240710 mjgu 추가
         'kitchen_cabinet': [0.792, 0.285, 1.058],
         'dish_washer': [0.60, 0.595, 0.85],
         'dinner_table': [0.78, 2.00, 0.772],
+        'dinner_table_counter': [0.78, 2.00, 0.772],
+        'dinner_table_cabinet': [0.78, 2.00, 0.772],
         'test_table' : [0.8, 0.8, 0.815], # dinner table보다 4cm 높음 
         }
 
