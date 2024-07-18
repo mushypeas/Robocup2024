@@ -26,7 +26,7 @@ ABS_POSITION = {
     'inspection': [4.8333, 2.7961, 1.6308],
 
     # storing grocery
-    'grocery_table': [5.6348, 4.481, -0.0264],
+    'grocery_table': [5.6348, 4.081, -0.0264],
     'grocery_shelf': [5.6019, 4.9918, 3.127],
     'grocery_shelf_door': [5.7569, 5.07, 3.13],
 

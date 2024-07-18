@@ -37,7 +37,7 @@ class StoringGroceries:
         self.pick_front_bias = [0.05, 1.05, -0.03] # [x, y_ratio, height]
         self.pick_top_bias = [0.1, 0, -0.015]
         self.pick_bowl_bias = [0.0, 0.00, -0.10]
-        self.place_x_bias = [None, -0.30, -0.30, -0.20]
+        self.place_x_bias = [None, -0.33, -0.33, -0.22]
 
         self.open_shelf_location = 'grocery_shelf_door'
         self.open_shelf_move_y = 0.10
