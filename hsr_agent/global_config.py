@@ -12,7 +12,7 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/0716v1.pt' 
+yolo_weight_path = 'weight/0716v3.pt' 
 yolo_classnames_path = 'weight/classnames.cn'
 
 try:
@@ -33,27 +33,15 @@ if Robocup: # 240710 mjgu 추가
 
     ABS_POSITION_Robocup = {
         # serve breakfast
-        'Entrance' :[0, 0, 0],          
-        'picking_location': [7.9502, 5.3833, 0.0163], # (좌표 6) dish washer 앞 60cm 지점
-        'kitchen_counter' : [7.9502, 5.3833, 0.0163], # 80cm 앞. pick_table 후보 1
-        'kitchen_cabinet' : [4.8601, 5.3832, -3.1016], # 60cm 앞. pick_table 후보 2
-        'dish_washer' : [8.1305, 4.1887, 0.0141], # 60cm 앞. pick_table 후보 3
-        'dinner_table_counter': [5.3689, -1.3234, 0.0665], # (좌표 5) 60m 앞
-        'dinner_table_cabinet': [5.1436, 4.2293, 0.0502], # (좌표 8) 60m 앞
-    }
-
-        # 좌표 1. 문 앞에서 직진 3m 정도 한 지점 [3.3894, 0.1851, 0.0061]
-        # 좌표 2. 좌표 1에서 좌측 3m 정도 간 지점 [3.356, 3.1656, 0.044]
-        # 좌표 3. 좌표 2에서 앞으로 1m 정도 간 지점 (kitchen_basket이 pickup table일 경우 60cm 앞 평행한 지점 [4.8702, 3.4057, -0.0066]
-        # 좌표 4. kitchen_cabinet 앞 60cm 지점 [4.8601, 5.3832, -3.1016]
-        # 좌표 5. 좌표 4에서 dinner_table 앞 60cm 지점 [5.1436, 4.2293, 0.0502]
-        # 좌표 6. dish washer 앞 60cm 지점 [8.1305, 4.1887, 0.0141]
-        # 좌표 7. kitchen counter 앞 80cm 지점 [7.9502, 5.3833, 0.0163]
-        # 좌표 8. dinner table 앞 60cm 지점 (좌표 5의 반대편) [7.4391, 4.3351, 3.1374]
-        # 좌표 9. dinner table 옆 80cm~1m 지점 (안전하게 가기 위한 체크 포인트) [6.226, 2.2863, 0.0322]
-
-        # *** 다른 방의 가구를 가져와서 사용할 가능성이 존재함. 
-        # ex) living room에 있는 원탁 테이블 (낮지만 원탁임)
+        'Entrance' :[0, 0, 0],       
+        'hallway' : [3.8827, -0.5537, -0.0261],   # bj 땀
+        'livingroom' : [8.9285, 0.6183, 1.5787], # bj 땀
+        'picking_location': [7.9502, 5.3833, 0.0163], # (좌표 6) dish washer 앞 60cm 지점 
+        'kitchen_counter' : [8.5652, 4.8247, -0.0005], # 80cm 앞. pick_table 후보 1 (bj, )
+        # 'kitchen_cabinet' : [4.8601, 5.3832, -3.1016], # 60cm 앞. pick_table 후보 2
+        'dish_washer' : [8.5045, 3.6366, 0.0131], # 60cm 앞. pick_table 후보 3 (병주가 땀, )
+        'dinner_table': [8.5045, 4.9366, 0.0131], # dish_washer 쪽 , place_table 위치
+        }
 
     TABLE_DIMENSION = {
         # width, depth, height

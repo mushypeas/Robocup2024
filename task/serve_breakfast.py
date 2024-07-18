@@ -22,7 +22,7 @@ import math
 # Milk : 0.075 * 0.07 * 0.098 (앞) / 0.114 (뒤)
 #########################################################################
 
-  
+  # pick_bowl_pose_last 에서 4cm 정도 내려가기
 class ServeBreakfast:
 
     def __init__(self, agent: Agent):
@@ -42,7 +42,7 @@ class ServeBreakfast:
         #      0.075 * 0.07 * 0.114 (뒤)
         # Cornflakes 0.291 * 0.055 * 0.26
 
-        self.item_list = ['bowl','cornflakes','milk','spoon','fork']
+        self.item_list = ['bowl','spoon', 'fork', 'knife', 'cornflakes', 'milk']
         
         # !!! Measured Distances !!!
         self.dist_to_pick_table = 0.8
@@ -214,6 +214,7 @@ class ServeBreakfast:
         # elif pick_table == 'dish_washer':
 
         if item == 'bowl':
+            self.agent.move_abs('dish_washer')
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_bowl_bias)]
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_up_bowl_pose(table=self.pick_table)
@@ -228,8 +229,21 @@ class ServeBreakfast:
             #     self.agent.move_rel(0.2, table_base_xyz[1], wait=False)
             #     self.agent.open_gripper(wait=False)
 
-        elif item in ['cornflakes', 'milk']:
+        elif item in ['cornflakes']:
             table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+            self.agent.move_abs('kitchen_counter')
+            self.agent.move_rel(0, table_base_xyz[1], wait=False)
+            self.agent.pose.pick_side_pose(table=self.pick_table)
+            self.agent.open_gripper(wait=False)
+            # self.agent.pose.pick_side_pose_by_height(height=self.pick_table_height + self.pick_front_bias[2] + self.item_height[item]/2)
+            self.agent.move_rel(table_base_xyz[0], 0, wait=True)
+            self.agent.grasp(wait=False)
+            rospy.sleep(0.5) 
+            self.agent.move_rel(-0.4, 0, wait=False)
+
+        elif item in ['milk']:
+            table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_front_bias)]
+            self.agent.move_abs('kitchen_cabinet')
             self.agent.move_rel(0, table_base_xyz[1], wait=False)
             self.agent.pose.pick_side_pose(table=self.pick_table)
             self.agent.open_gripper(wait=False)
@@ -249,7 +263,8 @@ class ServeBreakfast:
             if item == 'spoon' or 'fork':
                 # self.agent.pose.pick_top_pose_by_height(height=self.pick_table_height + self.pick_top_bias[2])
                 table_base_xyz = [axis + bias for axis, bias in zip(table_base_xyz, self.pick_top_bias)]
-                self.agent.pose.pick_up_spoon_pose(table=self.pick_table)
+                self.agent.move_abs('dish_washer')
+                self.agent.pose.pick_down_spoon_pose(table=self.pick_table)
                 self.agent.open_gripper(wait=False)
                 self.agent.move_rel(0, table_base_xyz[1], wait=True)
                 self.agent.move_rel(table_base_xyz[0], 0, wait=True)       
@@ -321,10 +336,13 @@ class ServeBreakfast:
 
         ### task start ###
 
-        # self.agent.door_open()
+        self.agent.door_open()
         self.agent.say('Hi, I will serve breakfast for you!')
         # rospy.sleep(2)
         # self.agent.move_rel (0, 3)
+        self.agent.move_abs_safe('hallway')
+        self.agent.move_abs_safe('livingroom')
+        import pdb; pdb.set_trace()
         self.agent.move_abs('picking_location')
         # self.agent.say('I will move to picking location')
  

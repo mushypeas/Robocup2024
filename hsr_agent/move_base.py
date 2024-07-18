@@ -135,7 +135,8 @@ class MoveBase:
         pose = PoseStamped()
         # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "base_link"
-        pose.pose.position = Point(x, y, 0)goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
+        pose.pose.position = Point(x, y, 0)
+        goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
         goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
         pose.pose.orientation = Quaternion(*quat)
