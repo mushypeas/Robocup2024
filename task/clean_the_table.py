@@ -30,21 +30,21 @@ def clean_the_table(agent: Agent):
     # MODE PARAMETERS #
     no_distancing_mode = True
     picking_mode = True
-    placing_mode = False
+    placing_mode = True
     door_open_mode = False
     rack_close_mode = True
 
-    item_list = [ 'bowl', 'fork', 'spoon', 'knife', 'plate','mug' ]
+    item_list = [ 'bowl', 'fork', 'spoon', 'knife', 'plate','cup' ]
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
     short_move = 2.0
 
     cutlery_box_position = [0.2, 0.1]
-    place_position_dict = {'mug': [0.2, -0.10], 'bowl': [0.2, 0], 'plate': [0.2, 0], 'fork': cutlery_box_position,
+    place_position_dict = {'cup': [0.2, -0.10], 'bowl': [0.2, 0], 'plate': [0.2, 0], 'fork': cutlery_box_position,
                     'knife': cutlery_box_position, 'spoon': cutlery_box_position}
 
-    is_using_check_grasp_dict = {'mug': True, 'bowl': True, 'plate': True,
+    is_using_check_grasp_dict = {'cup': True, 'bowl': True, 'plate': True,
                                  'fork': False, 'knife': False, 'spoon': False}     # do not use check_grasp for motions that scrapes the table
     miss_count = 0
     is_picked = False
@@ -67,7 +67,7 @@ def clean_the_table(agent: Agent):
         agent.move_rel(2.0, 0, wait=True)
     
     agent.say('start clean the table', show_display=True)
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     while True:
         if picking_mode:
@@ -131,18 +131,21 @@ def clean_the_table(agent: Agent):
 
             ####### safe_flag mountain #######
 
-
+            print(pick_table)
 
             safe_flag = 0
             is_using_check_grasp = is_using_check_grasp_dict[item]      # choose miss detection between check_grasp and yolo
-
+            
             if item == 'bowl':
+                
                 agent.pose.bring_bowl_pose(table=pick_table) # 살짝 들림
                 agent.open_gripper()
 
-                agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.07, wait=True)
+                
+                agent.move_rel(base_xyz[0] + 0.17, base_xyz[1] + 0.02, wait=True) # 0.17 0.04
 
-                agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
+                # agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023
+                agent.pose.pick_bowl_max_pose_bj(table=pick_table, height=-0.1) # 90도 가까움, -0.1 for 2023 # dining table이 나온다고 가정 시
                 agent.grasp()
                 rospy.sleep(0.5)
 
@@ -153,9 +156,9 @@ def clean_the_table(agent: Agent):
                 agent.move_rel(-0.2, 0)
 
 
-            elif item == 'mug':
+            elif item == 'cup':
 
-                agent.pose.pick_side_pose_by_height(height = (0.73 - 0.02))
+                agent.pose.pick_side_pose_by_height(height = 0.78)
                 
                 # agent.pose.pick_side_cup_pose(table=pick_table)
                 agent.open_gripper()
@@ -265,7 +268,7 @@ def clean_the_table(agent: Agent):
             #         agent.say(f'I picked the {item}', show_display=True)
             #         num_gripped_items += 1
             #     else:
-            #         if item in double_check_item_list: # plate, bowl, mug등은 yolo로 한번 더 확인
+            #         if item in double_check_item_list: # plate, bowl, cup등은 yolo로 한번 더 확인
             #             rospy.sleep(0.5)
             #             agent.move_abs(pick_position)
             #             rospy.sleep(1)
@@ -423,7 +426,13 @@ def clean_the_table(agent: Agent):
 
             agent.open_gripper()
 
+            rospy.sleep(short_move)
+
+            agent.pose.arm_lift_up(arm_lift_value)
+
             agent.pose.table_search_pose()
+
+
 
         # if num_gripped_items == 4:
         #     #Rack Close Action

@@ -5,6 +5,7 @@ def make_object_list(yolo_classname_path, is_yolov10=True):
     # yolo_classname path
     if not is_yolov10:
         file_path = os.path.join('/home/tidy/Robocup2024/module/yolov7', yolo_classname_path)
+        
     if is_yolov10:
         file_path = os.path.join('/home/tidy/Robocup2024/module/yolov10', yolo_classname_path)
 

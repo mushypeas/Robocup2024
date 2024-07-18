@@ -23,11 +23,13 @@ if is_yolov10:
 #     yolo_weight_path = 'weight/pnu_final.pt'
 #     yolo_classnames_path = 'weight/pnu_final.cn'
     yolo_weight_path = 'weight/0715v2.pt'
-    yolo_classnames_path = 'weight/0715v2.cn'
+    yolo_classnames_path = 'weight/classnames.cn'
 
 
 try:
-        OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
+    print(is_yolov10)
+    OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
+    
 except:
     print('Error: Cannot load object list')
     pass
@@ -42,8 +44,10 @@ if Eindhoven:
         # CTT
         # 'pos_target_table' : [7.3643, 3.7794, 3.131], # 병주가 직접땀. 재문파트가 이쌍했음.
         # 'pos_target_table' : [6.3748, 2.6865, 1.5975],# 병주가 직접땀. 재문파트가 이쌍했음.
-        'pos_target_table' : [5.3226, 3.6826, -0.0141], # 병주가 직접땀. 재문파트가 이쌍했음. 3번 position
-        'pos_dishwasher': [7.5986, 4.116, 0.0285] # 병주가 직접땀. 재문파트가 이쌍했음.
+        # 'pos_target_table' : [5.3226, 3.6826, -0.0141], # 병주가 직접땀. 재문파트가 이쌍했음. 3번 position
+        'pos_target_table' :  [7.8103, 3.2688, 3.1361],
+        # 'pos_dishwasher': [7.5986, 4.116, 0.0285] # 병주가 직접땀. 재문파트가 이쌍했음.
+        'pos_dishwasher': [8.1414, 3.6023, -0.0372]
         
 
     }
@@ -51,9 +55,8 @@ if Eindhoven:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'tab_target_table': [0.78, 2.00, 0.82] ,
+        'tab_target_table': [0.78, 2.00, 0.770] ,
         'tab_dishwasher' : [0.600, 0.610, 0.340], # 병주가 직접 둘째날 아침에 잰거임. 아주 정확하지 않을수도 있음.
-        'breakfast_table': [0.78, 2.00, 0.785]
         
     }
 
