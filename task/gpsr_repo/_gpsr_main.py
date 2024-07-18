@@ -654,11 +654,11 @@ def gpsr(agent):
 
     g = GPSR(agent)
     
-    agent.pose.move_pose()
-    agent.initial_pose('zero')
-    agent.say('start gpsr')
-    agent.door_open()
-    agent.move_rel(1.0, 0, wait=True)
+    # agent.pose.move_pose()
+    # agent.initial_pose('zero')
+    # agent.say('start gpsr')
+    # agent.door_open()
+    # agent.move_rel(1.0, 0, wait=True)
 
     while g.task_finished_count < task_iteration:
 

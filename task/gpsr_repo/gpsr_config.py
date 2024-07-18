@@ -1,7 +1,7 @@
 task_iteration = 3
 gpsr_human_head_tilt = 0.0
 
-yolo_weight_path = 'weight/' + '0716v2.pt'
+yolo_weight_path = 'weight/' + '0717v2.pt'
 yolo_classnames_path = 'weight/' + 'classnames.cn'
 
 ## Official Github

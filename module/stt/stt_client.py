@@ -1,5 +1,3 @@
-## stt_client.py
-        
 import time
 import rospy
 from playsound import playsound
