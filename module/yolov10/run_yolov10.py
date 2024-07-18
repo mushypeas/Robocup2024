@@ -35,6 +35,7 @@ class custom_Yolov10:
         rgb_topic = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
         self._rgb_sub = rospy.Subscriber(rgb_topic, Image, self._rgb_callback)
         self._pc_sub = rospy.Subscriber(PC_TOPIC, PointCloud2, self._pc_callback, queue_size=1)
+        self.rgb_pub = rospy.Publisher('/snu/image', Int16MultiArray, queue_size=10)
         self.yolo_pub = rospy.Publisher('/snu/yolo', Int16MultiArray, queue_size=10)
 
         #shlim /snu/yolo for carry my luggage bag detection; add confidence score
@@ -43,6 +44,7 @@ class custom_Yolov10:
         self.ready()
 
     def _rgb_callback(self, img_msg):
+        self.rgb_pub.publish(img_msg)
         self.rgb_img = self.bridge.imgmsg_to_cv2(img_msg, 'bgr8')
         rospy.loginfo('Received rgb callback')
 

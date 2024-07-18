@@ -357,6 +357,12 @@ class HumanFollowing:
     def escape_barrier(self, calc_z):
 
         # calc_z = self.calc_z
+        if time.time() - self.last_say > 4.0:
+            if (calc_z > 1500)
+                self.agent.say('You are too far. Please go slowly!', show_display=True)
+                print("'You are too far. Please go slowly!")
+                self.last_say = time.time()
+        
 
         cur_pose = self.agent.get_pose(print_option=False)
  
@@ -1977,7 +1983,7 @@ def carry_my_luggage(agent):
                     rospy.sleep(3)
                     if calc_z > 400.0: #0.3m보다 멀면 살짝 앞으로 이동
                         agent.move_rel(0.1,0,0, wait=False)
-                        rospyl.sleep(2)
+                        rospy.sleep(2)
                     human_info_ary = copy.deepcopy(human_following.human_box_list)
                     depth = np.asarray(now_d2pc.depth)
 

@@ -303,6 +303,6 @@ class Bytetrack_ros:
 
 if __name__ == "__main__":
     rospy.init_node('dd')
-    rgb_topic='/hsrb/head_rgbd_sensor/rgb/image_raw'
+    rgb_topic='/snu/image'
     Bytetrack_ros(rgb_topic)
     rospy.spin()
