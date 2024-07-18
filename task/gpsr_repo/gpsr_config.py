@@ -43,6 +43,13 @@ names_list = [
     "Jesse", "Noah", "Harrie", "Peter", "Robin"
 ] #Gabriëlle
 
+############################################################
+############################################################
+############################################################
+############################################################
+
+## Telegram
+
 quiz_dict = {
     "What is the highest mountain in the Netherlands?": "The Vaalserberg is the highest mountain in the Netherlands, although parts of the mountain belong to Belgium and Germany.",
     "Which painter created the Night Watch?": "It was created by the Dutch painter Rembrandt.",
