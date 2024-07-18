@@ -15,14 +15,12 @@ PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 if is_yolov10==False:
     yolo_weight_path = 'weight/best_0704.pt'
-    # yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
     yolo_classnames_path = 'weight/best_0704.cn'
 
 
 if is_yolov10:
-#     yolo_weight_path = 'weight/pnu_final.pt'
-#     yolo_classnames_path = 'weight/pnu_final.cn'
     yolo_weight_path = 'weight/0715v2.pt'
+    # yolo_weight_path = 'weight/0716v3.pt' (실험 시도 가능 )
     yolo_classnames_path = 'weight/classnames.cn'
 
 
@@ -41,12 +39,26 @@ if Eindhoven:
     print('[GLOBAL CONFIG] Eindhoven mode')
 
     ABS_POSITION = {
-        # CTT
-        # 'pos_target_table' : [7.3643, 3.7794, 3.131], # 병주가 직접땀. 재문파트가 이쌍했음.
-        # 'pos_target_table' : [6.3748, 2.6865, 1.5975],# 병주가 직접땀. 재문파트가 이쌍했음.
-        # 'pos_target_table' : [5.3226, 3.6826, -0.0141], # 병주가 직접땀. 재문파트가 이쌍했음. 3번 position
-        'pos_target_table' :  [7.8103, 3.2688, 3.1361],
-        # 'pos_dishwasher': [7.5986, 4.116, 0.0285] # 병주가 직접땀. 재문파트가 이쌍했음.
+        'pos_dining_table_1' :  [1,1,1],
+        'pos_dining_table_2' :  [1,1,1],
+        'pos_dining_table_3' :  [1,1,1],
+        'pos_dining_table_4' :  [1,1,1],
+        'pos_dining_table_5' :  [7.8103, 3.2688, 3.1361],
+        'pos_dining_table_6' :  [1,1,1],
+        'pos_dining_table_7' :  [1,1,1],
+
+        # 'pos_office_table_1' : [1,1,1],
+        # 'pos_office_table_2' : [1,1,1],
+        # 'pos_office_table_3' : [1,1,1],
+        # 'pos_office_table_4' : [1,1,1],
+        # 'pos_office_table_5' : [1,1,1],
+
+        # 'pos_livingroom_table_1' : [1,1,1],
+        # 'pos_livingroom_table_2' : [1,1,1],
+        # 'pos_livingroom_table_3' : [1,1,1],
+        # 'pos_livingroom_table_4' : [1,1,1],
+        # 'pos_livingroom_table_5' : [1,1,1],
+
         'pos_dishwasher': [8.1414, 3.6023, -0.0372]
         
 
@@ -55,7 +67,11 @@ if Eindhoven:
 
     TABLE_DIMENSION = {
         # width, depth, height
-        'tab_target_table': [0.78, 2.00, 0.770] ,
+        'tab_dining_table': [0.78, 2.00, 0.770] ,
+        # 'tab_office_table': [0.897, 2.02, 0.75],
+        # 'tab_livingroom_table': [0.905, 0.905, 0.48],
+
+
         'tab_dishwasher' : [0.600, 0.610, 0.340], # 병주가 직접 둘째날 아침에 잰거임. 아주 정확하지 않을수도 있음.
         
     }
