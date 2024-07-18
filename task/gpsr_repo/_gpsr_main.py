@@ -314,16 +314,22 @@ class GPSR:
         self.say("Ask question after the ding sound")
         rospy.sleep(3)
         userSpeech = self.hear(7.)
-        additionalPrompt = "Answer easy and short as you can, less than 20 words."
-        try:
-            robotAns = chat(userSpeech + additionalPrompt)
-        except Exception as e:
-            print(e)
-            print("Error in quiz")
-            robotAns = "Question is hard! Good luck."
+        # additionalPrompt = "Answer easy and short as you can, less than 20 words."
+        # try:
+        #     robotAns = chat(userSpeech + additionalPrompt)
+        # except Exception as e:
+        #     print(e)
+        #     print("Error in quiz")
+        #     robotAns = "Question is hard! Good luck."
 
-        self.say(robotAns)
-        rospy.sleep(7)
+        # self.say(robotAns)
+        # rospy.sleep(7)
+        
+        quiz_cmd = self.cluster(userSpeech, quiz_list)
+        quiz_ans = quiz_dict[quiz_cmd]
+        
+        self.say(quiz_ans)
+        rospy.sleep(5)
 
     def cluster(self, word, arr):
         if word in arr:
@@ -629,6 +635,12 @@ def gpsr(agent):
     yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
 
     g = GPSR(agent)
+    
+    agent.pose.move_pose()
+    agent.initial_pose('zero')
+    agent.say('start gpsr')
+    agent.door_open()
+    agent.move_rel(1.0, 0, wait=True)
 
     while g.task_finished_count < task_iteration:
 
