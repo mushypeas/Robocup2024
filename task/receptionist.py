@@ -96,9 +96,9 @@ def receptionist(agent):
     # second guest 소개 시 고개를 몇도 돌려야 하는지? scan_position과 scan_bypass_position 각도 차이
     # second_guest_head_pan_degree = -180 # PNU
     #################### 2024 Eindhoven # TEMPORARILY OK
-    second_guest_head_pan_degree = 165
+    second_guest_head_pan_degree = -180
 
-    stt_sentence_mode = False # 1st trial - False, 2nd trial - True
+    stt_sentence_mode = True # 1st trial - False, 2nd trial - True
 
     # open_door_mode = False
     calibration_mode = False
@@ -142,7 +142,7 @@ def receptionist(agent):
     # head_pan_angle = [50, 35, 15, 0, -23] # PNU
     #################### 2024 Eindhoven # OK
     # head_pan_angle = [10, -17, -50] # NO LEFT ////SEAT
-    head_pan_angle = [65, 50, 30, 10, -17, -50, -75, -105] # 
+    head_pan_angle = [65, 50, 30, 10, -17, -50, -75] # 
 
     # seat_scan이 중심 바라보도록 하는게 중요
     # 한쪽만 각도 체크 하고 반대쪽은 부호만 바꾸어 설정하면 됨.
@@ -161,13 +161,13 @@ def receptionist(agent):
     # name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
     # drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
     #################### 2024 Eindhoven # ALMOST OK ... Too dutch style names "gabriëlle, fleur, jesse, dubbelfris", stt may not be good
-    name_list = ['emma', 'fleur', 'gabrielle', 'harrie', 'hayley', 'jesse', 'john', 'julia', 'kevin', 'laura', 'liam', 'lucas', 'noah', 'peter', 'robin', 'sara', 'sophie', 'susan', 'william']
-    drink_list = ['cola', 'ice tea', 'water', 'milk', 'big coke', 'fanta', 'dubbelfris']
+    name_list = ['bob', 'emma', 'fleur', 'gabrielle', 'harrie', 'hayley', 'jesse', 'john', 'julia', 'kevin', 'laura', 'liam', 'lucas', 'noah', 'peter', 'robin', 'sara', 'sophie', 'susan', 'william']
+    drink_list = ['coffee', 'cola', 'ice tea', 'water', 'milk', 'big coke', 'fanta', 'dubbelfris']
 
     #################### host information ####################
     # name_host = 'john'
     # drink_host = 'milk'
-    #################### 2024 Eindhoven # TEMPORAIRLY OK BUT CHECK NEEDED
+    #################### 2024 Eindhoven # OK
     name_host = 'john'
     drink_host = 'milk'
 
@@ -205,27 +205,30 @@ def receptionist(agent):
     agent.pose.move_pose()
     agent.move_abs_safe(cloth_position)
     # rospy.sleep(8)
-    rospy.sleep(4)
+    rospy.sleep(2.5)
 
     agent.pose.head_tilt(10)
-    agent.say('Hello.\n Please look at my face and\n stand to the guideline', show_display=True)
-    rospy.sleep(4)
+    agent.say('Hello.\n Please look at me', show_display=True)
+    rospy.sleep(3)
 
     ### face attribute ###
-    try:
-        gender, age = face_attr.face_attribute(agent)
-    except:
-        gender = ['male']
-        age = '20-29'
+    # try:
+    #     gender, age = face_attr.face_attribute(agent)
+    # except:
+    #     gender = ['male']
+    #     age = '20-29'
+    gender = ['male']
+    age = '20-29'
     print('receptionist gender,age: ', gender, age)
-    rospy.sleep(1)
+    rospy.sleep(1.5)
 
     ### cloth attribute ###
-    agent.pose.head_tilt(-7.5)
-    if calibration_mode:
-        attr.cloth_extract_calibration_mode(agent)
-    clothes, hair_color = attr.scan_human(agent)
-    print('receptionist clothes: ', clothes)
+    # agent.pose.head_tilt(-7.5)
+    # if calibration_mode:
+    #     attr.cloth_extract_calibration_mode(agent)
+    # clothes, hair_color = attr.scan_human(agent)
+    # print('receptionist clothes: ', clothes)
+    clothes = 'long pants'
     agent.pose.head_tilt(10)
 
     #################### TODO: STT ####################
@@ -355,17 +358,17 @@ def receptionist(agent):
     else:
         ### Trial 2 (sentence parsing with pattern/spacy)
         agent.say('I will ask your \nname and drink.', show_display=True)
-        rospy.sleep(2.5)
+        rospy.sleep(2.2)
         name1, drink1 = '_', '_'
         if not calibration_mode and not qr_check:
             for _ in range(1):
-                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-                rospy.sleep(4)
+                agent.say('Come very close', show_display=True)
+                rospy.sleep(1.3)
                 
                 for _ in range(2):
-                    agent.say('What is your name?', show_display=True)
-                    rospy.sleep(2.5)
-                    first_raw_name = agent.stt(4)
+                    agent.say('What is your name? \nSay after ring sound', show_display=True)
+                    rospy.sleep(2.7)
+                    first_raw_name = agent.stt(3.5)
                     name1 = parser_sentence(first_raw_name, mode='name', word_list=name_list)
                     print('receptionist name1: ', name1)
                     if name1 == '':
@@ -374,8 +377,8 @@ def receptionist(agent):
                         name1 = '_'
                         continue
                     else:
-                        agent.say(f'Is your name \n{name1}?\nSay yes or no', show_display=True)
-                        rospy.sleep(3.5)
+                        agent.say(f'Is your name \n{name1}?\nSay yes or no \nafter ring sound', show_display=True)
+                        rospy.sleep(3.8)
                         answer = agent.stt(2)
                         answer, _ = parser_single(answer, ['yes', 'no'])
                         if answer == 'yes':
@@ -389,8 +392,8 @@ def receptionist(agent):
                     break
 
                 for _ in range(2):
-                    agent.say('What is your favorite drink?', show_display=True)
-                    rospy.sleep(3)
+                    agent.say('What is your favorite drink? \nSay after ring sound', show_display=True)
+                    rospy.sleep(3.2)
                     first_raw_drink = agent.stt(4)
                     drink1 = parser_sentence(first_raw_drink, mode='drink', word_list=drink_list)
                     
@@ -401,8 +404,8 @@ def receptionist(agent):
                         drink1 = '_'
                         continue
                     else:
-                        agent.say(f'Is your favorite drink \n{drink1}?\nSay yes or no', show_display=True)
-                        rospy.sleep(4)
+                        agent.say(f'Is your favorite drink \n{drink1}?\nSay yes or no\n after ring sound', show_display=True)
+                        rospy.sleep(4.5)
                         answer = agent.stt(2)
                         answer, _ = parser_single(answer, ['yes', 'no'])
                         if answer == 'yes':
@@ -450,7 +453,7 @@ def receptionist(agent):
     agent.pose.head_tilt(10)
     
     agent.say(f'{name1}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
-    rospy.sleep(5.5)
+    rospy.sleep(5)
     ### 주 석
 
     agent.pose.move_pose()
@@ -460,10 +463,10 @@ def receptionist(agent):
 
     ### check seat ###
     # agent.say('Searching empty seat.')
-    agent.say("Hi everyone,\n I am searching an empty seat\n for a new guest", show_display=True)
-    rospy.sleep(4)
+    agent.say("Hi everyone,\n I am searching empty seat\n for new guest", show_display=True)
+    rospy.sleep(3)
     agent.say("Please put your face forward\n as much as possible\n and look at me", show_display=True)
-    rospy.sleep(4.5)
+    rospy.sleep(4)
     first_seat_info = cs.check_empty_seat(agent)
 
     first_2b_seated = cs.seat_available(first_seat_info)
@@ -635,17 +638,17 @@ def receptionist(agent):
     else:
         ### Trial 2 (sentence parsing with pattern/spacy)
         agent.say('I will ask your \nname and drink.', show_display=True)
-        rospy.sleep(2.5)
+        rospy.sleep(2.2)
         name2, drink2 = '_', '_'
         if not calibration_mode and not qr_check:
             for _ in range(1):
-                agent.say('Come very close to me\n and answer after \nthe ring sound', show_display=True)
-                rospy.sleep(4)
+                agent.say('Come very close', show_display=True)
+                rospy.sleep(1.3)
                 
                 for _ in range(2):
-                    agent.say('What is your name?', show_display=True)
-                    rospy.sleep(2.5)
-                    second_raw_name = agent.stt(4)
+                    agent.say('What is your name?\n Say after ring sound', show_display=True)
+                    rospy.sleep(2.8)
+                    second_raw_name = agent.stt(3.5)
                     name2 = parser_sentence(second_raw_name, mode='name', word_list=name_list)
                     print('receptionist name2: ', name2)
                     if name2 == '':
@@ -654,9 +657,9 @@ def receptionist(agent):
                         name2 = '_'
                         continue
                     else:
-                        agent.say(f'Is your name {name2}?\nSay yes or no', show_display=True)
-                        rospy.sleep(3.5)
-                        answer = agent.stt(4)
+                        agent.say(f'Is your name {name2}?\nSay yes or no\n after ring sound', show_display=True)
+                        rospy.sleep(4)
+                        answer = agent.stt(2)
                         answer, _ = parser_single(answer, ['yes', 'no'])
                         if answer == 'yes':
                             break
@@ -669,8 +672,8 @@ def receptionist(agent):
                     break
 
                 for _ in range(2):
-                    agent.say('What is your favorite drink?', show_display=True)
-                    rospy.sleep(3)
+                    agent.say('What is your favorite drink?\n Say after ring sound', show_display=True)
+                    rospy.sleep(3.3)
                     second_raw_drink = agent.stt(4)
                     drink2 = parser_sentence(second_raw_drink, mode='drink', word_list=drink_list)
                     
@@ -681,8 +684,8 @@ def receptionist(agent):
                         drink2 = '_'
                         continue
                     else:
-                        agent.say(f'Is your favorite drink {drink2}?\nSay yes or no', show_display=True)
-                        rospy.sleep(4)
+                        agent.say(f'Is your favorite drink {drink2}?\nSay yes or no\n after ring sound', show_display=True)
+                        rospy.sleep(4.5)
                         answer = agent.stt(2)
                         answer, _ = parser_single(answer, ['yes', 'no'])
                         if answer == 'yes':
@@ -740,10 +743,10 @@ def receptionist(agent):
 
     # 7-1. check the existing people first
     # agent.say('Searching empty seat.')
-    agent.say("Hi everyone,\n I am searching an empty seat\n for a new guest", show_display=True)
-    rospy.sleep(4)
+    agent.say("Hi everyone,\n I am searching empty seat\n for new guest", show_display=True)
+    rospy.sleep(3)
     agent.say("Please put your face forward\n as much as possible\n and look at me", show_display=True)
-    rospy.sleep(4.5)
+    rospy.sleep(4)
     
     second_seat_info = cs.check_empty_seat(agent)
     second_2b_seated = cs.seat_available(second_seat_info)
@@ -755,7 +758,7 @@ def receptionist(agent):
     agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated, first_seated)
     agent.say('Hello everyone.', show_display=True)
-    rospy.sleep(1)
+    rospy.sleep(0.8)
     # agent.pose.head_pan(100)
     # agent.pose.head_pan(-135)
     agent.pose.head_pan(second_guest_head_pan_degree)
@@ -786,20 +789,25 @@ def receptionist(agent):
     rospy.sleep(2.5)
 
     # gender, age
-    age, clothes = attr.parsing(age[0], clothes)
+    # age, clothes = attr.parsing(age[0], clothes)
 
 
     ########################################################################################
     # with nametag
     # agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes},\n and has a nametag.\n ', show_display=True)
 
+    # with glasses
+    # agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes},\n and has glasses.', show_display=True)
+
+    agent.say(f'{name1} is male and \naged around the twenties.\n Also {name1} is wearing\n long pants,\n and has glasses.', show_display=True)
+
     # without nametag
-    agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes}.\n ', show_display=True)
+    # agent.say(f'{name1} is {gender[0]} and \naged around the {age}.\n Also {name1} is wearing\n {clothes}.\n ', show_display=True)
     ########################################################################################
 
 
     # rospy.sleep(10)
-    rospy.sleep(8)
+    rospy.sleep(7)
 
     cs.point_seat(agent, second_2b_seated)
     agent.say(name2+' Please sit down there', show_display=True)
