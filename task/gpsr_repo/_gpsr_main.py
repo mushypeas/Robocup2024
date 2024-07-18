@@ -665,7 +665,7 @@ def gpsr(agent):
         g.move('gpsr_instruction_point')
 
         # Get input with STT
-        g.say("Give a command after the ding sound.")
+        g.say("Give a command after \n the ding sound.")
         rospy.sleep(2.5)
 
         inputText = g.hear(7.)
