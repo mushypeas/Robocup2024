@@ -137,7 +137,7 @@ class GPSR:
 
             moved_count += 1
 
-            if moved_count > 30:
+            if moved_count > 20:
                 self.say("I follow you enough")
                 rospy.sleep(1.5)
                 return
@@ -668,9 +668,10 @@ def gpsr(agent):
         g.say("Give a command after \n the ding sound.")
         rospy.sleep(2.5)
 
-        inputText = g.hear(7.)
+        inputText = g.hear(8.)
 
-        g.say(f"Given Command is {inputText}")
+        g.say("Got it")
+        rospy.sleep(1)
 
         try:            
             # parse InputText 
