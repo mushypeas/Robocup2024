@@ -111,12 +111,12 @@ class Predictor(object):
 def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, human_feature, feature_on):
     print('human_id: ', human_id)
     timer = Timer()
-    if frame_id < 5:
-        height, width, _ = ros_img.shape
-        bar_width = width // 4
-        ros_img[:, :bar_width] = 0
-        ros_img[:, -bar_width:] = 0
-        ros_img[:120, :] = 0
+    # if frame_id < 5:
+    #     height, width, _ = ros_img.shape
+    #     bar_width = width // 4
+    #     ros_img[:, :bar_width] = 0
+    #     ros_img[:, -bar_width:] = 0
+    #     ros_img[:120, :] = 0
 
     outputs, img_info = predictor.inference(ros_img, timer)
     found_prev_human = False
@@ -303,6 +303,6 @@ class Bytetrack_ros:
 
 if __name__ == "__main__":
     rospy.init_node('dd')
-    rgb_topic='/snu/image'
+    rgb_topic='/hsrb/head_rgbd_sensor/rgb/image_rect_color'
     Bytetrack_ros(rgb_topic)
     rospy.spin()

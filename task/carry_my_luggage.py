@@ -61,6 +61,7 @@ class HumanFollowing:
         if self.stop_rotate_velocity < 0:
             self.stop_rotate_velocity = - self.stop_rotate_velocity
         self.d2pc = Depth2PC() # to depth
+        self.barrier_stop_time = time.time()
         self.axis_transform = Axis_transform()
         self.marker_maker = MarkerMaker('/snu/robot_path_visu')
         self.human_box_list = [None] # for human_reid_and_follower
@@ -86,7 +87,7 @@ class HumanFollowing:
         self._depth = None
         self.depth = None
         self.twist = None
-        self.barrier_direction = 'r' #'l' 'm'
+        self.barrier_direction = 'm' #'l' 'm'
         self.barrier_num = 0
         self.barrier_move_time = time.time()
         self.data_header = None
@@ -358,7 +359,7 @@ class HumanFollowing:
 
         # calc_z = self.calc_z
         if time.time() - self.last_say > 4.0:
-            if (calc_z > 1500)
+            if (calc_z > 2000):
                 self.agent.say('You are too far. Please go slowly!', show_display=True)
                 print("'You are too far. Please go slowly!")
                 self.last_say = time.time()
@@ -449,6 +450,9 @@ class HumanFollowing:
 
 
                     mid_x = 320
+                    
+
+
 
                 # print("min_y+100 : ", min_y+100)
                 # left_values = depth[max(min_y + y_top - 10, 0):min_y + y_top + 10, :mid_x]
@@ -524,7 +528,9 @@ class HumanFollowing:
                         self.agent.move_rel(0.0,0.6,0, wait=False) #then, HSR is intended to move left (neg)
                         rospy.sleep(0.1)
                         self.barrier_num += 1
-
+                    # if time.time() - self.barrier_stop_time > 10:
+                    #     self.barrier_stop_time = time.time()
+                    #     rospy.sleep(2)
 
                     ################240717 LIDAR VERSION##############
 
@@ -1098,59 +1104,59 @@ class HumanFollowing:
         else:
 
 
-        #########
-        # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
-            # change angular.z
-            loc = self.check_human_pos(human_info_ary, location=True)
-            if loc == 'lll':
-                print("left!!!!!!")
-                print("left!!!!!!")
-                print("left!!!!!!")
-                print("left!!!!!!")
-                print("left!!!!!!")
-                print("left!!!!!!")
-                # twist.angular.z = -self.stop_rotate_velocity
-                # +가 왼쪽으로 돌림
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
-                rospy.sleep(.5)
-            if loc == 'll':
-                print("left")
-                # twist.angular.z = -self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
-                rospy.sleep(.5)
-            # if loc == 'l':
-            #     print("left")
-            #     # twist.angular.z = -self.stop_rotate_velocity
-                                                                                                                                                                              #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
-            #     rospy.sleep(.5)
-            # if loc == 'r':
-            #     print("right")
-            #     # twist.angular.z = +self.stop_rotate_velocity
-            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
-            #     rospy.sleep(.5)
-            if loc == 'rr':
-                print("right")
-                # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
-                rospy.sleep(.5)
-            if loc == 'rrr':
-                print("right")
-                print("right")
-                print("right")
-                print("right")
-                print("right")
-                print("right")
-                print("right")
-                print("right")
-                # twist.angular.z = +self.stop_rotate_velocity
-                self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
-                rospy.sleep(.5)
-            if twist.linear.x == 0 and twist.angular.z == 0:
+        # #########
+        # # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
+        #     # change angular.z
+        #     loc = self.check_human_pos(human_info_ary, location=True)
+        #     if loc == 'lll':
+        #         print("left!!!!!!")
+        #         print("left!!!!!!")
+        #         print("left!!!!!!")
+        #         print("left!!!!!!")
+        #         print("left!!!!!!")
+        #         print("left!!!!!!")
+        #         # twist.angular.z = -self.stop_rotate_velocity
+        #         # +가 왼쪽으로 돌림
+        #         self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+        #         rospy.sleep(.5)
+        #     if loc == 'll':
+        #         print("left")
+        #         # twist.angular.z = -self.stop_rotate_velocity
+        #         self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+        #         rospy.sleep(.5)
+        #     # if loc == 'l':
+        #     #     print("left")
+        #     #     # twist.angular.z = -self.stop_rotate_velocity
+        #                                                                                                                                                                       #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+        #     #     rospy.sleep(.5)
+        #     # if loc == 'r':
+        #     #     print("right")
+        #     #     # twist.angular.z = +self.stop_rotate_velocity
+        #     #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+        #     #     rospy.sleep(.5)
+        #     if loc == 'rr':
+        #         print("right")
+        #         # twist.angular.z = +self.stop_rotate_velocity
+        #         self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+        #         rospy.sleep(.5)
+        #     if loc == 'rrr':
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         print("right")
+        #         # twist.angular.z = +self.stop_rotate_velocity
+        #         self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+        #         rospy.sleep(.5)
+        #     if twist.linear.x == 0 and twist.angular.z == 0:
 
-                if self.stt_destination(self.stt_option, calc_z):
-                    return True
+        #         if self.stt_destination(self.stt_option, calc_z):
+        #             return True
 
-                return False
+        #         return False
     
             target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
             self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
@@ -1295,7 +1301,7 @@ class BagInspection:
         
         grouped_data = [arr[i:i+6] for i in range(0, len(arr), 6)]
 
-        filtered_data = [group for group in grouped_data if (group[5] >= 80 and group[4] in self.yolo_bag_list)]
+        filtered_data = [group for group in grouped_data if (group[5] >= 50 and group[4] in self.yolo_bag_list)]
 
         sorted_data = sorted(filtered_data, key = lambda x: x[0])
 
@@ -1520,6 +1526,9 @@ class BagInspection:
             '''
             BAG PICKING 0410
             '''
+
+            print("class_id:", class_id)
+
             if class_id == 24:
                 bag_height = 0.39
                 bag_breadth = 0.41
@@ -1699,6 +1708,8 @@ class BagInspection:
             #     rospy.sleep(1)
             self.agent.grasp()
             self.agent.pose.move_to_go()
+            self.agent.pose.wrist_flex(-30)
+            self.agent.pose.arm_roll(130)
         else:
             # Todo: grasp towards the target point
             print("1.5 bag_coord_baselink_final", target_base_xyz)
@@ -1714,6 +1725,7 @@ class BagInspection:
             print("current position: ", self.agent.get_pose())
             self.marker_maker.pub_marker([mov_x, mov_y, 1], 'base_link')
             self.agent.move_rel(mov_x, mov_y, wait=True)
+            self.agent.move_rel(0.12, 0, 0, wait=True)
             print("moved position: ", self.agent.get_pose())
 
             #if object_size[0] >= object_size[1]:  
@@ -1758,7 +1770,7 @@ class BagInspection:
                 self.agent.grasp()
             self.agent.pose.move_to_go()
             self.agent.pose.wrist_flex(-30)
-            self.agent.pose.arm_roll(90)
+            self.agent.pose.arm_roll(130)
             self.agent.move_rel(-mov_x, -mov_y, -yaw, wait=True)
             # self.agent.move_abs_coordinate(before_pick_pose, wait=True)
             # self.agent.move_rel(0, 0, -yaw, wait=True)
@@ -1812,7 +1824,7 @@ def carry_my_luggage(agent):
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
-                                                   stop_thres=.85,
+                                                   stop_thres=.45,
                                                    linear_max=.3,
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
@@ -1890,6 +1902,8 @@ def carry_my_luggage(agent):
         #     rospy.sleep(1)
         agent.grasp()
         agent.pose.move_to_go()
+        agent.pose.wrist_flex(-30)
+        agent.pose.arm_roll(130)
 
 
     # yolo_process.terminate()
@@ -1900,17 +1914,18 @@ def carry_my_luggage(agent):
     demotrack_pub.publish(String('target'))
     agent.pose.head_pan_tilt(0, 0)
     # rospy.sleep(15)
-    agent.say("Please Come in front of me.", show_display=True)
-    rospy.sleep(1.5)
+    agent.say("Please move the bag off the floor and Come in front of me.", show_display=True)
+    rospy.sleep(3)
     agent.say("If you arrive at the destination", 
     show_display=True)
     rospy.sleep(3)
     agent.say("Please stand still.", show_display=True)
-    rospy.sleep(2.5)
+    rospy.sleep(2)
     # agent.say("Please do not move for ten seconds when you arrived at the destination", show_display=True)
-    agent.say("Please go slowly, and Keep the one meter between us!", show_display=True)
+    agent.say("If I start moving,\nPlease go slowly,\nand Keep the one meter between us!", show_display=True)
     rospy.sleep(4)
     human_following.freeze_for_humanfollowing()
+    # agent.move_rel(0, 0, np.pi//9, wait=False) ######TODO
     rospy.loginfo("start human following")
     start_time = time.time()
     agent.last_moved_time = time.time() # reset the last_moved_time
@@ -1958,7 +1973,7 @@ def carry_my_luggage(agent):
         for i in range(len(track_queue)): # 돌아가는 길
             print("i:", i)
             cur_track = track_queue[len(track_queue)-i-1]
-            calc_z= 2000
+            calc_z= 1900
 
             depth = np.asarray(human_following.seg_img)
 
@@ -2006,6 +2021,7 @@ def carry_my_luggage(agent):
             # human_following.escape_barrier_back(calc_z) #사람 있으면 calc_z는 사람까지 거리, 사람 없으면 2m 고정
             # human_following.escape_tiny()
             human_following.escape_tiny_canny()
+            human_following.escape_barrier(calc_z)
 
 
             agent.move_abs_coordinate(cur_track, wait=False)

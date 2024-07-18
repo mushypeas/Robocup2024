@@ -44,10 +44,10 @@ class custom_Yolov10:
         self.ready()
 
     def _rgb_callback(self, img_msg):
-        self.rgb_pub.publish(img_msg)
+        
         self.rgb_img = self.bridge.imgmsg_to_cv2(img_msg, 'bgr8')
         rospy.loginfo('Received rgb callback')
-
+        # self.rgb_pub.publish(img_msg)
     def _pc_callback(self, point_msg):
         self.pc = ros_numpy.numpify(point_msg)
         rospy.loginfo('Received pc callback')
