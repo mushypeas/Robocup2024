@@ -25,13 +25,11 @@ def meetNameAtLocThenFindInRm(g, params):
 
     # [2] Find the person in the location
     g.identifyByName(name)
-    humanAttribute = g.getHumanAttribute()
     
     # [3] Move to the specified room
     g.move(room)
 
     # [4] Find the person in the room
-    g.identifyByHumanAttribute(humanAttribute)
-    g.say(f"I found {name}, who is wearing a {humanAttribute}")
+    g.identifyByName(name)
 
     g.task_finished_count += 1

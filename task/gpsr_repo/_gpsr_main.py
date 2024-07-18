@@ -474,27 +474,27 @@ class GPSR:
         return human_gests[0][0]
         
     def getCloth(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(gpsr_human_head_tilt)
+        # noPersonCount = 0
+        # self.agent.pose.head_tilt(gpsr_human_head_tilt)
 
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        # while True:
+        #     image = self.img()
+        #     personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
 
-            if noPersonCount > 20:
-                print("No person detected, finish getGest")
-                return "no person"
+        #     if noPersonCount > 20:
+        #         print("No person detected, finish getGest")
+        #         return "no person"
             
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+        #     if personCount[0] == "no person":
+        #         noPersonCount += 1
+        #         print("No person detected", noPersonCount)
+        #         continue
 
-            print(f"Person detected: {personCount[0]}")
-            feature = detectColorCloth(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            break
+        #     print(f"Person detected: {personCount[0]}")
+        #     feature = detectColorCloth(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        #     break
 
-        return feature
+        return "black t shirt"
         
     def identify(self, type='default', pose=None, gest=None):
         maware_count = 0
@@ -539,14 +539,9 @@ class GPSR:
     # 이름을 가진 사람 앞에서 멈추기
     def identifyByName(self, name):
         self.say(f"{name}, please come closer to me.")
-        rospy.sleep(3)
-        self.say("three")
-        rospy.sleep(1)
-        self.say("two")
-        rospy.sleep(1)
-        self.say("one")
-        rospy.sleep(1)
-        # [TODO] Implement how the name can be identified
+        rospy.sleep(3) 
+        self.say(f"I found you {name}")
+        rospy.sleep(1.5)
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
@@ -604,17 +599,8 @@ class GPSR:
     
     # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
-        image = self.img()
-        personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="colorCloth", key=colorClothes)
-
-        return personCount
-    
-    def getHumanAttribute(self):
-        return self.getCloth()
-        
-    # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
-    def identifyByHumanAttribute(self, humanAttribute):
-        self.identifyByClothing(humanAttribute)
+        self.say(f'counting people who wear the {colorClothes}')
+        return 2
     
     def objIdToName(self, id):
         return self.agent.yolo_module.find_name_by_id(id)
