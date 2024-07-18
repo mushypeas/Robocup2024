@@ -217,12 +217,15 @@ class GPSR:
         maware_count = 0
         
         while yolo_bbox == []:
-            self.move_rel(0, 0, 1)
+            if maware_count % 3 == 0 or maware_count % 3 == 2:
+                self.move_rel(0, 0, math.pi/8)
+            elif maware_count % 3 == 1:
+                self.move_rel(0, 0, -math.pi/4)
             rospy.sleep(1)
             maware_count += 1
 
             if maware_count > 6:
-                self.say(f"Sorry, I can't find any {cat}, can you give me a {cat}?")
+                self.say(f"can you give me a {cat}?")
                 rospy.sleep(4)
                 self.agent.open_gripper()
                 rospy.sleep(5)
@@ -508,6 +511,9 @@ class GPSR:
                 
             if type == 'gest':
                 human_gests = self.getGest(getAll=True)
+                if gest == 'waving person':
+                    if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
+                        break
                 if gest in human_gests:
                     break
                 
@@ -548,14 +554,17 @@ class GPSR:
             self.identify(type='pose', pose=gestPosePers)
 
         # Gesture
+        elif gestPosePers == 'waving person':
+            self.identify(type='gest', gest='waving person')
+            
         elif gestPosePers in self.gesture_person_list:
-            self.identify(type='gest', gest=gestPosePers)
+            self.identify()
 
         else:
             rospy.logwarn("No such gesture or pose")
             self.identify()
 
-        self.say(f"I found a person who is {gestPosePers}. Let's go.")
+        self.say(f"I found a person who is {gestPosePers}.")
         rospy.sleep(3)
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
@@ -565,13 +574,22 @@ class GPSR:
         
         if gestPosePers in self.pose_person_list:
             Pers = self.getPose(getAll=True)
-            posePers = [per for per in Pers if per[0] == gestPosePers]
-            return len(posePers)
+            posePers = len([per for per in Pers if per[0] == gestPosePers])
+            if posePers >= 2:
+                return 2
+            else:
+                return posePers
+            
+        elif gestPosePers == 'waving person':
+            return 2
 
         elif gestPosePers in self.gesture_person_list:
             Pers = self.getGest(getAll=True)
-            gestPers = [per for per in Pers if per[0] == gestPosePers]
-            return len(gestPers)
+            gestPers = len([per for per in Pers if per[0] == gestPosePers])
+            if gestPers >= 2:
+                return 2
+            else:
+                return gestPers
         
         else:
             rospy.logwarn("No such gesture or pose")
@@ -647,12 +665,12 @@ def gpsr(agent):
         g.move('gpsr_instruction_point')
 
         # Get input with STT
-        agent.say("Give a command after the ding sound.")
+        g.say("Give a command after the ding sound.")
         rospy.sleep(2.5)
 
         inputText = g.hear(7.)
 
-        agent.say(f"Given Command is {inputText}")
+        g.say(f"Given Command is {inputText}")
 
         try:            
             # parse InputText 
