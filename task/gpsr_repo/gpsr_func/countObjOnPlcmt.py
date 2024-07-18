@@ -27,7 +27,7 @@ def countObjOnPlcmt(g, params):
     g.move(plcmtLoc)
     
 
-    g.say(f"Let me find {plurCat} in the {plcmtLoc}")
+    g.say(f"Let me find {plurCat} \n in the {plcmtLoc}")
     yolo_bbox = g.get_yolo_bbox(singCat)
     rospy.sleep(5)
 
@@ -36,13 +36,13 @@ def countObjOnPlcmt(g, params):
     # [2] Tell number of objects
     try:
         if numObj == 0:
-            g.say(f"There's no {singCat} on the {plcmtLoc}")
+            g.say(f"There's no {singCat} \n on the {plcmtLoc}")
         
         elif numObj == 1:
-            g.say(f"There's a {singCat} on the {plcmtLoc}")
+            g.say(f"There's a {singCat} \n on the {plcmtLoc}")
         
         else:
-            g.say(f"There are {numObj} {plurCat} on the {plcmtLoc}")
+            g.say(f"There are {numObj} \n {plurCat} on the {plcmtLoc}")
     
     except Exception as e:
         print(e)

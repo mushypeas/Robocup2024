@@ -65,7 +65,7 @@ def tellCatPropOnPlcmt(g, params):
 
     # [4] Tell the information
     try:
-        robotOutput = f"The {comp} {cat} is {targetObjName}"
+        robotOutput = f"The {comp} {cat} \n is {targetObjName}"
         g.say(robotOutput)
     
     except Exception as e:

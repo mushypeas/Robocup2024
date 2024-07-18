@@ -31,7 +31,7 @@ def countClothPrsInRoom(g, params):
     # [3] Output the count
     # TODO : Fix the grammar for singular and plural
     try:
-        g.say(f"There are {count} people in the {room} wearing {colorClothes}")
+        g.say(f"There are {count} people \n in the {room} wearing \n {colorClothes}")
     except:
         g.say(count)
 

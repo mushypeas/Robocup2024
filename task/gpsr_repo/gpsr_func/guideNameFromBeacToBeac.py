@@ -26,10 +26,10 @@ def guideNameFromBeacToBeac(g, params):
     
     # [2] Find the person in the location
     g.identifyByName(name)
-    g.say(f"Please follow me to the {loc2}")
+    g.say(f"Please follow me \n to the {loc2}")
     
     # [3] Make the person to follow HSR to the room
     g.guide(loc2)
-    g.say(f"You have arrived at the {loc2}")
+    g.say(f"You have arrived \n at the {loc2}")
 
     g.task_finished_count += 1

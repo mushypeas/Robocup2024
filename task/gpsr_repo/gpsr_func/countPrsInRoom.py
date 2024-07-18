@@ -27,7 +27,7 @@ def countPrsInRoom(g, params):
     # [3] Output the count
     # TODO: Fix the grammar for singular and plural
     try:
-        g.say(f"There are {count} {gestPosePersPlur} in the {room}")
+        g.say(f"There are {count} \n {gestPosePersPlur} in the {room}")
     except:
         g.say(count)
 

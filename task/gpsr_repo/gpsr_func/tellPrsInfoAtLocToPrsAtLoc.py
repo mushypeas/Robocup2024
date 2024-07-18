@@ -37,6 +37,6 @@ def tellPrsInfoAtLocToPrsAtLoc(g, params):
     g.move(loc2)
     
     # [4] Tell the person's information
-    g.say(f'The {persInfo} of the person at the {loc} is {gotInfo}')
+    g.say(f'The {persInfo} of the person \n at the {loc} is {gotInfo}')
 
     g.task_finished_count += 1
