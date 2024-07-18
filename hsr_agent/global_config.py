@@ -19,8 +19,8 @@ if is_yolov10==False:
 
 
 if is_yolov10:
-    yolo_weight_path = 'weight/0715v2.pt'
-    # yolo_weight_path = 'weight/0716v3.pt' (실험 시도 가능 )
+    # yolo_weight_path = 'weight/0715v2.pt'
+    yolo_weight_path = 'weight/0716v3.pt' # (실험 시도 가능 )
     yolo_classnames_path = 'weight/classnames.cn'
 
 
