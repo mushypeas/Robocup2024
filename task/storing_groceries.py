@@ -18,7 +18,7 @@ class StoringGroceries:
         self.place_only_mode = False
         
         ## !!! Environment params !!!
-        self.closed_shelf_side = 'left' # ['right', 'left']
+        self.closed_shelf_side = 'right' # ['right', 'left']
         self.open_shelf_floor = 2
         self.prior_categories = ['drink', 'fruit', 'food', 'snack']
         self.ignore_items = ['bowl', 'dish', 'plate', 'big coke', 'candle', 'soap', 'banana', 'white bag', 'yellow bag', 'sausages']
@@ -34,7 +34,7 @@ class StoringGroceries:
                                 - self.place_dist * 2) / 2
 
         ## !!! Hard-Coded Offsets !!!
-        self.pick_front_bias = [0.05, 1.05, -0.03] # [x, y_ratio, height]
+        self.pick_front_bias = [0.05, 1.15, -0.03] # [x, y_ratio, height]
         self.pick_top_bias = [0.1, 0, -0.015]
         self.pick_bowl_bias = [0.0, 0.00, -0.10]
         self.place_x_bias = [None, -0.33, -0.33, -0.22]
@@ -46,16 +46,17 @@ class StoringGroceries:
         self.pick_table = 'grocery_table'
         self.table_height = self.agent.table_dimension[self.pick_table][2]
         self.table_depth = self.agent.table_dimension[self.pick_table][1]
-        self.table_head_angle = np.arctan(
+        self.table_head_angle =np.deg2rad(np.arctan(
             (self.table_height - 1.1) / self.table_dist # 1.1: HSR height
-        )
+        ))
         self.place_shelf = 'grocery_shelf'
         self.place_test_object_name, self.place_test_object_type = 'orange', 'fruit'
         self.shelf_depth = self.agent.table_dimension[self.place_shelf][0][1]
         self.shelf_width = self.agent.table_dimension[self.place_shelf][0][0]
         self.shelf_heights = [shelf_dim[2] for shelf_dim in self.agent.table_dimension['grocery_shelf']]
 
-        self.shelf_head_angle = -18.0
+        self.shelf_head_angle = -0.157
+        print(f"table_head_angle: {self.table_head_angle}") 
         print(f"shelf_head_angle: {self.shelf_head_angle}")
 
         self.shelf_item_dict = {}
@@ -289,8 +290,7 @@ class StoringGroceries:
         stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
         stop_client.call(EmptyRequest())
 
-        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle, wait_gripper=True)
-
+        self.agent.pose.table_search_pose(head_tilt=self.shelf_head_angle)
         if not self.ignore_arena_door:
             self.agent.door_open()
             rospy.logwarn('Start Storing Groceries')
@@ -304,7 +304,7 @@ class StoringGroceries:
 
         ## 1. Open shelf door
         if not self.ignore_shelf_door:
-            self.agent.move_abs_safe(self.open_shelf_location)
+            # self.agent.move_abs_safe(self.open_shelf_location)
             self.open_shelf(side=self.closed_shelf_side)
 
         rospy.logwarn('Going to place_location...')
