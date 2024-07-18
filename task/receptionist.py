@@ -98,7 +98,7 @@ def receptionist(agent):
     #################### 2024 Eindhoven # TEMPORARILY OK
     second_guest_head_pan_degree = 165
 
-    stt_sentence_mode = True # 1st trial - False, 2nd trial - True
+    stt_sentence_mode = False # 1st trial - False, 2nd trial - True
 
     # open_door_mode = False
     calibration_mode = False

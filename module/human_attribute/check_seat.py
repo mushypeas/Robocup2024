@@ -372,28 +372,28 @@ class CheckSeat():
         #################### 2024 Eindhoven # OK
         # for i in [1, 0, 2]: # NO LEFT SEAT
         # for i in [3, 2, 4, 1, 0]: # ADDITIONAL TWO LEFT SEATS
-        for i in [4, 3, 5]:
+        # for i in [4, 3, 5]:
             
-            if seat_info[i][0] != 1:
-                if i == 0:
-                    if seat_info[1][0] != 1:
-                        return i
-                    else:
-                        continue
-                elif i==len(seat_info)-1:
-                    if seat_info[len(seat_info)-2][0] != 1:
-                        return i
-                    else:
-                        continue
-                else:
-                    if seat_info[i-1][0] != 1 and seat_info[i+1][0] != 1:
-                        return i
-                    else:
-                        continue
+        #     if seat_info[i][0] != 1:
+        #         if i == 0:
+        #             if seat_info[1][0] != 1:
+        #                 return i
+        #             else:
+        #                 continue
+        #         elif i==len(seat_info)-1:
+        #             if seat_info[len(seat_info)-2][0] != 1:
+        #                 return i
+        #             else:
+        #                 continue
+        #         else:
+        #             if seat_info[i-1][0] != 1 and seat_info[i+1][0] != 1:
+        #                 return i
+        #             else:
+        #                 continue
         # 안되면 그냥 왼쪽부터 빈자리로
         # for i in range(len(seat_info)):
         for i in [4, 3, 5]:
-            if seat_info[i][0] == 0:
+            if seat_info[i][0] == -1:
                 return i
 
     def host_seat(self, seat_info):
