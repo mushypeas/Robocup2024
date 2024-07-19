@@ -88,7 +88,7 @@ class MoveBaseStandalone:
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        self.openpose_sub = rospy.Subscriber('/snu/openpose', Image, self._openpose_callback)
+        # self.openpose_sub = rospy.Subscriber('/snu/openpose', Image, self._openpose_callback)
         self.listener = tf.TransformListener()
         self.last_checked_time = time.time()
         self.last_checked_pos = [0, 0]
@@ -188,7 +188,7 @@ class MoveBaseStandalone:
             return False
 
     
-    def human_stop(self, agent, human_stop_thres=0.6): #jnpahk
+    def human_stop(self, agent, human_stop_thres=0.9): #jnpahk
         depth = agent.depth_image / 1000
         # depth = depth[depth>0]
 
@@ -581,10 +581,10 @@ def nav_target_from_pc(pc, table, robot_ori, K=100):
 def get_one_item(agent):
     while not rospy.is_shutdown():
         agent.head_show_image('red')
-        agent.say('Please say items you \n like to order in proper format\n !!!after the ding sound!!!', show_display=True)
-        rospy.sleep(4.5)
+        agent.say('Please say a item you \n like to order in a word\n on the head closely \n AFTER the DING sound', show_display=True)
+        rospy.sleep(5)
         agent.head_show_image('green')
-        result = agent.stt(5.)
+        result = agent.stt(3.)
         print('stt_result', result)
         item_parsed = cluster(result, object_list)
         if len(item_parsed) == 0:
@@ -596,9 +596,9 @@ def get_one_item(agent):
         agent.head_show_text(f'{item_parsed}')
         print('item parsed', item_parsed)
         rospy.sleep(1.)
-        agent.say('Is this your order? \n Please say Yes or No to confirm \n !!!after the ding sound!!!', show_display=True)
+        agent.say(f'Is your order {item_parsed}? \n Please say Yes or No to confirm \n on the head closely \n AFTER the DING sound!!!', show_display=True)
 
-        rospy.sleep(6.)
+        rospy.sleep(6.5)
         result = agent.stt(3.)
         print('stt_result', result)
         confirm_parsed = cluster(result, ['yes', 'no'])
@@ -716,9 +716,17 @@ def restaurant(agent):
                 '''
                 if len(msg.data) == 0: continue
 
-                openpose_image = rospy.wait_for_message('/snu/openpose', Image)
-                if openpose_image is not None:
-                    agent.head_display_image_pubish(openpose_image)
+                openpose_msg = rospy.wait_for_message('/snu/openpose', Image)
+                if openpose_msg is not None:
+                    try:
+                        # Convert ROS Image message to OpenCV2
+                        openpose_cv2_image = move.bridge.imgmsg_to_cv2(openpose_msg, "bgr8")
+                        # Convert OpenCV2 image to ROS Image message
+                        openpose_image = move.bridge.cv2_to_imgmsg(openpose_cv2_image, encoding='passthrough')
+                        
+                        agent.head_display_image_pub.publish(openpose_image)
+                    except CvBridgeError as e:
+                        rospy.logerr("CvBridge Error: {0}".format(e))
 
                 table_arr = np.array(msg.data)
                 table_arr = table_arr.reshape(len(table_arr) // 34, 17, 2)  # num of people? 
@@ -754,23 +762,24 @@ def restaurant(agent):
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
+            agent.move_base.base_action_client.cancel_all_goals()
             rospy.sleep(1.)
             
-            item1 = get_one_item()
-            item2 = get_one_item()
+            item1 = get_one_item(agent)
+            item2 = get_one_item(agent)
             
             total_item = item1 + " " + item2
             
-            agent.say('Do you have more order? \n Please say Yes or No \n !!!after the ding sound!!!', show_display=True)
+            agent.say('Do you have more order? \n Please say Yes or No \n on the head closely \n  AFTER the ding sound!!!', show_display=True)
 
-            rospy.sleep(6.)
+            rospy.sleep(5.5)
             result = agent.stt(3.)
             print('stt_result', result)
             confirm_parsed = cluster(result, ['yes', 'no'])
             print('item parsed', confirm_parsed)
 
             if confirm_parsed == 'yes':
-                item3 = get_one_item()
+                item3 = get_one_item(agent)
                 total_item = total_item + ' ' + item3
                         
             agent.say('I received your order!', show_display=True)
@@ -778,6 +787,7 @@ def restaurant(agent):
             rospy.sleep(3.)
             
             move.move_zero(agent)
+            agent.move_base.base_action_client.cancel_all_goals()
             rospy.sleep(1.)
             agent.say(f'Bartender, please give me {total_item}.', show_display=True)
             rospy.sleep(2.)
@@ -791,10 +801,12 @@ def restaurant(agent):
             # 4. Give the customer items they ordered
             agent.pose.restaurant_move_pose()
             goback_flag = move.move_abs(agent, customer_x, customer_y, customer_yaw)
+            agent.move_base.base_action_client.cancel_all_goals()
             if not goback_flag:
                 move.move_customer(agent, offset + Dx, Dy)
+                agent.move_base.base_action_client.cancel_all_goals()
             agent.pose.restaurant_give_pose()
-            agent.head_show_image('Take Menu')
+            # agent.head_show_image('Take Menu')
             agent.say(f'Here is your {total_item}, Take menu in ', show_display=True)
             rospy.sleep(4.)
             for i in range(5, 0, -1):
@@ -805,6 +817,7 @@ def restaurant(agent):
             agent.pose.restaurant_move_pose()
             agent.head_show_image('Neutral')
             move.move_zero(agent)
+            agent.move_base.base_action_client.cancel_all_goals()
             rospy.sleep(3.)
         except KeyboardInterrupt:
             break
