@@ -33,7 +33,7 @@ dishes = ["spoon", "plate", "cup", "fork", "bowl", "knife"]
 
 object_list = cleaning_supplies + drinks + food + decorations + fruits + snacks + dishes
 
-min_interval_arc_len = 1.0
+min_interval_arc_len = 0.8
 unit_rad = 0.25 * ( math.pi / 180 )
 avg_dist_move_dist_ratio = 3
 ################ Maybe Constant? ################
