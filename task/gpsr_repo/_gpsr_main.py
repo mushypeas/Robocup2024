@@ -418,7 +418,19 @@ class GPSR:
         if len(human_poses) == 0:
             return "no person"
         
-        return human_poses[0][0]
+        largest_pose = 'standing person'
+        max_area = 0
+        
+        for pose in human_poses:
+            _, _, bbox = pose
+            x_min, y_min, x_max, y_max = bbox
+            area = (x_max - x_min) * (y_max - y_min)
+            
+            if area > max_area:
+                max_area = area
+                largest_pose = pose
+        
+        return largest_pose
     
     def getGest(self, getAll=False):
         self.agent.pose.head_tilt(gpsr_human_head_tilt)
@@ -472,8 +484,20 @@ class GPSR:
         
         if len(human_gests) == 0:
             return "no person"
+            
+        largest_gesture = 'person pointing to the left'
+        max_area = 0
         
-        return human_gests[0][0]
+        for gesture in human_gests:
+            _, _, bbox = gesture
+            x_min, y_min, x_max, y_max = bbox
+            area = (x_max - x_min) * (y_max - y_min)
+            
+            if area > max_area:
+                max_area = area
+                largest_gesture = gesture
+        
+        return largest_gesture
         
     def getCloth(self):
         # noPersonCount = 0

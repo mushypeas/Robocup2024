@@ -48,11 +48,19 @@ def gpsr_test(agent):
             g.identify()
 
         if cmd == "identifyStand":
-            g.identifyByGestPose('standing')
+            g.identifyByGestPose('standing person')
+            
+            
+        if cmd == 'identifyWave':
+            g.identifyByGestPose('waving person')
 
         if cmd == "pick":
             item_name = input("What item do you want to pick?: ")
             g.pick(item_name)
+            
+        if cmd == "pickCat":
+            item_name = input("What item category do you want to pick?: ")
+            g.pickCat(item_name)
 
         if cmd == "follow":
             g.follow()
