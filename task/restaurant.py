@@ -293,6 +293,9 @@ class MoveBaseStandalone:
                         if maware_count > 10:
                             self.turn_around()
                             maware_count = 0
+                            
+                            self.base_action_client.send_goal(goal)
+                            break
 
                     self.move_best_interval(best_interval, agent)
 
@@ -386,6 +389,9 @@ class MoveBaseStandalone:
                             if maware_count > 10:
                                 self.turn_around()
                                 maware_count = 0
+                                
+                                self.base_action_client.send_goal(goal)
+                                break
 
                         self.move_best_interval(best_interval, agent)
 
