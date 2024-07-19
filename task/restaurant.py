@@ -763,6 +763,7 @@ def restaurant(agent):
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
             agent.move_base.base_action_client.cancel_all_goals()
+            move.turn_around(0)
             rospy.sleep(1.)
             
             item1 = get_one_item(agent)
@@ -788,6 +789,7 @@ def restaurant(agent):
             
             move.move_zero(agent)
             agent.move_base.base_action_client.cancel_all_goals()
+            move.turn_around(0)
             rospy.sleep(1.)
             agent.say(f'Bartender, please give me {total_item}.', show_display=True)
             rospy.sleep(2.)
@@ -802,9 +804,11 @@ def restaurant(agent):
             agent.pose.restaurant_move_pose()
             goback_flag = move.move_abs(agent, customer_x, customer_y, customer_yaw)
             agent.move_base.base_action_client.cancel_all_goals()
+            move.turn_around(0)
             if not goback_flag:
                 move.move_customer(agent, offset + Dx, Dy)
                 agent.move_base.base_action_client.cancel_all_goals()
+                move.turn_around(0)
             agent.pose.restaurant_give_pose()
             # agent.head_show_image('Take Menu')
             agent.say(f'Here is your {total_item}, Take menu in ', show_display=True)
@@ -818,6 +822,7 @@ def restaurant(agent):
             agent.head_show_image('Neutral')
             move.move_zero(agent)
             agent.move_base.base_action_client.cancel_all_goals()
+            move.turn_around(0)
             rospy.sleep(3.)
         except KeyboardInterrupt:
             break
