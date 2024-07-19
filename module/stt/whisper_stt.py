@@ -9,7 +9,7 @@ from std_msgs.msg import Float32MultiArray, String
 
 class WhisperSTT:
     def __init__(self):
-        self.model = whisper.load_model("small.en", device="cpu")
+        self.model = whisper.load_model("small.en", device="cuda")
         self.portaudio = pyaudio.PyAudio()
         self.pub_result = rospy.Publisher('/stt_result', String, queue_size=10)
 
