@@ -1,23 +1,41 @@
 import os
 import sys
 sys.path.append('../../hsr_agent')
+sys.path.append('../hsr_agent')
 sys.path.append('hsr_agent')
+sys.path.append('/home/tidy/Robocup2024/hsr_agent')
+sys.path.append('/home/tidy/Robocup2024/')
+print(sys.path)
 from global_config_utils import make_object_list
 
 is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
+
+is_yolov10 = True
 
 # data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
+
 # 기존 경로 : 'weight/best_240409.pt'
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/best_for_final_not_tiny.pt'
-yolo_classnames_path = 'weight/best_for_final.cn'
+# yolo_weight_path = 'weight/0717v2.pt'
+# yolo_classnames_path = './../module/yolov10/weight/classnames.cn'
+
+if is_yolov10==False:
+    yolo_weight_path = 'weight/best_0704.pt'
+    yolo_classnames_path = 'weight/best_0704.cn'
+
+
+if is_yolov10:
+    # yolo_weight_path = 'weight/0715v2.pt'
+    yolo_weight_path = 'weight/0717v2.pt' # (실험 시도 가능 )
+    yolo_classnames_path = 'weight/classnames.cn'
 
 try:
-    OBJECT_LIST = make_object_list(yolo_classnames_path)
+    # OBJECT_LIST = make_object_list(yolo_classnames_path)
+    OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
 except:
     pass
 
@@ -104,11 +122,16 @@ if FINAL:
         # 'livingroom_search2': [],
         'hallway_search': [3.8517, 0.6339, -2.3486],
         # 'hallway_search2': [],
+        'office_leave1': [3.7782, 2.8632, 0.0525],
+        'office_leave2': [4.7751, 2.9022, 0.0008],
 
         'bin_littering': [5.346, 1.4374, 2.3295],
         'bar_drink': [5.3231, 5.5267, -1.7753], # currently cabinet
         'shoe_warning': [2.0195, -0.7274, 1.6346],
 
+        'kitchen_living_middle': [8.6032, 0.9316, 3.0649],
+        'livingroom_leave': [4.9864, -0.4961, -3.1398],
+        'hallway_enter': [3.6486, -0.5246, 1.5538],
     }
 
 

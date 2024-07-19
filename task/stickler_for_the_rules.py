@@ -46,18 +46,18 @@ class ShoeDetection:
         self.ankle_list = None
         self.image_save_index = 0
 
-        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B/32')
-        # state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
-        # self.clip_model.load_state_dict(state_dict['CLIP'])
-        # self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
-        # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
+        self.clip_model.load_state_dict(state_dict['CLIP'])
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
 
-        self.clip_model = clip.clip_model
-        self.clip_preprocess = clip.clip_preprocess
-        self.tokenizer = clip.tokenizer
+        # self.clip_model = clip.clip_model
+        # self.clip_preprocess = clip.clip_preprocess
+        # self.tokenizer = clip.tokenizer
 
-        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
         # self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
         # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
@@ -117,7 +117,7 @@ class ShoeDetection:
                 formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                 print("Labels probabilities in percentage:", formatted_probs)
-                if text_probs_percent_np[0][0] > 60:
+                if text_probs_percent_np[0][0] > 85:
                     return True
                 count += 1
 
@@ -141,9 +141,11 @@ class ShoeDetection:
         for human_idx in range(len(self.knee_list)//2):
             left_x, left_y = self.knee_list[human_idx*2]
             right_x, right_y = self.knee_list[human_idx*2+1]
-            if left_x >= 640-160 or right_x <= 160:
+            if left_x >= 640-120 or right_x <= 120:
                 no_shoes_person[human_idx] = True
         print(f'no_shoes_person: {no_shoes_person}')
+        no_shoes_prob = [0 for _ in range(no_shoes_person.count(False))]
+        coord_map_list = [None for _ in range(no_shoes_person.count(False))]
 
         for head_tilt_angle in [-20]:
         
@@ -156,10 +158,12 @@ class ShoeDetection:
                 image = self.agent.rgb_img
 
                 for human_idx in range(len(self.ankle_list)//2):
+                    if human_idx*2+1>=len(self.ankle_list):
+                        continue
                     left_x, left_y = self.ankle_list[human_idx*2]
                     right_x, right_y = self.ankle_list[human_idx*2+1]
 
-                    if left_x >= 640-160 or right_x <= 160:
+                    if left_x >= 640-120 or right_x <= 120:
                         continue
                     if human_idx >= len(no_shoes_person):
                         continue
@@ -175,11 +179,12 @@ class ShoeDetection:
                         max(0,(left_x+right_x-224)//2):min(640-1,(left_x+right_x+224)//2)
                     ]
                     
-                    human_coord = [(left_x+right_x)//2, max((left_y+right_y)//2-40, 0)]
+                    human_coord = [(left_x+right_x)//2, max((left_y+right_y)//2+50, 0)]
                     _pc = self.agent.pc.reshape(480, 640)
                     pc_np = np.array(_pc.tolist())[:, :, :3]
                     human_pc = pc_np[human_coord[1], human_coord[0]]
                     human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+                    coord_map_list[human_idx] = human_coord_in_map
 
                     cv2.imshow('crop_img', crop_img)
                     cv2.waitKey(1)
@@ -201,11 +206,11 @@ class ShoeDetection:
 
                         # Calculate text probabilities
                         # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        text_probs = (100.0 * image_features @ text_features.T)
-                        print('probs before softmax', text_probs)
-                        text_probs = text_probs.softmax(dim=-1)
-                        print('probs after softmax', text_probs)
+                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        # text_probs = (100.0 * image_features @ text_features.T)
+                        # print('probs before softmax', text_probs)
+                        # text_probs = text_probs.softmax(dim=-1)
+                        # print('probs after softmax', text_probs)
 
                     # Convert probabilities to percentages
                     text_probs_percent = text_probs * 100
@@ -219,13 +224,28 @@ class ShoeDetection:
                     # else:
                     #     # self.shoe_position = [left_x, left_y]
                     #     no_shoes_person[human_idx] = True
-                    if text_probs_percent_np[0][0] < 60:
-                        no_shoes_person[human_idx] = True
-                        
-                    else:
-                        self.shoe_position = human_coord_in_map
+                    # if text_probs_percent_np[0][0] < 60:
+                    no_shoes_prob[human_idx] += text_probs_percent_np[0][0]
+                    # if text_probs_percent_np[0][0] < 90:
+                    #     no_shoes_person[human_idx] = True
+                    # else:
+                    #     self.shoe_position = human_coord_in_map
+                
                         
                 count += 1
+        no_shoes_prob = np.array(no_shoes_prob)
+        no_shoes_prob = no_shoes_prob / 5
+        print(f'no_shoes_prob: {no_shoes_prob}')
+        for human_idx in range(len(no_shoes_person)):
+            if no_shoes_prob[human_idx] < 85:
+                no_shoes_person[human_idx] = True
+            else:
+                self.shoe_position = coord_map_list[human_idx]
+
+        # if text_probs_percent_np[0][0] < 90:
+        #     no_shoes_person[human_idx] = True
+        # else:
+        #     self.shoe_position = human_coord_in_map
 
         if no_shoes_person.count(False) > 0:
             for person_idx in range(len(no_shoes_person)):
@@ -540,7 +560,7 @@ class NoLittering:
         # find closest offender in terms of pan degree
         # for pan_degree in [60, 0, -60, -120, -180, -220]:
         for pan_degree in [90, 60, 30, 0, -30, -60, -90, -120, -150, -180]:
-            self.agent.pose.head_pan_tilt(pan_degree, -25)
+            self.agent.pose.head_pan_tilt(pan_degree, -10)
             rospy.sleep(4)
             print('self.knee_list', self.knee_list)
             for x, y in self.knee_list:
@@ -644,7 +664,7 @@ class DrinkDetection:
         self.clip_preprocess = clip.clip_preprocess
         self.tokenizer = clip.tokenizer
 
-        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
         # self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
         # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
@@ -746,7 +766,7 @@ class DrinkDetection:
         for human_idx in range(len(self.knee_list)//2):
             left_x, _ = self.knee_list[human_idx*2]
             right_x, _ = self.knee_list[human_idx*2+1]
-            if left_x >= 640-160 or right_x <= 160:
+            if left_x >= 640-120 or right_x <= 120:
                 drink_person[human_idx] = True
         print(f'drink_person: {drink_person}')
         if drink_person.count(False) == 0:
@@ -770,7 +790,7 @@ class DrinkDetection:
 
                     human_idx = -1
                     for knee_idx, knee in enumerate(self.knee_list):
-                        if (knee[0] >= top_left_x and knee[0] <= bottom_right_x) and (knee[1] >= top_left_y and knee[1] <= bottom_right_y):
+                        if (knee[0] >= top_left_x-50 and knee[0] <= bottom_right_x+50) and (knee[1] >= top_left_y-50 and knee[1] <= bottom_right_y+50):
                             human_idx = knee_idx // 2
                             break
                     if human_idx == -1:
@@ -778,7 +798,7 @@ class DrinkDetection:
 
                     print(f'human idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
 
-                    if top_left_x >= 640-160 or bottom_right_x <= 160:
+                    if top_left_x >= 640-120 or bottom_right_x <= 120:
                         continue
                     if human_idx>=len(drink_person):
                         continue
@@ -793,8 +813,6 @@ class DrinkDetection:
                                 l_hand = hand_coord
                             else:
                                 r_hand = hand_coord
-                    if l_hand[0] > r_hand[0]:
-                        l_hand, r_hand = r_hand, l_hand
 
                     # 1. both hands visible
                     if l_hand is not None and r_hand is not None:
@@ -920,7 +938,7 @@ class DrinkDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 99:
+                    if text_probs_percent_np[0][0] > 95:
                         drink_person[human_idx] = True
                         # return True
                     else:
@@ -1107,8 +1125,8 @@ def stickler_for_the_rules(agent):
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search'
-        # 'office_search', 'office_search2'
-        # 'kitchen_search', 'kitchen_search2',
+        'office_search2',
+        'kitchen_search', 'kitchen_search2',
         'livingroom_search',
         'hallway_search',
         # 'office_search2', 
@@ -1132,11 +1150,19 @@ def stickler_for_the_rules(agent):
 
     # while True:
     for search_idx, search_location in enumerate(search_location_list):
+
+
         
-        # if next room is office_search2, but already found broken rule, skip
-        if search_location == 'office_search2':
-            if break_rule_check_list['room'] > 0:
-                continue
+        # # if next room is office_search2, but already found broken rule, skip
+        # if search_location == 'office_search2':
+        #     if break_rule_check_list['room'] > 0:
+        #         continue
+
+        if search_location=='office_search2':
+            agent.move_abs_safe('hallway_enter')
+            agent.move_abs_safe('office_search') # 없어도 상관없음
+        
+        
 
         # move to the search location
         agent.say(f"I'm moving to\n{search_location.split('_')[0]}.", show_display=True)
@@ -1146,6 +1172,9 @@ def stickler_for_the_rules(agent):
         # agent.pose.head_tilt(0)
         agent.pose.head_pan_tilt(0, 0)
 
+        if search_location=='kitchen_search' and search_location_list[search_idx-1]=='office_search2':
+            agent.move_abs_safe('office_leave1')
+            agent.move_abs_safe('office_leave2')
         agent.move_abs_safe(search_location)
         agent.say('I am checking \n the rules', show_display=True)
         rospy.sleep(2)
@@ -1172,7 +1201,7 @@ def stickler_for_the_rules(agent):
                     agent.move_abs_safe('office_search2')
                     agent.pose.head_tilt(20)
                     agent.say('You can leave\n through this door', show_display=True)
-                    agent.sleep(4)
+                    rospy.sleep(4)
 
                     # agent.move_abs_safe('bedroom_doublecheck')
                     # agent.say('Checking the room if empty', show_display=True)
@@ -1191,9 +1220,9 @@ def stickler_for_the_rules(agent):
                             agent.move_abs_safe('office_search2')
                             agent.pose.head_tilt(20)
                             agent.say('You can leave\n through this door', show_display=True)
-                            agent.sleep(4)
+                            rospy.sleep(4)
                             agent.say('Thank you!', show_display=True)
-                            agent.sleep(2)
+                            rospy.sleep(2)
                             break
                     del forbidden_room
                     break

@@ -1,9 +1,13 @@
 import os
-from object_list_dict import name_to_grasping_type, name_to_itemtype
+from object_list_dict import name_to_grasping_type
 
-def make_object_list(yolo_classname_path):
+def make_object_list(yolo_classname_path, is_yolov10=True):
     # yolo_classname path
-    file_path = os.path.join('module', 'yolov7', yolo_classname_path)
+    if not is_yolov10:
+        file_path = os.path.join('/home/tidy/Robocup2024/module/yolov7', yolo_classname_path)
+        
+    if is_yolov10:
+        file_path = os.path.join('/home/tidy/Robocup2024/module/yolov10', yolo_classname_path)
 
     with open(file_path, 'r', encoding='utf-8') as f:
         class_names = [line.strip() for line in f.readlines()]
@@ -12,10 +16,10 @@ def make_object_list(yolo_classname_path):
         
     for idx, class_name in enumerate(class_names):
         # I thk we don't need itemtype anymore!
-        try:
-            itemtype = name_to_itemtype[class_name]
-        except KeyError:
-            itemtype = 0
+        # try:
+        #     itemtype = name_to_itemtype[class_name]
+        # except KeyError:
+        #     itemtype = 0
             
         try:
             grasping_type = name_to_grasping_type[class_name]
@@ -56,7 +60,7 @@ def make_object_list(yolo_classname_path):
             if grasping_type_undiscovered:   
                 grasping_type = 0
             
-        OBJECT_LIST.append([class_name, idx, itemtype, grasping_type])
+        OBJECT_LIST.append([class_name, idx, 0, grasping_type])
         
     print('[Object list]')
     print(OBJECT_LIST)
