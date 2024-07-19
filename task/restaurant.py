@@ -706,7 +706,7 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            agent.head_show_image(self.openpose_image)
+            agent.head_display_image_pubish(self.openpose_image)
             agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=False)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
