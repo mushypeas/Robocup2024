@@ -107,8 +107,7 @@ if FINAL:
 
         'bin_littering': [],
         'bar_drink': [], # cabinet?
-        'shoe_entrance': [],
-        'shoe_exit': [],
+        'shoe_warning': [],
 
     }
 

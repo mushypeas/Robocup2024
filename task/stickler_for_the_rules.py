@@ -22,8 +22,16 @@ import sys
 
 sys.path.append('.')
 
+class CLIP:
+    def __init__(self):
+        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
+        self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
+        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+
 class ShoeDetection:
-    def __init__(self, agent):
+    def __init__(self, agent, clip):
         self.agent = agent
         self.axis_transform = Axis_transform()
         # self.shoe_detected = False
@@ -38,12 +46,17 @@ class ShoeDetection:
         self.ankle_list = None
         self.image_save_index = 0
 
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B/32')
-        state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
-        self.clip_model.load_state_dict(state_dict['CLIP'])
-        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
-        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B/32')
+        # state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=self.device)
+        # self.clip_model.load_state_dict(state_dict['CLIP'])
+        # self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+
+        self.clip_model = clip.clip_model
+        self.clip_preprocess = clip.clip_preprocess
+        self.tokenizer = clip.tokenizer
+
         # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
         # self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
@@ -59,6 +72,8 @@ class ShoeDetection:
 
     def _ankle_pose_callback(self, data):
         self.ankle_list = np.reshape(data.data, (-1, 2))
+        # sort by x
+        self.ankle_list = self.ankle_list[self.ankle_list[:, 0].argsort()]
 
     def find_shoes_clip(self, double_check=False):
 
@@ -130,10 +145,10 @@ class ShoeDetection:
                 no_shoes_person[human_idx] = True
         print(f'no_shoes_person: {no_shoes_person}')
 
-        for head_tilt_angle in [-20, -30]:
+        for head_tilt_angle in [-20]:
         
             self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(2)
+            rospy.sleep(4)
 
             count = 0
             while count < 5:
@@ -160,7 +175,7 @@ class ShoeDetection:
                         max(0,(left_x+right_x-224)//2):min(640-1,(left_x+right_x+224)//2)
                     ]
                     
-                    human_coord = [left_x, left_y]
+                    human_coord = [(left_x+right_x)//2, max((left_y+right_y)//2-40, 0)]
                     _pc = self.agent.pc.reshape(480, 640)
                     pc_np = np.array(_pc.tolist())[:, :, :3]
                     human_pc = pc_np[human_coord[1], human_coord[0]]
@@ -186,7 +201,11 @@ class ShoeDetection:
 
                         # Calculate text probabilities
                         # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        text_probs = (100.0 * image_features @ text_features.T)
+                        print('probs before softmax', text_probs)
+                        text_probs = text_probs.softmax(dim=-1)
+                        print('probs after softmax', text_probs)
 
                     # Convert probabilities to percentages
                     text_probs_percent = text_probs * 100
@@ -194,12 +213,17 @@ class ShoeDetection:
                     formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
                     print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 60:
-                        # no_shoes_person[human_idx] = False
-                        self.shoe_position = human_coord_in_map
-                    else:
-                        # self.shoe_position = [left_x, left_y]
+                    # if text_probs_percent_np[0][0] > 60:
+                    #     # no_shoes_person[human_idx] = False
+                    #     self.shoe_position = human_coord_in_map
+                    # else:
+                    #     # self.shoe_position = [left_x, left_y]
+                    #     no_shoes_person[human_idx] = True
+                    if text_probs_percent_np[0][0] < 60:
                         no_shoes_person[human_idx] = True
+                        
+                    else:
+                        self.shoe_position = human_coord_in_map
                         
                 count += 1
 
@@ -303,9 +327,9 @@ class ShoeDetection:
     def ask_to_action(self, entrance):
         rospy.sleep(1)
         # take the offender to the entrance
-        self.agent.say('Allow me to guide you\nto the entrance.',
-                       show_display=True)
-        rospy.sleep(3)
+        # self.agent.say('I will guide you\nto the entrance.',
+        #                show_display=True)
+        # rospy.sleep(3)
         self.agent.say('Please follow me!', show_display=True)
         rospy.sleep(1)
         self.agent.move_abs_safe(entrance)
@@ -321,8 +345,8 @@ class ShoeDetection:
         rebelion_count = 0
         while rebelion_count < 3:
             self.agent.pose.head_tilt(-40)
-            self.agent.say('Are you finished?\nLet me see your feet', show_display=True)
-            rospy.sleep(4)
+            self.agent.say('Are you finished?\nCome in front of me.\nLet me see your feet', show_display=True)
+            rospy.sleep(6)
 
             # if self.find_shoes():
             if not self.find_shoes_clip(double_check=True):
@@ -335,12 +359,12 @@ class ShoeDetection:
                 # rebelion_count += 1
                 # self.agent.pose.head_tilt(20)
                 self.agent.say('Please take off your shoes.\nEnjoy your party', show_display=True)
-                rospy.sleep(3)
+                rospy.sleep(4)
                 break
             else:
                 self.agent.pose.head_tilt(20)
                 self.agent.say('Thank you!\nEnjoy your party', show_display=True)
-                rospy.sleep(2.5)
+                rospy.sleep(3)
                 return
 
         # self.agent.pose.head_tilt(20)
@@ -490,7 +514,7 @@ class NoLittering:
     def detect_garbage(self):
         import copy
         self.agent.pose.head_tilt(-40)
-        rospy.sleep(1)
+        rospy.sleep(4)
         if len(self.agent.yolo_module.yolo_bbox) != 0:
 
             _pc = self.agent.pc.reshape(480, 640)
@@ -515,9 +539,9 @@ class NoLittering:
     def find_closest_offender(self):
         # find closest offender in terms of pan degree
         # for pan_degree in [60, 0, -60, -120, -180, -220]:
-        for pan_degree in [90, 60, 30, 0, -30, -60, -90]:
+        for pan_degree in [90, 60, 30, 0, -30, -60, -90, -120, -150, -180]:
             self.agent.pose.head_pan_tilt(pan_degree, -25)
-            rospy.sleep(3)
+            rospy.sleep(4)
             print('self.knee_list', self.knee_list)
             for x, y in self.knee_list:
                 if pan_degree != 0:
@@ -569,8 +593,8 @@ class NoLittering:
     def ask_to_action(self, bin_location):
         self.agent.say(
             "Please pick up\nthe litter in front of me", show_display=True)
-        # rospy.sleep(8)
-        rospy.sleep(5) # 0609
+        rospy.sleep(8)
+        # rospy.sleep() # 0609
         # ask the offender to throw the garbage into the bin
         # self.agent.say('Allow me to assist you\nto throw it into the bin.', show_display=True)
         # rospy.sleep(5)
@@ -598,7 +622,7 @@ class NoLittering:
 
 
 class DrinkDetection:
-    def __init__(self, agent, axis_transform, hand_drink_pixel_dist_threshold):
+    def __init__(self, agent, axis_transform, hand_drink_pixel_dist_threshold, clip):
         self.agent = agent
         # rospy.Subscriber('snu/openpose/hand',
         #                  Int16MultiArray, self._openpose_cb)
@@ -616,11 +640,15 @@ class DrinkDetection:
         # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
         self.image_save_index = 0
 
-        self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-        self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
-        self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
-        self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
-        self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
+        self.clip_model = clip.clip_model
+        self.clip_preprocess = clip.clip_preprocess
+        self.tokenizer = clip.tokenizer
+
+        # self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        # self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k')
+        # self.clip_model.eval()  # model in train mode by default, impacts some models with BatchNorm or stochastic depth active
+        # self.tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        # self.clip_model = self.clip_model.eval().requires_grad_(False).to(self.device)
         # print(self.clip_preprocess)
 
     def _openpose_cb(self, data):
@@ -1064,9 +1092,12 @@ def stickler_for_the_rules(agent):
     forbidden_room = ForbiddenRoom(agent, axis_transform,
                                    forbidden_room_min_points[forbidden_search_location],
                                    forbidden_room_max_points[forbidden_search_location])
-    shoe_detection = ShoeDetection(agent)
+    
+    clip = CLIP()
+
+    shoe_detection = ShoeDetection(agent, clip=clip)
     no_littering = NoLittering(agent, axis_transform)
-    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
+    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold, clip=clip)
     #################################
     search_location_list = [
         # 'bedroom_search',
