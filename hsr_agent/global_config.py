@@ -96,18 +96,18 @@ if FINAL:
         # 'bar_drink': [5.5804, -2.0962, 1.6104],
         # 'bedroom_doublecheck': [4.6, -5.4843, 0.0123], # same with bedroom_search
         # 'bedroom_search_reverse': [5.1777, -4.2715, 1.6012], # before leaving bedroom
-        'office_search': [],
-        'office_search2': [], # leave
-        'kitchen_search': [],
-        'kitchen_search2': [],
-        'livingroom_search': [],
+        'office_search': [3.9124, 1.8329, 2.3017],
+        'office_search2': [3.9013, 3.7423, -1.5981], # leave
+        'kitchen_search': [4.7953, 3.7805, 0.0278],
+        'kitchen_search2': [8.0138, 1.5989, 1.5747],
+        'livingroom_search': [6.8303, 0.4463, -0.8153],
         # 'livingroom_search2': [],
-        'hallway_search': [],
+        'hallway_search': [3.8517, 0.6339, -2.3486],
         # 'hallway_search2': [],
 
-        'bin_littering': [],
-        'bar_drink': [], # cabinet?
-        'shoe_warning': [],
+        'bin_littering': [5.346, 1.4374, 2.3295],
+        'bar_drink': [5.3231, 5.5267, -1.7753], # currently cabinet
+        'shoe_warning': [2.0195, -0.7274, 1.6346],
 
     }
 
