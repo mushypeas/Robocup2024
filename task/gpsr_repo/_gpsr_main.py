@@ -262,6 +262,7 @@ class GPSR:
         self.say("1")
         rospy.sleep(1)
         self.agent.open_gripper()
+        self.agent.pose.move_pose()
 
     def deliver(self):
         self.say("take this.")
@@ -274,6 +275,7 @@ class GPSR:
         rospy.sleep(1)
         self.agent.pose.neutral_pose()
         self.agent.open_gripper()
+        self.agent.pose.move_pose()
 
     def say(self, text, show_display=True):
         self.agent.say(text, show_display=show_display)
@@ -514,7 +516,7 @@ class GPSR:
             
             if type == 'pose':
                 human_poses = self.getPose(getAll=True)
-                if pose in human_poses:
+                if pose in [tup[0] for tup in human_poses]:
                     break
                 
             if type == 'gest':
@@ -522,7 +524,7 @@ class GPSR:
                 if gest == 'waving person':
                     if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
                         break
-                if gest in human_gests:
+                if gest in [tup[0] for tup in human_gests]:
                     break
                 
                 
@@ -572,6 +574,7 @@ class GPSR:
         else:
             rospy.logwarn("No such gesture or pose")
             self.identify()
+
 
         self.say(f"I found a person who is {gestPosePers}.")
         rospy.sleep(3)
@@ -654,19 +657,19 @@ def gpsr(agent):
 
     g = GPSR(agent)
     
-    # agent.pose.move_pose()
-    # agent.initial_pose('zero')
-    # agent.say('start gpsr')
-    # agent.door_open()
-    # agent.move_rel(1.0, 0, wait=True)
+    agent.pose.move_pose()
+    agent.initial_pose('zero')
+    agent.say('start gpsr')
+    agent.door_open()
+    agent.move_rel(1.0, 0, wait=True)
 
     while g.task_finished_count < task_iteration:
 
         g.move('gpsr_instruction_point')
 
         # Get input with STT
-        g.say("Give a command AFTER \n the DING sound.")
-        rospy.sleep(2.5)
+        g.say("Come closer to mic and \n Give a command AFTER \n the DING sound.")
+        rospy.sleep(3.5)
 
         inputText = g.hear(8.)
 
