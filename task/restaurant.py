@@ -188,7 +188,7 @@ class MoveBaseStandalone:
             return False
 
     
-    def human_stop(self, agent, human_stop_thres=0.65): #jnpahk
+    def human_stop(self, agent, human_stop_thres=0.6): #jnpahk
         depth = agent.depth_image / 1000
         # depth = depth[depth>0]
 
@@ -208,7 +208,7 @@ class MoveBaseStandalone:
             return False
 
 
-    def turn_around(self, angle=180):
+    def turn_around(self, angle=120):
         while not rospy.is_shutdown():
             # goal topic generation
             pose = PoseStamped()
@@ -269,7 +269,7 @@ class MoveBaseStandalone:
             elif self.barrier_stop(agent): #jnpahk
                 rospy.logwarn("Barrier detected. Turn around.")
                 agent.move_base.base_action_client.cancel_all_goals()
-                self.turn_around(120)
+                self.turn_around()
                 self.base_action_client.send_goal(goal)
             
             else:
@@ -363,7 +363,7 @@ class MoveBaseStandalone:
                 elif self.barrier_stop(agent): #jnpahk
                     rospy.logwarn("Barrier detected. Turn around.")
                     agent.move_base.base_action_client.cancel_all_goals()
-                    self.turn_around(120)
+                    self.turn_around()
                     self.base_action_client.send_goal(goal)
 
                 else:
@@ -524,7 +524,7 @@ class MoveBaseStandalone:
                     rospy.logwarn("Barrier detected. Turn around.")
                     agent.move_base.base_action_client.cancel_all_goals()
 
-                    self.turn_around(120)
+                    self.turn_around()
                     self.base_action_client.send_goal(goal)
                 
 
