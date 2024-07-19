@@ -62,27 +62,53 @@ if FINAL:
         'seat_scan_bypass': [7.0752, -1.0906, 2.8539],
 
         # stickler for the rules
-        # 'kitchen_search': [3.3146, 0.4319, -2.2959],
-        'kitchen_search': [4.6604, -3.4706, 0.8235], # PNU
-        'kitchen_leave': [4.3274, -1.454, -3.0948], # PNU
-        # 'living_room_search': [4.9844, 0.2595, -0.8542],
-        'living_room_search': [3.595, -3.533, 2.3387], # PNU
-        'living_room_leave': [3.0107, -3.384, -1.5582], # PNU
-        # 'study_search': [5.1834, 1.9487, 2.7205],
-        'study_search': [3.6726, -4.521, -2.2941], # PNU
-        'study_leave': [3.2304, -5.6171, -0.1496], # PNU
-        # 'bedroom_search': [6.7134, 3.401, -0.6504],
-        'bedroom_search': [4.6, -5.4843, 0.0123], # PNU
-        # 'shoe_warning': [5.6829, -2.9312, 2.2687],\
-        'shoe_warning': [1.2716, -0.73, 1.5158], # PNU
-        # 'bin_littering': [1.9497, -1.9686, 1.8865],
-        'bin_littering': [6.8991, 0.1616, 2.1771], # PNU
-        # 'bar_drink': [3.1751, -2.4041, 1.2635],
-        'bar_drink': [5.5804, -2.0962, 1.6104], # PNU
-        # 'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
-        'bedroom_doublecheck': [4.6, -5.4843, 0.0123], # PNU, same with bedroom_search
-        # 'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
-        'bedroom_search_reverse': [5.1777, -4.2715, 1.6012], # PNU, before leaving bedroom
+        # # 'kitchen_search': [3.3146, 0.4319, -2.2959],
+        # 'kitchen_search': [4.6604, -3.4706, 0.8235], # PNU
+        # 'kitchen_leave': [4.3274, -1.454, -3.0948], # PNU
+        # # 'living_room_search': [4.9844, 0.2595, -0.8542],
+        # 'living_room_search': [3.595, -3.533, 2.3387], # PNU
+        # 'living_room_leave': [3.0107, -3.384, -1.5582], # PNU
+        # # 'study_search': [5.1834, 1.9487, 2.7205],
+        # 'study_search': [3.6726, -4.521, -2.2941], # PNU
+        # 'study_leave': [3.2304, -5.6171, -0.1496], # PNU
+        # # 'bedroom_search': [6.7134, 3.401, -0.6504],
+        # 'bedroom_search': [4.6, -5.4843, 0.0123], # PNU
+        # # 'shoe_warning': [5.6829, -2.9312, 2.2687],\
+        # 'shoe_warning': [1.2716, -0.73, 1.5158], # PNU
+        # # 'bin_littering': [1.9497, -1.9686, 1.8865],
+        # 'bin_littering': [6.8991, 0.1616, 2.1771], # PNU
+        # # 'bar_drink': [3.1751, -2.4041, 1.2635],
+        # 'bar_drink': [5.5804, -2.0962, 1.6104], # PNU
+        # # 'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
+        # 'bedroom_doublecheck': [4.6, -5.4843, 0.0123], # PNU, same with bedroom_search
+        # # 'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+        # 'bedroom_search_reverse': [5.1777, -4.2715, 1.6012], # PNU, before leaving bedroom
+        #################### 2024 Eindhoven
+        # 'kitchen_search': [4.6604, -3.4706, 0.8235],
+        # 'kitchen_leave': [4.3274, -1.454, -3.0948],
+        # 'living_room_search': [3.595, -3.533, 2.3387],
+        # 'living_room_leave': [3.0107, -3.384, -1.5582],
+        # 'study_search': [3.6726, -4.521, -2.2941],
+        # 'study_leave': [3.2304, -5.6171, -0.1496],
+        # 'bedroom_search': [4.6, -5.4843, 0.0123],
+        # 'shoe_warning': [1.2716, -0.73, 1.5158],
+        # 'bin_littering': [6.8991, 0.1616, 2.1771],
+        # 'bar_drink': [5.5804, -2.0962, 1.6104],
+        # 'bedroom_doublecheck': [4.6, -5.4843, 0.0123], # same with bedroom_search
+        # 'bedroom_search_reverse': [5.1777, -4.2715, 1.6012], # before leaving bedroom
+        'office_search': [],
+        'office_search2': [], # leave
+        'kitchen_search': [],
+        'kitchen_search2': [],
+        'livingroom_search': [],
+        # 'livingroom_search2': [],
+        'hallway_search': [],
+        # 'hallway_search2': [],
+
+        'bin_littering': [],
+        'bar_drink': [], # cabinet?
+        'shoe_warning': [],
+
     }
 
 
