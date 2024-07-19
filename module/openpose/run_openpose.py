@@ -183,18 +183,6 @@ class OpenPoseWrapper:
         rospy.loginfo(f'human_bbox_with_hand_list: {human_bbox_with_hand_list}')
         self.human_bbox_with_hand_pub.publish(human_bbox_with_hand_msg)
 
-        # # Send bbox info of hand-waving people # handup deactivated
-        # msg = Int16MultiArray()
-        # data = []
-        # for bbox in handup_bbox_list:
-        #     bbox[0] = int(bbox[0] / self.ratio)
-        #     bbox[1] = int(bbox[1] / self.ratio)
-        #     bbox[2] = int(bbox[2] / self.ratio)
-        #     bbox[3] = int(bbox[3] / self.ratio)
-        #     # rospy.loginfo(f'Found: TOP LFET: {bbox[0:2]} BOTTOM RIGHT: {bbox[2:4]}')
-        #     data += bbox
-        # msg.data = data
-        # self.bbox_pub.publish(msg)
         return
 
     def get_keypoints(self, pmap, thresh=0.1):

@@ -611,7 +611,6 @@ class DrinkDetection:
         # self.thre = hand_drink_pixel_dist_threshold
         self.axis_transform = axis_transform
         # self.drink_check = False
-        # self.drink_list = [0, 1, 2, 3, 4, 5]
         # self.marker_maker = MarkerMaker('/snu/human_location') # ?? 
         self.no_drink_human_coord = None # 이건 필요
         # self.detector = CLIPDetector(config=DRINK_CONFIG, mode="HSR")
@@ -629,22 +628,26 @@ class DrinkDetection:
         # self.human_hand_poses = np.reshape(data_list, (-1, 2, 2))
         # self.human_hand_poses = np.reshape(data_list, (-1, 2))
         self.human_bbox_with_hand = np.reshape(data_list, (-1, 4, 2))
+        # sort by top left x
+        self.human_bbox_with_hand = self.human_bbox_with_hand[self.human_bbox_with_hand[:, 0, 0].argsort()]
 
     def _knee_pose_callback(self, data):
         self.knee_list = np.reshape(data.data, (-1, 2))
+        # sort by x
+        self.knee_list = self.knee_list[self.knee_list[:, 0].argsort()]
 
-    def show_image(self, l_hand_x, l_hand_y, r_hand_x, r_hand_y):
-        img = self.agent.rgb_img
-        l_hand_box = tuple(
-            map(int, (l_hand_x - self.thre, l_hand_y - self.thre, l_hand_x + self.thre, l_hand_y + self.thre)))
-        img = cv2.rectangle(
-            img, l_hand_box[0:2], l_hand_box[2:4], color='r', thickness=2)
-        r_hand_box = tuple(
-            map(int, (r_hand_x - self.thre, r_hand_y - self.thre, r_hand_x + self.thre, r_hand_y + self.thre)))
-        img = cv2.rectangle(
-            img, r_hand_box[0:2], r_hand_box[2:4], color='r', thickness=2)
-        cv2.imshow('img', img)
-        cv2.waitKey(1)
+    # def show_image(self, l_hand_x, l_hand_y, r_hand_x, r_hand_y):
+    #     img = self.agent.rgb_img
+    #     l_hand_box = tuple(
+    #         map(int, (l_hand_x - self.thre, l_hand_y - self.thre, l_hand_x + self.thre, l_hand_y + self.thre)))
+    #     img = cv2.rectangle(
+    #         img, l_hand_box[0:2], l_hand_box[2:4], color='r', thickness=2)
+    #     r_hand_box = tuple(
+    #         map(int, (r_hand_x - self.thre, r_hand_y - self.thre, r_hand_x + self.thre, r_hand_y + self.thre)))
+    #     img = cv2.rectangle(
+    #         img, r_hand_box[0:2], r_hand_box[2:4], color='r', thickness=2)
+    #     cv2.imshow('img', img)
+    #     cv2.waitKey(1)
 
     def find_drink(self, double_check=False):
 
@@ -702,7 +705,7 @@ class DrinkDetection:
 
         # 고개 0도로 설정
         # openpose 성능 이슈 -> 움직인 뒤 충분히 sleep 해줘야 함... 안그러면 움직이는 도중의 blurry한 사진이 들어가고, openpose에서는 아무것도 뱉지 않음
-        self.agent.pose.head_tilt(-10)
+        self.agent.pose.head_tilt(0)
         rospy.sleep(5)
         # 사람 없으면 return
         print('knee_list:', self.knee_list)
@@ -713,34 +716,39 @@ class DrinkDetection:
         drink_person = [False for _ in range(len(self.knee_list)//2)]
         # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
         for human_idx in range(len(self.knee_list)//2):
-            left_x, left_y = self.knee_list[human_idx*2]
-            right_x, right_y = self.knee_list[human_idx*2+1]
+            left_x, _ = self.knee_list[human_idx*2]
+            right_x, _ = self.knee_list[human_idx*2+1]
             if left_x >= 640-160 or right_x <= 160:
                 drink_person[human_idx] = True
         print(f'drink_person: {drink_person}')
         if drink_person.count(False) == 0:
             return True
+        
+        hand_thres_person = 50
 
-        for head_tilt_angle in [-10, 5, 20]:
+        for head_tilt_angle in [0]:
         
             self.agent.pose.head_tilt(head_tilt_angle)
             rospy.sleep(2)
 
             count = 0
             while count < 5:
-                # image = self.agent.rgb_img
-                # msg_hand = rospy.wait_for_message('/snu/openpose/hand', Int16MultiArray)
-                # msg_human_bbox = rospy.wait_for_message('/snu/openpose/human_bbox', Int16MultiArray)
-                # human_bboxes = np.reshape(msg_human_bbox.data, (-1, 2, 2))
-                # hands = np.reshape(msg_hand.data, (-1, 2))
                 
                 image = self.agent.rgb_img
 
-                for human_idx, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
+                for _, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
                     top_left_x, top_left_y = human_bbox_with_hand[0]
                     bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
 
-                    print(f'drink idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
+                    human_idx = -1
+                    for knee_idx, knee in enumerate(self.knee_list):
+                        if (knee[0] >= top_left_x and knee[0] <= bottom_right_x) and (knee[1] >= top_left_y and knee[1] <= bottom_right_y):
+                            human_idx = knee_idx // 2
+                            break
+                    if human_idx == -1:
+                        continue
+
+                    print(f'human idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
 
                     if top_left_x >= 640-160 or bottom_right_x <= 160:
                         continue
@@ -749,19 +757,16 @@ class DrinkDetection:
                     if drink_person[human_idx]:
                         continue
 
-                    hand_thres_person = int((100-int(50*min(top_left_y,240)/240))*1.5)
-
-                    
                     l_hand = None
                     r_hand = None
                     for hand_coord in human_bbox_with_hand[2:]:
-                        # hand_x, hand_y = hand_coord
-                        # if (hand_x >= human_bbox[0][0] and hand_x <= human_bbox[1][0]) and (hand_y >= human_bbox[0][1] and hand_y <= human_bbox[1][1]):
                         if hand_coord[0]!=-1:
                             if l_hand is None:
                                 l_hand = hand_coord
                             else:
                                 r_hand = hand_coord
+                    if l_hand[0] > r_hand[0]:
+                        l_hand, r_hand = r_hand, l_hand
 
                     # 1. both hands visible
                     if l_hand is not None and r_hand is not None:
@@ -769,15 +774,14 @@ class DrinkDetection:
                             l_hand, r_hand = r_hand, l_hand
 
                         crop_y_coord_0 = 0
-                        crop_y_coord_1 = 480
+                        crop_y_coord_1 = 480-1
                         crop_x_coord_0 = 0
-                        crop_x_coord_1 = 640
+                        crop_x_coord_1 = 640-1
 
                         l_hand_x, l_hand_y = l_hand
                         r_hand_x, r_hand_y = r_hand
                         center_hand_x = (l_hand_x + r_hand_x) // 2
                         center_hand_y = (l_hand_y + r_hand_y) // 2
-                        # square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + self.thre
                         square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + hand_thres_person
                         if square_len < 224:
                             square_len = 224
@@ -867,7 +871,6 @@ class DrinkDetection:
                     crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
                     crop_img = self.clip_preprocess(crop_img)
                     crop_img = crop_img.unsqueeze(0).to(self.device)
-                    # print(crop_img.size())
 
                     # Encode image and text features
                     with torch.no_grad():
@@ -877,7 +880,11 @@ class DrinkDetection:
                         text_features /= text_features.norm(dim=-1, keepdim=True)
 
                         # Calculate text probabilities
-                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                        text_probs = (100.0 * image_features @ text_features.T)
+                        print('probs before softmax', text_probs)
+                        text_probs = text_probs.softmax(dim=-1)
+                        print('probs after softmax', text_probs)
+                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
 
                     # Convert probabilities to percentages
                     text_probs_percent = text_probs * 100
@@ -987,41 +994,36 @@ class DrinkDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('Hello!', show_display=True)
         rospy.sleep(1)
-        # self.agent.say('I apologize for\nany inconvenience,\nbut unfortunately,', show_display=True)
-        # rospy.sleep(4.5)
-        self.agent.say(
-            'Sorry but\nall guests should\nhave a drink.', show_display=True)
+        self.agent.say('Sorry but\n all guests should\n have a drink.', show_display=True)
         rospy.sleep(5)
 
     def ask_to_action(self, bar_location):
-        self.agent.say('We prepare some drinks.', show_display=True)
-        rospy.sleep(2)
+        # self.agent.say('We prepare some drinks.', show_display=True)
+        # rospy.sleep(2)
         self.agent.say('Please follow me!', show_display=True)
-        rospy.sleep(4)
+        rospy.sleep(3)
         self.agent.move_abs_safe(bar_location)
         rospy.sleep(2)
         self.agent.pose.head_tilt(20)
-        self.agent.say('Please hold drink\non the bar.', show_display=True)
+        self.agent.say('Please hold drink\n on the bar.', show_display=True)
         rospy.sleep(5)
 
         self.agent.pose.head_tilt(5)
-        self.agent.say("Hold the drink \ninfront of me to double check", show_display=True)
+        self.agent.say("Hold the drink \nin front of me \nto double check", show_display=True)
         rospy.sleep(5)
         # if self.detect_no_drink_hand():
         if not self.find_drink(double_check=True):
             self.agent.pose.head_tilt(20)
             self.agent.say("You did not pick up a drink", show_display=True)
             rospy.sleep(2)
-            self.agent.say("Please hold your drink at the bar",
-                           show_display=True)
+            self.agent.say("Please hold your drink at the bar", show_display=True)
             rospy.sleep(5)
-        self.agent.pose.head_tilt(5)
-        rospy.sleep(2)
+        # self.agent.pose.head_tilt(5)
+        # rospy.sleep(2)
 
         self.agent.pose.head_tilt(20)
         self.agent.say('Thank you!\nEnjoy your party', show_display=True)
         rospy.sleep(3)
-        # self.agent.move_abs_safe('study_search_reverse')
 
 
 
@@ -1183,8 +1185,7 @@ def stickler_for_the_rules(agent):
                     # go to the offender and clarify what rule is being broken
                     drink_detection.clarify_violated_rule()
                     # ask offender to grab a drink
-                    drink_detection.ask_to_action(
-                        compulsory_hydration_bar_location)
+                    drink_detection.ask_to_action(compulsory_hydration_bar_location)
                     break
 
                 # [RULE 1] No shoes : tilt -20, -40
@@ -1201,22 +1202,22 @@ def stickler_for_the_rules(agent):
                     shoe_detection.ask_to_action(entrance)
                     break
 
-            if search_idx > 3:
-                for pan_degree in pan_degree_list[::-1]:
-                    # [RULE 3] No littering : tilt -40
-                    agent.pose.head_pan(pan_degree)
-                    rospy.sleep(2)
-                    if break_rule_check_list['garbage'] < 2 and no_littering.detect_garbage():
-                        # marking no littering violation detection
-                        # break_rule_check_list['garbage'] = True
-                        break_rule_check_list['garbage'] += 1
-                        print('garbage detection')
+            # if search_idx > 3:
+            #     for pan_degree in pan_degree_list[::-1]:
+            #         # [RULE 3] No littering : tilt -40
+            #         agent.pose.head_pan(pan_degree)
+            #         rospy.sleep(2)
+                if break_rule_check_list['garbage'] < 2 and no_littering.detect_garbage():
+                    # marking no littering violation detection
+                    # break_rule_check_list['garbage'] = True
+                    break_rule_check_list['garbage'] += 1
+                    print('garbage detection')
 
-                        # go to the offender and clarify what rule is being broken
-                        no_littering.clarify_violated_rule()
-                        # ask the offender to pick up and trash the garbage
-                        no_littering.ask_to_action(bin_location)
-                        break
+                    # go to the offender and clarify what rule is being broken
+                    no_littering.clarify_violated_rule()
+                    # ask the offender to pick up and trash the garbage
+                    no_littering.ask_to_action(bin_location)
+                    break
 
         if sum(break_rule_check_list.values())==4:
             break
