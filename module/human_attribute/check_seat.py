@@ -65,33 +65,6 @@ class CheckSeat():
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            # 기존코드 # 대회장에서 왼쪽에 문이 있었고 바깥에 사람들이 보였음
-            # for user in user_locations:
-            #     if self.door_range <= user[0] < width / 2:
-            #         seat_info[0][0] = 1
-            #     elif width / 2 <= user[0] < width:
-            #         seat_info[1][0] = 1
-
-            # # 0514
-            # for user in user_locations:
-            #     if 200 <= user[0] < 360:
-            #         seat_info[0][0] = 1
-            #     elif 360 <= user[0] < 560:
-            #         seat_info[1][0] = 1
-
-            # # 0609
-            # for user in user_locations:
-            #     if 180 <= user[0] < 440:
-            #         seat_info[0][0] = 1
-            #     elif 440 <= user[0] < 600:
-            #         seat_info[1][0] = 1
-
-            # # PNU
-            # for user in user_locations:
-            #     if 160 <= user[0] < 340:
-            #         seat_info[0][0] = 1
-            #     elif 340 <= user[0] < 520:
-            #         seat_info[1][0] = 1
 
             #################### 2024 Eindhoven # 3 LEFT SEATS
             for user in user_locations:
@@ -124,36 +97,6 @@ class CheckSeat():
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            # 기존코드
-            # for user in user_locations:
-            #     if self.sofa_range[0] <= user[0] < self.sofa_width / 2 + self.sofa_range[0]:
-            #         seat_info[2][0] = 1
-            #     else:
-            #         seat_info[3][0] = 1
-
-            # # 0514
-            # for user in user_locations:
-            #     if 100 <= user[0] < 320:
-            #         seat_info[2][0] = 1
-            #     elif 320 <= user[0] < 500:
-            #         seat_info[3][0] = 1
-
-            # # 0609
-            # for user in user_locations:
-            #     if 150 <= user[0] < 350:
-            #         seat_info[2][0] = 1
-            #     elif 350 <= user[0] < 550:
-            #         seat_info[3][0] = 1
-
-            # # PNU
-            # for user in user_locations:
-            #     if 100 <= user[0] < 250:
-            #         seat_info[2][0] = 1
-            #     elif 250 <= user[0] < 390:
-            #         seat_info[3][0] = 1
-            #     elif 390 <= user[0] < 540:
-            #         seat_info[4][0] = 1
-
             #################### 2024 Eindhoven # OK
             for user in user_locations:
                 if 60 <= user[0] < 320:
@@ -161,16 +104,6 @@ class CheckSeat():
                 elif 320 <= user[0] < 590:
                     seat_info[4][0] = 1
 
-                # if self.sofa_range[0] <= user[0] < self.sofa_width / 5 + self.sofa_range[0]:
-                #     seat_info[2][0] = 1
-                # elif self.sofa_width / 5 + self.sofa_range[0] <= user[0] < self.sofa_width / 5 * 2 + self.sofa_range[0]:
-                #     seat_info[3][0] = 1
-                # elif self.sofa_width / 5 * 2 + self.sofa_range[0] <= user[0] < self.sofa_width / 5 * 3 + self.sofa_range[0]:
-                #     seat_info[4][0] = 1
-                # elif self.sofa_width / 5 * 3 + self.sofa_range[0] <= user[0] < self.sofa_width / 5 * 4 + self.sofa_range[0]:
-                #     seat_info[5][0] = 1
-                # elif self.sofa_width / 5 * 4 + self.sofa_range[0] <= user[0] < self.sofa_range[1]:
-                #     seat_info[6][0] = 1
         #################### middle view
 
 
@@ -197,30 +130,6 @@ class CheckSeat():
             user_location_list.extend(user_locations)
             user_face_data_list.extend(user_face_data)
 
-            # 기존코드
-            # for user in user_locations:
-            #     if 0 <= user[0] < width / 2:
-            #         seat_info[4][0] = 1
-            #     elif width / 2 <= user[0] < width:
-            #         seat_info[5][0] = 1
-
-            # # 0514
-            # for user in user_locations:
-            #     if 80 <= user[0] < 210:
-            #         seat_info[4][0] = 1
-            #     elif 210 <= user[0] < 360:
-            #         seat_info[5][0] = 1
-            #     elif 360 <= user[0] < 560:
-            #         seat_info[6][0] = 1
-
-            # 0609
-            # for user in user_locations:
-            #     if 30 <= user[0] < 170:
-            #         seat_info[4][0] = 1
-            #     elif 170 <= user[0] < 330:
-            #         seat_info[5][0] = 1
-            #     elif 330 <= user[0] < 560:
-            #         seat_info[6][0] = 1
 
             #################### 2024 Eindhoven # TEMPOARILY OK
             # for user in user_locations: # NO LEFT SEATS
@@ -236,27 +145,27 @@ class CheckSeat():
         #################### right view (1)
 
         
-        #################### right view (2)
-        #################### 2024 Eindhoven # OK
-        agent.pose.head_pan(-105)
-        rospy.sleep(1)
+        # #################### right view (2)
+        # #################### 2024 Eindhoven # OK
+        # agent.pose.head_pan(-105)
+        # rospy.sleep(1)
 
-        if self.calibration_mode:
-            #################### 2024 Eindhoven # OK
-            self.check_calibration_mode(agent, self.face_threshold3, [120, 490])
-        #################### 2024 Eindhoven # OK
-        user_locations, user_face_data = self.check(agent, self.face_threshold3, [100, 490])
-        if user_locations is not None:
-            user_location_list.extend(user_locations)
-            user_face_data_list.extend(user_face_data)
+        # if self.calibration_mode:
+        #     #################### 2024 Eindhoven # OK
+        #     self.check_calibration_mode(agent, self.face_threshold3, [120, 490])
+        # #################### 2024 Eindhoven # OK
+        # user_locations, user_face_data = self.check(agent, self.face_threshold3, [100, 490])
+        # if user_locations is not None:
+        #     user_location_list.extend(user_locations)
+        #     user_face_data_list.extend(user_face_data)
 
-            #################### 2024 Eindhoven # OK
-            for user in user_locations: # 
-                if 120 <= user[0] < 490:
-                    seat_info[7][0] = 1
-                # elif 370 <= user[0] < 600:
-                #     seat_info[8][0] = 1
-        #################### right view (2)
+        #     #################### 2024 Eindhoven # OK
+        #     for user in user_locations: # 
+        #         if 120 <= user[0] < 490:
+        #             seat_info[7][0] = 1
+        #         # elif 370 <= user[0] < 600:
+        #         #     seat_info[8][0] = 1
+        # #################### right view (2)
             
 
 
