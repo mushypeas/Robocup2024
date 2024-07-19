@@ -341,8 +341,9 @@ class MoveBaseStandalone:
             while not rospy.is_shutdown():
                 rospy.sleep(0.1)
                 action_state = self.base_action_client.get_state()
+                cur_pos = self.get_pose()
 
-                if (action_state == GoalStatus.SUCCEEDED and not doing_lookup) or self.human_stop(agent): #jnpahk
+                if (action_state == GoalStatus.SUCCEEDED and not doing_lookup) or ((abs(goal_x - cur_pos[0]) < 1.2 and abs(goal_y - cur_pos[1]) < 1.2) and self.human_stop(agent)): #jnpahk
                     rospy.loginfo("Move Customer Succeeded.")
                     return _goal_x, _goal_y, _goal_yaw
                 
@@ -587,7 +588,7 @@ def nav_target_from_pc(pc, table, robot_ori, K=100):
 def get_one_item(agent):
     while not rospy.is_shutdown():
         agent.head_show_image('red')
-        agent.say('Please say a item you \n like to order in a word\n on the head closely \n AFTER the DING sound', show_display=True)
+        agent.say('Please say Closely a item you \n like to order in a word \n AFTER the DING sound', show_display=True)
         rospy.sleep(5)
         agent.head_show_image('green')
         result = agent.stt(3.)
@@ -602,7 +603,7 @@ def get_one_item(agent):
         agent.head_show_text(f'{item_parsed}')
         print('item parsed', item_parsed)
         rospy.sleep(1.)
-        agent.say(f'Is your order {item_parsed}? \n Please say Yes or No to confirm \n on the head closely \n AFTER the DING sound!!!', show_display=True)
+        agent.say(f'Is your order {item_parsed}? \n Please say Closely Yes or No to confirm \n AFTER the DING sound!!!', show_display=True)
 
         rospy.sleep(6.5)
         result = agent.stt(3.)
@@ -777,7 +778,7 @@ def restaurant(agent):
             
             total_item = item1 + " " + item2
             
-            agent.say('Do you have more order? \n Please say Yes or No \n on the head closely \n  AFTER the ding sound!!!', show_display=True)
+            agent.say('Do you have more order? \n Please say Closely Yes or No \n AFTER the DING sound!!!', show_display=True)
 
             rospy.sleep(5.5)
             result = agent.stt(3.)
@@ -797,7 +798,7 @@ def restaurant(agent):
             agent.move_base.base_action_client.cancel_all_goals()
             move.turn_around(0)
             rospy.sleep(1.)
-            agent.say(f'Bartender, please give me {total_item}.', show_display=True)
+            agent.say(f'Bartender, please give me\n {total_item}.', show_display=True)
             rospy.sleep(2.)
             agent.pose.restaurant_give_pose()
             rospy.sleep(2.)
