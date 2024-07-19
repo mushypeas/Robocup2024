@@ -578,6 +578,40 @@ def nav_target_from_pc(pc, table, robot_ori, K=100):
         return D * np.cos(theta), D * np.sin(theta)
 
 
+def get_one_item(agent):
+    while not rospy.is_shutdown():
+        agent.head_show_image('red')
+        agent.say('Please say items you \n like to order in proper format\n !!!after the ding sound!!!', show_display=True)
+        rospy.sleep(4.5)
+        agent.head_show_image('green')
+        result = agent.stt(5.)
+        print('stt_result', result)
+        item_parsed = cluster(result, object_list)
+        if len(item_parsed) == 0:
+            agent.say('I am sorry that I could not\n recognize what you said.\n Please answer me again.', show_display=True)
+            agent.head_show_image('STT Fail')
+            rospy.sleep(6.)
+            continue
+        # rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
+        agent.head_show_text(f'{item_parsed}')
+        print('item parsed', item_parsed)
+        rospy.sleep(1.)
+        agent.say('Is this your order? \n Please say Yes or No to confirm \n !!!after the ding sound!!!', show_display=True)
+
+        rospy.sleep(6.)
+        result = agent.stt(3.)
+        print('stt_result', result)
+        confirm_parsed = cluster(result, ['yes', 'no'])
+        print('item parsed', confirm_parsed)
+
+        if confirm_parsed != 'yes':
+            agent.say('I am sorry that \n I misunderstand your order.\n Please answer me again.', show_display=True)
+            agent.head_show_text('Speech Recognition Failed!')
+            rospy.sleep(6.0)
+            continue
+        
+        return item_parsed
+
 def restaurant(agent):
 
     rospy.loginfo('Initialize Hector SLAM')
@@ -721,43 +755,31 @@ def restaurant(agent):
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
             rospy.sleep(1.)
-            while not rospy.is_shutdown():
-                agent.head_show_image('red')
-                agent.say('Please say items you \n like to order in proper format\n !!!after the ding sound!!!', show_display=True)
-                rospy.sleep(4.5)
-                agent.head_show_image('green')
-                result = agent.stt(5.)
-                print('stt_result', result)
-                item_parsed = cluster(result, object_list)
-                if len(item_parsed) == 0:
-                    agent.say('I am sorry that I could not\n recognize what you said.\n Please answer me again.', show_display=True)
-                    agent.head_show_image('STT Fail')
-                    rospy.sleep(6.)
-                    continue
-                # rospy.loginfo(f'STT Result: {raw} => {item_parsed}')
-                agent.head_show_text(f'{item_parsed}')
-                print('item parsed', item_parsed)
-                rospy.sleep(1.)
-                agent.say('Is this your order? \n Please say Yes or No to confirm \n !!!after the ding sound!!!', show_display=True)
+            
+            item1 = get_one_item()
+            item2 = get_one_item()
+            
+            total_item = item1 + " " + item2
+            
+            agent.say('Do you have more order? \n Please say Yes or No \n !!!after the ding sound!!!', show_display=True)
 
-                rospy.sleep(6.)
-                result = agent.stt(3.)
-                print('stt_result', result)
-                confirm_parsed = cluster(result, ['yes', 'no'])
-                print('item parsed', confirm_parsed)
+            rospy.sleep(6.)
+            result = agent.stt(3.)
+            print('stt_result', result)
+            confirm_parsed = cluster(result, ['yes', 'no'])
+            print('item parsed', confirm_parsed)
 
-                if confirm_parsed != 'yes':
-                    agent.say('I am sorry that \n I misunderstand your order.\n Please answer me again.', show_display=True)
-                    agent.head_show_text('Speech Recognition Failed!')
-                    rospy.sleep(6.0)
-                    continue
-                agent.say('I received your order!', show_display=True)
-                agent.head_show_image('Neutral')
-                rospy.sleep(3.)
-                break
+            if confirm_parsed == 'yes':
+                item3 = get_one_item()
+                total_item = total_item + ' ' + item3
+                        
+            agent.say('I received your order!', show_display=True)
+            agent.head_show_image('Neutral')
+            rospy.sleep(3.)
+            
             move.move_zero(agent)
             rospy.sleep(1.)
-            agent.say(f'Bartender, please give me {item_parsed}.', show_display=True)
+            agent.say(f'Bartender, please give me {total_item}.', show_display=True)
             rospy.sleep(2.)
             agent.pose.restaurant_give_pose()
             rospy.sleep(2.)
@@ -773,7 +795,7 @@ def restaurant(agent):
                 move.move_customer(agent, offset + Dx, Dy)
             agent.pose.restaurant_give_pose()
             agent.head_show_image('Take Menu')
-            agent.say(f'Here is your {item_parsed}, Take menu in ', show_display=True)
+            agent.say(f'Here is your {total_item}, Take menu in ', show_display=True)
             rospy.sleep(4.)
             for i in range(5, 0, -1):
                 agent.say(str(i), show_display=True)
