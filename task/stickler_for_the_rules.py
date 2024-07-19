@@ -391,41 +391,39 @@ class ForbiddenRoom:
                     human_coord_in_map[0], human_coord_in_map[1]]
                 return True
 
-    def clarify_violated_rule(self):
+    def clarify_violated_rule(self, double=False):
         # go to the offender and clarify what rule is being broken
         move_human_infront(self.agent, self.axis_transform,
                            self.offender_pos[1], self.offender_pos[0], coord=True)
         self.agent.pose.head_tilt(20)
-        self.agent.say('Hello!', show_display=True)
-        rospy.sleep(1)
-        # self.agent.say('I apologize for\nany inconvenience,\nbut unfortunately,', show_display=True)
-        # rospy.sleep(4.5)
-        self.agent.say(
-            'Sorry but\n this room is not\naccessible to guests.', show_display=True)
-        rospy.sleep(4)
+        if not double:
+            self.agent.say('Hello!', show_display=True)
+            rospy.sleep(1)
+        self.agent.say('This room is not\naccessible to guests.', show_display=True)
+        rospy.sleep(3)
 
-    def ask_to_action(self, destination):
-        # take the offender to the other party guests
-        # self.agent.say('Allow me to assist you\nin finding other guests.', show_display=True)
-        # self.agent.say('Let me guide you \nto another guest.',show_display=True)
-        # rospy.sleep(3)
-        self.agent.say('Please follow me!', show_display=True)
-        rospy.sleep(1)
-        self.agent.pose.move_pose() # 0609
-        self.agent.move_abs_safe('bedroom_search_reverse')
+    # def ask_to_action(self, destination):
+    #     # take the offender to the other party guests
+    #     # self.agent.say('Allow me to assist you\nin finding other guests.', show_display=True)
+    #     # self.agent.say('Let me guide you \nto another guest.',show_display=True)
+    #     # rospy.sleep(3)
+    #     self.agent.say('Please follow me!', show_display=True)
+    #     rospy.sleep(1)
+    #     self.agent.pose.move_pose() # 0609
+    #     self.agent.move_abs_safe('bedroom_search_reverse')
 
-        self.agent.move_abs_safe(destination)
+    #     self.agent.move_abs_safe(destination)
 
-        self.agent.pose.head_tilt(20)
-        # self.agent.pose.head_pan(135) # 0609
-        self.agent.say('Thank you!', show_display=True)
-        rospy.sleep(1)
-        self.agent.say('Now you are in\nan appropriate room!',
-                       show_display=True)
-        rospy.sleep(2.5)
-        self.agent.say('Enjoy your party', show_display=True)
-        rospy.sleep(2)
-        self.agent.pose.head_pan(0) # 0609
+    #     self.agent.pose.head_tilt(20)
+    #     # self.agent.pose.head_pan(135) # 0609
+    #     self.agent.say('Thank you!', show_display=True)
+    #     rospy.sleep(1)
+    #     self.agent.say('Now you are in\nan appropriate room!',
+    #                    show_display=True)
+    #     rospy.sleep(2.5)
+    #     self.agent.say('Enjoy your party', show_display=True)
+    #     rospy.sleep(2)
+    #     self.agent.pose.head_pan(0) # 0609
 
     def draw_forbidden_room_marker(self, min_points, max_points):
         cube_points = [[min_points[0], min_points[1], min_points[2]],  # 1
@@ -1034,12 +1032,9 @@ def stickler_for_the_rules(agent):
     # start location: kitchen (search 1st)
     # when marked forbidden room, replace forbidden location to n-2 index search location
 
-    forbidden_search_location = 'bedroom_search'
+    # forbidden_search_location = 'bedroom_search'
+    forbidden_search_location = 'office_search'
 
-    # break_rule_check_list = {'shoes': False,
-    #                          'room': False,
-    #                          'garbage': False,
-    #                          'drink': False}
     break_rule_check_list = {'shoes': 0,
                              'room': 0,
                              'garbage': 0,
@@ -1049,12 +1044,10 @@ def stickler_for_the_rules(agent):
     entrance = 'shoe_warning'
     ## params for rule 2. forbidden room ##
     # If needed, mark min & max points of all 4 rooms !
-    # forbidden_room_min_points = {'bedroom_search': [5.354, -6.1233, 0.03]}
-    # forbidden_room_max_points = {'bedroom_search': [9.2773, -3.1132, 2.0]}
-    # forbidden_room_min_points = {'bedroom_search': [5.72316, 1.1233, 0.03]}
-    # forbidden_room_max_points = {'bedroom_search': [9.89225, 4.0337, 2.0]}
-    forbidden_room_min_points = {'bedroom_search': [4.2073, -7.9801, 0.03]} # PNU
-    forbidden_room_max_points = {'bedroom_search': [7.7033, -4.1148, 2.0]} # PNU
+    # forbidden_room_min_points = {'bedroom_search': [4.2073, -7.9801, 0.03]} # PNU
+    # forbidden_room_max_points = {'bedroom_search': [7.7033, -4.1148, 2.0]} # PNU
+    forbidden_room_min_points = {'office_search': [4.2073, -7.9801, 0.03]} # PNU
+    forbidden_room_max_points = {'office_search': [7.7033, -4.1148, 2.0]} # PNU
 
     ## params for rule 3. No littering ##
     bin_location = 'bin_littering'
@@ -1071,52 +1064,54 @@ def stickler_for_the_rules(agent):
                                    forbidden_room_max_points[forbidden_search_location])
     shoe_detection = ShoeDetection(agent)
     no_littering = NoLittering(agent, axis_transform)
-    drink_detection = DrinkDetection(
-        agent, axis_transform, hand_drink_pixel_dist_threshold)
+    drink_detection = DrinkDetection(agent, axis_transform, hand_drink_pixel_dist_threshold)
     #################################
-    forbidden_room_name = 'bedroom_search'
-    # 'study_search', 'living_room_search', 'kitchen_search', 'living_room_search'
-    # search_location_list = ['living_room_search', 'study_search']
-    # search_location_list = ['living_room_search'] #todo delete
     search_location_list = [
-        'bedroom_search',
-        'kitchen_search', 
-        'living_room_search', 'study_search',
-        # 'bedroom_search', 
-        'kitchen_search', 'living_room_search', 'study_search',
-        'kitchen_search', 'living_room_search', 'study_search',
-        'kitchen_search', 'living_room_search', 'study_search']
+        # 'bedroom_search',
+        # 'kitchen_search', 
+        # 'living_room_search', 'study_search',
+        # # 'bedroom_search', 
+        # 'kitchen_search', 'living_room_search', 'study_search',
+        # 'kitchen_search', 'living_room_search', 'study_search',
+        # 'kitchen_search', 'living_room_search', 'study_search'
+        'office_search', 'office_search2'
+        'kitchen_search', 'kitchen_search2',
+        'livingroom_search',
+        'hallway_search',
+        # 'office_search2', 
+        'kitchen_search', 'kitchen_search2',
+        'livingroom_search',
+        'hallway_search',
+    ]
+
+    pan_degree_dict = {
+        'office_search': [30, 0, -30], # corner, 45
+        'office_search2': [0, -30, -60, -90, -120, -150, -180], # wall, 0
+        'kitchen_search': [75, 45, 15, -15, -45, -75], # wall, 90
+        'kitchen_search2': [75, 45, 15, -15, -45, -75], # wall, 90
+        'livingroom_search': [60, 30, 0, -30, -60, -90, -120], # wall, 45
+        'hallway_search': [30, 0, -30], # corner, 45
+    }
 
     agent.pose.head_pan_tilt(0, 0)
-    # forbidden_search_start = False
 
     agent.pose.move_pose()
 
     # while True:
     for search_idx, search_location in enumerate(search_location_list):
-        # pan_degree_list = [-60, -30, 0, 30, 60]  # default for kitchen
-        pan_degree_list = [-30, 0, 30]
-        pan_degree_list_forbidden_room = [60, 30, 0, -30, -60]
-        # pan_degree_list = [0]
-        # if search_location == "living_room_search":
-        #     pan_degree_list = [60, 0, -60, -120, -180, -220]
-        # elif search_location == "study_search":
-        #     pan_degree_list = [-60, -30, 30, 60]
-        # move to the search location
-
-
-        agent.say(f"I'm moving to\n{search_location}.", show_display=True)
-        rospy.sleep(2)
         
-        agent.pose.head_tilt(0)
-        if search_location == 'kitchen_search' and search_idx > 3:
-            agent.move_abs_safe('bedroom_search_reverse')
-        if search_location == 'living_room_search':
-            agent.move_abs_safe('kitchen_leave')
-        elif search_location == 'study_search':
-            agent.move_abs_safe('living_room_leave')
-        # elif search_location == 'bedroom_search':
-        #     agent.move_abs_safe('bedroom_search_reverse')
+        # if next room is office_search2, but already found broken rule, skip
+        if search_location == 'office_search2':
+            if break_rule_check_list['room'] > 0:
+                continue
+
+        # move to the search location
+        agent.say(f"I'm moving to\n{search_location.split('_')[0]}.", show_display=True)
+        rospy.sleep(2)
+        agent.say("If you are in my path,\nplease move out.", show_display=True)
+        
+        # agent.pose.head_tilt(0)
+        agent.pose.head_pan_tilt(0, 0)
 
         agent.move_abs_safe(search_location)
         agent.say('I am checking \n the rules', show_display=True)
@@ -1124,59 +1119,58 @@ def stickler_for_the_rules(agent):
 
 
         # [RULE 2] Forbidden room
-        if search_location == 'bedroom_search':
+        # if search_location == 'bedroom_search':
+        if search_location == 'office_search':
             agent.pose.head_tilt(0)
             # for pan_degree in pan_degree_list:
-            for pan_degree in pan_degree_list_forbidden_room:
+            # for pan_degree in pan_degree_list_forbidden_room:
+            for pan_degree in pan_degree_dict[search_location]:
                 agent.pose.head_pan(pan_degree)
-                rospy.sleep(2)
+                rospy.sleep(3)
 
                 if forbidden_room.detect_forbidden_room():
                     break_rule_check_list['room'] += 1
                     # go to the offender and clarify what rule is being broken
                     forbidden_room.clarify_violated_rule()
 
-                    agent.say('Please leave this room empty',
-                                show_display=True)
-                    rospy.sleep(2)
+                    agent.say('Follow me!', show_display=True)
+                    rospy.sleep(1)
 
-                    # 0609
-                    # agent.move_rel(0, 0, yaw=math.radians(180))
-                    # rospy.sleep(3)
-                    # agent.say('You can leave that way', show_display=True)
-                    # rospy.sleep(3)
+                    agent.move_abs_safe('office_search2')
+                    agent.pose.head_tilt(20)
+                    agent.say('You can leave\n through this door', show_display=True)
+                    agent.sleep(4)
 
-                    agent.say('After you leave, \nI will guide you \nto other guests', show_display=True)
-                    rospy.sleep(5) # 0609
-                    agent.move_abs_safe('bedroom_doublecheck')
-                    agent.say('Checking the room if empty', show_display=True)
-                    agent.pose.head_tilt(-15)
-                    for pan_degree in pan_degree_list_forbidden_room:
-                        # marking forbidden room violation detection
-                        # break_rule_check_list['room'] = True
-                        # break_rule_check_list['room'] += 1
+                    # agent.move_abs_safe('bedroom_doublecheck')
+                    # agent.say('Checking the room if empty', show_display=True)
+                    agent.pose.head_tilt(0)
+                    for pan_degree in pan_degree_dict['office_search2']: # DOUBLE CHECKING
 
                         agent.pose.head_pan(pan_degree)
-                        rospy.sleep(2)
+                        rospy.sleep(3)
 
-                        if forbidden_room.detect_forbidden_room(): # TODO : check knee outside the bedroom
-                            agent.say('Oh my god. \n You are still here',
-                                        show_display=True)
+                        if forbidden_room.detect_forbidden_room(): 
+                            agent.say('Oh my god. \nThere is someone still here', show_display=True)
                             rospy.sleep(3)
-                            agent.say('Lets leave with me')
-                            break
+                            forbidden_room.clarify_violated_rule(double=True)
+                            agent.say('Follow me!', show_display=True)
 
-                    # take the offender to the other party guests
-                    agent.pose.head_pan(0)
-                    forbidden_room.ask_to_action('kitchen_search')
+                            agent.move_abs_safe('office_search2')
+                            agent.pose.head_tilt(20)
+                            agent.say('You can leave\n through this door', show_display=True)
+                            agent.sleep(4)
+                            agent.say('Thank you!', show_display=True)
+                            agent.sleep(2)
+                            break
+                    del forbidden_room
                     break
 
         # If not forbidden scan location >> check RULE 1, 3, 4
         # TODO: adjust living room pan degree & rotation position
         else:
-            for pan_degree in pan_degree_list:
+            for pan_degree in pan_degree_dict[search_location]:
                 agent.pose.head_pan(pan_degree)
-                rospy.sleep(2)
+                rospy.sleep(3)
 
                 ##[RULE 4] Compulsory hydration : tilt 0
                 # if break_rule_check_list['drink'] is False and drink_detection.detect_no_drink_hand():
@@ -1229,12 +1223,10 @@ def stickler_for_the_rules(agent):
 
         # Move to another room
         agent.pose.head_pan_tilt(0, 0)
-        agent.say("Now I'm going to\nmove to another room.",
-                    show_display=True)
-        rospy.sleep(2)
-        agent.say(
-            "If you are in my path,\nplease move to the side.", show_display=True)
-        rospy.sleep(5)
+        # agent.say("Now I'm going to\nmove to another room.", show_display=True)
+        # rospy.sleep(2)
+        # agent.say("If you are in my path,\nplease move to the side.", show_display=True)
+        # rospy.sleep(5)
 
 
 
