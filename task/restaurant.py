@@ -614,12 +614,15 @@ def restaurant(agent):
 
     openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
     seg_path = "/home/tidy/Robocup2024/seg.sh"
+    whisper_path = "/home/tidy/Robocup2024/whisper.sh"
     
     openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
     seg_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {seg_path}; exec bash']
+    whisper_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {whisper_path}; exec bash']
 
     byte_process = subprocess.Popen(openpose_command)
     seg_process = subprocess.Popen(seg_command)
+    whisper_process = subprocess.Popen(whisper_command)
     
     print('OpenPose process started')
     print('Segmentation DeepLab process started')
