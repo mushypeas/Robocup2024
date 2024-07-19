@@ -23,9 +23,9 @@ import Levenshtein
 
 
 ## To Check ##
-cleaning_supplies = ["soap", "dishwasher_tab", "washcloth", "sponges"]
-drinks = ["cola", "ice_tea", "water", "milk", "big_coke", "fanta", "dubbelfris"]
-food = ["cornflakes", "pea_soup", "curry", "pancake_mix", "hagelslag", "sausages", "mayonaise"]
+cleaning_supplies = ["soap", "dishwasher tab", "washcloth", "sponges"]
+drinks = ["cola", "ice tea", "water", "milk", "big coke", "fanta", "dubbelfris"]
+food = ["cornflakes", "pea soup", "curry", "pancake mix", "hagelslag", "sausages", "mayonaise"]
 decorations = ["candle"]
 fruits = ["pear", "plum", "peach", "lemon", "orange", "strawberry", "banana", "apple"]
 snacks = ["stroopwafel", "candy", "liquorice", "crisps", "pringles", "tictac"]
@@ -88,7 +88,7 @@ class MoveBaseStandalone:
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        self.openpose_sub = rospy.Subscriber('/snu/openpose', Image, queue_size=10)
+        self.openpose_sub = rospy.Subscriber('/snu/openpose', Image, self._openpose_callback)
         self.listener = tf.TransformListener()
         self.last_checked_time = time.time()
         self.last_checked_pos = [0, 0]
@@ -102,9 +102,9 @@ class MoveBaseStandalone:
         # rospy.wait_for_service('/reset_map')
 
 
-    def _openpose_callback(self, data):
-        data_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
-        self.openpose_image = data_img
+    # def _openpose_callback(self, data):
+    #     data_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+    #     self.openpose_image = data_img
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -345,7 +345,7 @@ class MoveBaseStandalone:
                 
                 elif action_state == GoalStatus.ABORTED or action_state == GoalStatus.REJECTED:
                     rospy.logwarn("Move Customer Aborted.")
-                    agent.say("I am searching the valid pathway. Please hold.", show_display=True)
+                    agent.say("I am searching \n the valid pathway. \n Please hold.", show_display=True)
                     rospy.sleep(3)
                     theta = (theta + rotate_delta) % 360
                     spin_count += 1
@@ -370,7 +370,7 @@ class MoveBaseStandalone:
                     cur_pos = self.get_pose()
                     if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                         agent.move_base.base_action_client.cancel_all_goals()
-                        print("No movement detected. Trying to find the best interval.")
+                        print("No movement detected. \n Trying to find the best interval.")
                         try:
                             candidates = self.candidates
                         except AttributeError:
@@ -657,11 +657,11 @@ def restaurant(agent):
                         robot_ori = 0.
                         move.move_abs(agent, 0, 0, 0)
                     elif (first_lookup // 3) % 3 == 1:
-                        robot_ori = -30. * np.pi / 180
-                        move.move_abs(agent, 0, 0, -30. * np.pi / 180)
+                        robot_ori = -20. * np.pi / 180
+                        move.move_abs(agent, 0, 0, -20. * np.pi / 180)
                     elif (first_lookup // 3) % 3 == 2:
-                        robot_ori = 30. * np.pi / 180
-                        move.move_abs(agent, 0, 0, 30. * np.pi / 180)
+                        robot_ori = 20. * np.pi / 180
+                        move.move_abs(agent, 0, 0, 20. * np.pi / 180)
                     rospy.sleep(3)
                 now = time.time()
                 if now-start_time > 5:
@@ -674,12 +674,17 @@ def restaurant(agent):
                 # Wait message of OpenPose results
                 # Continue if no valid input received
                 msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
+
                 '''
                 This topic contains the coordinate of every bounding box that the module detects.
                 data ← [*box_0_top_left_x, box_0_top_left_y, box_0_bottom_right_x, box_0_bottom_right_y, … ,
                 box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
                 '''
                 if len(msg.data) == 0: continue
+
+                openpose_image = rospy.wait_for_message('/snu/openpose', Image)
+                if openpose_image is not None:
+                    agent.head_display_image_pubish(openpose_image)
 
                 table_arr = np.array(msg.data)
                 table_arr = table_arr.reshape(len(table_arr) // 34, 17, 2)  # num of people? 
@@ -710,23 +715,22 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            if move.openpose_image is not None:
-                agent.head_display_image_pubish(move.openpose_image)
-            agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=False)
+
+            agent.say("I found the customer.\n I will calculate the pathway \n toward the customer.", show_display=False)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
             rospy.sleep(1.)
             while not rospy.is_shutdown():
                 agent.head_show_image('red')
-                agent.say('Please say items you like to order in proper format after the ding sound', show_display=True)
+                agent.say('Please say items you \n like to order in proper format\n !!!after the ding sound!!!', show_display=True)
                 rospy.sleep(4.5)
                 agent.head_show_image('green')
                 result = agent.stt(5.)
                 print('stt_result', result)
                 item_parsed = cluster(result, object_list)
                 if len(item_parsed) == 0:
-                    agent.say('I am sorry that I could not recognize what you said. Please answer me again.', show_display=True)
+                    agent.say('I am sorry that I could not\n recognize what you said.\n Please answer me again.', show_display=True)
                     agent.head_show_image('STT Fail')
                     rospy.sleep(6.)
                     continue
@@ -734,7 +738,7 @@ def restaurant(agent):
                 agent.head_show_text(f'{item_parsed}')
                 print('item parsed', item_parsed)
                 rospy.sleep(1.)
-                agent.say('Is this your order? Please say Yes or No to confirm after the ding sound', show_display=True)
+                agent.say('Is this your order? \n Please say Yes or No to confirm \n !!!after the ding sound!!!', show_display=True)
 
                 rospy.sleep(6.)
                 result = agent.stt(3.)
@@ -743,7 +747,7 @@ def restaurant(agent):
                 print('item parsed', confirm_parsed)
 
                 if confirm_parsed != 'yes':
-                    agent.say('I am sorry that I misunderstand your order. Please answer me again.', show_display=True)
+                    agent.say('I am sorry that \n I misunderstand your order.\n Please answer me again.', show_display=True)
                     agent.head_show_text('Speech Recognition Failed!')
                     rospy.sleep(6.0)
                     continue
