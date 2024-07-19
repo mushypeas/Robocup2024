@@ -88,7 +88,7 @@ class MoveBaseStandalone:
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
-        self.openpose_sub = rospy.Sublisher('/snu/openpose', Image, queue_size=10)
+        self.openpose_sub = rospy.Subscriber('/snu/openpose', Image, queue_size=10)
         self.listener = tf.TransformListener()
         self.last_checked_time = time.time()
         self.last_checked_pos = [0, 0]
@@ -188,7 +188,7 @@ class MoveBaseStandalone:
             return False
 
     
-    def human_stop(self, agent, human_stop_thres=1.0): #jnpahk
+    def human_stop(self, agent, human_stop_thres=0.65): #jnpahk
         depth = agent.depth_image / 1000
         # depth = depth[depth>0]
 
@@ -710,8 +710,8 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            if self.openpose_image is not None:
-                agent.head_display_image_pubish(self.openpose_image)
+            if move.openpose_image is not None:
+                agent.head_display_image_pubish(move.openpose_image)
             agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=False)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')

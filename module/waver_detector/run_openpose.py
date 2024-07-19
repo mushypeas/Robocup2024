@@ -51,7 +51,7 @@ class OpenPoseWrapper:
         self.rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
         return
 
-    def run(self, thresh=0.1):
+    def run(self, thresh=0.1): # 0.1
 
         if self.rgb_img is None: return
         img = self.rgb_img
