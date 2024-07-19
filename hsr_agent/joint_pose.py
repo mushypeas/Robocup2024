@@ -524,7 +524,7 @@ class JointPose:
     #                    'wrist_roll_joint'],
     #                   [arm_lift_joint, 0, -1.57, -1.57, 0])
 
-    def place_cutlery_pose(self, table='dishwasher', offset = 0.10): ## by bjkim 24th April    
+    def place_cutlery_pose(self, table='dishwasher', offset = 0.20): ## by bjkim 24th April    
         target_table_height = self.table_dimension[table][2]
         robot_default_height = 0.3
         arm_lift_joint = target_table_height + offset - robot_default_height
@@ -533,7 +533,7 @@ class JointPose:
         # arm_lift_joint 값 조정
         if arm_lift_joint < 0:
             arm_lift_joint = 0.01
-        elif arm_lift_joint > 0.45:
+        elif arm_lift_joint > 0.45: #(원래 45)
             arm_lift_joint = 0.45
 
         self.set_pose(['arm_lift_joint',

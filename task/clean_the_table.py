@@ -5,11 +5,11 @@ from hsr_agent.agent import Agent
 
 def clean_the_table(agent: Agent):
     
-    # things to be modified: pick_table, pick_position, place_postion
+    # things to be modified: pick_table, pick_position, place_postion 182 267
 
     ### task params #############################################
     # ABS_POSITIONS #
-    pick_position = 'pos_dining_table_6'
+    pick_position = 'pos_dining_table_5'
     place_position = 'pos_dishwasher'
     # close_position1 = 'rack_close_position1'
     # close_position2 = 'rack_close_position2'
@@ -29,22 +29,24 @@ def clean_the_table(agent: Agent):
 
     # MODE PARAMETERS #
     no_distancing_mode = True
+    door_open_mode = True
     picking_mode = True
-    placing_mode = False
-    door_open_mode = False
+    placing_mode = True
     rack_close_mode = True
+# 
+    # item_list = ['bowl','cup','fork', 'spoon', 'knife','plate'] #만약 cutlery와 plate가 멀다면.
 
-    item_list = ['bowl',  'fork', 'spoon', 'knife', 'cup', 'plate']
+    item_list = [ 'bowl','plate',  'fork', 'spoon', 'knife', 'cup' ] #만약 cutlery와 plate가 멀다면.
     plate_radius = 0.10
     base_to_arm_dist = 0.5
 
     short_move = 2.0
 
-    default_x = 0.20
+    default_x = 0.10
 
-    cutlery_box_position = [default_x, 0]
-    place_position_dict = {'bowl': [default_x, 0.10], 'fork': cutlery_box_position, 'knife': cutlery_box_position, 
-                           'spoon': cutlery_box_position, 'cup': [default_x, 0.10],   'plate': [0.15, -0.10]}
+    cutlery_box_position = [default_x, 0.10] # 두번쨰 try에서 0.08정도?
+    place_position_dict = {'bowl': [default_x, 0.15], 'cup': [default_x, 0.17], 'plate': [0.10, -0.10], #원래 plate 대회 시작 직전에 0.15 x ㅕㅆ음.
+                            'fork': cutlery_box_position, 'knife': cutlery_box_position, 'spoon': cutlery_box_position,  }
 
     is_using_check_grasp_dict = {'cup': True, 'bowl': True, 'plate': True,
                                  'fork': False, 'knife': False, 'spoon': False}     # do not use check_grasp for motions that scrapes the table
@@ -67,11 +69,22 @@ def clean_the_table(agent: Agent):
     if door_open_mode:
         agent.door_open()
         agent.move_rel(2.0, 0, wait=True)
-        agent.move_abs_safe('living_living_1')
-        agent.move_abs_safe('living_living_2')
-        agent.move_abs_safe('living_living_3')
+        agent.say('Please remove all \n chairs to office', show_display=True)
+        rospy.sleep(3)
+        agent.say('Please remove all \n chairs to office', show_display=True)
+        rospy.sleep(7)
+        agent.say('Repeat, \n Please remove all \n chairs to office', show_display=True)
+        rospy.sleep(5)
+        
+        # agent.move_abs_safe('living_living_1')
+        # agent.move_abs_safe('living_living_2')
+        agent.say('I will go to kitchen.',show_display=True)
+        agent.move_abs_safe('hallway')
+        agent.move_abs_safe('livingroom')
     
     agent.say('start clean the table', show_display=True)
+    # agent.say('Please pull off the chair, which is infront of dishes, to the living room', show_display=True)
+    # rospy.sleep(5)
     # import pdb; pdb.set_trace()
 
     while True:
@@ -162,27 +175,67 @@ def clean_the_table(agent: Agent):
                 agent.move_rel(-0.2, 0)
 
                 agent.say('I picked a bowl.', show_display=True)
+                ##############################
+                # # Hand me over Mode ########################
+                # agent.move_rel(-0.35, 0, wait=True)
+                # agent.pose.pick_plate_pose_fold(table=pick_table)
+                # agent.open_gripper()
+                # agent.say('please hand me the bowl', show_display=True)
+                # rospy.sleep(4)
+                # agent.say('five');
+                # rospy.sleep(1)
+                # agent.say('four');
+                # rospy.sleep(1)
+                # agent.say('three')
+                # rospy.sleep(1)
+                # agent.say('two')
+                # rospy.sleep(1)
+                # agent.say('one')
+                # rospy.sleep(1)
+                # agent.grasp()
+                # rospy.sleep(1)
+                # is_picked = True
 
 
             elif item == 'cup':
 
-                agent.pose.pick_side_pose_by_height(height = 0.77) # dining table의 경우 (0.77 + 0.01)
-                # agent.pose.pick_side_pose_by_height(height = 0.76) # office table의 경우 (0.75 + 0.01)
-                # agent.pose.pick_side_pose_by_height(height = 0.49) # livingroom table의 경우 (0.48 + 0.01)
+                # agent.pose.pick_side_pose_by_height(height = 0.77) # dining table의 경우 (0.77 + 0.01)
+                # # agent.pose.pick_side_pose_by_height(height = 0.76) # office table의 경우 (0.75 + 0.01)
+                # # agent.pose.pick_side_pose_by_height(height = 0.49) # livingroom table의 경우 (0.48 + 0.01)
                 
-                # agent.pose.pick_side_cup_pose(table=pick_table)
+                # # agent.pose.pick_side_cup_pose(table=pick_table)
+                # agent.open_gripper()
+                # agent.move_rel(0, base_xyz[1] + 0.03, wait=True)
+                # agent.move_rel(base_xyz[0]+0.20, 0, wait=True)
+                
+                # agent.grasp()
+
+                # is_picked = agent.pose.check_grasp(threshold=-1.45)  # modify
+                # print(f"2.4 grasp value of item '{item}': {is_picked}")
+
+                # agent.move_rel(-0.2, 0)
+
+                # agent.say('I picked a cup.', show_display=True)
+
+                 # # Hand me over Mode ########################
+                agent.move_rel(-0.35, 0, wait=True)
+                agent.pose.pick_plate_pose_fold(table=pick_table)
                 agent.open_gripper()
-                agent.move_rel(0, base_xyz[1] + 0.03, wait=True)
-                agent.move_rel(base_xyz[0]+0.20, 0, wait=True)
-                
+                agent.say('please hand me the cup', show_display=True)
+                rospy.sleep(4)
+                agent.say('five');
+                rospy.sleep(1)
+                agent.say('four');
+                rospy.sleep(1)
+                agent.say('three')
+                rospy.sleep(1)
+                agent.say('two')
+                rospy.sleep(1)
+                agent.say('one')
+                rospy.sleep(1)
                 agent.grasp()
-
-                is_picked = agent.pose.check_grasp(threshold=-1.45)  # modify
-                print(f"2.4 grasp value of item '{item}': {is_picked}")
-
-                agent.move_rel(-0.2, 0)
-
-                agent.say('I picked a cup.', show_display=True)
+                rospy.sleep(1)
+                is_picked = True
 
             elif item == 'fork' or item == 'spoon' or item == 'knife':
                 agent.pose.pick_top_pose(table=pick_table)
@@ -199,209 +252,74 @@ def clean_the_table(agent: Agent):
 
                 agent.say('I picked a cutlery.', show_display=True)
 
-            elif item == 'plate':
-                h = agent.pose.pick_plate_pose(table=pick_table)
-                agent.open_gripper()
-                # agent.move_rel(0, plate_xyz[1], wait=True)
-                # agent.move_rel(plate_xyz[0] + 0.18, 0, wait=True)
-                진기명기_move_offset = 0.03
-                진기명기_grasp_offset = 0.02
-            
-                agent.move_rel(base_xyz[0] + 0.18, base_xyz[1], wait=True)
-            
-                agent.pose.arm_lift_up(h - 진기명기_grasp_offset)
-            
-                agent.move_rel(-base_xyz[0]-진기명기_move_offset, 0, wait=True)
-
-                agent.pose.arm_lift_up(h)
-            
-                agent.move_rel(-0.18, 0, wait=True)
-                agent.pose.pick_plate_pose_fold(table=pick_table)
-            
-                agent.move_rel(0.075-진기명기_move_offset, 0, wait=True)  # slightly move forward
-                agent.grasp()
-            
-                is_picked = agent.pose.check_grasp()
-                print(f"2.4 grasp value of item '{item}': {is_picked}")
-
-                agent.say('I picked a plate.', show_display=True)
-            
-            
-
-
-            # PLATE HAND OVER MODE  
             # elif item == 'plate':
-            #     hand_over_mode = True
-            #     if hand_over_mode:
-            #         agent.move_rel(-0.26, 0, wait=True)
-            #         agent.pose.pick_plate_pose_fold(table=pick_table)
-            #         agent.open_gripper()
-            #         agent.say('please hand me the plate', show_display=True)
-            #         rospy.sleep(2)
-            #         agent.say('five');
-            #         rospy.sleep(1)
-            #         agent.say('four');
-            #         rospy.sleep(1)
-            #         agent.say('three')
-            #         rospy.sleep(1)
-            #         agent.say('two')
-            #         rospy.sleep(1)
-            #         agent.say('one')
-            #         rospy.sleep(1)
-            #         agent.grasp()
-            #         rospy.sleep(1)
-            #         is_picked = True
-            #     else:
-            #         agent.pose.bring_bowl_pose(table=pick_table)
-            #         agent.open_gripper()
-            #         # agent.move_rel(0, base_xyz[1] + 0.04, wait=True)
-            #         # agent.move_rel(base_xyz[0] + 0.15, 0, wait=True)
+            #     h = agent.pose.pick_plate_pose(table=pick_table)
+            #     agent.open_gripper()
+            #     # agent.move_rel(0, plate_xyz[1], wait=True)
+            #     # agent.move_rel(plate_xyz[0] + 0.18, 0, wait=True)
+            #     진기명기_move_offset = 0.05 # 0.03이었음
+            #     진기명기_grasp_offset = 0.02
+            
+            #     agent.move_rel(base_xyz[0] + 0.18, base_xyz[1], wait=True)
+            
+            #     agent.pose.arm_lift_up(h - 진기명기_grasp_offset)
+            
+            #     agent.move_rel(-base_xyz[0]-진기명기_move_offset, 0, wait=True)
 
-            #         agent.move_rel(base_xyz[0] + 0.15, base_xyz[1] + 0.04, wait=True)
+            #     agent.pose.arm_lift_up(h)
+            
+            #     agent.move_rel(-0.18, 0, wait=True)
+            #     agent.pose.pick_plate_pose_fold(table=pick_table)
+            
+            #     agent.move_rel(0.075-진기명기_move_offset, 0, wait=True)  # slightly move forward
+            #     agent.grasp()
+            
+            #     is_picked = agent.pose.check_grasp()
+            #     print(f"2.4 grasp value of item '{item}': {is_picked}")
 
-            #         agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.13)
-            #         agent.grasp()
-            #         rospy.sleep(0.5)
+            #     agent.say('I picked a plate.', show_display=True)
+            
+            # PLATE HAND OVER MODE  
+            elif item == 'plate':
+                hand_over_mode = True
+                if hand_over_mode:
+                    agent.move_rel(-0.35, 0, wait=True)
+                    agent.pose.pick_plate_pose_fold(table=pick_table)
+                    agent.open_gripper()
+                    agent.say('please hand me the plate', show_display=True)
+                    rospy.sleep(4)
+                    agent.say('five');
+                    rospy.sleep(1)
+                    agent.say('four');
+                    rospy.sleep(1)
+                    agent.say('three')
+                    rospy.sleep(1)
+                    agent.say('two')
+                    rospy.sleep(1)
+                    agent.say('one')
+                    rospy.sleep(1)
+                    agent.grasp()
+                    rospy.sleep(1)
+                    is_picked = True
+                else:
+                    agent.pose.bring_bowl_pose(table=pick_table)
+                    agent.open_gripper()
+                    # agent.move_rel(0, base_xyz[1] + 0.04, wait=True)
+                    # agent.move_rel(base_xyz[0] + 0.15, 0, wait=True)
 
-            #         is_picked = agent.pose.check_grasp()
-            #         print(f"2.4 grasp value of item '{item}': {is_picked}")
+                    agent.move_rel(base_xyz[0] + 0.15, base_xyz[1] + 0.04, wait=True)
 
-            #         agent.pose.pick_up_bowl_pose(table=pick_table)
-            #         agent.move_rel(-0.3, 0)
+                    agent.pose.pick_bowl_max_pose(table=pick_table, height=-0.13)
+                    agent.grasp()
+                    rospy.sleep(0.5)
+
+                    is_picked = agent.pose.check_grasp()
+                    print(f"2.4 grasp value of item '{item}': {is_picked}")
+
+                    agent.pose.pick_up_bowl_pose(table=pick_table)
+                    agent.move_rel(-0.3, 0)
 
 
-
-        ########################################
-        ## CHECK GRASP ##
-        ########################################
-
-
-            # if is_using_check_grasp:        # when it detects miss with check_grasp
-            #     if is_picked: # 손 grasp 너비로 확인
-            #         agent.say(f'I picked the {item}', show_display=True)
-            #         num_gripped_items += 1
-            #     else:
-            #         if item in double_check_item_list: # plate, bowl, cup등은 yolo로 한번 더 확인
-            #             rospy.sleep(0.5)
-            #             agent.move_abs(pick_position)
-            #             rospy.sleep(1)
-            #             current_table_item_list = agent.yolo_module.detect_3d(pick_table)
-            #             current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
-
-            #             table_item_id_list.sort()
-            #             current_table_item_id_list.sort()
-            #             if table_item_id_list == current_table_item_id_list:
-            #                 miss_count += 1
-
-            #                 if miss_count > 1:
-            #                     agent.say(f'please hand me the {item}')
-            #                     agent.open_gripper()
-
-            #                     rospy.sleep(1)
-            #                     agent.say('five');
-            #                     rospy.sleep(1)
-            #                     agent.say('four');
-            #                     rospy.sleep(1)
-            #                     agent.say('three');
-            #                     rospy.sleep(1)
-            #                     agent.say('two');
-            #                     rospy.sleep(1)
-            #                     agent.say('one');
-            #                     rospy.sleep(1)
-
-            #                     agent.grasp()
-            #                     num_gripped_items += 1
-            #                 else:
-            #                     print(f"3.3 you didn't pick the current item! (item: {item})")
-            #                     continue
-            #             elif len(table_item_id_list) > len(current_table_item_id_list):
-            #                 for i in range(len(current_table_item_id_list)):
-            #                     table_item_id = table_item_id_list[i]
-            #                     current_table_item_id = current_table_item_id_list[i]
-
-            #                     if table_item_id != current_table_item_id:
-            #                         item = id_item_dict[table_item_id]
-            #                         print(f'target: {id_item_dict[pick_item_id]}')
-            #                         print(f'picked: {item}')
-            #                         agent.say(f'I picked the {item}', show_display=True)
-            #                         break
-            #         else:
-            #             miss_count += 1
-            #             if miss_count > 1:
-            #                 agent.say(f'please hand me the {item}')
-            #                 agent.open_gripper()
-
-            #                 rospy.sleep(1)
-            #                 agent.say('five');
-            #                 rospy.sleep(1)
-            #                 agent.say('four');
-            #                 rospy.sleep(1)
-            #                 agent.say('three');
-            #                 rospy.sleep(1)
-            #                 agent.say('two');
-            #                 rospy.sleep(1)
-            #                 agent.say('one');
-            #                 rospy.sleep(1)
-
-            #                 agent.grasp()
-
-            #                 num_gripped_items += 1
-            #             else:
-            #                 print(f"3.1 you didn't pick the current item! (item: {item})")
-            #                 continue
-            # else:       # when it detects miss with yolo vision
-            #     rospy.sleep(0.5)
-            #     agent.move_abs(pick_position)
-            #     rospy.sleep(1)
-            #     current_table_item_list = agent.yolo_module.detect_3d(pick_table)
-            #     current_table_item_id_list = [current_table_item[3] for current_table_item in current_table_item_list]
-
-            #     table_item_id_list.sort()
-            #     current_table_item_id_list.sort()
-
-            #     print('3.2 table_item_id_list', table_item_id_list)
-            #     print('3.2 current_table_item_id_list', current_table_item_id_list)
-
-            #     # if pick_item_id in current_table_item_id_list:
-            #     if table_item_id_list == current_table_item_id_list:
-            #         miss_count += 1
-
-            #         if miss_count > 1:
-            #             agent.say(f'please hand me the {item}')
-            #             agent.open_gripper()
-
-            #             rospy.sleep(1)
-            #             agent.say('five');
-            #             rospy.sleep(1)
-            #             agent.say('four');
-            #             rospy.sleep(1)
-            #             agent.say('three');
-            #             rospy.sleep(1)
-            #             agent.say('two');
-            #             rospy.sleep(1)
-            #             agent.say('one');
-            #             rospy.sleep(1)
-
-            #             agent.grasp()
-            #             num_gripped_items += 1
-            #         else:
-            #             print(f"3.3 you didn't pick the current item! (item: {item})")
-            #             continue
-            #     elif len(table_item_id_list) > len(current_table_item_id_list): # yolo 확인 결과 집었을 때
-            #         for i in range(len(current_table_item_id_list)):
-            #             table_item_id = table_item_id_list[i]
-            #             current_table_item_id = current_table_item_id_list[i]
-
-            #             if table_item_id != current_table_item_id:
-            #                 item = id_item_dict[table_item_id]
-            #                 print(f'target: {id_item_dict[pick_item_id]}')
-            #                 print(f'picked: {item}')
-            #                 agent.say(f'I picked the {item}', show_display=True)
-            #                 num_gripped_items += 1
-            #                 break
-
-            # miss_count = 0     
-        
 
         ########################################
         ## PLACING ##
@@ -409,17 +327,14 @@ def clean_the_table(agent: Agent):
 
         if placing_mode:
             if picking_mode == False:
-                item = 'fork'
+                item = 'spoon'
                 
             num_gripped_items += 1
             agent.pose.move_pose()      
-            agent.move_abs(place_position)
-            # dishwasher_x = distancing(agent.yolo_module.pc, dishwasher, dist=0.85)
+            agent.move_abs(place_position) # 실제 대회때는 반드시 추가
 
 
             agent.pose.arm_lift_up(0.30) # 2층 랙도 열려있을 경우 수정 필요함.
-
-            # dishwasher_y = distancing_horizontal(agent.yolo_module.pc, dishwasher_table)
 
             
             agent.move_rel(0, place_position_dict[item][1], wait=True)
@@ -432,16 +347,24 @@ def clean_the_table(agent: Agent):
             rospy.sleep(short_move)
 
             arm_lift_value = agent.pose.place_cutlery_pose(table=place_table) # temp
-            agent.pose.arm_lift_up(arm_lift_value - 0.1)
             
-            if item == 'fork' or item == 'spoon' or item == 'knife':
-                agent.pose.cutlery_placing_wrist(-20,90)
+
+            # if item == 'bowl':
+            #     agent.pose.wrist_roll(-90)
+            #     agent.pose.wrist_flex(-25)
+            if item == 'cup':
+                agent.pose.wrist_roll(180)
+
+            # agent.pose.arm_lift_up(arm_lift_value - 0.1) # 던지더라하게 가자.도 안전
+        
 
             agent.open_gripper()
 
             rospy.sleep(short_move)
 
             agent.pose.arm_lift_up(arm_lift_value) # 1층 랙 2층 랙 다 열림
+
+            rospy.sleep(short_move)
 
             agent.pose.table_search_pose()
 

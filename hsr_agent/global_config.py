@@ -39,6 +39,9 @@ if Eindhoven:
     print('[GLOBAL CONFIG] Eindhoven mode')
 
     ABS_POSITION = {
+
+        'hallway' : [3.8827, -0.5537, -0.0261],   # bj 땀gi
+        'livingroom' : [8.9285, 0.6183, 1.5787], # bj 땀
         'living_living_1': [3.8317, -0.2223, 1.5071],
         'living_living_2': [3.7858, 2.9424, 0.111],
         'living_living_3': [6.6616, 1.6903, 0.3479],
@@ -46,24 +49,24 @@ if Eindhoven:
         'pos_dining_table_1' :  [5.905, 4.5752, -0.0291],
         'pos_dining_table_2' :  [5.8859, 3.9397, -0.0196],
         'pos_dining_table_3' :  [5.8413, 3.3573, -0.0137],
-        'pos_dining_table_4' :  [6.9409, 2.2648, 1.5593],
-        'pos_dining_table_5' :  [8.0103, 3.2688, 3.1361], #[8.0432, 3.8641, 3.0866]
-        'pos_dining_table_6' :  [8.0103, 3.9088, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
-        'pos_dining_table_7' :  [8.0103, 4.5088, 3.1361], # 임의 계산 from pos5 182 267
+        'pos_dining_table_1' :  [5.805, 4.5752, -0.0291],
+        'pos_dining_table_2' :  [5.7859, 3.9397, -0.0196],
+        'pos_dining_table_3' :  [5.7413, 3.3573, -0.0137],
+        
+        # 원래 위ㅣ치
 
-        # 'pos_office_table_1' : [1,1,1],
-        # 'pos_office_table_2' : [1,1,1],
-        # 'pos_office_table_3' : [1,1,1],
-        # 'pos_office_table_4' : [1,1,1],
-        # 'pos_office_table_5' : [1,1,1],
+        # 'pos_dining_table_4' :  [6.9409, 2.2648, 1.5593],
+        # 'pos_dining_table_5' :  [7.9103, 3.2688, 3.1361], #[8.0432, 3.8641, 3.0866]
+        # 'pos_dining_table_6' :  [7.9103, 3.9088, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
+        # 'pos_dining_table_7' :  [7.9103, 4.5088, 3.1361], # 임의 계산 from pos5 182 267
 
-        # 'pos_livingroom_table_1' : [1,1,1],
-        # 'pos_livingroom_table_2' : [1,1,1],
-        # 'pos_livingroom_table_3' : [1,1,1],
-        # 'pos_livingroom_table_4' : [1,1,1],
-        # 'pos_livingroom_table_5' : [1,1,1],
+         # 아인드호벤 씹새가 y 5 미렀음
+        'pos_dining_table_4' :  [6.9409, 2.3148, 1.5593],
+        'pos_dining_table_5' :  [7.9103, 3.3188, 3.1361], #[8.0432, 3.8641, 3.0866]
+        'pos_dining_table_6' :  [7.9103, 3.9588, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
+        'pos_dining_table_7' :  [7.9103, 4.5588, 3.1361],
 
-        'pos_dishwasher': [8.1414, 3.6023, -0.0372]
+        'pos_dishwasher': [8.0514, 3.6023, -0.0372]
         
 
     }
