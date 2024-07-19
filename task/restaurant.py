@@ -94,6 +94,7 @@ class MoveBaseStandalone:
         self.last_checked_pos = [0, 0]
 
         self.seg_img = None # jnpahk
+        self.openpose_image = None
 
 
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
@@ -268,7 +269,7 @@ class MoveBaseStandalone:
             elif self.barrier_stop(agent): #jnpahk
                 rospy.logwarn("Barrier detected. Turn around.")
                 agent.move_base.base_action_client.cancel_all_goals()
-                self.turn_around()
+                self.turn_around(120)
                 self.base_action_client.send_goal(goal)
             
             else:
@@ -362,7 +363,7 @@ class MoveBaseStandalone:
                 elif self.barrier_stop(agent): #jnpahk
                     rospy.logwarn("Barrier detected. Turn around.")
                     agent.move_base.base_action_client.cancel_all_goals()
-                    self.turn_around()
+                    self.turn_around(120)
                     self.base_action_client.send_goal(goal)
 
                 else:
@@ -523,7 +524,7 @@ class MoveBaseStandalone:
                     rospy.logwarn("Barrier detected. Turn around.")
                     agent.move_base.base_action_client.cancel_all_goals()
 
-                    self.turn_around()
+                    self.turn_around(120)
                     self.base_action_client.send_goal(goal)
                 
 
@@ -706,7 +707,8 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            agent.head_display_image_pubish(self.openpose_image)
+            if self.openpose_image is not None:
+                agent.head_display_image_pubish(self.openpose_image)
             agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=False)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
