@@ -25,8 +25,8 @@ ABS_POSITION = {
     'trashcan': [5.279, 1.830, -2.469],
     'kitchen cabinet': [5.6019, 4.9918, 3.127],
     'dinner table': [5.6348, 3.881, -0.0264],
-    'dishwasher': [8.415, 3.729, -0.054],
-    'kitchen counter': [8.557, 4.859, -0.054],
+    'dishwasher': [8.5045, 3.6366, 0.0131],
+    'kitchen counter': [8.5652, 4.8247, -0.0005],
     
     ## rooms
     'hallway': [1.709, -2.260, 0.707],
