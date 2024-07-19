@@ -9,7 +9,7 @@ yolo_classnames_path = 'weight/' + 'classnames.cn'
 
 ABS_POSITION = {
     'zero': [0, 0, 0],
-    'gpsr_instruction_point': [5.237, 0.330, 0.666], ## living room
+    'gpsr_instruction_point': [6.037, -0.028, -0.737], ## living room
     ## locations
     'hallway cabinet': [1.844, -1.643, -3.129],
     'entrance': [-0.375, 0.042, -0.001],
