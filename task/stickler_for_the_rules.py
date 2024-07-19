@@ -344,7 +344,7 @@ class ShoeDetection:
 
                 
 
-    def ask_to_action(self, entrance):
+    def ask_to_action(self, entrance, current_location='kitchen_search'):
         rospy.sleep(1)
         # take the offender to the entrance
         # self.agent.say('I will guide you\nto the entrance.',
@@ -352,6 +352,20 @@ class ShoeDetection:
         # rospy.sleep(3)
         self.agent.say('Please follow me!', show_display=True)
         rospy.sleep(1)
+
+        if current_location=='kitchen_search' or current_location=='kitchen_search2':
+            self.agent.move_abs_safe('kitchen_living_middle')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('livingroom_leave')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('hallway_enter')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location=='livingroom_search':
+            self.agent.move_abs_safe('livingroom_leave')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('hallway_enter')
+            self.agent.say('Follow me!', show_display=True)
+
         self.agent.move_abs_safe(entrance)
 
         # ask to take off their shoes
@@ -610,7 +624,7 @@ class NoLittering:
             'Sorry but\nyou cannot leave\ngarbage on the floor', show_display=True)
         rospy.sleep(5)
 
-    def ask_to_action(self, bin_location):
+    def ask_to_action(self, bin_location, current_location='kitchen_search'):
         self.agent.say(
             "Please pick up\nthe litter in front of me", show_display=True)
         rospy.sleep(8)
@@ -621,6 +635,26 @@ class NoLittering:
         self.agent.say('Please follow me\nto the bin', show_display=True)
         rospy.sleep(2)
         self.agent.pose.head_pan(0) # 0609
+
+        if current_location=='kitchen_search':
+            self.agent.move_abs_safe('kitchen_search')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location=='kitchen_search2':
+            self.agent.move_abs_safe('kitchen_search2')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location=='livingroom_search':
+            self.agent.move_abs_safe('kitchen_living_middle')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location=='hallway_search':
+            self.agent.move_abs_safe('hallway_enter')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('livingroom_leave')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('kitchen_living_middle')
+            self.agent.say('Follow me!', show_display=True)
+
+
+
         self.agent.move_abs_safe(bin_location)
         # rospy.sleep(2)
         # self.agent.pose.head_tilt(-60) # 0609
@@ -1043,11 +1077,35 @@ class DrinkDetection:
         self.agent.say('Sorry but\n all guests should\n have a drink.', show_display=True)
         rospy.sleep(5)
 
-    def ask_to_action(self, bar_location):
+    def ask_to_action(self, bar_location, current_location='kitchen_search'):
         # self.agent.say('We prepare some drinks.', show_display=True)
         # rospy.sleep(2)
         self.agent.say('Please follow me!', show_display=True)
-        rospy.sleep(3)
+        rospy.sleep(1)
+
+        if current_location == 'kitchen_search':
+            self.agent.move_abs_safe('office_leave2')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location == 'kitchen_search2':
+            self.agent.move_abs_safe('kitchen_search2')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('office_leave2')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location == 'livingroom_search':
+            self.agent.move_abs_safe('kitchen_living_middle')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('bin_littering')
+            self.agent.say('Follow me!', show_display=True)
+        elif current_location == 'hallway_search':
+            self.agent.move_abs_safe('hallway_enter')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('office_search')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('office_leave1')
+            self.agent.say('Follow me!', show_display=True)
+            self.agent.move_abs_safe('office_leave2')
+            self.agent.say('Follow me!', show_display=True)
+
         self.agent.move_abs_safe(bar_location)
         rospy.sleep(2)
         self.agent.pose.head_tilt(20)
@@ -1245,7 +1303,7 @@ def stickler_for_the_rules(agent):
                     # go to the offender and clarify what rule is being broken
                     drink_detection.clarify_violated_rule()
                     # ask offender to grab a drink
-                    drink_detection.ask_to_action(compulsory_hydration_bar_location)
+                    drink_detection.ask_to_action(compulsory_hydration_bar_location, current_location=search_location)
                     break
 
                 # [RULE 1] No shoes : tilt -20, -40
@@ -1259,7 +1317,7 @@ def stickler_for_the_rules(agent):
                     # go to the offender and clarify what rule is being broken
                     shoe_detection.clarify_violated_rule()
                     # take the offender to the entrance & ask to take off their shoes
-                    shoe_detection.ask_to_action(entrance)
+                    shoe_detection.ask_to_action(entrance, current_location=search_location)
                     break
 
             # if search_idx > 3:
@@ -1276,7 +1334,7 @@ def stickler_for_the_rules(agent):
                     # go to the offender and clarify what rule is being broken
                     no_littering.clarify_violated_rule()
                     # ask the offender to pick up and trash the garbage
-                    no_littering.ask_to_action(bin_location)
+                    no_littering.ask_to_action(bin_location, current_location=search_location)
                     break
 
         if sum(break_rule_check_list.values())==4:
