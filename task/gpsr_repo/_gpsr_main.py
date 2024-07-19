@@ -543,6 +543,7 @@ class GPSR:
             maware_count += 1
             rospy.sleep(1)
                 
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
         self.say("I found you")
         rospy.sleep(1)
 
@@ -556,6 +557,7 @@ class GPSR:
         rospy.sleep(1)
         self.move_rel(0, 0, math.pi/8)
         rospy.sleep(1)
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
         self.say(f"I found you {name}")
         rospy.sleep(1.5)
 
