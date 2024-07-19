@@ -88,6 +88,7 @@ class MoveBaseStandalone:
         self.initial_pose_pub = rospy.Publisher('/laser_2d_correct_pose', PoseWithCovarianceStamped, queue_size=10)
         # jnpahk
         self.lidar_sub = rospy.Subscriber('/hsrb/base_scan', LaserScan, self._lidar_callback)
+        self.openpose_sub = rospy.Sublisher('/snu/openpose', Image, queue_size=10)
         self.listener = tf.TransformListener()
         self.last_checked_time = time.time()
         self.last_checked_pos = [0, 0]
@@ -98,6 +99,11 @@ class MoveBaseStandalone:
         rospy.Subscriber('/deeplab_ros_node/segmentation', Image, self._segment_cb)
         # reset map
         # rospy.wait_for_service('/reset_map')
+
+
+    def _openpose_callback(self, data):
+        data_img = self.bridge.imgmsg_to_cv2(data, 'bgr8')
+        self.openpose_image = data_img
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
@@ -700,7 +706,8 @@ def restaurant(agent):
                         move.move_abs(agent, offset, 0)
                 else:
                     break
-            agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=True)
+            agent.head_show_image(self.openpose_image)
+            agent.say("I found the customer. I will calculate the pathway toward the customer.", show_display=False)
             rospy.sleep(4)
             marker_maker.pub_marker([offset + Dx, Dy, 1], 'base_link')
             customer_x, customer_y, customer_yaw = move.move_customer(agent, offset + Dx, Dy)
