@@ -1076,8 +1076,8 @@ def stickler_for_the_rules(agent):
     # If needed, mark min & max points of all 4 rooms !
     # forbidden_room_min_points = {'bedroom_search': [4.2073, -7.9801, 0.03]} # PNU
     # forbidden_room_max_points = {'bedroom_search': [7.7033, -4.1148, 2.0]} # PNU
-    forbidden_room_min_points = {'office_search': [4.2073, -7.9801, 0.03]} # PNU
-    forbidden_room_max_points = {'office_search': [7.7033, -4.1148, 2.0]} # PNU
+    forbidden_room_min_points = {'office_search': [1.0616, 1.2905, 0.03]} #
+    forbidden_room_max_points = {'office_search': [4.0949, 5.6822, 2.0]} #
 
     ## params for rule 3. No littering ##
     bin_location = 'bin_littering'
@@ -1107,8 +1107,8 @@ def stickler_for_the_rules(agent):
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search'
-        'office_search', 'office_search2'
-        'kitchen_search', 'kitchen_search2',
+        # 'office_search', 'office_search2'
+        # 'kitchen_search', 'kitchen_search2',
         'livingroom_search',
         'hallway_search',
         # 'office_search2', 
