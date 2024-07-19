@@ -8,6 +8,7 @@ yolo_classnames_path = 'weight/' + 'classnames.cn'
 ## Official Github
 
 ABS_POSITION = {
+    'zero': [0, 0, 0],
     'gpsr_instruction_point': [5.237, 0.330, 0.666], ## living room
     ## locations
     'hallway cabinet': [1.844, -1.643, -3.129],
@@ -22,8 +23,8 @@ ABS_POSITION = {
     'couch': [9.195, 0.481, -1.526],
     'coffee table': [7.087, -0.358, -0.684],
     'trashcan': [5.279, 1.830, -2.469],
-    'kitchen cabinet': [5.620, 5.047, 3.131],
-    'dinner table': [5.535, 3.848, -0.022],
+    'kitchen cabinet': [5.6019, 4.9918, 3.127],
+    'dinner table': [5.6348, 3.881, -0.0264],
     'dishwasher': [8.415, 3.729, -0.054],
     'kitchen counter': [8.557, 4.859, -0.054],
     
