@@ -13,15 +13,15 @@ ABS_POSITION = {
     ## locations
     'hallway cabinet': [1.844, -1.643, -3.129],
     'entrance': [-0.375, 0.042, -0.001],
-    'desk': [2.105, 2.877, -1.544],
-    'shelf': [2.105, 4.063, 3.092], ## not sure
+    'desk': [2.2855, 2.9161, -1.5549],
+    'shelf': [2.2343, 3.9577, 3.1078],
     'coathanger': [2.702, -0.657, 1.594],
     'exit': [3.889, 6.493, 1.555],
     'TV table': [5.730, -1.832, 3.113],
     'lounge chair': [6.903, -1.614, -0.013],
     'lamp': [6.903, -1.614, -0.013],
     'couch': [9.195, 0.481, -1.526],
-    'coffee table': [7.087, -0.358, -0.684],
+    'coffee table': [7.0467, -1.1802, 0.0446],
     'trashcan': [5.279, 1.830, -2.469],
     'kitchen cabinet': [5.6019, 4.9918, 3.127],
     'dinner table': [5.6348, 3.881, -0.0264],
@@ -39,9 +39,9 @@ objects_file_path = 'CompetitionTemplate/objects/objects.md'
 
 rooms_list = [
     "hallway", 
-    # "office", 
-    # "kitchen", 
-    # "living room"
+    "office", 
+    "kitchen", 
+    "living room"
 ]
 
 def invert_dict(d):
@@ -49,12 +49,12 @@ def invert_dict(d):
 
 plcmt_dict = {
     'coffee table': 'fruit',
-    # 'kitchen counter': 'food',
-    # 'dishwasher': 'dish',
-    # 'dinner table': 'snack',
-    # 'kitchen cabinet': 'drink',
-    # 'shelf': 'cleaning_supply',
-    # 'desk': 'decoration'
+    'kitchen counter': 'food',
+    'dishwasher': 'dish',
+    'dinner table': 'snack',
+    'kitchen cabinet': 'drink',
+    'shelf': 'cleaning_supply',
+    'desk': 'decoration'
 }
 
 cat_to_plcmt_loc = invert_dict(plcmt_dict)

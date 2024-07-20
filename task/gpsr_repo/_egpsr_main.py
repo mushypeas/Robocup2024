@@ -50,7 +50,7 @@ def egpsr(agent):
     litter_left = True
 
     while not rospy.is_shutdown():
-        ## Find Waving Human
+        # ## Find Waving Human
         for cur_room in g.rooms_list:
             g.move(cur_room)
             
@@ -95,25 +95,22 @@ def egpsr(agent):
                     g.move(litter_room)
             
             
-            ## TODO Change
-            if not g.identifyWaving():
+            try:
+                g.agent.pose.head_tilt(0)
+                if not g.identifyWaving(): 
+                    continue
+            except:
                 continue
-            
-            # try:
-            #     if not g.identifyWaving(): 
-            #         continue
-            # except:
-            #     continue
 
             while not rospy.is_shutdown():
-                agent.say("Come close to mic, \n and Give a command after \n the ding sound.")
-                rospy.sleep(3.5)
+                g.say("Come close to mic, \n and Give a command after \n the ding sound.")
+                rospy.sleep(4)
 
                 inputText = g.hear(7.)
-                agent.say(f"Given Command is \n {inputText}")
+                g.say(f"Given Command is \n {inputText}")
                 rospy.sleep(3.5)
-                agent.say("Is this right? answer yes or no after the ding sound")
-                rospy.sleep(3)
+                g.say("Is this right? answer yes or no after the ding sound")
+                rospy.sleep(4)
                 yes_no = g.cluster(g.hear(2.), ['yes', 'no'])
                 
                 if yes_no == 'yes':
@@ -150,20 +147,22 @@ def egpsr(agent):
                     if objName not in plcmt_loc_available_items:
                         g.say(f"Oops! {objName} is in {plcmt_loc}")
                         rospy.sleep(3)
-                        g.pick()    
+                        g.pick(objName)    
                         
                         ## Find where to go
                         for cat in g.category2objDict:
-                            if objName in cat:
-                                optimal_plcmt_loc = cat_to_plcmt_loc(cat)
+                            if objName.replace('_', ' ') in g.category2objDict[cat] or objName.replace(' ', '_') in g.category2objDict[cat]:
+                                print(objName, cat)
+                                optimal_plcmt_loc = cat_to_plcmt_loc[cat]
                                 break
                             
                         g.move(optimal_plcmt_loc)
                         g.place(optimal_plcmt_loc)
                         
                         break
-            except:
+            except Exception as e:
                 g.say("sorry. i should go.")
+                rospy.logwarn(e)
                 rospy.sleep(1.5)
                 pass
         

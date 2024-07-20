@@ -180,6 +180,7 @@ class GPSR:
 
     ### HELP Functions ###
     def get_yolo_bbox(self, category=None):
+        self.agent.pose.head_tilt(0)
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
         print("original_yolo_bbox", yolo_bbox)
@@ -554,7 +555,7 @@ class GPSR:
             elif maware_count % 3 == 0:
                 self.move_rel(0, 0, math.pi/8)
             maware_count += 1
-            
+            self.agent.pose.head_tilt(0)
             while time.time() - start_time < 1:
                 msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
 
@@ -573,7 +574,6 @@ class GPSR:
                         # Convert OpenCV2 image to ROS Image message
                         openpose_image = self.agent.bridge.cv2_to_imgmsg(openpose_cv2_image, encoding='passthrough')
                         
-                        self.agent.head_display_image_pub.publish(openpose_image)
                         self.say("I found waving person")
                         rospy.sleep(2)
                         return True
