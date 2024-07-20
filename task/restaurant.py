@@ -295,7 +295,7 @@ class MoveBaseStandalone:
                             maware_count = 0
                             
                             self.base_action_client.send_goal(goal)
-                            break
+                            return
 
                     self.move_best_interval(best_interval, agent)
 
@@ -392,7 +392,7 @@ class MoveBaseStandalone:
                                 maware_count = 0
                                 
                                 self.base_action_client.send_goal(goal)
-                                break
+                                return
 
                         self.move_best_interval(best_interval, agent)
 
