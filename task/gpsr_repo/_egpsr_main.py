@@ -106,8 +106,8 @@ def egpsr(agent):
             #     continue
 
             while not rospy.is_shutdown():
-                agent.say("Give a command after \n the ding sound.")
-                rospy.sleep(2.5)
+                agent.say("Come close to mic, \n and Give a command after \n the ding sound.")
+                rospy.sleep(3.5)
 
                 inputText = g.hear(7.)
                 agent.say(f"Given Command is \n {inputText}")

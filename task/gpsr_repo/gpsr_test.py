@@ -75,3 +75,11 @@ def gpsr_test(agent):
             input_gestPose = input("What gesture or pose do you want to count?: ")
             cnt = g.countGestPosePers(input_gestPose)
             print(f"the count is: {cnt}")
+            
+        if cmd == 'identifyWaving':
+            import subprocess
+            openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
+            openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
+            openpose_process = subprocess.Popen(openpose_command)
+            
+            print("found?", g.identifyWaving)

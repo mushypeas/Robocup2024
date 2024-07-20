@@ -37,13 +37,12 @@ ABS_POSITION = {
 
 objects_file_path = 'CompetitionTemplate/objects/objects.md'
 
-rooms_list = ["hallway", "office", "kitchen", "living room"]
-names_list = [
-    "Sophie", "Julia", "Emma", "Sara", "Laura", 
-    "Hayley", "Susan", "Fleur", "Gabrielle", "Robin", 
-    "John", "Liam", "Lucas", "William", "Kevin", 
-    "Jesse", "Noah", "Harrie", "Peter", "Robin"
-] #Gabriëlle
+rooms_list = [
+    "hallway", 
+    "office", 
+    "kitchen", 
+    "living room"
+]
 
 def invert_dict(d):
     return {v: k for k, v in d.items()}
@@ -61,6 +60,13 @@ plcmt_dict = {
 cat_to_plcmt_loc = invert_dict(plcmt_dict)
 
 plcmt_locs = list(plcmt_dict.keys())
+
+names_list = [
+    "Sophie", "Julia", "Emma", "Sara", "Laura", 
+    "Hayley", "Susan", "Fleur", "Gabrielle", "Robin", 
+    "John", "Liam", "Lucas", "William", "Kevin", 
+    "Jesse", "Noah", "Harrie", "Peter", "Robin"
+] #Gabriëlle
 
 ############################################################
 ############################################################

@@ -574,6 +574,8 @@ class GPSR:
                         openpose_image = self.agent.bridge.cv2_to_imgmsg(openpose_cv2_image, encoding='passthrough')
                         
                         self.agent.head_display_image_pub.publish(openpose_image)
+                        self.say("I found waving person")
+                        rospy.sleep(2)
                         return True
                     
                     except Exception as e:
