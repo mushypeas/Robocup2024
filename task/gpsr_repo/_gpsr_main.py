@@ -297,7 +297,7 @@ class GPSR:
             self.say('I am a robot designed to help people in their daily lives')
             
         elif talk == 'the time':
-            self.say(f'The time is near 5 PM')
+            self.say(f'The time is about 5 PM')
             
         elif talk == 'what day is today':
             self.say(f'Today is July 20')
@@ -583,24 +583,24 @@ class GPSR:
         
     def identify(self, type='default', pose=None, gest=None):       
         maware_count = 0
-        while True:
+        while rospy.is_shutdown():
             ### Check identify Type
-            if type == 'default':
-                if self.human_keypoints:
-                    break
+            # if type == 'default':
+            if self.human_keypoints:
+                break
             
-            if type == 'pose':
-                human_poses = self.getPose(getAll=True)
-                if pose in [tup[0] for tup in human_poses]:
-                    break
+            # if type == 'pose':
+            #     human_poses = self.getPose(getAll=True)
+            #     if pose in [tup[0] for tup in human_poses]:
+            #         break
                 
-            if type == 'gest':
-                human_gests = self.getGest(getAll=True)
-                if gest == 'waving person':
-                    if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
-                        break
-                if gest in [tup[0] for tup in human_gests]:
-                    break                
+            # if type == 'gest':
+            #     human_gests = self.getGest(getAll=True)
+            #     if gest == 'waving person':
+            #         if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
+            #             break
+            #     if gest in [tup[0] for tup in human_gests]:
+            #         break                
                 
             ### To many maware? finish
             if maware_count == 6:
@@ -637,51 +637,63 @@ class GPSR:
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
-        if gestPosePers in self.pose_person_list:
-            self.identify(type='pose', pose=gestPosePers)
+        # if gestPosePers in self.pose_person_list:
+        #     self.identify(type='pose', pose=gestPosePers)
 
-        # Gesture
-        elif gestPosePers == 'waving person':
-            self.identify(type='gest', gest='waving person')
+        # # Gesture
+        # elif gestPosePers == 'waving person':
+        #     self.identify(type='gest', gest='waving person')
             
-        elif gestPosePers in self.gesture_person_list:
-            self.identify()
+        # elif gestPosePers in self.gesture_person_list:
+        #     self.identify()
 
-        else:
-            rospy.logwarn("No such gesture or pose")
-            self.identify()
+        # else:
+        #     rospy.logwarn("No such gesture or pose")
+        #     self.identify()
 
 
-        self.say(f"I found a person who is {gestPosePers}.")
-        rospy.sleep(3)
+        # self.say(f"I found a person who is {gestPosePers}.")
+        # rospy.sleep(3)
+        self.say(f"{gestPosePers}, please come closer to me.")
+        rospy.sleep(3) 
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
+        self.move_rel(0, 0, -math.pi/4)
+        rospy.sleep(1)
+        self.move_rel(0, 0, math.pi/8)
+        rospy.sleep(1)
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
+        self.say(f"I found you {gestPosePers}")
+        rospy.sleep(1.5)
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
         self.say("every guys, please come in my sight.")
         rospy.sleep(4)       
         
-        if gestPosePers in self.pose_person_list:
-            Pers = self.getPose(getAll=True)
-            posePers = len([per for per in Pers if per[0] == gestPosePers])
-            if posePers >= 2:
-                return 2
-            else:
-                return posePers
+        # if gestPosePers in self.pose_person_list:
+        #     Pers = self.getPose(getAll=True)
+        #     posePers = len([per for per in Pers if per[0] == gestPosePers])
+        #     if posePers >= 2:
+        #         return 2
+        #     else:
+        #         return posePers
             
-        elif gestPosePers == 'waving person':
-            return 2
+        # elif gestPosePers == 'waving person':
+        #     return 2
 
-        elif gestPosePers in self.gesture_person_list:
-            Pers = self.getGest(getAll=True)
-            gestPers = len([per for per in Pers if per[0] == gestPosePers])
-            if gestPers >= 2:
-                return 2
-            else:
-                return gestPers
+        # elif gestPosePers in self.gesture_person_list:
+        #     Pers = self.getGest(getAll=True)
+        #     gestPers = len([per for per in Pers if per[0] == gestPosePers])
+        #     if gestPers >= 2:
+        #         return 2
+        #     else:
+        #         return gestPers
         
-        else:
-            rospy.logwarn("No such gesture or pose")
-            return 0
+        # else:
+        #     rospy.logwarn("No such gesture or pose")
+        #     return 0
+        return 1
         
     # 옷으로 찾기
     def identifyByClothing(self, Clothes):
@@ -693,7 +705,7 @@ class GPSR:
     # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
         self.say(f'counting people who wear the {colorClothes}')
-        return 2
+        return 1
     
     def objIdToName(self, id):
         return self.agent.yolo_module.find_name_by_id(id)
