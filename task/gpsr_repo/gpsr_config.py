@@ -45,6 +45,23 @@ names_list = [
     "Jesse", "Noah", "Harrie", "Peter", "Robin"
 ] #Gabriëlle
 
+def invert_dict(d):
+    return {v: k for k, v in d.items()}
+
+plcmt_dict = {
+    'desk': 'decoration',
+    'shelf': 'cleaning_supply',
+    'coffee table': 'fruit',
+    'kitchen cabinet': 'drink',
+    'dinner table': 'snack',
+    'dishwasher': 'dish',
+    'kitchen counter': 'food'
+}
+
+cat_to_plcmt_loc = invert_dict(plcmt_dict)
+
+plcmt_locs = list(plcmt_dict.keys())
+
 ############################################################
 ############################################################
 ############################################################

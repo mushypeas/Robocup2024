@@ -11,6 +11,8 @@ from _gpsr_main import GPSR
 class EGPSR(GPSR):
     def __init__(self, agent):
         super().__init__(agent)
+        self.plcmt_locs = plcmt_locs
+        self.plcmt_dict = plcmt_dict
 
 def egpsr(agent):
     openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
@@ -68,4 +70,32 @@ def egpsr(agent):
             cmdFunc(g, params)
             
         ## TODO: unusual object in plcmtloc
+        for plcmt_loc in g.plcmt_locs:
+            plcmt_loc_cat = plcmt_dict[plcmt_loc]
+            plcmt_loc_available_items = g.category2objDict[plcmt_loc_cat]
+            g.move(plcmt_loc)
+            rospy.sleep(1)
+            yolo_bbox = g.get_yolo_bbox()
+            
+            for item_info in yolo_bbox:
+                objId = item_info[4]
+                objName = g.objIdToName(objId)
+                
+                # Wrong item in plcmt_loc
+                if objName not in plcmt_loc_available_items:
+                    g.say(f"Oops! {objName} is in {plcmt_loc}")
+                    rospy.sleep(3)
+                    g.pick()    
+                    
+                    ## Find where to go
+                    for cat in g.category2objDict:
+                        if objName in cat:
+                            optimal_plcmt_loc = cat_to_plcmt_loc(cat)
+                            break
+                        
+                    g.move(optimal_plcmt_loc)
+                    g.place(optimal_plcmt_loc)
+                    
+                    break
+                        
         ## TODO: litter
