@@ -60,3 +60,6 @@ def egpsr(agent):
             g.return_point = g.agent.get_pose()
             
             cmdFunc(g, params)
+            
+        ## TODO: unusual object in plcmtloc
+        ## TODO: litter
