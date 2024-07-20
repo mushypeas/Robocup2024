@@ -209,7 +209,7 @@ class MoveBaseStandalone:
             return False
 
 
-    def turn_around(self, angle=120):
+    def turn_around(self, angle=-60):
         while not rospy.is_shutdown():
             # goal topic generation
             pose = PoseStamped()
