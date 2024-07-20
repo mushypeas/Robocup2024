@@ -6,7 +6,6 @@ from gpsr_parser import ultimateParser
 import subprocess
 
 from _gpsr_main import GPSR
-from itertools import cycle
 
 
 class EGPSR(GPSR):
@@ -38,11 +37,19 @@ def egpsr(agent):
             if not g.identifyWaving(): 
                 continue
 
-            agent.say("Give a command after the ding sound.")
-            rospy.sleep(2.5)
+            while not rospy.is_shutdown():
+                agent.say("Give a command after \n the ding sound.")
+                rospy.sleep(2.5)
 
-            inputText = g.hear(7.)
-            agent.say(f"Given Command is {inputText}")
+                inputText = g.hear(7.)
+                agent.say(f"Given Command is \n {inputText}")
+                rospy.sleep(3.5)
+                agent.say("Is this right? answer yes or no after the ding sound")
+                rospy.sleep(3)
+                yes_no = g.cluster(g.hear(2.), ['yes', 'no'])
+                
+                if yes_no == 'yes':
+                    break               
             
             # parse InputText 
             cmdName, params = ultimateParser(inputText)
