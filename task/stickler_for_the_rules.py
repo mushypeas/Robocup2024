@@ -734,6 +734,17 @@ class DrinkDetection:
     #     cv2.imshow('img', img)
     #     cv2.waitKey(1)
 
+    def find_drink_yolo(self):
+        self.agent.pose.head_tilt(20)
+        rospy.sleep(4)
+        try:
+            for _ in range(5):
+                if len(self.agent.yolo_module.yolo_bbox) != 0:
+                    return True
+            return False
+        except:
+            return False
+
     def find_drink(self, double_check=False):
 
         # self.agent.pose.head_tilt(10)
@@ -1079,8 +1090,18 @@ class DrinkDetection:
         self.agent.pose.head_tilt(20)
         self.agent.say('Hello!', show_display=True)
         rospy.sleep(1)
+
+        self.agent.say('If you are holding a drink,\n please show it to me.', show_display=True)
+        rospy.sleep(4)
+        if self.find_drink_yolo():
+            self.agent.say('It seems you are \n holding a drink.', show_display=True)
+            rospy.sleep(3)
+            self.agent.say('I apologize for \n the inconvenience.', show_display=True)
+            rospy.sleep(2)
+            return False
         self.agent.say('Sorry but\n all guests should\n have a drink.', show_display=True)
         rospy.sleep(5)
+        return True
 
     def ask_to_action(self, bar_location, current_location='kitchen_search'):
         # self.agent.say('We prepare some drinks.', show_display=True)
@@ -1089,8 +1110,9 @@ class DrinkDetection:
         rospy.sleep(1)
 
         if current_location == 'kitchen_search':
-            self.agent.move_abs_safe('office_leave2')
-            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
+            pass
+            # self.agent.move_abs_safe('office_leave2')
+            # self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location == 'kitchen_search2':
             self.agent.move_abs_safe('kitchen_search2')
             self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
@@ -1114,7 +1136,7 @@ class DrinkDetection:
         self.agent.move_abs_safe(bar_location)
         rospy.sleep(2)
         self.agent.pose.head_tilt(20)
-        self.agent.say('Please hold drink\n on the bar.', show_display=True)
+        self.agent.say('Please hold drink\n on the cabinet.', show_display=True)
         rospy.sleep(5)
 
         self.agent.pose.head_tilt(5)
@@ -1207,6 +1229,8 @@ def stickler_for_the_rules(agent):
         'hallway_search': [30, 0, -30], # corner, 45
     }
 
+    current_violation_flag = 'forbidden'
+
     agent.pose.head_pan_tilt(0, 0)
 
     agent.pose.move_pose()
@@ -1222,6 +1246,7 @@ def stickler_for_the_rules(agent):
         #         continue
 
         if search_location=='office_search2':
+            agent.say("If you are in my path,\nplease move out.", show_display=True)
             agent.move_abs_safe('hallway_enter')
             agent.move_abs_safe('office_search') # 없어도 상관없음
         
@@ -1234,6 +1259,71 @@ def stickler_for_the_rules(agent):
         
         # agent.pose.head_tilt(0)
         agent.pose.head_pan_tilt(0, 0)
+
+        if current_violation_flag == 'forbidden':
+            pass
+        elif current_violation_flag == 'shoes':
+            if search_location=='kitchen_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('hallway_enter')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave1')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave2')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+            elif search_location=='kitchen_search2':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('hallway_enter')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('livingroom_leave')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('kitchen_living_middle')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+            elif search_location=='livingroom_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('hallway_enter')
+        elif current_violation_flag == 'drink':
+            if search_location=='kitchen_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                pass
+            elif search_location=='kitchen_search2':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave2')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+            elif search_location=='livingroom_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave2')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('kitchen_living_middle')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+            elif search_location=='hallway_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave2')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('office_leave1')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+        elif current_violation_flag == 'garbage':
+            if search_location=='kitchen_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                pass
+            elif search_location=='kitchen_search2':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                pass
+            elif search_location=='livingroom_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('kitchen_living_middle')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+            elif search_location=='hallway_search':
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('kitchen_living_middle')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('livingroom_leave')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                agent.move_abs_safe('hallway_enter')
+                agent.say("If you are in my path,\nplease move out.", show_display=True)
+                
+        
+        current_violation_flag = 'forbidden'
 
         if search_location=='kitchen_search' and search_location_list[search_idx-1]=='office_search2':
             agent.move_abs_safe('office_leave1')
@@ -1306,9 +1396,14 @@ def stickler_for_the_rules(agent):
                     print('drink detection')
 
                     # go to the offender and clarify what rule is being broken
-                    drink_detection.clarify_violated_rule()
+                    double_check_before = drink_detection.clarify_violated_rule()
+                    if not double_check_before:
+                        break_rule_check_list['drink'] -= 1
+                        break
+                    
                     # ask offender to grab a drink
                     drink_detection.ask_to_action(compulsory_hydration_bar_location, current_location=search_location)
+                    current_violation_flag = 'drink'
                     break
 
                 # [RULE 1] No shoes : tilt -20, -40
@@ -1323,6 +1418,7 @@ def stickler_for_the_rules(agent):
                     shoe_detection.clarify_violated_rule()
                     # take the offender to the entrance & ask to take off their shoes
                     shoe_detection.ask_to_action(entrance, current_location=search_location)
+                    current_violation_flag = 'shoes'
                     break
 
             # if search_idx > 3:
@@ -1340,6 +1436,7 @@ def stickler_for_the_rules(agent):
                     no_littering.clarify_violated_rule()
                     # ask the offender to pick up and trash the garbage
                     no_littering.ask_to_action(bin_location, current_location=search_location)
+                    current_violation_flag = 'garbage'
                     break
 
         if sum(break_rule_check_list.values())==4:
