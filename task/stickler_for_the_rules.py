@@ -124,134 +124,137 @@ class ShoeDetection:
             return False
             
 
-        # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
-        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
+        try:
+            # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
+            # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
 
-        # 고개 -10도로 설정
-        self.agent.pose.head_tilt(-10)
-        rospy.sleep(5)
-        # 사람 없으면 return
-        print('knee_list:', self.knee_list)
-        if len(self.knee_list) == 0:
-            print('shoe detection no person')
-            return True
-        # 일단 openpose 기준으로 사람 리스트 생성
-        no_shoes_person = [False for _ in range(len(self.knee_list)//2)]
-        # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
-        for human_idx in range(len(self.knee_list)//2):
-            left_x, left_y = self.knee_list[human_idx*2]
-            right_x, right_y = self.knee_list[human_idx*2+1]
-            if left_x >= 640-120 or right_x <= 120:
-                no_shoes_person[human_idx] = True
-        print(f'no_shoes_person: {no_shoes_person}')
-        no_shoes_prob = [0 for _ in range(no_shoes_person.count(False))]
-        coord_map_list = [None for _ in range(no_shoes_person.count(False))]
+            # 고개 -10도로 설정
+            self.agent.pose.head_tilt(-10)
+            rospy.sleep(5)
+            # 사람 없으면 return
+            print('knee_list:', self.knee_list)
+            if len(self.knee_list) == 0:
+                print('shoe detection no person')
+                return True
+            # 일단 openpose 기준으로 사람 리스트 생성
+            no_shoes_person = [False for _ in range(len(self.knee_list)//2)]
+            # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
+            for human_idx in range(len(self.knee_list)//2):
+                left_x, left_y = self.knee_list[human_idx*2]
+                right_x, right_y = self.knee_list[human_idx*2+1]
+                if left_x >= 640-120 or right_x <= 120:
+                    no_shoes_person[human_idx] = True
+            print(f'no_shoes_person: {no_shoes_person}')
+            no_shoes_prob = [0 for _ in range(no_shoes_person.count(False))]
+            coord_map_list = [None for _ in range(no_shoes_person.count(False))]
 
-        for head_tilt_angle in [-20]:
-        
-            self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(4)
+            for head_tilt_angle in [-20]:
+            
+                self.agent.pose.head_tilt(head_tilt_angle)
+                rospy.sleep(4)
 
-            count = 0
-            while count < 5:
-                
-                image = self.agent.rgb_img
-
-                for human_idx in range(len(self.ankle_list)//2):
-                    if human_idx*2+1>=len(self.ankle_list):
-                        continue
-                    left_x, left_y = self.ankle_list[human_idx*2]
-                    right_x, right_y = self.ankle_list[human_idx*2+1]
-
-                    if left_x >= 640-120 or right_x <= 120:
-                        continue
-                    if human_idx >= len(no_shoes_person):
-                        continue
-                    if no_shoes_person[human_idx]:
-                        continue
-
-                    print(f'shoe idx: {human_idx}, ankle: {left_x, left_y, right_x, right_y}')
-
-                    y_min = min(left_y, right_y)
-
-                    crop_img = image[
-                        max(0,(left_y+right_y-224)//2):min(480-1,(left_y+right_y+224)//2), 
-                        max(0,(left_x+right_x-224)//2):min(640-1,(left_x+right_x+224)//2)
-                    ]
+                count = 0
+                while count < 5:
                     
-                    human_coord = [(left_x+right_x)//2, max((left_y+right_y)//2+50, 0)]
-                    _pc = self.agent.pc.reshape(480, 640)
-                    pc_np = np.array(_pc.tolist())[:, :, :3]
-                    human_pc = pc_np[human_coord[1], human_coord[0]]
-                    human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
-                    coord_map_list[human_idx] = human_coord_in_map
+                    image = self.agent.rgb_img
 
-                    cv2.imshow('crop_img', crop_img)
-                    cv2.waitKey(1)
-                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/shoe_crop_img_{self.image_save_index}.jpg', crop_img)
-                    self.image_save_index += 1
+                    for human_idx in range(len(self.ankle_list)//2):
+                        if human_idx*2+1>=len(self.ankle_list):
+                            continue
+                        left_x, left_y = self.ankle_list[human_idx*2]
+                        right_x, right_y = self.ankle_list[human_idx*2+1]
 
-                    # Preprocess image
-                    crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
-                    crop_img = self.clip_preprocess(crop_img)
-                    crop_img = crop_img.unsqueeze(0).to(self.device)
-                    # print(crop_img.size())
+                        if left_x >= 640-120 or right_x <= 120:
+                            continue
+                        if human_idx >= len(no_shoes_person):
+                            continue
+                        if no_shoes_person[human_idx]:
+                            continue
 
-                    # Encode image and text features
-                    with torch.no_grad():
-                        image_features = self.clip_model.encode_image(crop_img)
-                        text_features = self.clip_model.encode_text(tokenized_prompt)
-                        image_features /= image_features.norm(dim=-1, keepdim=True)
-                        text_features /= text_features.norm(dim=-1, keepdim=True)
+                        print(f'shoe idx: {human_idx}, ankle: {left_x, left_y, right_x, right_y}')
 
-                        # Calculate text probabilities
-                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-                        # text_probs = (100.0 * image_features @ text_features.T)
-                        # print('probs before softmax', text_probs)
-                        # text_probs = text_probs.softmax(dim=-1)
-                        # print('probs after softmax', text_probs)
+                        y_min = min(left_y, right_y)
 
-                    # Convert probabilities to percentages
-                    text_probs_percent = text_probs * 100
-                    text_probs_percent_np = text_probs_percent.cpu().numpy()
-                    formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
-
-                    print("Labels probabilities in percentage:", formatted_probs)
-                    # if text_probs_percent_np[0][0] > 60:
-                    #     # no_shoes_person[human_idx] = False
-                    #     self.shoe_position = human_coord_in_map
-                    # else:
-                    #     # self.shoe_position = [left_x, left_y]
-                    #     no_shoes_person[human_idx] = True
-                    # if text_probs_percent_np[0][0] < 60:
-                    no_shoes_prob[human_idx] += text_probs_percent_np[0][0]
-                    # if text_probs_percent_np[0][0] < 90:
-                    #     no_shoes_person[human_idx] = True
-                    # else:
-                    #     self.shoe_position = human_coord_in_map
-                
+                        crop_img = image[
+                            max(0,(left_y+right_y-224)//2):min(480-1,(left_y+right_y+224)//2), 
+                            max(0,(left_x+right_x-224)//2):min(640-1,(left_x+right_x+224)//2)
+                        ]
                         
-                count += 1
-        no_shoes_prob = np.array(no_shoes_prob)
-        no_shoes_prob = no_shoes_prob / 5
-        print(f'no_shoes_prob: {no_shoes_prob}')
-        for human_idx in range(len(no_shoes_person)):
-            if no_shoes_prob[human_idx] < 85:
-                no_shoes_person[human_idx] = True
+                        human_coord = [(left_x+right_x)//2, max((left_y+right_y)//2+50, 0)]
+                        _pc = self.agent.pc.reshape(480, 640)
+                        pc_np = np.array(_pc.tolist())[:, :, :3]
+                        human_pc = pc_np[human_coord[1], human_coord[0]]
+                        human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+                        coord_map_list[human_idx] = human_coord_in_map
+
+                        cv2.imshow('crop_img', crop_img)
+                        cv2.waitKey(1)
+                        cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/shoe_crop_img_{self.image_save_index}.jpg', crop_img)
+                        self.image_save_index += 1
+
+                        # Preprocess image
+                        crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+                        crop_img = self.clip_preprocess(crop_img)
+                        crop_img = crop_img.unsqueeze(0).to(self.device)
+                        # print(crop_img.size())
+
+                        # Encode image and text features
+                        with torch.no_grad():
+                            image_features = self.clip_model.encode_image(crop_img)
+                            text_features = self.clip_model.encode_text(tokenized_prompt)
+                            image_features /= image_features.norm(dim=-1, keepdim=True)
+                            text_features /= text_features.norm(dim=-1, keepdim=True)
+
+                            # Calculate text probabilities
+                            # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                            text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+                            # text_probs = (100.0 * image_features @ text_features.T)
+                            # print('probs before softmax', text_probs)
+                            # text_probs = text_probs.softmax(dim=-1)
+                            # print('probs after softmax', text_probs)
+
+                        # Convert probabilities to percentages
+                        text_probs_percent = text_probs * 100
+                        text_probs_percent_np = text_probs_percent.cpu().numpy()
+                        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                        print("Labels probabilities in percentage:", formatted_probs)
+                        # if text_probs_percent_np[0][0] > 60:
+                        #     # no_shoes_person[human_idx] = False
+                        #     self.shoe_position = human_coord_in_map
+                        # else:
+                        #     # self.shoe_position = [left_x, left_y]
+                        #     no_shoes_person[human_idx] = True
+                        # if text_probs_percent_np[0][0] < 60:
+                        no_shoes_prob[human_idx] += text_probs_percent_np[0][0]
+                        # if text_probs_percent_np[0][0] < 90:
+                        #     no_shoes_person[human_idx] = True
+                        # else:
+                        #     self.shoe_position = human_coord_in_map
+                    
+                            
+                    count += 1
+            no_shoes_prob = np.array(no_shoes_prob)
+            no_shoes_prob = no_shoes_prob / 5
+            print(f'no_shoes_prob: {no_shoes_prob}')
+            for human_idx in range(len(no_shoes_person)):
+                if no_shoes_prob[human_idx] < 85:
+                    no_shoes_person[human_idx] = True
+                else:
+                    self.shoe_position = coord_map_list[human_idx]
+
+            # if text_probs_percent_np[0][0] < 90:
+            #     no_shoes_person[human_idx] = True
+            # else:
+            #     self.shoe_position = human_coord_in_map
+
+            if no_shoes_person.count(False) > 0:
+                for person_idx in range(len(no_shoes_person)):
+                    print(f'person {person_idx}: {no_shoes_person[person_idx]}')
+                return False
             else:
-                self.shoe_position = coord_map_list[human_idx]
-
-        # if text_probs_percent_np[0][0] < 90:
-        #     no_shoes_person[human_idx] = True
-        # else:
-        #     self.shoe_position = human_coord_in_map
-
-        if no_shoes_person.count(False) > 0:
-            for person_idx in range(len(no_shoes_person)):
-                print(f'person {person_idx}: {no_shoes_person[person_idx]}')
-            return False
-        else:
+                return True
+        except:
             return True
 
     # def find_shoes(self):
@@ -782,214 +785,216 @@ class DrinkDetection:
             return False
             
 
-        # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
-        # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
+        try:
+            # hsr 카메라 시야각: 58 (horizontal), 45 (vertical) -> 대회때 필요할지도
+            # horizontal을 60도라고 생각했을 때, horizontal 45도 시야각 = 480 pixel (== 세로 pixel) 30도 시야각 = 320 pixel (좌우 160 pixel 제외)
 
-        # 고개 0도로 설정
-        # openpose 성능 이슈 -> 움직인 뒤 충분히 sleep 해줘야 함... 안그러면 움직이는 도중의 blurry한 사진이 들어가고, openpose에서는 아무것도 뱉지 않음
-        self.agent.pose.head_tilt(0)
-        rospy.sleep(5)
-        # 사람 없으면 return
-        print('knee_list:', self.knee_list)
-        if len(self.knee_list) == 0:
-            return True
-        # 일단 openpose 기준으로 사람 리스트 생성
-        print('human_bbox_with_hand', self.human_bbox_with_hand)
-        drink_person = [False for _ in range(len(self.knee_list)//2)]
-        # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
-        for human_idx in range(len(self.knee_list)//2):
-            left_x, _ = self.knee_list[human_idx*2]
-            right_x, _ = self.knee_list[human_idx*2+1]
-            if left_x >= 640-120 or right_x <= 120:
-                drink_person[human_idx] = True
-        print(f'drink_person: {drink_person}')
-        if drink_person.count(False) == 0:
-            return True
-        
-        hand_thres_person = 50
-
-        for head_tilt_angle in [0]:
-        
-            self.agent.pose.head_tilt(head_tilt_angle)
-            rospy.sleep(2)
-
-            count = 0
-            while count < 5:
-                
-                image = self.agent.rgb_img
-
-                for _, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
-                    top_left_x, top_left_y = human_bbox_with_hand[0]
-                    bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
-
-                    human_idx = -1
-                    for knee_idx, knee in enumerate(self.knee_list):
-                        if (knee[0] >= top_left_x-50 and knee[0] <= bottom_right_x+50) and (knee[1] >= top_left_y-50 and knee[1] <= bottom_right_y+50):
-                            human_idx = knee_idx // 2
-                            break
-                    if human_idx == -1:
-                        continue
-
-                    print(f'human idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
-
-                    if top_left_x >= 640-120 or bottom_right_x <= 120:
-                        continue
-                    if human_idx>=len(drink_person):
-                        continue
-                    if drink_person[human_idx]:
-                        continue
-
-                    l_hand = None
-                    r_hand = None
-                    for hand_coord in human_bbox_with_hand[2:]:
-                        if hand_coord[0]!=-1:
-                            if l_hand is None:
-                                l_hand = hand_coord
-                            else:
-                                r_hand = hand_coord
-
-                    # 1. both hands visible
-                    if l_hand is not None and r_hand is not None:
-                        if l_hand[0] > r_hand[0]:
-                            l_hand, r_hand = r_hand, l_hand
-
-                        crop_y_coord_0 = 0
-                        crop_y_coord_1 = 480-1
-                        crop_x_coord_0 = 0
-                        crop_x_coord_1 = 640-1
-
-                        l_hand_x, l_hand_y = l_hand
-                        r_hand_x, r_hand_y = r_hand
-                        center_hand_x = (l_hand_x + r_hand_x) // 2
-                        center_hand_y = (l_hand_y + r_hand_y) // 2
-                        square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + hand_thres_person
-                        if square_len < 224:
-                            square_len = 224
-                        crop_y_coord_0 = max(0, center_hand_y - int(square_len // 2))
-                        crop_y_coord_1 = min(480-1, center_hand_y + int(square_len // 2))
-                        crop_x_coord_0 = max(0, center_hand_x - int(square_len // 2))
-                        crop_x_coord_1 = min(640-1, center_hand_x + int(square_len // 2))
-                        square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
-                        calib_cnt = 2
-                        while square_xy_diff != 0 and calib_cnt > 0:
-                            # print('square_xy_diff', square_xy_diff)
-                            if square_xy_diff < 0:
-                                if crop_y_coord_0 == 0:
-                                    crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
-                                else:
-                                    crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
-                            elif square_xy_diff > 0:
-                                if crop_x_coord_0 == 0:
-                                    crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
-                                else:
-                                    crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
-                            else:
-                                break
-                            square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
-                            calib_cnt -= 1
-                        
-                        # print(f'square length x: {crop_x_coord_1 - crop_x_coord_0}, y: {crop_y_coord_1 - crop_y_coord_0}')
-                        crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
-
-                    # 2. only one hand visible
-                    elif l_hand is not None:
-                        l_hand_x, l_hand_y = l_hand
-                        crop_y_coord_0 = 0
-                        crop_y_coord_1 = 480-1
-                        crop_x_coord_0 = 0
-                        crop_x_coord_1 = 640-1
-                        square_len = 224
-                        crop_y_coord_0 = max(0, l_hand_y - int(square_len // 2))
-                        crop_y_coord_1 = min(480-1, l_hand_y + int(square_len // 2))
-                        crop_x_coord_0 = max(0, l_hand_x - int(square_len // 2))
-                        crop_x_coord_1 = min(640-1, l_hand_x + int(square_len // 2))
-                        square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
-                        calib_cnt = 2
-                        while square_xy_diff != 0 and calib_cnt > 0:
-                            # print('square_xy_diff', square_xy_diff)
-                            if square_xy_diff < 0:
-                                if crop_y_coord_0 == 0:
-                                    crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
-                                else:
-                                    crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
-                            elif square_xy_diff > 0:
-                                if crop_x_coord_0 == 0:
-                                    crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
-                                else:
-                                    crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
-                            else:
-                                break
-                            square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
-                            calib_cnt -= 1
-                        # print(f'square length x: {crop_x_coord_1 - crop_x_coord_0}, y: {crop_y_coord_1 - crop_y_coord_0}')
-                        crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
-
-                    # 3. no hand visible
-                    else:
-                        # crop_img = image[
-                        #     max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
-                        #     max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
-                        # ]
-                        crop_img = image[
-                            max(0,top_left_y-hand_thres_person):min(480-1,bottom_right_y+hand_thres_person), 
-                            max(0,top_left_x-hand_thres_person):min(640-1,bottom_right_x+hand_thres_person)
-                        ]
-                    
-                    human_coord = [(top_left_x + bottom_right_x) // 2,
-                                (top_left_y + bottom_right_y) // 2]
-                    _pc = self.agent.pc.reshape(480, 640)
-                    pc_np = np.array(_pc.tolist())[:, :, :3]
-                    human_pc = pc_np[human_coord[1], human_coord[0]]
-                    human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
-
-                    cv2.imshow('crop_img', crop_img)
-                    cv2.waitKey(1)
-                    cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{self.image_save_index}.jpg', crop_img)
-                    self.image_save_index += 1
-
-                    # Preprocess image
-                    crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
-                    crop_img = self.clip_preprocess(crop_img)
-                    crop_img = crop_img.unsqueeze(0).to(self.device)
-
-                    # Encode image and text features
-                    with torch.no_grad():
-                        image_features = self.clip_model.encode_image(crop_img)
-                        text_features = self.clip_model.encode_text(tokenized_prompt)
-                        image_features /= image_features.norm(dim=-1, keepdim=True)
-                        text_features /= text_features.norm(dim=-1, keepdim=True)
-
-                        # Calculate text probabilities
-                        text_probs = (100.0 * image_features @ text_features.T)
-                        print('probs before softmax', text_probs)
-                        text_probs = text_probs.softmax(dim=-1)
-                        print('probs after softmax', text_probs)
-                        # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-
-                    # Convert probabilities to percentages
-                    text_probs_percent = text_probs * 100
-                    text_probs_percent_np = text_probs_percent.cpu().numpy()
-                    formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
-
-                    print("Labels probabilities in percentage:", formatted_probs)
-                    if text_probs_percent_np[0][0] > 95:
-                        drink_person[human_idx] = True
-                        # return True
-                    else:
-                        self.no_drink_human_coord = human_coord_in_map
-                count += 1
-
+            # 고개 0도로 설정
+            # openpose 성능 이슈 -> 움직인 뒤 충분히 sleep 해줘야 함... 안그러면 움직이는 도중의 blurry한 사진이 들어가고, openpose에서는 아무것도 뱉지 않음
+            self.agent.pose.head_tilt(0)
+            rospy.sleep(5)
+            # 사람 없으면 return
+            print('knee_list:', self.knee_list)
+            if len(self.knee_list) == 0:
+                return True
+            # 일단 openpose 기준으로 사람 리스트 생성
+            print('human_bbox_with_hand', self.human_bbox_with_hand)
+            drink_person = [False for _ in range(len(self.knee_list)//2)]
+            # 가로 시야각 30도 내 사람만 체크, 시야각 밖의 사람은 True로 설정
+            for human_idx in range(len(self.knee_list)//2):
+                left_x, _ = self.knee_list[human_idx*2]
+                right_x, _ = self.knee_list[human_idx*2+1]
+                if left_x >= 640-120 or right_x <= 120:
+                    drink_person[human_idx] = True
+            print(f'drink_person: {drink_person}')
             if drink_person.count(False) == 0:
                 return True
             
-        if drink_person.count(False) > 0:
-            for person_idx in range(len(drink_person)):
-                print(f'person {person_idx}: {drink_person[person_idx]}')
-            return False
-        else:
+            hand_thres_person = 50
+
+            for head_tilt_angle in [0]:
+            
+                self.agent.pose.head_tilt(head_tilt_angle)
+                rospy.sleep(2)
+
+                count = 0
+                while count < 5:
+                    
+                    image = self.agent.rgb_img
+
+                    for _, human_bbox_with_hand in enumerate(self.human_bbox_with_hand):
+                        top_left_x, top_left_y = human_bbox_with_hand[0]
+                        bottom_right_x, bottom_right_y = human_bbox_with_hand[1]
+
+                        human_idx = -1
+                        for knee_idx, knee in enumerate(self.knee_list):
+                            if (knee[0] >= top_left_x-50 and knee[0] <= bottom_right_x+50) and (knee[1] >= top_left_y-50 and knee[1] <= bottom_right_y+50):
+                                human_idx = knee_idx // 2
+                                break
+                        if human_idx == -1:
+                            continue
+
+                        print(f'human idx: {human_idx}, bbox: {top_left_x, top_left_y, bottom_right_x, bottom_right_y}, hand: {human_bbox_with_hand[2:]}')
+
+                        if top_left_x >= 640-120 or bottom_right_x <= 120:
+                            continue
+                        if human_idx>=len(drink_person):
+                            continue
+                        if drink_person[human_idx]:
+                            continue
+
+                        l_hand = None
+                        r_hand = None
+                        for hand_coord in human_bbox_with_hand[2:]:
+                            if hand_coord[0]!=-1:
+                                if l_hand is None:
+                                    l_hand = hand_coord
+                                else:
+                                    r_hand = hand_coord
+
+                        # 1. both hands visible
+                        if l_hand is not None and r_hand is not None:
+                            if l_hand[0] > r_hand[0]:
+                                l_hand, r_hand = r_hand, l_hand
+
+                            crop_y_coord_0 = 0
+                            crop_y_coord_1 = 480-1
+                            crop_x_coord_0 = 0
+                            crop_x_coord_1 = 640-1
+
+                            l_hand_x, l_hand_y = l_hand
+                            r_hand_x, r_hand_y = r_hand
+                            center_hand_x = (l_hand_x + r_hand_x) // 2
+                            center_hand_y = (l_hand_y + r_hand_y) // 2
+                            square_len = max(abs(r_hand_x - l_hand_x), abs(r_hand_y - l_hand_y)) + hand_thres_person
+                            if square_len < 224:
+                                square_len = 224
+                            crop_y_coord_0 = max(0, center_hand_y - int(square_len // 2))
+                            crop_y_coord_1 = min(480-1, center_hand_y + int(square_len // 2))
+                            crop_x_coord_0 = max(0, center_hand_x - int(square_len // 2))
+                            crop_x_coord_1 = min(640-1, center_hand_x + int(square_len // 2))
+                            square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
+                            calib_cnt = 2
+                            while square_xy_diff != 0 and calib_cnt > 0:
+                                # print('square_xy_diff', square_xy_diff)
+                                if square_xy_diff < 0:
+                                    if crop_y_coord_0 == 0:
+                                        crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
+                                    else:
+                                        crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
+                                elif square_xy_diff > 0:
+                                    if crop_x_coord_0 == 0:
+                                        crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
+                                    else:
+                                        crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
+                                else:
+                                    break
+                                square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
+                                calib_cnt -= 1
+                            
+                            # print(f'square length x: {crop_x_coord_1 - crop_x_coord_0}, y: {crop_y_coord_1 - crop_y_coord_0}')
+                            crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
+
+                        # 2. only one hand visible
+                        elif l_hand is not None:
+                            l_hand_x, l_hand_y = l_hand
+                            crop_y_coord_0 = 0
+                            crop_y_coord_1 = 480-1
+                            crop_x_coord_0 = 0
+                            crop_x_coord_1 = 640-1
+                            square_len = 224
+                            crop_y_coord_0 = max(0, l_hand_y - int(square_len // 2))
+                            crop_y_coord_1 = min(480-1, l_hand_y + int(square_len // 2))
+                            crop_x_coord_0 = max(0, l_hand_x - int(square_len // 2))
+                            crop_x_coord_1 = min(640-1, l_hand_x + int(square_len // 2))
+                            square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
+                            calib_cnt = 2
+                            while square_xy_diff != 0 and calib_cnt > 0:
+                                # print('square_xy_diff', square_xy_diff)
+                                if square_xy_diff < 0:
+                                    if crop_y_coord_0 == 0:
+                                        crop_y_coord_1 = min(480-1, crop_y_coord_1 + int(abs(square_xy_diff)))
+                                    else:
+                                        crop_y_coord_0 = max(0, crop_y_coord_0 - int(abs(square_xy_diff)))
+                                elif square_xy_diff > 0:
+                                    if crop_x_coord_0 == 0:
+                                        crop_x_coord_1 = min(640-1, crop_x_coord_1 + int(abs(square_xy_diff)))
+                                    else:
+                                        crop_x_coord_0 = max(0, crop_x_coord_0 - int(abs(square_xy_diff)))
+                                else:
+                                    break
+                                square_xy_diff = (crop_y_coord_1 - crop_y_coord_0) - (crop_x_coord_1 - crop_x_coord_0)
+                                calib_cnt -= 1
+                            # print(f'square length x: {crop_x_coord_1 - crop_x_coord_0}, y: {crop_y_coord_1 - crop_y_coord_0}')
+                            crop_img = image[crop_y_coord_0:crop_y_coord_1, crop_x_coord_0:crop_x_coord_1]
+
+                        # 3. no hand visible
+                        else:
+                            # crop_img = image[
+                            #     max(0,top_left_y-self.thre):min(480,bottom_right_y+self.thre), 
+                            #     max(0,top_left_x-self.thre):min(640,bottom_right_x+self.thre)
+                            # ]
+                            crop_img = image[
+                                max(0,top_left_y-hand_thres_person):min(480-1,bottom_right_y+hand_thres_person), 
+                                max(0,top_left_x-hand_thres_person):min(640-1,bottom_right_x+hand_thres_person)
+                            ]
+                        
+                        human_coord = [(top_left_x + bottom_right_x) // 2,
+                                    (top_left_y + bottom_right_y) // 2]
+                        _pc = self.agent.pc.reshape(480, 640)
+                        pc_np = np.array(_pc.tolist())[:, :, :3]
+                        human_pc = pc_np[human_coord[1], human_coord[0]]
+                        human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+
+                        cv2.imshow('crop_img', crop_img)
+                        cv2.waitKey(1)
+                        cv2.imwrite(f'/home/tidy/Robocup2024/module/CLIP/crop_img_{self.image_save_index}.jpg', crop_img)
+                        self.image_save_index += 1
+
+                        # Preprocess image
+                        crop_img = Image.fromarray(cv2.cvtColor(crop_img, cv2.COLOR_BGR2RGB))
+                        crop_img = self.clip_preprocess(crop_img)
+                        crop_img = crop_img.unsqueeze(0).to(self.device)
+
+                        # Encode image and text features
+                        with torch.no_grad():
+                            image_features = self.clip_model.encode_image(crop_img)
+                            text_features = self.clip_model.encode_text(tokenized_prompt)
+                            image_features /= image_features.norm(dim=-1, keepdim=True)
+                            text_features /= text_features.norm(dim=-1, keepdim=True)
+
+                            # Calculate text probabilities
+                            text_probs = (100.0 * image_features @ text_features.T)
+                            print('probs before softmax', text_probs)
+                            text_probs = text_probs.softmax(dim=-1)
+                            print('probs after softmax', text_probs)
+                            # text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
+
+                        # Convert probabilities to percentages
+                        text_probs_percent = text_probs * 100
+                        text_probs_percent_np = text_probs_percent.cpu().numpy()
+                        formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
+
+                        print("Labels probabilities in percentage:", formatted_probs)
+                        if text_probs_percent_np[0][0] > 95:
+                            drink_person[human_idx] = True
+                            # return True
+                        else:
+                            self.no_drink_human_coord = human_coord_in_map
+                    count += 1
+
+                if drink_person.count(False) == 0:
+                    return True
+                
+            if drink_person.count(False) > 0:
+                for person_idx in range(len(drink_person)):
+                    print(f'person {person_idx}: {drink_person[person_idx]}')
+                return False
+            else:
+                return True
+        except:
+
             return True
-        
-        return False
     
     # def detect(self):
     #     self.agent.pose.head_tilt(0)
@@ -1080,7 +1085,7 @@ class DrinkDetection:
     def ask_to_action(self, bar_location, current_location='kitchen_search'):
         # self.agent.say('We prepare some drinks.', show_display=True)
         # rospy.sleep(2)
-        self.agent.say('Please follow me! If you are in my path, \n please move out!', show_display=True)
+        self.agent.say('Please follow me\n to the kitchen cabinet!\n If you are in my path, \n please move out!', show_display=True)
         rospy.sleep(1)
 
         if current_location == 'kitchen_search':
