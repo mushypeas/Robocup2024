@@ -609,7 +609,10 @@ def get_one_item(agent):
         rospy.sleep(6.5)
         result = agent.stt(2.)
         print('stt_result', result)
-        confirm_parsed = cluster(result, ['yes', 'no'])
+        if 'Oh' in result:
+            confirm_parsed = 'no'
+        else:
+            confirm_parsed = cluster(result, ['yes', 'no'])
         print('item parsed', confirm_parsed)
 
         if confirm_parsed != 'yes':
@@ -784,7 +787,10 @@ def restaurant(agent):
             rospy.sleep(5.5)
             result = agent.stt(2.)
             print('stt_result', result)
-            confirm_parsed = cluster(result, ['yes', 'no'])
+            if 'Oh' in result or 'oh' in result:
+                confirm_parsed = 'no'
+            else:
+                confirm_parsed = cluster(result, ['yes', 'no'])
             print('item parsed', confirm_parsed)
 
             if confirm_parsed == 'yes':
