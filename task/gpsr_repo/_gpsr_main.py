@@ -9,7 +9,7 @@ from gpsr_config import *
 from gpsr_follow import *
 from gpsr_model_class import *
 
-from PIL import Image
+from sensor_msgs.msg import Image
 import cv2
 import torch
 
@@ -539,21 +539,21 @@ class GPSR:
     def identifyWaving(self):
         maware_count = 0
         
-        if maware_count == 0:
-            pass
-        if maware_count == 6:
-            self.move_rel(0, 0, math.pi/8)
-            return False
-        elif maware_count % 3 == 1:
-            self.move_rel(0, 0, math.pi/8)
-        elif maware_count % 3 == 2:
-            self.move_rel(0, 0, -math.pi/4)
-        elif maware_count % 3 == 0:
-            self.move_rel(0, 0, math.pi/8)
-        maware_count += 1
-        
         while not rospy.is_shutdown():
             start_time = time.time()
+
+            if maware_count == 0:
+                pass
+            if maware_count == 6:
+                self.move_rel(0, 0, math.pi/8)
+                return False
+            elif maware_count % 3 == 1:
+                self.move_rel(0, 0, math.pi/8)
+            elif maware_count % 3 == 2:
+                self.move_rel(0, 0, -math.pi/4)
+            elif maware_count % 3 == 0:
+                self.move_rel(0, 0, math.pi/8)
+            maware_count += 1
             
             while time.time() - start_time < 1:
                 msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)

@@ -82,4 +82,4 @@ def gpsr_test(agent):
             openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
             openpose_process = subprocess.Popen(openpose_command)
             
-            print("found?", g.identifyWaving)
+            print("found?", g.identifyWaving())

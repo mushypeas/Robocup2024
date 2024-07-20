@@ -39,9 +39,9 @@ objects_file_path = 'CompetitionTemplate/objects/objects.md'
 
 rooms_list = [
     "hallway", 
-    "office", 
-    "kitchen", 
-    "living room"
+    # "office", 
+    # "kitchen", 
+    # "living room"
 ]
 
 def invert_dict(d):
@@ -49,12 +49,12 @@ def invert_dict(d):
 
 plcmt_dict = {
     'coffee table': 'fruit',
-    'kitchen counter': 'food',
-    'dishwasher': 'dish',
-    'dinner table': 'snack',
-    'kitchen cabinet': 'drink',
-    'shelf': 'cleaning_supply',
-    'desk': 'decoration'
+    # 'kitchen counter': 'food',
+    # 'dishwasher': 'dish',
+    # 'dinner table': 'snack',
+    # 'kitchen cabinet': 'drink',
+    # 'shelf': 'cleaning_supply',
+    # 'desk': 'decoration'
 }
 
 cat_to_plcmt_loc = invert_dict(plcmt_dict)

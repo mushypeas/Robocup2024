@@ -17,6 +17,8 @@ sys.path.append('hsr_agent')
 sys.path.append('../../hsr_agent')
 from global_config import *
 
+obj_mapping = {0: 0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:16, 9: 9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:17, 19:19, 20:20, 21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:26, 28:28, 29:29, 30:30, 31:31, 32:32, 33:33, 34:34, 35:35, 36: 36, 37:37, 38:8, 39:8, 42: 18, 43: 27, 44: 12}
+
 class HSR_Yolov10:
     def __init__(self):
         self.node_name = 'yolo_node'
@@ -71,6 +73,11 @@ class HSR_Yolov10:
         # Process detections
         if len(results):
             for box, cls, conf in zip(detections.xyxy, detections.class_id, detections.confidence):
+                if int(cls) == 40 or int(cls) == 41:
+                    continue
+                else:
+                    cls = obj_mapping[int(cls)]
+                    
                 class_name = OBJECT_LIST[int(cls)][0]
                 label = f'{class_name} {conf:.2f}'
                 c1, c2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
