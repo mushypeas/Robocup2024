@@ -43,19 +43,20 @@ def egpsr(agent):
     
     agent.pose.move_pose()
     agent.initial_pose('zero')
-    agent.say('start gpsr')
+    agent.say('start egpsr')
     agent.door_open()
-    agent.move_rel(1.0, 0, wait=True)
+    agent.move_rel(2.0, 0, wait=True)
     
-    g.move('gpsr_instruction_point')
+    litter_left = True
 
     while not rospy.is_shutdown():
         ## Find Waving Human
         for cur_room in g.rooms_list:
             g.move(cur_room)
             
-            # litter_room이라면
-            if litter_room:
+            # litter_room이 있고 아직 가지 않았다면
+            if litter_room and litter_left:
+                # 그리고 현재 방이 litter_room이라면
                 if litter_room == cur_room:
                     g.agent.pose.head_tilt(-10)
                     g.agent.pose.head_pan(30)
@@ -90,10 +91,19 @@ def egpsr(agent):
                     g.say("thank you!")
                     rospy.sleep(1.5)
                     
+                    litter_left = False
                     g.move(litter_room)
-                    
-            if not g.identifyWaving(): 
+            
+            
+            ## TODO Change
+            if not g.identifyWaving():
                 continue
+            
+            # try:
+            #     if not g.identifyWaving(): 
+            #         continue
+            # except:
+            #     continue
 
             while not rospy.is_shutdown():
                 agent.say("Give a command after \n the ding sound.")
@@ -125,31 +135,36 @@ def egpsr(agent):
             
         ## unusual object in plcmtloc
         for plcmt_loc in g.plcmt_locs:
-            plcmt_loc_cat = plcmt_dict[plcmt_loc]
-            plcmt_loc_available_items = g.category2objDict[plcmt_loc_cat]
-            g.move(plcmt_loc)
-            rospy.sleep(1)
-            yolo_bbox = g.get_yolo_bbox()
-            
-            for item_info in yolo_bbox:
-                objId = item_info[4]
-                objName = g.objIdToName(objId)
+            try:
+                plcmt_loc_cat = plcmt_dict[plcmt_loc]
+                plcmt_loc_available_items = g.category2objDict[plcmt_loc_cat]
+                g.move(plcmt_loc)
+                rospy.sleep(1)
+                yolo_bbox = g.get_yolo_bbox()
                 
-                # Wrong item in plcmt_loc
-                if objName not in plcmt_loc_available_items:
-                    g.say(f"Oops! {objName} is in {plcmt_loc}")
-                    rospy.sleep(3)
-                    g.pick()    
+                for item_info in yolo_bbox:
+                    objId = item_info[4]
+                    objName = g.objIdToName(objId)
                     
-                    ## Find where to go
-                    for cat in g.category2objDict:
-                        if objName in cat:
-                            optimal_plcmt_loc = cat_to_plcmt_loc(cat)
-                            break
+                    # Wrong item in plcmt_loc
+                    if objName not in plcmt_loc_available_items:
+                        g.say(f"Oops! {objName} is in {plcmt_loc}")
+                        rospy.sleep(3)
+                        g.pick()    
                         
-                    g.move(optimal_plcmt_loc)
-                    g.place(optimal_plcmt_loc)
-                    
-                    break
+                        ## Find where to go
+                        for cat in g.category2objDict:
+                            if objName in cat:
+                                optimal_plcmt_loc = cat_to_plcmt_loc(cat)
+                                break
+                            
+                        g.move(optimal_plcmt_loc)
+                        g.place(optimal_plcmt_loc)
+                        
+                        break
+            except:
+                g.say("sorry. i should go.")
+                rospy.sleep(1.5)
+                pass
         
         
