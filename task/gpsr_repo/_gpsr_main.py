@@ -13,7 +13,7 @@ from PIL import Image
 import cv2
 import torch
 
-from std_msgs.msg import Float32MultiArray
+from std_msgs.msg import Int16MultiArray, Float32MultiArray
 
 import torch
 import torch.nn.functional as F
@@ -521,6 +521,51 @@ class GPSR:
         #     break
 
         return "black t shirt"
+    
+    def identifyWaving(self):
+        maware_count = 0
+        
+        if maware_count == 0:
+            pass
+        if maware_count == 6:
+            self.move_rel(0, 0, math.pi/8)
+            return False
+        elif maware_count % 3 == 1:
+            self.move_rel(0, 0, math.pi/8)
+        elif maware_count % 3 == 2:
+            self.move_rel(0, 0, -math.pi/4)
+        elif maware_count % 3 == 0:
+            self.move_rel(0, 0, math.pi/8)
+        maware_count += 1
+        
+        while not rospy.is_shutdown():
+            start_time = time.time()
+            
+            while time.time() - start_time < 1:
+                msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
+
+                '''
+                This topic contains the coordinate of every bounding box that the module detects.
+                data ← [*box_0_top_left_x, box_0_top_left_y, box_0_bottom_right_x, box_0_bottom_right_y, … ,
+                box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
+                '''
+                if len(msg.data) == 0: continue
+
+                openpose_msg = rospy.wait_for_message('/snu/openpose', Image)
+                if openpose_msg is not None:
+                    try:
+                        # Convert ROS Image message to OpenCV2
+                        openpose_cv2_image = self.agent.bridge.imgmsg_to_cv2(openpose_msg, "bgr8")
+                        # Convert OpenCV2 image to ROS Image message
+                        openpose_image = self.agent.bridge.cv2_to_imgmsg(openpose_cv2_image, encoding='passthrough')
+                        
+                        self.agent.head_display_image_pub.publish(openpose_image)
+                        return True
+                    
+                    except Exception as e:
+                        rospy.logerr("Error: {0}".format(e))
+                        
+        return False
         
     def identify(self, type='default', pose=None, gest=None):       
         maware_count = 0
@@ -541,8 +586,7 @@ class GPSR:
                     if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
                         break
                 if gest in [tup[0] for tup in human_gests]:
-                    break
-                
+                    break                
                 
             ### To many maware? finish
             if maware_count == 6:
