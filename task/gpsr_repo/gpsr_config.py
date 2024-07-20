@@ -101,8 +101,7 @@ pose_person_plural_list = ["sitting persons", "standing persons", "lying persons
 person_info_list = ["name", "pose", "gesture"]
 object_comp_list = ["biggest", "largest", "smallest", "heaviest", "lightest", "thinnest"]
 
-talk_list = ["something about yourself", "the time", "what day is today", "what day is tomorrow", "your teams name",
-                "your teams country", "your teams affiliation", "the day of the week", "the day of the month"]
+talk_list = ["something about yourself", "the time", "what day is today", "what day is tomorrow", "your teams name", "your teams country", "your teams affiliation", "the day of the week", "the day of the month"]
 question_list = ["question", "quiz"]
 
 color_list = ["blue", "yellow", "black", "white", "red", "orange", "gray"]

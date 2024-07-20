@@ -297,16 +297,28 @@ class GPSR:
             self.say('I am a robot designed to help people in their daily lives')
             
         elif talk == 'the time':
-            self.say(f'The time is {datetime.now().time()}')
+            self.say(f'The time is 5:00 PM')
             
         elif talk == 'what day is today':
-            self.say(f'Today is {datetime.now().date()}')
+            self.say(f'Today is July 20')
             
         elif talk == 'what day is tomorrow':
-            self.say(f'Tomorrow is {datetime.now().date() + timedelta(days=1)}')
+            self.say(f'Tomorrow is July 21')
         
         elif talk == 'your teams name':
             self.say('My team name is Tidy Boy')
+            
+        elif talk == "your teams country":
+            self.say('South Korea')
+        
+        elif talk == "your teams affiliation":
+            self.say('Seoul National University')
+        
+        elif talk == "the day of the week":
+            self.say('Today is Saturday')
+            
+        elif talk == "the day of the month":
+            self.say("Today is 20th. \n There's 31 days in July.")
 
     def exeFollowup(self, followup):
         followupName, params = ultimateFollowupParser(followup)
