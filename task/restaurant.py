@@ -36,6 +36,7 @@ object_list = cleaning_supplies + drinks + food + decorations + fruits + snacks 
 min_interval_arc_len = 0.8
 unit_rad = 0.25 * ( math.pi / 180 )
 avg_dist_move_dist_ratio = 3
+move_interval_check_time = 4
 ################ Maybe Constant? ################
 ## main frequency
 main_freq = 1
@@ -274,7 +275,7 @@ class MoveBaseStandalone:
             
             else:
                 cur_pos = self.get_pose()
-                if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                if (time.time() - self.last_checked_time) > move_interval_check_time and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                     agent.move_base.base_action_client.cancel_all_goals()
                     print("No movement detected. Trying to find the best interval.")
                     try:
@@ -305,7 +306,7 @@ class MoveBaseStandalone:
 
                     self.base_action_client.send_goal(goal)
 
-            if (time.time() - self.last_checked_time) > 3:
+            if (time.time() - self.last_checked_time) > move_interval_check_time:
                 self.last_checked_pos = self.get_pose()
                 self.last_checked_time = time.time()
 
@@ -372,7 +373,7 @@ class MoveBaseStandalone:
 
                 else:
                     cur_pos = self.get_pose()
-                    if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                    if (time.time() - self.last_checked_time) > move_interval_check_time and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                         agent.move_base.base_action_client.cancel_all_goals()
                         print("No movement detected. \n Trying to find the best interval.")
                         try:
@@ -402,7 +403,7 @@ class MoveBaseStandalone:
 
                         self.base_action_client.send_goal(goal)
 
-                if (time.time() - self.last_checked_time) > 3:
+                if (time.time() - self.last_checked_time) > move_interval_check_time:
                     self.last_checked_pos = self.get_pose()
                     self.last_checked_time = time.time()
 
@@ -538,11 +539,11 @@ class MoveBaseStandalone:
                 
                 else:
                     cur_pos = self.get_pose()
-                    if (time.time() - self.last_checked_time) > 3 and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
+                    if (time.time() - self.last_checked_time) > move_interval_check_time and abs(self.last_checked_pos[0] - cur_pos[0]) < 0.1 and abs(self.last_checked_pos[1] - cur_pos[1]) < 0.1:
                         rospy.logwarn('STOP move_best_interval')
                         return False
 
-                if (time.time() - self.last_checked_time) > 3:
+                if (time.time() - self.last_checked_time) > move_interval_check_time:
                     self.last_checked_pos = self.get_pose()
                     self.last_checked_time = time.time()
 
