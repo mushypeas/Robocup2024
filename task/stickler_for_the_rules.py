@@ -130,7 +130,7 @@ class ShoeDetection:
 
             # 고개 -10도로 설정
             self.agent.pose.head_tilt(-10)
-            rospy.sleep(5)
+            rospy.sleep(3)
             # 사람 없으면 return
             print('knee_list:', self.knee_list)
             if len(self.knee_list) == 0:
@@ -151,7 +151,7 @@ class ShoeDetection:
             for head_tilt_angle in [-20]:
             
                 self.agent.pose.head_tilt(head_tilt_angle)
-                rospy.sleep(4)
+                rospy.sleep(3)
 
                 count = 0
                 while count < 5:
@@ -238,7 +238,7 @@ class ShoeDetection:
             no_shoes_prob = no_shoes_prob / 5
             print(f'no_shoes_prob: {no_shoes_prob}')
             for human_idx in range(len(no_shoes_person)):
-                if no_shoes_prob[human_idx] < 85:
+                if no_shoes_prob[human_idx] < 95:
                     no_shoes_person[human_idx] = True
                 else:
                     self.shoe_position = coord_map_list[human_idx]
@@ -340,7 +340,7 @@ class ShoeDetection:
         # rospy.sleep(4.5)
         self.agent.say(
             'Sorry but\n all guests should take off\n their shoes outside the entrance.', show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
 
         # else:
             # self.agent.say("Please come closer to me")
@@ -578,7 +578,7 @@ class NoLittering:
         # for pan_degree in [60, 0, -60, -120, -180, -220]:
         for pan_degree in [90, 60, 30, 0, -30, -60, -90, -120, -150, -180]:
             self.agent.pose.head_pan_tilt(pan_degree, -10)
-            rospy.sleep(4)
+            rospy.sleep(3)
             print('self.knee_list', self.knee_list)
             for x, y in self.knee_list:
                 if pan_degree != 0:
@@ -625,12 +625,12 @@ class NoLittering:
         # rospy.sleep(4.5)
         self.agent.say(
             'Sorry but\nyou cannot leave\ngarbage on the floor', show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
 
     def ask_to_action(self, bin_location, current_location='kitchen_search'):
         self.agent.say(
             "Please pick up\nthe litter in front of me", show_display=True)
-        rospy.sleep(8)
+        rospy.sleep(5)
         # rospy.sleep() # 0609
         # ask the offender to throw the garbage into the bin
         # self.agent.say('Allow me to assist you\nto throw it into the bin.', show_display=True)
@@ -663,7 +663,7 @@ class NoLittering:
         # self.agent.pose.head_tilt(-60) # 0609
         self.agent.say("Please throw\nthe garbage\ninto the bin",
                        show_display=True)
-        rospy.sleep(5) # 0609
+        rospy.sleep(4) # 0609
 
         # confirm_start_time = time.time()
         # while len(self.agent.yolo_module.yolo_bbox) == 0:
@@ -734,16 +734,16 @@ class DrinkDetection:
     #     cv2.imshow('img', img)
     #     cv2.waitKey(1)
 
-    def find_drink_yolo(self):
-        self.agent.pose.head_tilt(20)
-        rospy.sleep(4)
-        try:
-            for _ in range(5):
-                if len(self.agent.yolo_module.yolo_bbox) != 0:
-                    return True
-            return False
-        except:
-            return False
+    # def find_drink_yolo(self):
+    #     self.agent.pose.head_tilt(20)
+    #     rospy.sleep(4)
+    #     try:
+    #         for _ in range(5):
+    #             if len(self.agent.yolo_module.yolo_bbox) != 0:
+    #                 return True
+    #         return False
+    #     except:
+    #         return False
 
     def find_drink(self, double_check=False):
 
@@ -758,6 +758,7 @@ class DrinkDetection:
 
         # double check mode
         if double_check:
+            self.agent.pose.head_tilt(20)
             text_inputs = text_inputs[:2]
             count = 0
             while count < 5:
@@ -803,7 +804,7 @@ class DrinkDetection:
             # 고개 0도로 설정
             # openpose 성능 이슈 -> 움직인 뒤 충분히 sleep 해줘야 함... 안그러면 움직이는 도중의 blurry한 사진이 들어가고, openpose에서는 아무것도 뱉지 않음
             self.agent.pose.head_tilt(0)
-            rospy.sleep(5)
+            rospy.sleep(3)
             # 사람 없으면 return
             print('knee_list:', self.knee_list)
             if len(self.knee_list) == 0:
@@ -820,7 +821,9 @@ class DrinkDetection:
             print(f'drink_person: {drink_person}')
             if drink_person.count(False) == 0:
                 return True
-            
+            drink_prob = [0 for _ in range(len(drink_person))]
+            coord_map_list = [None for _ in range(len(drink_prob))]
+
             hand_thres_person = 50
 
             for head_tilt_angle in [0]:
@@ -956,6 +959,7 @@ class DrinkDetection:
                         pc_np = np.array(_pc.tolist())[:, :, :3]
                         human_pc = pc_np[human_coord[1], human_coord[0]]
                         human_coord_in_map = self.axis_transform.transform_coordinate('head_rgbd_sensor_rgb_frame', 'map', human_pc)
+                        coord_map_list[human_idx] = human_coord_in_map
 
                         cv2.imshow('crop_img', crop_img)
                         cv2.waitKey(1)
@@ -986,23 +990,31 @@ class DrinkDetection:
                         text_probs_percent_np = text_probs_percent.cpu().numpy()
                         formatted_probs = ["{:.2f}%".format(value) for value in text_probs_percent_np[0]]
 
+                        drink_prob[human_idx] += text_probs_percent_np[0][0]
+
                         print("Labels probabilities in percentage:", formatted_probs)
-                        if text_probs_percent_np[0][0] > 95:
-                            drink_person[human_idx] = True
-                            # return True
-                        else:
-                            self.no_drink_human_coord = human_coord_in_map
+                        # if text_probs_percent_np[0][0] > 95:
+                        #     drink_person[human_idx] = True
+                        #     # return True
+                        # else:
+                        #     self.no_drink_human_coord = human_coord_in_map
                     count += 1
 
-                if drink_person.count(False) == 0:
-                    return True
+                drink_prob = np.array(drink_prob)
+                drink_prob = drink_prob / 5
                 
-            if drink_person.count(False) > 0:
-                for person_idx in range(len(drink_person)):
-                    print(f'person {person_idx}: {drink_person[person_idx]}')
-                return False
-            else:
-                return True
+                for human_idx in range(len(drink_person)):
+                    if drink_prob[human_idx] > 99:
+                        drink_person[human_idx] = True
+                    else:
+                        self.no_drink_human_coord = coord_map_list[human_idx]
+                
+                if drink_person.count(False) > 0:
+                    for person_idx in range(len(drink_person)):
+                        print(f'person {person_idx}: {drink_person[person_idx]}')
+                    return False
+                else:
+                    return True
         except:
 
             return True
@@ -1083,24 +1095,27 @@ class DrinkDetection:
 
     def clarify_violated_rule(self):
         # go to the offender
-        move_human_infront(self.agent, self.axis_transform,
-                           self.no_drink_human_coord[1], self.no_drink_human_coord[0], coord=True)
+        try:
+            move_human_infront(self.agent, self.axis_transform,
+                            self.no_drink_human_coord[1], self.no_drink_human_coord[0], coord=True)
+        except:
+            return False
 
         # clarify what rule is being broken
         self.agent.pose.head_tilt(20)
         self.agent.say('Hello!', show_display=True)
         rospy.sleep(1)
 
-        self.agent.say('If you are holding a drink,\n please show it to me.', show_display=True)
-        rospy.sleep(4)
-        if self.find_drink_yolo():
-            self.agent.say('It seems you are \n holding a drink.', show_display=True)
-            rospy.sleep(3)
-            self.agent.say('I apologize for \n the inconvenience.', show_display=True)
-            rospy.sleep(2)
-            return False
+        # self.agent.say('If you are holding a drink,\n please show it to me.', show_display=True)
+        # rospy.sleep(4)
+        # if self.find_drink(double_check=True):
+        #     self.agent.say('It seems you are \n holding a drink.', show_display=True)
+        #     rospy.sleep(2)
+        #     self.agent.say('I apologize for \n the inconvenience.', show_display=True)
+        #     rospy.sleep(2)
+        #     return False
         self.agent.say('Sorry but\n all guests should\n have a drink.', show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
         return True
 
     def ask_to_action(self, bar_location, current_location='kitchen_search'):
@@ -1137,18 +1152,18 @@ class DrinkDetection:
         rospy.sleep(2)
         self.agent.pose.head_tilt(20)
         self.agent.say('Please hold drink\n on the cabinet.', show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
 
         self.agent.pose.head_tilt(5)
         self.agent.say("Hold the drink \nin front of me \nto double check", show_display=True)
-        rospy.sleep(5)
+        rospy.sleep(4)
         # if self.detect_no_drink_hand():
         if not self.find_drink(double_check=True):
             self.agent.pose.head_tilt(20)
             self.agent.say("You did not pick up a drink", show_display=True)
             rospy.sleep(2)
             self.agent.say("Please hold your drink at the bar", show_display=True)
-            rospy.sleep(5)
+            rospy.sleep(3)
         # self.agent.pose.head_tilt(5)
         # rospy.sleep(2)
 
@@ -1210,8 +1225,10 @@ def stickler_for_the_rules(agent):
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search',
         # 'kitchen_search', 'living_room_search', 'study_search'
+        
         'office_search2',
-        'kitchen_search', 'kitchen_search2',
+        'kitchen_search', 
+        'kitchen_search2',
         'livingroom_search',
         'hallway_search',
         # 'office_search2', 
@@ -1224,7 +1241,7 @@ def stickler_for_the_rules(agent):
         'office_search': [30, 0, -30], # corner, 45
         'office_search2': [0, -30, -60, -90, -120, -150, -180], # wall, 0
         'kitchen_search': [75, 45, 15, -15, -45, -75], # wall, 90
-        'kitchen_search2': [75, 45, 15, -15, -45, -75], # wall, 90
+        'kitchen_search2': [0, 30, 60, 90], # wall, 90
         'livingroom_search': [60, 30, 0, -30, -60, -90, -120], # wall, 45
         'hallway_search': [30, 0, -30], # corner, 45
     }
@@ -1329,13 +1346,17 @@ def stickler_for_the_rules(agent):
             agent.move_abs_safe('office_leave1')
             agent.move_abs_safe('office_leave2')
         agent.move_abs_safe(search_location)
+        if search_location == 'kitchen_search2':
+            agent.move_rel(0.7, 0,wait=True)
         agent.say('I am checking \n the rules', show_display=True)
         rospy.sleep(2)
+        agent.say('Please stand still.', show_display=True)
+        rospy.sleep(0.5)
 
 
         # [RULE 2] Forbidden room
         # if search_location == 'bedroom_search':
-        if search_location == 'office_search':
+        if search_location == 'office_search2':
             agent.pose.head_tilt(0)
             # for pan_degree in pan_degree_list:
             # for pan_degree in pan_degree_list_forbidden_room:
@@ -1361,12 +1382,14 @@ def stickler_for_the_rules(agent):
                     agent.pose.head_tilt(0)
                     for pan_degree in pan_degree_dict['office_search2']: # DOUBLE CHECKING
 
+                        agent.say('Checking again', show_display=True)
+
                         agent.pose.head_pan(pan_degree)
                         rospy.sleep(3)
 
                         if forbidden_room.detect_forbidden_room(): 
                             agent.say('Oh my god. \nThere is someone still here', show_display=True)
-                            rospy.sleep(3)
+                            rospy.sleep(2)
                             forbidden_room.clarify_violated_rule(double=True)
                             agent.say('Follow me!', show_display=True)
 
