@@ -195,11 +195,13 @@ class GPSR:
 
     def move(self, loc):
         print("GPSR Move Start")
+        self.agent.pose.move_pose()
         self.agent.move_abs(loc)
         print(f"[MOVE] HSR moved to {loc}")
 
     def move_rel(self, x, y, yaw=0):
         print("GPSR Move_rel Start")
+        self.agent.pose.move_pose()
         self.agent.move_rel(x, y, yaw=yaw)
         print(f"[MOVE] HSR moved to relative position ({x}, {y}, {yaw})")
         
