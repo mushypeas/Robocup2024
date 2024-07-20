@@ -297,7 +297,7 @@ class GPSR:
             self.say('I am a robot designed to help people in their daily lives')
             
         elif talk == 'the time':
-            self.say(f'The time is 5:00 PM')
+            self.say(f'The time is near 5 PM')
             
         elif talk == 'what day is today':
             self.say(f'Today is July 20')
