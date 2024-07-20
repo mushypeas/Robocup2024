@@ -350,21 +350,21 @@ class ShoeDetection:
         # self.agent.say('I will guide you\nto the entrance.',
         #                show_display=True)
         # rospy.sleep(3)
-        self.agent.say('Please follow me!', show_display=True)
+        self.agent.say('Please follow me! If you are in my path, \n please move out!', show_display=True)
         rospy.sleep(1)
 
         if current_location=='kitchen_search' or current_location=='kitchen_search2':
             self.agent.move_abs_safe('kitchen_living_middle')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('livingroom_leave')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('hallway_enter')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location=='livingroom_search':
             self.agent.move_abs_safe('livingroom_leave')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('hallway_enter')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
 
         self.agent.move_abs_safe(entrance)
 
@@ -632,26 +632,26 @@ class NoLittering:
         # ask the offender to throw the garbage into the bin
         # self.agent.say('Allow me to assist you\nto throw it into the bin.', show_display=True)
         # rospy.sleep(5)
-        self.agent.say('Please follow me\nto the bin', show_display=True)
+        self.agent.say('Please follow me\nto the bin! \nIf you are in my path, \n please move out!', show_display=True)
         rospy.sleep(2)
         self.agent.pose.head_pan(0) # 0609
 
         if current_location=='kitchen_search':
             self.agent.move_abs_safe('kitchen_search')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location=='kitchen_search2':
             self.agent.move_abs_safe('kitchen_search2')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location=='livingroom_search':
             self.agent.move_abs_safe('kitchen_living_middle')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location=='hallway_search':
             self.agent.move_abs_safe('hallway_enter')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('livingroom_leave')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('kitchen_living_middle')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
 
 
 
@@ -1080,31 +1080,31 @@ class DrinkDetection:
     def ask_to_action(self, bar_location, current_location='kitchen_search'):
         # self.agent.say('We prepare some drinks.', show_display=True)
         # rospy.sleep(2)
-        self.agent.say('Please follow me!', show_display=True)
+        self.agent.say('Please follow me! If you are in my path, \n please move out!', show_display=True)
         rospy.sleep(1)
 
         if current_location == 'kitchen_search':
             self.agent.move_abs_safe('office_leave2')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location == 'kitchen_search2':
             self.agent.move_abs_safe('kitchen_search2')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('office_leave2')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location == 'livingroom_search':
             self.agent.move_abs_safe('kitchen_living_middle')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('bin_littering')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
         elif current_location == 'hallway_search':
             self.agent.move_abs_safe('hallway_enter')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('office_search')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('office_leave1')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
             self.agent.move_abs_safe('office_leave2')
-            self.agent.say('Follow me!', show_display=True)
+            self.agent.say('Follow me! If you are in my path, \n please move out!', show_display=True)
 
         self.agent.move_abs_safe(bar_location)
         rospy.sleep(2)
