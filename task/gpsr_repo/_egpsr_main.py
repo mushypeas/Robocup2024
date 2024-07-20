@@ -60,16 +60,20 @@ def egpsr(agent):
                     break               
             
             # parse InputText 
-            cmdName, params = ultimateParser(inputText)
+            try:
+                cmdName, params = ultimateParser(inputText)
 
-            cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())        
-            cmdFunc = g.cmdNameTocmdFunc[cmdName]
+                cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())        
+                cmdFunc = g.cmdNameTocmdFunc[cmdName]
+                
+                g.return_point = g.agent.get_pose()
+                
+                cmdFunc(g, params)
+            except:
+                g.say("I think there's an error. see you again.")
+                rospy.sleep(3.5)
             
-            g.return_point = g.agent.get_pose()
-            
-            cmdFunc(g, params)
-            
-        ## TODO: unusual object in plcmtloc
+        ## unusual object in plcmtloc
         for plcmt_loc in g.plcmt_locs:
             plcmt_loc_cat = plcmt_dict[plcmt_loc]
             plcmt_loc_available_items = g.category2objDict[plcmt_loc_cat]

@@ -49,13 +49,13 @@ def invert_dict(d):
     return {v: k for k, v in d.items()}
 
 plcmt_dict = {
-    'desk': 'decoration',
-    'shelf': 'cleaning_supply',
     'coffee table': 'fruit',
-    'kitchen cabinet': 'drink',
-    'dinner table': 'snack',
+    'kitchen counter': 'food',
     'dishwasher': 'dish',
-    'kitchen counter': 'food'
+    'dinner table': 'snack',
+    'kitchen cabinet': 'drink',
+    'shelf': 'cleaning_supply',
+    'desk': 'decoration'
 }
 
 cat_to_plcmt_loc = invert_dict(plcmt_dict)
