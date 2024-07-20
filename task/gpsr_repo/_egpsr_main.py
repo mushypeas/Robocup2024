@@ -27,6 +27,18 @@ def egpsr(agent):
     whisper_process = subprocess.Popen(whisper_command)
     yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
     
+    litter_room_cmd = input("litter: ")
+    litter_room = None
+    
+    if litter_room_cmd == 'l' or litter_room_cmd == 'L':
+        litter_room = 'living room'
+    elif litter_room_cmd == 'h' or litter_room_cmd == 'H':
+        litter_room = 'hallway'
+    elif litter_room_cmd == 'k' or litter_room_cmd == 'K':
+        litter_room = 'kitchen'
+    elif litter_room_cmd == 'o' or litter_room_cmd == 'O':
+        litter_room = 'office'        
+    
     g = EGPSR(agent)
     
     agent.pose.move_pose()
@@ -41,7 +53,45 @@ def egpsr(agent):
         ## Find Waving Human
         for cur_room in g.rooms_list:
             g.move(cur_room)
+            
+            # litter_room이라면
+            if litter_room:
+                if litter_room == cur_room:
+                    g.agent.pose.head_tilt(-10)
+                    g.agent.pose.head_pan(30)
+                    g.agent.pose.head_pan(-30)
+                    g.agent.pose.head_pan(0)
+                    g.say("oh my god. \n trash is over the floor.")
+                    rospy.sleep(3.5)
+                    
+                    g.say(f"GIVE trash to me")
+                    rospy.sleep(2)
+                    g.agent.open_gripper()
+                    g.say("3")
+                    rospy.sleep(1)
+                    g.say("2")
+                    rospy.sleep(1)
+                    g.say("1")
+                    rospy.sleep(1)
+                    g.agent.grasp()
 
+                    g.move('trashcan')
+                    g.say("take this and trash this.")
+                    rospy.sleep(3)
+                    g.say("3")
+                    rospy.sleep(1)
+                    g.say("2")
+                    rospy.sleep(1)
+                    g.say("1")
+                    rospy.sleep(1)
+                    g.agent.open_gripper()
+                    rospy.sleep(3)
+                    g.agent.grasp()
+                    g.say("thank you!")
+                    rospy.sleep(1.5)
+                    
+                    g.move(litter_room)
+                    
             if not g.identifyWaving(): 
                 continue
 
@@ -101,5 +151,5 @@ def egpsr(agent):
                     g.place(optimal_plcmt_loc)
                     
                     break
-                        
-        ## TODO: litter
+        
+        
