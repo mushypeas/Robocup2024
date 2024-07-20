@@ -17,7 +17,7 @@ class OpenPoseWrapper:
     def __init__(self, size_ratio=1.0, enable_viz=False) :
 
         # openpose
-        BASE_DIR = 'models/'
+        BASE_DIR = '/home/tidy/Robocup2024/module/openpose/models/'
         proto  = BASE_DIR + 'pose_deploy_linevec.prototxt'
         weight = BASE_DIR + 'pose_iter_440000.caffemodel'
         self.openpose = cv2.dnn.readNetFromCaffe(proto, weight)
