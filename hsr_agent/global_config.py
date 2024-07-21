@@ -44,10 +44,10 @@ if Robocup: # 240710 mjgu 추가
         'dinner_table': [8.5045, 4.9366, 0.0131], # dish_washer 쪽 , place_table 위치
         }
 
-    TABLE_DIMENSION = {
+    TABLE_DIMENSION = { # dinner table 0.785 + 0.075 + 0.06
         # width, depth, height
         'kitchen_counter': [0.61, 1.82, 0.91],
-        'kitchen_cabinet': [0.792, 0.285, 1.058],
+        'kitchen_cabinet': [0.792, 0.285, 1.058], # cabinet 문 열고 첫 칸
         'dish_washer': [0.60, 0.72, 0.85],
         'dinner_table': [0.785, 2.00, 0.775],
         }

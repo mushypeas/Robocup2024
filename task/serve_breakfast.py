@@ -23,6 +23,7 @@ import math
 #########################################################################
 
   # pick_bowl_pose_last 에서 4cm 정도 내려가기
+
 class ServeBreakfast:
 
     def __init__(self, agent: Agent):
@@ -38,7 +39,7 @@ class ServeBreakfast:
         self.item_list = ['bowl','spoon', 'fork', 'knife', 'cornflakes', 'milk']
         
         # !!! Measured Distances !!!
-        self.dist_to_pick_table = 0.7
+        self.dist_to_pick_table = 0.8
         self.dist_to_place_table = 0.7
         self.item_height = {     # 실제 object 높이는 여기서 설정
             'cornflakes': 0.25,
@@ -74,7 +75,7 @@ class ServeBreakfast:
             (self.pick_table_height - 1.1) / self.dist_to_pick_table # 1.1: HSR height
         )
 
-        self.place_table = 'dinner_table_cabinet'
+        self.place_table = 'dinner_table'
         self.place_table_depth = self.agent.table_dimension[self.place_table][1]
 
     def search_item(self, item, picked_items):
@@ -250,17 +251,17 @@ class ServeBreakfast:
 
         # self.agent.door_open()
         # self.agent.say('Hi, I will serve breakfast for you!')
-        rospy.sleep(2)
-        self.agent.move_abs('hallway')
-        self.agent.say('I will move to living room')
-        self.agent.move_abs('living_room')
-        self.agent.say('I will move to kitchen')
+        # rospy.sleep(2)
+        # self.agent.move_abs('hallway')
+        # self.agent.say('I will move to living room')
+        # self.agent.move_abs('living_room')
+        # self.agent.say('I will move to kitchen')
         # self.agent.move_abs_safe('hallway')
         # self.agent.move_abs_safe('livingroom')
-        self.agent.move_abs('picking_location')
+        # self.agent.move_abs('picking_location')
         # self.agent.say('I will move to picking location')
  
-        picked_items = []
+        picked_items = ['bowl']
 
         for item in self.item_list:
 
@@ -270,12 +271,8 @@ class ServeBreakfast:
             while not has_grasped:
                 rospy.logwarn('Go to pick_location...')
                 self.agent.say('I am moving. Please be careful.')
-                self.agent.move_abs_safe('pick_table')
-                # self.agent.move_rel(-0.2,0)
+                self.agent.move_abs_safe('dish_washer')
                 self.agent.pose.table_search_pose_breakfast()
-                # self.agent.head_tilt(-10) / head_tilt 추가 조정 시 필요 코드
-                # self.agent.move_abs_safe(self.pick_table)
-                # rospy.sleep(1)
 
                 # Search item
                 rospy.sleep(1)
@@ -300,23 +297,172 @@ class ServeBreakfast:
                 else:
                     rospy.logwarn(f'Failed to grasp {item}! Retrying...')
 
-            # if self.picking_test_mode:
-                # self.agent.open_gripper()
-                # continue
-
             ## 3. Go to place_location
             rospy.logwarn('Going to place_location...')
             self.agent.say('I will move to a different location. Please be careful.')
-            # self.agent.move_rel(0, -1.0, wait=True)            
+            # self.agent.move_rel(0, -1.0, wait=True)
             self.agent.move_abs_safe(self.place_table)
             self.agent.move_rel(-0.4, 0)
-            # self.agent.pose.holding_pose() # 대회 당일 의자나 아래 부분에 장애물이 있을 것도 고려해야 함. 현재 고려 x.
-
-            if item in ['cornflakes', 'milk']:
-                self.pour_item(item=item)
+            # self.agent.pose.holding_pose()
 
             self.agent.move_rel(-0.4,0, wait=True)
             rospy.logwarn('Placing item...')
             self.place_item(item=item)
             self.agent.pose.table_search_pose_breakfast_initial()
-            self.agent.move_rel(-0.6, -0.3, wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
+            self.agent.move_rel(-0.6, 0.0 , wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
+
+
+        picked_items = ['spoon']
+
+        for item in self.item_list:
+
+            has_grasped = False
+
+            ## Try picking until an item is grasped
+            while not has_grasped:
+                rospy.logwarn('Go to pick_location...')
+                self.agent.say('I am moving. Please be careful.')
+                self.agent.move_abs_safe('dish_washer')
+                self.agent.pose.table_search_pose_breakfast()
+
+                # Search item
+                rospy.sleep(1)
+                item_info = self.search_item(item, picked_items)
+                if item_info is None:
+                    rospy.logwarn('Failed to find item to pick. Retrying...')
+                    continue
+                else:
+                    grasping_type, table_base_xyz = item_info
+
+                # Pick item
+                rospy.logwarn('Picking item...')
+                self.agent.say(f'I will pick a {item}.', show_display=True)
+                self.pick_item(item, table_base_xyz)
+                self.agent.pose.table_search_pose_breakfast_initial()
+
+                # Check if grasping is successful
+                has_grasped = self.check_grasp(grasping_type)
+                if has_grasped:
+                    rospy.loginfo(f'Successfuly grasped {item}!')
+                    picked_items.append(item)
+                else:
+                    rospy.logwarn(f'Failed to grasp {item}! Retrying...')
+
+            ## 3. Go to place_location
+            rospy.logwarn('Going to place_location...')
+            self.agent.say('I will move to a different location. Please be careful.')
+            # self.agent.move_rel(0, -1.0, wait=True)
+            self.agent.move_abs_safe(self.place_table)
+            self.agent.move_rel(-0.4, 0)
+            # self.agent.pose.holding_pose()
+
+            self.agent.move_rel(-0.4,0, wait=True)
+            rospy.logwarn('Placing item...')
+            self.place_item(item=item)
+            self.agent.pose.table_search_pose_breakfast_initial()
+            self.agent.move_rel(-0.6, 0.0 , wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
+
+
+        picked_items = ['cornflakes']
+
+        for item in self.item_list:
+
+            has_grasped = False
+
+            ## Try picking until an item is grasped
+            while not has_grasped:
+                rospy.logwarn('Go to pick_location...')
+                self.agent.say('I am moving. Please be careful.')
+                self.agent.move_abs_safe('dish_washer')
+                self.agent.pose.table_search_pose_breakfast()
+
+                # Search item
+                rospy.sleep(1)
+                item_info = self.search_item(item, picked_items)
+                if item_info is None:
+                    rospy.logwarn('Failed to find item to pick. Retrying...')
+                    continue
+                else:
+                    grasping_type, table_base_xyz = item_info
+
+                # Pick item
+                rospy.logwarn('Picking item...')
+                self.agent.say(f'I will pick a {item}.', show_display=True)
+                self.pick_item(item, table_base_xyz)
+                self.agent.pose.table_search_pose_breakfast_initial()
+
+                # Check if grasping is successful
+                has_grasped = self.check_grasp(grasping_type)
+                if has_grasped:
+                    rospy.loginfo(f'Successfuly grasped {item}!')
+                    picked_items.append(item)
+                else:
+                    rospy.logwarn(f'Failed to grasp {item}! Retrying...')
+
+            ## 3. Go to place_location
+            rospy.logwarn('Going to place_location...')
+            self.agent.say('I will move to a different location. Please be careful.')
+            # self.agent.move_rel(0, -1.0, wait=True)
+            self.agent.move_abs_safe(self.place_table)
+            self.agent.move_rel(-0.4, 0)
+            # self.agent.pose.holding_pose()
+            
+            self.pour_item(item=item)
+
+            self.agent.move_rel(-0.4,0, wait=True)
+            rospy.logwarn('Placing item...')
+            self.place_item(item=item)
+            self.agent.pose.table_search_pose_breakfast_initial()
+            self.agent.move_rel(-0.6, 0.0 , wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
+
+        # picked_items = ['milk']
+
+        # for item in self.item_list:
+
+        #     has_grasped = False
+
+        #     ## Try picking until an item is grasped
+        #     while not has_grasped:
+        #         rospy.logwarn('Go to pick_location...')
+        #         self.agent.say('I am moving. Please be careful.')
+        #         self.agent.move_abs_safe('dish_washer')
+        #         self.agent.pose.table_search_pose_breakfast()
+
+        #         # Search item
+        #         rospy.sleep(1)
+        #         item_info = self.search_item(item, picked_items)
+        #         if item_info is None:
+        #             rospy.logwarn('Failed to find item to pick. Retrying...')
+        #             continue
+        #         else:
+        #             grasping_type, table_base_xyz = item_info
+
+        #         # Pick item
+        #         rospy.logwarn('Picking item...')
+        #         self.agent.say(f'I will pick a {item}.', show_display=True)
+        #         self.pick_item(item, table_base_xyz)
+        #         self.agent.pose.table_search_pose_breakfast_initial()
+
+        #         # Check if grasping is successful
+        #         has_grasped = self.check_grasp(grasping_type)
+        #         if has_grasped:
+        #             rospy.loginfo(f'Successfuly grasped {item}!')
+        #             picked_items.append(item)
+        #         else:
+        #             rospy.logwarn(f'Failed to grasp {item}! Retrying...')
+
+        #     ## 3. Go to place_location
+        #     rospy.logwarn('Going to place_location...')
+        #     self.agent.say('I will move to a different location. Please be careful.')
+        #     # self.agent.move_rel(0, -1.0, wait=True)
+        #     self.agent.move_abs_safe(self.place_table)
+        #     self.agent.move_rel(-0.4, 0)
+        #     # self.agent.pose.holding_pose()
+
+        #     self.pour_item(item=item)
+
+        #     self.agent.move_rel(-0.4,0, wait=True)
+        #     rospy.logwarn('Placing item...')
+        #     self.place_item(item=item)
+        #     self.agent.pose.table_search_pose_breakfast_initial()
+        #     self.agent.move_rel(-0.6, 0.0 , wait=False) # kitchen_table 앞으로 안전한 이동을 위해 추가
