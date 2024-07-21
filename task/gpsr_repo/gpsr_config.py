@@ -32,7 +32,7 @@ ABS_POSITION = {
     'hallway': [1.709, -2.260, 0.707],
     'office': [1.584, 5.545, -1.036],
     'kitchen': [8.569, 1.708, 2.376],
-    'living room': [5.237, 0.330, 0.666]
+    'living room': [6.037, -0.028, -0.737]
 }
 
 objects_file_path = 'CompetitionTemplate/objects/objects.md'

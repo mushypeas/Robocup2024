@@ -17,7 +17,7 @@ def set_the_table(agent):
         agent.show_image(object)
         agent.pose.neutral_pose(vertical=vertical)
         agent.open_gripper()
-        agent.say('please give me '+object)
+        agent.say('please give me ' + object)
         rospy.sleep(1)
         agent.say('five'); rospy.sleep(1)
         agent.say('four'); rospy.sleep(1)

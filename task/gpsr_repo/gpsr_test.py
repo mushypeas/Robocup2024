@@ -6,6 +6,11 @@ import _gpsr_main
 def gpsr_test(agent):
     g = _gpsr_main.GPSR(agent)
 
+    import subprocess
+    openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
+    openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
+    openpose_process = subprocess.Popen(openpose_command)
+
     while True:
         cmd = input("Give me a task: ")
 
@@ -77,9 +82,5 @@ def gpsr_test(agent):
             print(f"the count is: {cnt}")
             
         if cmd == 'identifyWaving':
-            import subprocess
-            openpose_path = "/home/tidy/Robocup2024/restaurant_openpose.sh"
-            openpose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {openpose_path}; exec bash']
-            openpose_process = subprocess.Popen(openpose_command)
             
             print("found?", g.identifyWaving())

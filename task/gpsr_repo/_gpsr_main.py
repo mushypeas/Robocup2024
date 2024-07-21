@@ -61,6 +61,8 @@ class GPSR:
 
         self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
 
+        self.waving_sub = rospy.Subscriber('/snu/openpose/bbox', Int16MultiArray, self.waving_cb)
+
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
             "takeObjFromPlcmt": takeObjFromPlcmt,
@@ -213,6 +215,9 @@ class GPSR:
         self.agent.move_abs(loc)
         self.say("Bye bye.")
         rospy.sleep(1)
+
+    def waving_cb(self, msg):
+        self.waving_num = len(msg.data)
 
     def pickCat(self, cat):
         yolo_bbox = self.get_yolo_bbox(cat)
@@ -539,48 +544,28 @@ class GPSR:
     
     def identifyWaving(self):
         maware_count = 0
-        
+
+        self.agent.pose.move_pose()
+        start_time = time.time()        
         while not rospy.is_shutdown():
-            start_time = time.time()
+
+            maware_count = int(start_time - time.time())
+
+            if self.waving_num > 0:
+                return True
 
             if maware_count == 0:
                 pass
             if maware_count == 6:
-                self.move_rel(0, 0, math.pi/8)
+                self.agent.pose.head_pan(0)
                 return False
             elif maware_count % 3 == 1:
-                self.move_rel(0, 0, math.pi/8)
+                self.agent.pose.head_pan(30)
             elif maware_count % 3 == 2:
-                self.move_rel(0, 0, -math.pi/4)
+                self.agent.pose.head_pan(-30)
             elif maware_count % 3 == 0:
-                self.move_rel(0, 0, math.pi/8)
-            maware_count += 1
-            self.agent.pose.head_tilt(0)
-            while time.time() - start_time < 1:
-                msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
-
-                '''
-                This topic contains the coordinate of every bounding box that the module detects.
-                data ← [*box_0_top_left_x, box_0_top_left_y, box_0_bottom_right_x, box_0_bottom_right_y, … ,
-                box_N_top_left_x, box_N_top_left_y, box_N_bottom_right_x, box_N_bottom_right_y*]
-                '''
-                if len(msg.data) == 0: continue
-
-                openpose_msg = rospy.wait_for_message('/snu/openpose', Image)
-                if openpose_msg is not None:
-                    try:
-                        # Convert ROS Image message to OpenCV2
-                        openpose_cv2_image = self.agent.bridge.imgmsg_to_cv2(openpose_msg, "bgr8")
-                        # Convert OpenCV2 image to ROS Image message
-                        openpose_image = self.agent.bridge.cv2_to_imgmsg(openpose_cv2_image, encoding='passthrough')
-                        
-                        self.say("I found waving person")
-                        rospy.sleep(2)
-                        return True
-                    
-                    except Exception as e:
-                        rospy.logerr("Error: {0}".format(e))
-                        
+                self.agent.pose.head_pan(0)
+                                            
         return False
         
     def identify(self, type='default', pose=None, gest=None):       
@@ -610,11 +595,11 @@ class GPSR:
             
             ### Move to find human
             if maware_count % 3 == 0:
-                self.move_rel(0, 0, math.pi/8)
+                self.agent.pose.head_pan(30)
             elif maware_count % 3 == 1:
-                self.move_rel(0, 0, -math.pi/4)
+                self.agent.pose.head_pan(-30)
             elif maware_count % 3 == 2:
-                self.move_rel(0, 0, math.pi/8)
+                self.agent.pose.head_pan(0)
                 
             maware_count += 1
             rospy.sleep(1)
@@ -627,11 +612,11 @@ class GPSR:
     def identifyByName(self, name):
         self.say(f"{name}, please come closer to me.")
         rospy.sleep(3) 
-        self.move_rel(0, 0, math.pi/8)
+        self.agent.pose.head_pan(30)
         rospy.sleep(1)
-        self.move_rel(0, 0, -math.pi/4)
+        self.agent.pose.head_pan(-30)
         rospy.sleep(1)
-        self.move_rel(0, 0, math.pi/8)
+        self.agent.pose.head_pan(0)
         rospy.sleep(1)
         self.agent.pose.head_tilt(gpsr_identify_head_tilt)
         self.say(f"I found you {name}")
@@ -658,11 +643,11 @@ class GPSR:
         # rospy.sleep(3)
         self.say(f"{gestPosePers}, please come closer to me.")
         rospy.sleep(3) 
-        self.move_rel(0, 0, math.pi/8)
+        self.agent.pose.head_pan(30)
         rospy.sleep(1)
-        self.move_rel(0, 0, -math.pi/4)
+        self.agent.pose.head_pan(-30)
         rospy.sleep(1)
-        self.move_rel(0, 0, math.pi/8)
+        self.agent.pose.head_pan(0)
         rospy.sleep(1)
         self.agent.pose.head_tilt(gpsr_identify_head_tilt)
         self.say(f"I found you {gestPosePers}")

@@ -58,7 +58,7 @@ def egpsr(agent):
             if litter_room and litter_left:
                 # 그리고 현재 방이 litter_room이라면
                 if litter_room == cur_room:
-                    g.agent.pose.head_tilt(-10)
+                    g.agent.pose.head_tilt(-20)
                     g.agent.pose.head_pan(30)
                     g.agent.pose.head_pan(-30)
                     g.agent.pose.head_pan(0)
@@ -109,7 +109,7 @@ def egpsr(agent):
                 inputText = g.hear(7.)
                 g.say(f"Given Command is \n {inputText}")
                 rospy.sleep(3.5)
-                g.say("Is this right? answer yes or no after the ding sound")
+                g.say("Is this right? answer yes \n or no after the ding sound")
                 rospy.sleep(4)
                 yes_no = g.cluster(g.hear(2.), ['yes', 'no'])
                 
@@ -127,7 +127,7 @@ def egpsr(agent):
                 
                 cmdFunc(g, params)
             except:
-                g.say("I think there's an error. see you again.")
+                g.say("I think there's an error. \n see you again.")
                 rospy.sleep(3.5)
             
         ## unusual object in plcmtloc
@@ -148,11 +148,12 @@ def egpsr(agent):
                         g.say(f"Oops! {objName} is in {plcmt_loc}")
                         rospy.sleep(3)
                         g.pick(objName)    
+
+                        optimal_plcmt_loc = 'desk'
                         
                         ## Find where to go
                         for cat in g.category2objDict:
-                            if objName.replace('_', ' ') in g.category2objDict[cat] or objName.replace(' ', '_') in g.category2objDict[cat]:
-                                print(objName, cat)
+                            if (objName.replace('_', ' ') in g.category2objDict[cat]) or (objName.replace(' ', '_') in g.category2objDict[cat]) or (objName in g.category2objDict[cat]):
                                 optimal_plcmt_loc = cat_to_plcmt_loc[cat]
                                 break
                             
