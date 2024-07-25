@@ -33,8 +33,12 @@ if __name__ == '__main__':
             agent.move_abs_safe('seat_scan')
         elif command == 'table_side':
             agent.move_abs('table_side')
-        elif command == 'shelf_front':
-            agent.move_abs('shelf_front')
+        elif command == 'gt':
+            agent.move_abs('grocery_table')
+        elif command == 'gs':
+            agent.move_abs('grocery_shelf')
+        elif command == 'gsd':
+            agent.move_abs('grocery_shelf_door')
         elif command == 'bin' :
             agent.move_abs('bin')
         elif command == 'sofa_view':
@@ -141,18 +145,26 @@ if __name__ == '__main__':
             agent.pose.neutral_pose()
         elif command == 'neutral_pose_vertical':
             agent.pose.neutral_pose(vertical=True)
-        elif command == 'pose1': # test pose 추가. mjgu 240516
-            agent.pose.table_search_pose_breakfast_initial()
-        elif command == 'pouring_pose':
-            agent.pose.pouring_pose()        
+        elif command == 'pick_side_pose':
+            agent.pose.pick_side_pose(table='kitchen_table')
+        elif command == 'pick_side_pose_breakfast_table':
+            agent.pose.pick_side_pose(table='breakfast_table')
         elif command == 'pick_side_pose_by_height':
             agent.pose.pick_side_pose_by_height(height=0.59)
         elif command == 'place_side_shelf_pose':
             agent.pose.place_side_pose('shelf_1f')
-        elif command == 'open_shelf_pose1_by_height':
-            agent.pose.open_shelf_pose1_by_height(height=0.59)
-        elif command == 'open_shelf_pose2_by_height':
-            agent.pose.open_shelf_pose2_by_height(height=0.59)
+        elif command == 'reach_left':
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
+        elif command == 'reach_right':
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
+        elif command == 'cling_left':
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
+        elif command == 'cling_right':
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
+        elif command == 'pick_top_pose':
+            agent.pose.pick_top_pose(table='breakfast_table')
+        elif command == 'pick_top_pose_breakfast_table':
+            agent.pose.pick_top_pose_last(table='breakfast_table')
         elif command == 'pick_plate_pose':
             agent.pose.pick_plate_pose(table='kitchen_table')
         elif command == 'pick_dish_pose':
@@ -223,8 +235,8 @@ if __name__ == '__main__':
             agent.pose.arm_lift_top_table_down(height=height, table='kitchen_counter')  #kitchen_cabinet, dinner_table, dish_washer
         elif command == 'handle_down':
             agent.pose.door_handle_down_pose()
-        elif command == 'detect_3d_safe':
-             print(agent.yolo_module.detect_3d_safe('kitchen_counter')) #kitchen_cabinet, dinner_table, dish_washer
+        elif command == 'detect_3d':
+             print(agent.yolo_module.detect_3d('grocery_table'))
         elif command == 'yolo_bbox':
             print(agent.yolo_module.yolo_bbox)
         elif command == 'find_type_by_id':
@@ -286,17 +298,17 @@ if __name__ == '__main__':
         elif command == 'ww':
             agent.move_rel(0.1, 0,wait=True)
         elif command == 'www':
-            agent.move_rel(0.02, 0)
+            agent.move_rel(0.03, 0)
         elif command == 'ss':
             agent.move_rel(-0.1, 0)
         elif command == 'aa':
             agent.move_rel(0, 0.1)
         elif command == 'aaa':
-            agent.move_rel(0, 0.02)
+            agent.move_rel(0, 0.03)
         elif command == 'dd':
             agent.move_rel(0, -0.1)
         elif command == 'ddd':
-            agent.move_rel(0, -0.01)
+            agent.move_rel(0, -0.03)
         elif command == 'zz':
             agent.move_rel(0, 0, yaw=0.2)
         elif command == 'zzz':

@@ -164,6 +164,7 @@ class ShoeDetection:
                 self.agent.pose.head_tilt(20)
                 self.agent.say('Thank you!\nEnjoy your party', show_display=True)
                 rospy.sleep(2.5)
+                return
 
         self.agent.pose.head_tilt(20)
         self.agent.say('I give up.\nEnjoy your party', show_display=True)
@@ -634,12 +635,12 @@ class DrinkDetection:
                         self.no_drink_human_coord = human_coord_in_map
                 count += 1
 
-            if drink_person.count(False) > 0:
-                for person_idx in range(len(drink_person)):
-                    print(f'person {person_idx}: {drink_person[person_idx]}')
-                return False
-            else:
-                return True
+        if drink_person.count(False) > 0:
+            for person_idx in range(len(drink_person)):
+                print(f'person {person_idx}: {drink_person[person_idx]}')
+            return False
+        else:
+            return True
         
         return False
     
@@ -788,8 +789,8 @@ def stickler_for_the_rules(agent):
     # If needed, mark min & max points of all 4 rooms !
     # forbidden_room_min_points = {'bedroom_search': [5.354, -6.1233, 0.03]}
     # forbidden_room_max_points = {'bedroom_search': [9.2773, -3.1132, 2.0]}
-    forbidden_room_min_points = {'bedroom_search': [6.0492, 0.5867, 0.03]}
-    forbidden_room_max_points = {'bedroom_search': [10.3543, 3.6987, 2.0]}
+    forbidden_room_min_points = {'bedroom_search': [5.72316, 1.1233, 0.03]}
+    forbidden_room_max_points = {'bedroom_search': [9.89225, 4.0337, 2.0]}
 
     ## params for rule 3. No littering ##
     bin_location = 'bin_littering'
@@ -972,6 +973,7 @@ def move_human_infront(agent, axis_transform, y, x, coord=False):
     # self.marker_maker.pub_marker([human_infront_coord_in_map[0], human_infront_coord_in_map[1], 1], 'map')
 
     print(human_infront_coord_in_map)
+    agent.pose.head_pan(0)
     agent.move_abs_coordinate(human_infront_coord_in_map)
 
 
