@@ -1,99 +1,89 @@
 import os
 import sys
-sys.path.append('/home/tidy/Robocup2024/hsr_agent')
-sys.path.append('/home/tidy/Robocup2024/')
+sys.path.append('../../hsr_agent')
+sys.path.append('hsr_agent')
+sys.path.append('../../hsr_agent')
 from global_config_utils import make_object_list
 
-is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
-
-is_yolov10 = True
-
-# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
-if is_yolov10==False:
-    yolo_weight_path = 'weight/best_0704.pt'
-    yolo_classnames_path = 'weight/best_0704.cn'
-
-
-if is_yolov10:
-    # yolo_weight_path = 'weight/0715v2.pt'
-    yolo_weight_path = 'weight/0716v3.pt' # (실험 시도 가능 )
-    yolo_classnames_path = 'weight/classnames.cn'
-
+# YOLO weight 변경 시 경로 변경
+yolo_weight_path = 'weight/0716v3.pt'
+yolo_classnames_path = 'weight/classnames.cn'
 
 try:
-    print(is_yolov10)
-    OBJECT_LIST = make_object_list(yolo_classnames_path, is_yolov10)
-    
+    OBJECT_LIST = make_object_list(yolo_classnames_path)
+    print('[GLOBAL CONFIG] OBJECT_LIST loaded')
 except:
-    print('Error: Cannot load object list')
+    print('[GLOBAL CONFIG] OBJECT_LIST NOT loaded')
     pass
 
-Eindhoven = True
+
+ABS_POSITION = {
+
+    #insepction
+    'inspection': [4.8333, 2.7961, 1.6308],
+
+    # storing grocery
+    'living_living_1': [3.8317, -0.2223, 1.5071],
+    'living_living_2': [3.7858, 2.9424, 0.111],
+    'grocery_table': [5.6348, 3.881, -0.0264],
+    'grocery_shelf': [5.6019, 4.9918, 3.127],
+    'grocery_shelf_door': [5.7569, 5.07, 3.13],
+
+    #clean the table
+    'hallway' : [3.8827, -0.5537, -0.0261],
+    'livingroom' : [8.9285, 0.6183, 1.5787],
+    '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
+    '식기세척기앞60센치' : [2.5437, -1.4757, -3.1153],
+
+    # serve breakfast
+    '원탁앞60센치' : [2.9768, -1.1441, -0.0054],
+    '식기세척기닫힘60센치': [1.9481, -1.4913, -3.0755],
+
+    # recptionist
+    'start': [4.7578, -1.6402, -1.5496],
+    'cloth_scan': [4.7578, -1.6402, -1.5496],
+    'seat_scan' : [6.7194, -0.3494, -0.7164],
+    'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+
+    # stickler for the rules
+    'kitchen_search': [3.3146, 0.4319, -2.2959],
+    'living_room_search': [4.9844, 0.2595, -0.8542],
+    'study_search': [5.1834, 1.9487, 2.7205],
+    'bedroom_search': [6.7134, 3.401, -0.6504],
+    'shoe_warning': [5.6829, -2.9312, 2.2687],
+    'bin_littering': [1.9497, -1.9686, 1.8865],
+    'bar_drink': [3.1751, -2.4041, 1.2635],
+    'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
+    'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+}
 
 
-if Eindhoven:
-    print('[GLOBAL CONFIG] Eindhoven mode')
+TABLE_DIMENSION = {
+    # width, depth, height
+    'grocery_table': [1.00, 0.738, 0.78],
+    'grocery_shelf': [
+        [0.792, 0.285, 0],
+        [0.792, 0.285, 0.413],
+        [0.792, 0.285, 0.734],
+        [0.792, 0.285, 1.058],
+    ],
+}
 
-    ABS_POSITION = {
+OBJECT_TYPES = [
+    "cleaning_supply",  # 0
+    "drink",  # 1
+    "food",  # 2
+    "fruit",  # 3
+    "decoration",  # 4
+    "snack",  # 5
+    "dish",  # 6
+    "unknown",  # 7
+]
 
-        'hallway' : [3.8827, -0.5537, -0.0261],   # bj 땀gi
-        'livingroom' : [8.9285, 0.6183, 1.5787], # bj 땀
-        'living_living_1': [3.8317, -0.2223, 1.5071],
-        'living_living_2': [3.7858, 2.9424, 0.111],
-        'living_living_3': [6.6616, 1.6903, 0.3479],
+TINY_OBJECTS = ['strawberry', 'candle']
 
-        'pos_dining_table_1' :  [5.905, 4.5752, -0.0291],
-        'pos_dining_table_2' :  [5.8859, 3.9397, -0.0196],
-        'pos_dining_table_3' :  [5.8413, 3.3573, -0.0137],
-        'pos_dining_table_1' :  [5.805, 4.5752, -0.0291],
-        'pos_dining_table_2' :  [5.7859, 3.9397, -0.0196],
-        'pos_dining_table_3' :  [5.7413, 3.3573, -0.0137],
-        
-        # 원래 위ㅣ치
-
-        # 'pos_dining_table_4' :  [6.9409, 2.2648, 1.5593],
-        # 'pos_dining_table_5' :  [7.9103, 3.2688, 3.1361], #[8.0432, 3.8641, 3.0866]
-        # 'pos_dining_table_6' :  [7.9103, 3.9088, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
-        # 'pos_dining_table_7' :  [7.9103, 4.5088, 3.1361], # 임의 계산 from pos5 182 267
-
-         # 아인드호벤 씹새가 y 5 미렀음
-        'pos_dining_table_4' :  [6.9409, 2.3148, 1.5593],
-        'pos_dining_table_5' :  [7.9103, 3.3188, 3.1361], #[8.0432, 3.8641, 3.0866]
-        'pos_dining_table_6' :  [7.9103, 3.9588, 3.1361], # 임의 계산 from pos 5 [8.0432, 3.8641, 3.0866]
-        'pos_dining_table_7' :  [7.9103, 4.5588, 3.1361],
-
-        'pos_dishwasher': [8.0514, 3.6023, -0.0372]
-        
-
-    }
-
-
-    TABLE_DIMENSION = {
-        # width, depth, height
-        'tab_dining_table': [0.78, 2.00, 0.770] ,
-        # 'tab_office_table': [0.897, 2.02, 0.75],
-        # 'tab_livingroom_table': [0.905, 0.905, 0.48],
-
-
-        'tab_dishwasher' : [0.600, 0.610, 0.340], # 병주가 직접 둘째날 아침에 잰거임. 아주 정확하지 않을수도 있음.
-        
-    }
-
-    TINY_OBJECTS = ['spoon', 'fork', 'knife']
-
-    # added by lsh
-    ARENA_EDGES = [[0.611, 2.440], [9.101, 2.457], [9.473, 1.872], [9.425, -6.256], [0.878, -6.291]]
-
-    # added by sujin
-    # for gpsr
-    LOCATION_MAP = {
-        "bedroom": ['bed', 'bedside_table', 'shelf'],
-        "kitchen": ['pantry', 'trashbin', 'dishwasher', 'potted_plant', 'kitchen_table', 'chairs',
-                    'refrigerator', 'sink'],
-        "study": ['cabinet', 'coatrack', 'desk', 'armchair', 'desk_lamp', 'waste_basket', 'exit'],
-        "living_room": ['tv_stand', 'storage_rack', 'lamp', 'side_tables', 'side_table', 'sofa', 'entrance']
-    }
+HEAVY_OBJECTS = ['coke_big']

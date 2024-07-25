@@ -23,12 +23,10 @@ from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
 # stt
-# from module.stt.stt_client import stt_client
-from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+from module.stt.stt_client import stt_client
 import numpy as np
 from utils.distancing import distancing
 import copy
-from transformers import Speech2TextProcessor, Speech2TextForConditionalGeneration
 from utils.simple_action_client import SimpleActionClient
 import control_msgs.msg
 import controller_manager_msgs.srv
@@ -88,23 +86,22 @@ class Agent:
 
 
         # hsr module instantiate
-        self.move_base = MoveBase(ABS_POSITION)
+        self.move_base = MoveBase(ABS_POSITION) #
         self.gripper = Gripper()
         self.pose = JointPose(TABLE_DIMENSION, self.gripper)
         self.tts = TTS()
 
         # object
+        self.object_type_list = OBJECT_TYPES
         self.object_list = OBJECT_LIST
-        self.location_map = LOCATION_MAP  # for gpsr
+        self.tiny_object_list = TINY_OBJECTS
+        self.heavy_object_list = HEAVY_OBJECTS
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
         # yolo
         self.yolo_module = YoloModule(OBJECT_LIST)
         # jykim static-map
-        if is_sim:
-            static_topic_name = '/static_obstacle_ros_map'
-        else:
-            static_topic_name = '//static_obstacle_ros_map'
+        static_topic_name = '/static_obstacle_ros_map'
 
         grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
@@ -128,9 +125,6 @@ class Agent:
         self.cur_vel = [0.0, 0.0, 0.0] # x,y,yaw
         self.axis_transform = Axis_transform()
 
-        # return if the point is in arena
-        self.arena_check = InArena(ARENA_EDGES)
-        # for carry my luggage (todo)
         rospy.loginfo('HSR agent is ready.')
 
     def _rgb_callback(self, data):
@@ -415,9 +409,8 @@ class Agent:
 
     # stt
     def stt(self, sec=5., mode=None):
-        return stt_client_hsr_mic(sec=sec, mode=mode)
-        # return stt_client(sec=sec)
-        pass
+        # return stt_client_hsr_mic(sec=sec, mode=mode)
+        return stt_client(sec=sec)
 
     # gripper
     def open_gripper(self, wait=True):
@@ -440,9 +433,9 @@ class Agent:
             rospy.sleep(1.0)
             print('door closed')
         self.say('door open'); rospy.sleep(1)
-        self.say('three'); rospy.sleep(1)
-        self.say('two');   rospy.sleep(1)
-        self.say('one');   rospy.sleep(1)
+        self.say('three'); rospy.sleep(0.5)
+        self.say('two');   rospy.sleep(0.5)
+        self.say('one');   rospy.sleep(0.5)
         return True
 
     def head_show_image(self, file_name='images/snu.png'):
