@@ -44,21 +44,28 @@ ABS_POSITION = {
     '식기세척기닫힘60센치': [1.9481, -1.4913, -3.0755],
 
     # recptionist
-    'start': [4.7578, -1.6402, -1.5496],
-    'cloth_scan': [4.7578, -1.6402, -1.5496],
-    'seat_scan' : [6.7194, -0.3494, -0.7164],
-    'seat_scan_bypass': [6.7071, -0.3502, -3.038],
+    'start': [2.6694, 0.0088, 3.1294],
+    'cloth_scan': [2.6694, 0.0088, 3.1294],
+    'seat_scan': [7.2618, -1.1397, -0.0927],
+    'seat_scan_bypass': [7.0752, -1.0906, 2.8539],
 
     # stickler for the rules
-    'kitchen_search': [3.3146, 0.4319, -2.2959],
-    'living_room_search': [4.9844, 0.2595, -0.8542],
-    'study_search': [5.1834, 1.9487, 2.7205],
-    'bedroom_search': [6.7134, 3.401, -0.6504],
-    'shoe_warning': [5.6829, -2.9312, 2.2687],
-    'bin_littering': [1.9497, -1.9686, 1.8865],
-    'bar_drink': [3.1751, -2.4041, 1.2635],
-    'bedroom_doublecheck' : [6.7134, 3.401, -0.6504],
-    'bedroom_search_reverse': [5.2946, 3.5653, -2.3053],
+    'office_search': [3.9124, 1.8329, 2.3017],
+    'office_search2': [3.9013, 3.7423, -1.5981], # leave
+    'kitchen_search': [4.7953, 3.7805, 0.0278],
+    'kitchen_search2': [8.0138, 1.5989, 1.5747],
+    'livingroom_search': [6.8303, 0.4463, -0.8153],
+    'hallway_search': [3.8517, 0.6339, -2.3486],
+    'office_leave1': [3.7782, 2.8632, 0.0525],
+    'office_leave2': [4.7751, 2.9022, 0.0008],
+
+    'bin_littering': [5.346, 1.4374, 2.3295],
+    'bar_drink': [5.3231, 5.5267, -1.7753], # currently cabinet
+    'shoe_warning': [2.0195, -0.7274, 1.6346],
+
+    'kitchen_living_middle': [8.6032, 0.9316, 3.0649],
+    'livingroom_leave': [4.9864, -0.4961, -3.1398],
+    'hallway_enter': [3.6486, -0.5246, 1.5538],
 }
 
 
