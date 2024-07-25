@@ -22,12 +22,16 @@ class custom_Yolov10:
     def __init__(self):
         # for hsr topic
         self.rgb_img = None
+        self.pc = None
+        self.object_len = 0
         self.yolo_bbox = []
         self.bridge = CvBridge()
 
         self._rgb_sub = rospy.Subscriber(RGB_TOPIC, Image, self._rgb_callback)
+        self._pc_sub = rospy.Subscriber(PC_TOPIC, PointCloud2, self._pc_callback, queue_size=1)
         self.yolo_pub = rospy.Publisher('/snu/yolo', Int16MultiArray, queue_size=10)
 
+        #shlim /snu/yolo for carry my luggage bag detection; add confidence score
         self.yolo_with_conf_pub = rospy.Publisher('/snu/yolo_conf', Int16MultiArray, queue_size=10)
         self.yolo_img_pub = rospy.Publisher('/snu/yolo_img', Image, queue_size=10)
         self.ready()
@@ -74,12 +78,13 @@ class custom_Yolov10:
                 height = c2[1] - c1[1]
 
                 tl = 1
-                color = colors[int(cls)]
+                color =colors[int(cls)] 
 
-                bbox_list.append([cent_x, cent_y, width, height, cls])
-                bbox_with_conf_list.append([cent_x, cent_y, width, height, cls, int(conf * 100)]) #conf: bbox score
+                bbox_list.append([cent_x, cent_y, width, height, int(cls)])
+                bbox_with_conf_list.append([cent_x, cent_y, width, height, int(cls), int(conf * 100)]) #conf: bbox score
+
+                cv2.rectangle(img, c1, c2, color, Thickness = tl, lineType = cv2.LINE_AA)
                 
-                cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
                 tf = max(tl - 1, 1)  # font thickness
                 t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
                 c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
@@ -110,9 +115,8 @@ if __name__ == '__main__':
     with torch.no_grad():
         while not rospy.is_shutdown():
             bbox_list, bag_bbox_list, img = yolov10_controller.detect() # bag bbox list is the version added confidence scores
-            if bbox_list is None: #or yolov10_controller.pc is None:
+            if bbox_list is None:
                 continue
-
             yolov10_controller.yolo_publish(bbox_list)
             yolov10_controller.yolo_with_conf_publish(bag_bbox_list)
             yolov10_controller.yolo_img_publish(img)
