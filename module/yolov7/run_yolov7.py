@@ -19,8 +19,9 @@ from std_msgs.msg import Int16MultiArray, Float32MultiArray
 import time
 
 import sys
-sys.path.append('../../../robocup2024')
-from hsr_agent.global_config import *
+sys.path.append('hsr_agent')
+sys.path.append('../../hsr_agent')
+from global_config import *
 
 class Yolov7:
     def __init__(self):
@@ -148,14 +149,12 @@ class Yolov7:
         yolo_img_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
         self.yolo_img_pub.publish(yolo_img_msg)
 
+# 앞으로 global_config.py 상단에서 yolo_weight_path를 바꿔주세요!
 def get_opt():
     parser = argparse.ArgumentParser()
-    # parser.add_argument('--weights', nargs='+', type=str, default='weight/best_240410.pt', help='model.pt path(s)')
     parser.add_argument('--weights', nargs='+', type=str, default='weight/best_for_final_not_tiny.pt', help='model.pt path(s)')
-    # 기존 경로 : 'weight/best_240409.pt'
-    # 원하는 특정 모델욜로 사용시 여기를 바꾸시오!!!
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.3, help='object confidence threshold')
+    parser.add_argument('--conf-thres', type=float, default=0.6, help='object confidence threshold')
     parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
     parser.add_argument('--device', default='', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
     parser.add_argument('--classes', nargs='+', type=int, help='filter by class: --class 0, or --class 0 2 3')

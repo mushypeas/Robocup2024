@@ -6,6 +6,9 @@ import numpy as np
 from actionlib_msgs.msg import GoalStatus
 from geometry_msgs.msg import Point, PoseStamped, Quaternion,PoseWithCovarianceStamped
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+
+NAVIGATION_STATUS = ['PENDING', 'ACTIVE', 'PREEMPTED', 'SUCCEEDED', 'ABORTED', 'REJECTED', 'PREEMPTING', 'RECALLING', 'RECALLED', 'LOST']
+
 class MoveBase:
     def __init__(self, ABS_POSITION):
         self.abs_position = ABS_POSITION
@@ -59,7 +62,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
 
     # add wait argument by yspark and shlim
@@ -87,17 +90,17 @@ class MoveBase:
         goal.target_pose = pose
         # send message to the action server
         self.base_action_client.send_goal(goal)
-            # wait for the action server to complete the order
-        # self.base_action_client.wait_for_result()
-        # # print result of navigation
-        # action_state = self.base_action_client.get_state()
-        # if action_state == GoalStatus.SUCCEEDED:
-        #     rospy.loginfo("Navigation Succeeded.")
-        #     return True
-        # else:
-        #     rospy.logerr("Navigation FAILED!!!!")
-        #     return False
-        
+        # wait for the action server to complete the order
+        self.base_action_client.wait_for_result()
+        # print result of navigation
+        action_state = self.base_action_client.get_state()
+        if action_state == GoalStatus.SUCCEEDED:
+            rospy.loginfo("Navigation Succeeded.")
+        else:
+            rospy.logerr(f"Navigation Failed! (GOAL {NAVIGATION_STATUS[action_state]})")
+            return False
+    
+
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
         goal_x, goal_y, goal_yaw = position
@@ -123,7 +126,7 @@ class MoveBase:
             if action_state == GoalStatus.SUCCEEDED:
                 rospy.loginfo("Navigation Succeeded.")
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
@@ -150,11 +153,44 @@ class MoveBase:
                 rospy.loginfo("Navigation Succeeded.")
                 return True
             else:
-                rospy.logerr("Navigation FAILED!!!!")
+                rospy.logerr(f"Navigation Failed! (ERROR: GOAL {NAVIGATION_STATUS[action_state]})")
                 self.base_action_client.cancel_all_goals()
                 return False
 
         return True
+    
+    def move_rel_AFAP(self, x, y, yaw=0, interval = 0.05):
+        while 1:
+            self.base_action_client.wait_for_server(timeout=2)
+            rospy.loginfo(f"Moving {x, y, yaw} relative to current position")
+
+            pose = PoseStamped()
+            pose.header.stamp = rospy.Time.now()
+            pose.header.frame_id = "base_link"
+            pose.pose.position = Point(x, y, 0)
+            quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
+            pose.pose.orientation = Quaternion(*quat)
+
+            goal = MoveBaseGoal()
+            goal.target_pose = pose
+    
+            # send message to the action server
+            self.base_action_client.send_goal(goal)
+            # wait for the action server to complete the order
+            self.base_action_client.wait_for_result(timeout=rospy.Duration(5))
+            # print result of navigation
+            action_state = self.base_action_client.get_state()
+            if action_state == GoalStatus.SUCCEEDED:
+                rospy.loginfo("Navigation Succeeded.")
+                return True
+                break
+            else:
+                rospy.logerr("Navigation FAILED!!!!")
+                self.base_action_client.cancel_all_goals()
+                x = x - interval
+                # y = y - interval
+                continue
+        
 
     def get_pose(self):
         while not rospy.is_shutdown():

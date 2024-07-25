@@ -23,8 +23,7 @@ from module.yolov7.yolo_module import YoloModule
 from open3d import geometry
 
 # stt
-from module.stt.stt_client import stt_client 
-# from module.stt.cloud_stt_hsr_mic import stt_client_hsr_mic
+from module.stt.stt_client import stt_client
 import numpy as np
 from utils.distancing import distancing
 import copy
@@ -39,11 +38,15 @@ from utils.axis_transform import Axis_transform
 from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
+# from module.stt.whisper_stt import whisper_stt
+
+from gtts import gTTS
+import subprocess
 
 
 class Agent:
     def __init__(self):
-
+        
         # head display
         self.head_display_file_pub = rospy.Publisher('/hsr_head_file', String, queue_size=10)
         self.head_text_pub = rospy.Publisher('/hsr_head_msg', String, queue_size=10)
@@ -87,27 +90,24 @@ class Agent:
 
 
         # hsr module instantiate
-        self.move_base = MoveBase(ABS_POSITION)
+        self.move_base = MoveBase(ABS_POSITION) #
         self.gripper = Gripper()
         self.pose = JointPose(TABLE_DIMENSION, self.gripper)
         self.tts = TTS()
 
         # object
+        self.object_type_list = OBJECT_TYPES
         self.object_list = OBJECT_LIST
-        self.object_types = OBJECT_TYPES
-        self.location_map = LOCATION_MAP  # for gpsr
+        self.tiny_object_list = TINY_OBJECTS
+        self.heavy_object_list = HEAVY_OBJECTS
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
         # yolo
         self.yolo_module = YoloModule(OBJECT_LIST)
         # jykim static-map
-        if is_sim:
-            static_topic_name = '/static_obstacle_ros_map'
-        else:   
-            # static_topic_name = '/static_obstacle_map_ref'
-            static_topic_name = '/static_obstacle_ros_map'
+        static_topic_name = '/static_obstacle_ros_map'
 
-        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=10.0)
+        grid = rospy.wait_for_message(static_topic_name, OccupancyGrid, timeout=5.0)
         # map meta-info
         self.static_res = grid.info.resolution
         self.static_w = grid.info.width
@@ -129,9 +129,6 @@ class Agent:
         self.cur_vel = [0.0, 0.0, 0.0] # x,y,yaw
         self.axis_transform = Axis_transform()
 
-        # return if the point is in arena
-        self.arena_check = InArena(ARENA_EDGES)
-        # for carry my luggage (todo)
         rospy.loginfo('HSR agent is ready.')
 
     def _rgb_callback(self, data):
@@ -263,6 +260,9 @@ class Agent:
 
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)
+    
+    def move_rel_AFAP(self, x, y, yaw=0, interval = 0.05):
+        return self.move_base.move_rel_AFAP(x, y, yaw, interval)
     
     def move_distancing(self, place, dist=0.6, timeout=3.0):
         # Move for distancing
@@ -466,25 +466,23 @@ class Agent:
         print(sentence)
         if show_display:
             self.head_show_text(sentence)
-
+            
     # stt
     def stt(self, sec=5., mode=None):
-        # return input()
         return stt_client(sec=sec)
-        pass
 
     # gripper
-    def open_gripper(self):
+    def open_gripper(self, wait=True):
         rospy.loginfo("Gripper opened")
-        self.gripper.gripper_command(1.0)
+        self.gripper.gripper_command(1.0, wait=wait)
 
-    def grasp(self, force=1.0, weak=False):
+    def grasp(self, force=1.0, weak=False, wait=True):
         rospy.loginfo("Gripper closed")
         if weak:
             # self.gripper.grasp(0.1)
-            self.gripper.grasp(0.05)
+            self.gripper.grasp(0.05, wait=wait)
         else:
-            self.gripper.grasp(force)
+            self.gripper.grasp(force, wait=wait)
 
     def grasp_degree(self, radian):
         self.gripper.gripper_command(radian)
@@ -494,9 +492,9 @@ class Agent:
             rospy.sleep(1.0)
             print('door closed')
         self.say('door open'); rospy.sleep(1)
-        self.say('three'); rospy.sleep(1)
-        self.say('two');   rospy.sleep(1)
-        self.say('one');   rospy.sleep(1)
+        self.say('three'); rospy.sleep(0.5)
+        self.say('two');   rospy.sleep(0.5)
+        self.say('one');   rospy.sleep(0.5)
         return True
 
     def head_show_image(self, file_name='images/snu.png'):

@@ -9,12 +9,15 @@ from collections import deque
 import cv2
 import time
 
+
+
 if __name__ == '__main__':
     rospy.init_node('test_client_hsr')
     axis_transform = Axis_transform()
     agent = Agent()
     while True:
         command = input('task : ')
+        # command = 'gpsr_test'
         if command == 'start_1':
             agent.move_abs('start_1')
         elif command == 'p1':
@@ -31,8 +34,12 @@ if __name__ == '__main__':
             agent.move_abs_safe('seat_scan')
         elif command == 'table_side':
             agent.move_abs('table_side')
-        elif command == 'shelf_front':
-            agent.move_abs('shelf_front')
+        elif command == 'gt':
+            agent.move_abs('grocery_table')
+        elif command == 'gs':
+            agent.move_abs('grocery_shelf')
+        elif command == 'gsd':
+            agent.move_abs('grocery_shelf_door')
         elif command == 'bin' :
             agent.move_abs('bin')
         elif command == 'sofa_view':
@@ -68,10 +75,10 @@ if __name__ == '__main__':
 
 
         # picking_test
-        elif command == 'side_pick': # arm_lify
+        elif command == 'side_pick': # arm_lift_up
             agent.pose.table_side_pick()
         elif command == 'pick_side_pose':
-            agent.pose.pick_side_pose(table='kitchen_table_counter') # test
+            agent.pose.pick_side_pose(table='kitchen_counter') # test
         elif command == 'pick_side_pose_breakfast_table':
             agent.pose.pick_side_pose(table='kitchen_counter')
         elif command == 'pick_top_pose':
@@ -84,6 +91,8 @@ if __name__ == '__main__':
             agent.pose.pick_spoon_pose_low(table='kitchen_counter')
         elif command == 'pick_down_spoon_pose':
             agent.pose.pick_down_spoon_pose()
+        elif command == 'pick_up_spoon_pose':
+            agent.pose.pick_up_spoon_pose()
         elif command == 'pick_bowl_pose_breakfast_table':
             agent.pose.pick_bowl_pose(table='kitchen_counter')
         elif command == 'plate_dishwasher_pose':
@@ -101,7 +110,7 @@ if __name__ == '__main__':
         # placing_test
 
         elif command == 'place_bowl_pose':
-            agent.pose.place_bowl_pose(table='dinner_table_counter')
+            agent.pose.place_bowl_pose(table='test_table')
         elif command == 'bring_bowl_pose':
             agent.pose.bring_bowl_pose()
         elif command == 'bring_bowl_pose_low':
@@ -112,13 +121,15 @@ if __name__ == '__main__':
 
         # pouring_test
 
-        elif command == 'spill_object_pose':
-            agent.pose.spill_object_pose(object_height=0.14, table='breakfast_table_snu')
-        elif command == 'spill_safety_pose':
+        elif command == 'spill_milk_pose':
+            agent.pose.spill_milk_pose()
+        elif command == 'spill_conflakes_pose':
+            agent.pose.spill_conflakes_pose()
+        elif command == 'spill_safety_milk':
+            agent.pose.spill_safety_milk_pose()
+        elif command == 'spill_safety_conflakes':
             agent.pose.spill_safety_pose()
-        elif command == 'spill_cereal_pose':
-            object_height = 0.14  # [m]
-            agent.pose.spill_object_pose(object_height, table='kitchen_table')
+
 
 
         elif command == 'point_seat_pose':
@@ -143,27 +154,35 @@ if __name__ == '__main__':
             agent.pose.pick_side_pose_by_height(height=0.59)
         elif command == 'place_side_shelf_pose':
             agent.pose.place_side_pose('shelf_1f')
-        elif command == 'open_shelf_pose1_by_height':
-            agent.pose.open_shelf_pose1_by_height(height=0.59)
-        elif command == 'open_shelf_pose2_by_height':
-            agent.pose.open_shelf_pose2_by_height(height=0.59)
+        elif command == 'reach_left':
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
+        elif command == 'reach_right':
+            agent.pose.reach_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
+        elif command == 'cling_left':
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='left')
+        elif command == 'cling_right':
+            agent.pose.cling_shelf_door_pose(shelf='grocery_shelf', floor=2, side='right')
+        elif command == 'pick_top_pose':
+            agent.pose.pick_top_pose(table='breakfast_table')
+        elif command == 'pick_top_pose_breakfast_table':
+            agent.pose.pick_top_pose_last(table='breakfast_table')
         elif command == 'pick_plate_pose':
             agent.pose.pick_plate_pose(table='kitchen_table')
         elif command == 'pick_dish_pose':
             agent.pose.pick_dish_pose(table='kitchen_table')
         elif command == 'pick_dish_pose_fold':
-            agent.pose.pick_dish_pose_fold(table='kitchen_table')
+            agent.pose.pick_dish_pose_fold(table='kitchen_counter')
         elif command == 'pick_plate_pose_fold':
-            agent.pose.pick_plate_pose_fold(table='kitchen_table')
+            agent.pose.pick_plate_pose_fold(table='kitchen_counter')
         elif command == 'place_object_pose':
             object = input("Give the name of the object: ")
-            agent.pose.place_object_pose(table='dishwasher', item=object)
+            agent.pose.place_object_pose(table='dinner_table', item=object)
         elif command == 'put_plate_dish_washer':
             agent.pose.put_plate_dish_washer(table='dishwasher')
         elif command == 'pick_shelf_low_pose':
             agent.pose.pick_shelf_low_pose('pantry')
         elif command == 'pick_side_pose':
-            agent.pose.pick_side_pose('kitchen_table')
+            agent.pose.pick_side_pose('kitchen_counter') #kitchen_cabinet, dish_washer
         elif command == 'door_open_pose':
             agent.pose.door_open_pose()
 
@@ -174,15 +193,14 @@ if __name__ == '__main__':
             agent.pose.place_shelf_pose('shelf_1f')
         elif command == 'place_shelf_pose_2f':
             agent.pose.place_shelf_pose('shelf_2f')
-
         elif command == 'arm_lift_object_table_down':
-            agent.pose.arm_lift_object_table_down()
+            agent.pose.arm_lift_object_table_down(object_height=0.114)
         elif command == 'arm_lift_object_table_down_spoon':
-            agent.pose.place_top_pose(0.05, table='kitchen_table')
-            agent.pose.arm_lift_object_table_down(0.23, table='kitchen_table')
+            agent.pose.place_top_pose(0.05, table='dinner_table')
+            agent.pose.arm_lift_object_table_down(0.23, table='dinner_table')
         elif command == 'arm_lift_object_table_down_wine':
             object_height = 0.1
-            agent.pose.arm_lift_object_table_down(object_height, table='final_kitchen_table')
+            agent.pose.arm_lift_object_table_down(object_height, table='dinner_table')
         elif command == 'pick_side_inclined_pose':
             table_name = input("Give me the table name : ")
             agent.pose.pick_side_inclined_pose(table_name)
@@ -212,14 +230,14 @@ if __name__ == '__main__':
         elif command == 'arm_lift_object_table_down_cereal':
             cereal_height = 0.32  # [m] 
             object_height = cereal_height / 2
-            agent.pose.arm_lift_object_table_down(object_height, table='kitchen_table')
+            agent.pose.arm_lift_object_table_down(object_height, table='kitchen_counter') #kitchen_cabinet, dinner_table, dish_washer
         elif command == 'arm_lift_top_table_down':
             height = 0.02
-            agent.pose.arm_lift_top_table_down(height=height, table='breakfast_table')
+            agent.pose.arm_lift_top_table_down(height=height, table='kitchen_counter')  #kitchen_cabinet, dinner_table, dish_washer
         elif command == 'handle_down':
             agent.pose.door_handle_down_pose()
-        elif command == 'detect_3d_safe':
-             print(agent.yolo_module.detect_3d_safe('kitchen_table_pnu'))
+        elif command == 'detect_3d':
+             print(agent.yolo_module.detect_3d('grocery_table'))
         elif command == 'yolo_bbox':
             print(agent.yolo_module.yolo_bbox)
         elif command == 'find_type_by_id':
@@ -281,17 +299,17 @@ if __name__ == '__main__':
         elif command == 'ww':
             agent.move_rel(0.1, 0,wait=True)
         elif command == 'www':
-            agent.move_rel(0.02, 0)
+            agent.move_rel(0.03, 0)
         elif command == 'ss':
             agent.move_rel(-0.1, 0)
         elif command == 'aa':
             agent.move_rel(0, 0.1)
         elif command == 'aaa':
-            agent.move_rel(0, 0.02)
+            agent.move_rel(0, 0.03)
         elif command == 'dd':
             agent.move_rel(0, -0.1)
         elif command == 'ddd':
-            agent.move_rel(0, -0.01)
+            agent.move_rel(0, -0.03)
         elif command == 'zz':
             agent.move_rel(0, 0, yaw=0.2)
         elif command == 'zzz':

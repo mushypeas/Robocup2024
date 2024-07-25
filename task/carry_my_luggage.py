@@ -297,6 +297,61 @@ class HumanFollowing:
         data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
         self.seg_img = data_img
 
+        
+
+
+    def _rgb_callback(self, data): ## jnpahk tiny_object_edge 검출 용
+        frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 250, 350)
+        rows, cols = edges.shape
+        f = np.fft.fft2(edges)
+        fshift = np.fft.fftshift(f)
+
+        crow, ccol = rows // 2, cols // 2
+        mask = np.zeros((rows, cols), np.float32)
+        sigma = 50  # Standard deviation for Gaussian filter
+        x, y = np.ogrid[:rows, :cols]
+        mask = np.exp(-((x - crow) ** 2 + (y - ccol) ** 2) / (2 * sigma ** 2))
+
+        fshift = fshift * mask
+        f_ishift = np.fft.ifftshift(fshift)
+        img_back = np.fft.ifft2(f_ishift)
+        img_back = np.abs(img_back)
+        
+        img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
+        img_back = np.uint8(img_back)
+
+        kernel = np.ones((1, 1), np.uint8)
+        img_back = cv2.dilate(img_back, kernel, iterations=1)
+        img_back = cv2.erode(img_back, kernel, iterations=1)
+
+        morph = img_back
+
+        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        tiny_exist = False
+        tiny_loc = None
+
+        self.contours = contours
+
+        ###########확인용 publish#########
+        # morph = cv2.bitwise_not(morph)
+
+
+        # morph = np.uint8(morph)
+        # canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        # self.image_pub.publish(canny_img_msg)
+
+
+    def _segment_cb(self, data): #jnpahk
+
+        #######################seg는 back때만 사용
+        depth = np.asarray(self.agent.depth_image)
+
+        data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
+        self.seg_img = data_img
+
 
     def check_human_pos(self, human_box_list, location=False):
         x, y, w, h = human_box_list[1]
@@ -1103,6 +1158,70 @@ class HumanFollowing:
             return False
         else:
 
+        #########
+        # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
+            # change angular.z
+            # loc = self.check_human_pos(human_info_ary, location=True)
+            # if loc == 'lll':
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     # twist.angular.z = -self.stop_rotate_velocity
+            #     # +가 왼쪽으로 돌림
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+            #     rospy.sleep(.5)
+            # if loc == 'll':
+            #     print("left")
+            #     # twist.angular.z = -self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+            #     rospy.sleep(.5)
+            # # if loc == 'l':
+            # #     print("left")
+            # #     # twist.angular.z = -self.stop_rotate_velocity
+            # #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+            # #     rospy.sleep(.5)
+            # # if loc == 'r':
+            # #     print("right")
+            # #     # twist.angular.z = +self.stop_rotate_velocity
+            # #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+            # #     rospy.sleep(.5)
+            # if loc == 'rr':
+            #     print("right")
+            #     # twist.angular.z = +self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+            #     rospy.sleep(.5)
+            # if loc == 'rrr':
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     # twist.angular.z = +self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+            #     rospy.sleep(.5)
+            # if twist.linear.x == 0 and twist.angular.z == 0:
+
+            #     if self.stt_destination(self.stt_option, calc_z):
+            #         return True
+
+            #     return False
+    
+            # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+            # self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+            #     # 2.4 move to human
+            # self.last_human_pos = target_xyyaw
+            # # if calc_z > 1000:
+            # #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+            # #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
+            # #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+            # #     # 2.4 move to human
+            # # target_yaw = target_xyyaw[2]
 
         # #########
         # # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
@@ -1801,6 +1920,7 @@ def head_map_cb(config):
 
 
 def carry_my_luggage(agent):
+    print("help")
     # task params
     bag_search_limit_time = 15
     goal_radius = 0.3
@@ -1814,13 +1934,14 @@ def carry_my_luggage(agent):
     stt_option = False #True
     yolo_success = True
     tilt_angle = 20
-    
+    print("1")
 
     # Capture target
     demotrack_pub = rospy.Publisher('/snu/demotrack', String, queue_size=10)
 
     ## class instantiation
     bag_inspection = BagInspection(agent)
+    print("2")
 
     human_reid_and_follower = HumanReidAndFollower(init_bbox=[320 - 100, 240 - 50, 320 + 100, 240 + 50],
                                                    frame_shape=(480, 640),
@@ -1829,6 +1950,7 @@ def carry_my_luggage(agent):
                                                    angular_max=.2,
                                                    tilt_angle=tilt_angle)
     human_following = HumanFollowing(agent, human_reid_and_follower, start_location, goal_radius, stop_rotate_velocity, tilt_angle, stt_option)
+    print("3")
     #####################
     # 0. start
     agent.say('start carry my luggage!')
