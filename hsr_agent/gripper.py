@@ -29,7 +29,7 @@ class Gripper:
             self._grasp_client.wait_for_result(rospy.Duration(1.0))
 
 
-    def gripper_command(self, open_angle):
+    def gripper_command(self, open_angle, wait=True):
         goal = FollowJointTrajectoryGoal()
         goal.trajectory.joint_names = ['hand_motor_joint']
         goal.trajectory.points = [
@@ -38,4 +38,5 @@ class Gripper:
         ]
 
         self._follow_joint_trajectory_client.send_goal(goal)
-        self._follow_joint_trajectory_client.wait_for_result(rospy.Duration(5.0))
+        if wait:
+            self._follow_joint_trajectory_client.wait_for_result(rospy.Duration(5.0))
