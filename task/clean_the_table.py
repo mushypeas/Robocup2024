@@ -388,4 +388,3 @@ def clean_the_table(agent: Agent):
         #     agent.say('I finished cleaning the table', show_display=True)
 
         #     break
-
