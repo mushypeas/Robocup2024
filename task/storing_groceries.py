@@ -296,8 +296,8 @@ class StoringGroceries:
             rospy.logwarn('Start Storing Groceries')
             self.agent.say('Start Storing Groceries', show_display=True)
             # self.agent.move_rel(2.0, 0, wait=True) # Advance 2 meters
-            self.agent.move_abs_safe('living_living_1')
-            self.agent.move_abs_safe('living_living_2')
+            self.agent.move_abs_safe('living_living_1') # Arena Emergency Maneuver
+            self.agent.move_abs_safe('living_living_2') # Arena Emergency Maneuver
 
         else:
             rospy.logwarn('Start Storing Groceries')
