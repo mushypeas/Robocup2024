@@ -24,7 +24,7 @@ class ImageProcessor:
         # gray = cv2.GaussianBlur(gray, (5, 5), 0)
         # cv2.imshow('gray', gray)
 
-        edges = cv2.Canny(gray, 100, 150)
+        edges = cv2.Canny(gray, 250, 350)
 
         # 푸리에 변환 적용
         rows, cols = edges.shape

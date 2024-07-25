@@ -146,10 +146,10 @@ if __name__ == '__main__':
             agent.pose.neutral_pose()
         elif command == 'neutral_pose_vertical':
             agent.pose.neutral_pose(vertical=True)
-        elif command == 'pick_side_pose':
-            agent.pose.pick_side_pose(table='kitchen_table')
-        elif command == 'pick_side_pose_breakfast_table':
-            agent.pose.pick_side_pose(table='breakfast_table')
+        elif command == 'pose1': # test pose 추가. mjgu 240516
+            agent.pose.table_search_pose_breakfast_initial()
+        elif command == 'pouring_pose':
+            agent.pose.pouring_pose()        
         elif command == 'pick_side_pose_by_height':
             agent.pose.pick_side_pose_by_height(height=0.59)
         elif command == 'place_side_shelf_pose':
