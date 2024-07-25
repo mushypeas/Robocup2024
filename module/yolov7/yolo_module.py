@@ -12,7 +12,7 @@ from sklearn.cluster import DBSCAN
 
 import sys
 sys.path.append('../../../robocup2024')
-from hsr_agent.global_config import OBJECT_LIST, TINY_OBJECTS, TABLE_DIMENSION
+from hsr_agent.global_config import OBJECT_LIST, TINY_OBJECTS, TABLE_DIMENSION, ABS_POSITION_Robocup
 from module.yolov7.utils_yolo.axis_transform import Axis_transform
 
 
@@ -264,20 +264,20 @@ class YoloModule:
             class_name = self.find_name_by_id(class_id)
             if item_list is not None and class_name not in item_list:
                 rospy.logwarn(f"Ignoring {class_name}...")
-                pass
+                continue
             start_x = cent_x - (width // 2)
             start_y = cent_y - (height // 2)
             object_pc = pc_np[start_y:start_y+height, start_x:start_x+width]
             object_pc = object_pc.reshape(-1, 3)
             points_by_base_link = self.axis_transform.tf_camera_to_base(object_pc, multi_dimention=True)
 
-            table_height = TABLE_DIMENSION[table][2]
-            height_offset = -0.01
+            table_height = ABS_POSITION_Robocup[table][2]
+            height_offset = 0.01
             front_threshold = dist + depth
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.01
+                height_offset = -0.01 # 0 에서 0.01 사이
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:
@@ -286,7 +286,7 @@ class YoloModule:
                 front_threshold = 1.3
 
             height_threshold = [table_height - height_offset, 1.5]
-
+            print("POINTS SHAPE ; ", points_by_base_link.shape)
             # 1. hard-constraint thresholding by fixed parameters
             points_by_base_link = points_by_base_link[np.where((points_by_base_link[:, 0] < front_threshold)
                                                              & (points_by_base_link[:, 2] > height_threshold[0])
@@ -375,7 +375,7 @@ class YoloModule:
 
             # exception1 : tiny height object
             if OBJECT_LIST[class_id][0] in TINY_OBJECTS: # ['spoon', 'fork', 'knife']
-                height_offset = 0.02
+                height_offset = -0.02
                 print('tiny', OBJECT_LIST[class_id])
             # exception2 : objects in shelf
             if 'shelf' in table:

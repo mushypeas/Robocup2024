@@ -86,7 +86,7 @@ class Agent:
 
 
         # hsr module instantiate
-        self.move_base = MoveBase(ABS_POSITION)
+        self.move_base = MoveBase(ABS_POSITION) #
         self.gripper = Gripper()
         self.pose = JointPose(TABLE_DIMENSION, self.gripper)
         self.tts = TTS()
