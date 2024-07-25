@@ -95,7 +95,7 @@ def make_parser():
         "--aspect_ratio_thresh", type=float, default=1.6,
         help="threshold for filtering out boxes of which aspect ratio are above the given value."
     )
-    parser.add_argument('--min_box_area', type=float, default=10, help='filter out tiny boxes')
+    parser.add_argument('--min_box_area', type=float, default=100, help='filter out tiny boxes')
     parser.add_argument("--mot20", dest="mot20", default=False, action="store_true", help="test mot20.")
     return parser
 
@@ -161,8 +161,16 @@ class Predictor(object):
         return outputs, img_info
 
 def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, human_feature, feature_on):
+    print('human_id: ', human_id)
     # tracker = BYTETracker(args, frame_rate=args.fps)
     timer = Timer()
+    if frame_id < 1000 : #TODO : byte 켠 초기에는 눈 앞의 human만 잡도록. frame 기준 확인 필요
+        height, width, _ = ros_img.shape
+        bar_width = width // 4 ## TODO : 지금은 왼쪽 25%, 오른쪽 25% 제거. 확인 필요
+        ros_img[:, :bar_width] = 0
+        ros_img[:, -bar_width:] = 0
+        ros_img[:120, :] = 0
+
     outputs, img_info = predictor.inference(ros_img, timer)
     found_prev_human = False
     if outputs[0] is not None:
@@ -175,10 +183,13 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
         for t in online_targets:
             tlwh = t.tlwh
             tid = t.track_id
+            print('Target index: ', tid)
             vertical = tlwh[2] / tlwh[3] > args.aspect_ratio_thresh
             if tlwh[2] * tlwh[3] > args.min_box_area and not vertical:
                 if tid == human_id:
                     found_prev_human = True
+                    print('Found prev human')
+                    print('Target index: ', tid)
                     target_tlwh = tlwh
                     target_score = t.score
                     target_feature = human_feature
@@ -186,38 +197,59 @@ def image_ros_demo(ros_img, predictor, exp, args, frame_id, tracker, human_id, h
                 online_ids.append(tid)
                 online_scores.append(t.score)
 
-        if not found_prev_human:
-            if len(online_targets) == 0:
-                human_id = None
-                target_feature = None
-                target_score = None
-                target_tlwh = None
-            else:
-                # if human_id == 1 : start bytetrack
-                if human_id == -1:
-                    random_target = online_targets[0]
-                    x, y, w, h = int(random_target.tlwh[0]), int(random_target.tlwh[1]), int(random_target.tlwh[2]), int(random_target.tlwh[3])
-                    human_reid = HumanId()
-                    target_feature = human_reid.get_vector(ros_img[y:y + h, x:x + w])
-                    print('Initial Target index: ', random_target.track_id)
-                    del human_reid
-                else:
-                    # feature extraction
-                    if feature_on:
-                        human_reid = HumanId()
-                        idx = human_reid.get_multi_vector(ros_img, online_targets, human_feature)
-                        target_feature = human_feature
-                        random_target = online_targets[idx]
-                        print('Target index Change: ', random_target.track_id)
-                        del human_reid
-                    # index 0 human
-                    else:
-                        random_target = online_targets[0]
-                        target_feature = human_feature
 
-                human_id = random_target.track_id
-                target_score = random_target.score
-                target_tlwh = random_target.tlwh
+                if not found_prev_human:
+                    print("not found prev human")
+                    # if len(online_targets) == 0:
+                    human_id = tid
+                    target_feature = None
+                    target_score = None
+                    target_tlwh = None
+
+
+        if human_id == -1: ##initialize
+            random_target = online_targets[0]
+            x, y, w, h = int(random_target.tlwh[0]), int(random_target.tlwh[1]), int(random_target.tlwh[2]), int(random_target.tlwh[3])
+            human_reid = HumanId()
+            target_feature = human_reid.get_vector(ros_img[y:y + h, x:x + w])
+            print('Initial Target index: ', random_target.track_id)
+            del human_reid
+
+            human_id = random_target.track_id
+            target_score = random_target.score
+            target_tlwh = random_target.tlwh
+
+
+
+
+
+
+            # else:
+                # # if human_id == 1 : start bytetrack
+                # if human_id == -1:
+                #     random_target = online_targets[0]
+                #     x, y, w, h = int(random_target.tlwh[0]), int(random_target.tlwh[1]), int(random_target.tlwh[2]), int(random_target.tlwh[3])
+                #     human_reid = HumanId()
+                #     target_feature = human_reid.get_vector(ros_img[y:y + h, x:x + w])
+                #     print('Initial Target index: ', random_target.track_id)
+                #     del human_reid
+                # else:
+                #     # feature extraction
+                #     if feature_on:
+                #         human_reid = HumanId()
+                #         idx = human_reid.get_multi_vector(ros_img, online_targets, human_feature)
+                #         target_feature = human_feature
+                #         random_target = online_targets[idx]
+                #         print('Target index Change: ', random_target.track_id)
+                #         del human_reid
+                #     # index 0 human
+                #     else:
+                #         random_target = online_targets[0]
+                #         target_feature = human_feature
+
+                # human_id = random_target.track_id
+                # target_score = random_target.score
+                # target_tlwh = random_target.tlwh
 
         timer.toc()
         online_im = plot_tracking(
@@ -326,6 +358,8 @@ class Bytetrack_ros:
             human_info_ary, online_im, online_tlwhs = image_ros_demo(self.rgb_img, self.predictor, self.exp, self.args, self.frame_id, self.tracker, self.cur_human_idx, self.target_feature, self.feature_on)
             if human_info_ary[0] is not None:
                 self.cur_human_idx = human_info_ary[0]
+                print("self.cur_human_idx: ", self.cur_human_idx)
+
                 self.target_feature = human_info_ary[3]
                 x, y, w, h = int(human_info_ary[1][0]), int(human_info_ary[1][1]), int(human_info_ary[1][2]), int(human_info_ary[1][3])
                 intary = Int16MultiArray()

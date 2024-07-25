@@ -477,6 +477,7 @@ def receptionist(agent):
     cs.point_seat(agent, first_2b_seated)
     agent.say(name1+'. \nPlease sit down there', show_display=True)
     rospy.sleep(1)
+    # input('##### Debug 8 #####')
 
     # 5. Introduce each other
     agent.pose.move_pose()
@@ -736,6 +737,7 @@ def receptionist(agent):
     
     agent.say(f'{name2}.\n Stand in this direction\n and wait until I find your seat', show_display=True)
     rospy.sleep(5.5)
+    # input('##### Debug 5 #####')
 
     agent.move_abs_safe(scan_position)
     agent.pose.head_tilt(0)
@@ -764,6 +766,7 @@ def receptionist(agent):
     agent.pose.head_pan(second_guest_head_pan_degree)
     agent.say('This is ' + name2 + '.', show_display=True)
     rospy.sleep(1.3)
+    agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated, first_seated)
     agent.say(f'{name2}\'s favorite drink\n is ' + drink2, show_display=True)
     rospy.sleep(1.8)
@@ -773,6 +776,7 @@ def receptionist(agent):
     agent.pose.head_pan(second_guest_head_pan_degree)
     agent.say(name2, show_display=True)
     rospy.sleep(0.6)
+    agent.move_abs_safe(scan_position)
     cs.gaze_seat(agent, host_seated)
     agent.say(f'This is {name_host}', show_display=True)
     rospy.sleep(1.3)
@@ -809,6 +813,7 @@ def receptionist(agent):
     # rospy.sleep(10)
     rospy.sleep(7)
 
+    agent.move_abs_safe(scan_position)
     cs.point_seat(agent, second_2b_seated)
     agent.say(name2+' Please sit down there', show_display=True)
     rospy.sleep(1)
@@ -816,7 +821,6 @@ def receptionist(agent):
     agent.pose.move_pose()
     agent.pose.head_tilt(10)
     agent.say('Thank you', show_display=True)
-
 
 
 

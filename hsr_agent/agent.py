@@ -38,6 +38,7 @@ from utils.axis_transform import Axis_transform
 from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
+# from module.stt.whisper_stt import whisper_stt
 
 from gtts import gTTS
 import subprocess
@@ -136,9 +137,10 @@ class Agent:
 
     def _lidar_callback(self, data):
         data_np = np.asarray(data.ranges)
-        data_np[np.isnan(data_np)] = 5.0  # remove nans
+        data_np[np.isnan(data_np)] = 1.0  # remove nans
         self.ranges = data_np # jykim: save ranges data from LiDAR
         center_idx = data_np.shape[0] // 2
+        self.center_idx = center_idx
         self.dist = np.mean(data_np[center_idx - 15: center_idx + 15])
 
     def _depth_callback(self, data):
@@ -251,7 +253,10 @@ class Agent:
         self.move_base.move_abs(position, wait)
 
     def move_abs_coordinate(self, coordinate, wait=True):
-        self.move_base.move_abs_coordinate(coordinate, wait)
+        if self.move_base.move_abs_coordinate(coordinate, wait):
+            return True
+        else:
+            return False
 
     def move_rel(self, x, y, yaw=0, wait=False):
         return self.move_base.move_rel(x, y, yaw, wait)
@@ -334,7 +339,7 @@ class Agent:
         # send message to the action server
         goal = MoveBaseGoal()
         goal.target_pose = pose
-        goal.target_pose.header.stamp = rospy.Time.now()
+        # goal.target_pose.header.stamp = rospy.Time.now()
         # before_moved_time = self.last_moved_time
 
         self.move_base.base_action_client.send_goal(goal)
@@ -369,7 +374,7 @@ class Agent:
                         break
                     rospy.sleep(0.1)
                 time_trapped = time.time()
-                goal.target_pose.header.stamp = rospy.Time.now()
+                # goal.target_pose.header.stamp = rospy.Time.now()
                 self.move_base.base_action_client.send_goal(goal)
 
             else:
@@ -384,7 +389,7 @@ class Agent:
                             self.move_abs_coordinate([cur_pose[0], cur_pose[1], goal_yaw], wait=False)
 
                             return True
-                        goal.target_pose.header.stamp = rospy.Time.now()
+                        # goal.target_pose.header.stamp = rospy.Time.now()
                         self.move_base.base_action_client.send_goal(goal)
             rospy.sleep(0.01)
         return True
@@ -407,6 +412,7 @@ class Agent:
     # tts
     def say(self, sentence, show_display=False):
         self.tts.say(sentence)
+        print(sentence)
         if show_display:
             self.head_show_text(sentence)
             

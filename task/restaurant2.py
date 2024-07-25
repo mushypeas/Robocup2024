@@ -210,12 +210,13 @@ def restaurant(agent):
 
                 msg = rospy.wait_for_message('/snu/openpose/bbox', Int16MultiArray)
                 if len(msg.data) == 0: continue
-                '''
-                bbox_arr = np.array(msg.data)
-                bbox_arr = bbox_arr.reshape(len(bbox_arr)//4, 4).tolist()
-                if len(bbox_arr) == 0: continue
-                '''
+                
+                # bbox_arr = np.array(msg.data)
+                # # bbox_arr = bbox_arr.reshape(len(bbox_arr)//4, 4).tolist()
+                # if len(bbox_arr) == 0: continue
+                
                 table_arr = np.array(msg.data)
+                print(table_arr)
                 table_arr = table_arr.reshape(len(table_arr)//34, 17, 2)
                 pc = agent.pc
                 if pc is None: continue

@@ -380,7 +380,7 @@ class ShoeDetection:
 
         # ask to take off their shoes
         self.agent.pose.head_tilt(20)
-        self.agent.say('Please take off your shoes\n here at the enterance', show_display=True)
+        self.agent.say('Please put your shoes\n outside the entrance', show_display=True)
         rospy.sleep(3)
 
         self.agent.say('I will wait a few seconds\nfor you to take off your shoes', show_display=True)

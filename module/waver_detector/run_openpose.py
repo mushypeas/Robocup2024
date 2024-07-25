@@ -14,7 +14,7 @@ from config import POSE_PAIRS, MAP_IDX, COLORS
 #from humanpose_process import getHandPoints
 class OpenPoseWrapper:
 
-    def __init__(self, size_ratio=1.0, enable_viz=False) :
+    def __init__(self, size_ratio=1.0, enable_viz=True) :
 
         # openpose
         BASE_DIR = '/home/tidy/Robocup2024/module/openpose/models/'
@@ -51,7 +51,7 @@ class OpenPoseWrapper:
         self.rgb_img = cv2.cvtColor(bgr_img, cv2.COLOR_BGR2RGB)
         return
 
-    def run(self, thresh=0.1):
+    def run(self, thresh=0.1): # 0.1
 
         if self.rgb_img is None: return
         img = self.rgb_img

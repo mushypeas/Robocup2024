@@ -44,7 +44,7 @@ class MoveBase:
         
         self.base_action_client.wait_for_server(timeout=2)
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
@@ -80,7 +80,7 @@ class MoveBase:
         self.base_action_client.wait_for_server(timeout=2)
 
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
@@ -90,16 +90,17 @@ class MoveBase:
         goal.target_pose = pose
         # send message to the action server
         self.base_action_client.send_goal(goal)
-        if wait:
-            # wait for the action server to complete the order
-            self.base_action_client.wait_for_result()
-            # print result of navigation
-            action_state = self.base_action_client.get_state()
-            if action_state == GoalStatus.SUCCEEDED:
-                rospy.loginfo("Navigation Succeeded.")
-            else:
-                rospy.logerr(f"Navigation Failed! (GOAL {NAVIGATION_STATUS[action_state]})")
-                return False
+        # wait for the action server to complete the order
+        self.base_action_client.wait_for_result()
+        # print result of navigation
+        action_state = self.base_action_client.get_state()
+        if action_state == GoalStatus.SUCCEEDED:
+            rospy.loginfo("Navigation Succeeded.")
+        else:
+            rospy.logerr(f"Navigation Failed! (GOAL {NAVIGATION_STATUS[action_state]})")
+            return False
+    
+
     # added by sujin for gpsr
     def move_abs_by_point(self, position, wait=True):
         goal_x, goal_y, goal_yaw = position
@@ -107,7 +108,7 @@ class MoveBase:
         rospy.loginfo(f"Moving to {position}")
 
         pose = PoseStamped()
-        pose.header.stamp = rospy.Time.now()
+        # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "map"
         pose.pose.position = Point(goal_x, goal_y, 0)
         quat = tf.transformations.quaternion_from_euler(0, 0, goal_yaw)
@@ -136,8 +137,6 @@ class MoveBase:
         # pose.header.stamp = rospy.Time.now()
         pose.header.frame_id = "base_link"
         pose.pose.position = Point(x, y, 0)
-        goal_x = cur_x + x * math.cos(cur_yaw) + y * math.sin(cur_yaw)
-        goal_y = cur_y + x * math.sin(cur_yaw) - y * math.cos(cur_yaw)
         quat = tf.transformations.quaternion_from_euler(0, 0, yaw)
         pose.pose.orientation = Quaternion(*quat)
 
