@@ -1,5 +1,3 @@
-## whisper_stt.py
-
 import whisper
 import rospy, pydub, pyaudio
 import numpy as np
@@ -8,10 +6,15 @@ from std_msgs.msg import Float32MultiArray, String
 
 
 class WhisperSTT:
+
     def __init__(self):
-        self.model = whisper.load_model("small.en", device="cuda")
+        self.model = whisper.load_model("small.en", device="cpu")
         self.portaudio = pyaudio.PyAudio()
         self.pub_result = rospy.Publisher('/stt_result', String, queue_size=10)
+
+        self.name_list = ['adel', 'angel', 'axel', 'charlie', 'jane', 'john', 'jules', 'morgan', 'paris', 'robin', 'simone']
+        self.drink_list = ['red wine', 'juice pack', 'cola', 'tropical juice', 'milk', 'iced tea', 'orange juice']
+        self.yesno_list = ['yes', 'no']
 
         self.filename = 'recording'
         self.chunk = 1024
