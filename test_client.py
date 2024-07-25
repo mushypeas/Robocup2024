@@ -17,6 +17,7 @@ if __name__ == '__main__':
     agent = Agent()
     while True:
         command = input('task : ')
+        # command = 'gpsr_test'
         if command == 'start_1':
             agent.move_abs('start_1')
         elif command == 'p1':

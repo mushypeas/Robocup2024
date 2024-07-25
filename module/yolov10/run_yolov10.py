@@ -1,95 +1,97 @@
+#!/usr/bin/env python3
+
+import rospy
 import cv2
+from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
+from std_msgs.msg import Int16MultiArray
+
 import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
 from ultralytics import YOLOv10
 import supervision as sv
 
-
-import rospy
-from cv_bridge import CvBridge
-from sensor_msgs.msg import Image #, PointCloud2
-from std_msgs.msg import Int16MultiArray #, Float32MultiArray
-
-
 import sys
-sys.path.append('../../../Robocup2024')
-from hsr_agent.global_config import *
+sys.path.append('hsr_agent')
+sys.path.append('../../hsr_agent')
+from global_config import *
 
 obj_mapping = {0: 0, 1:1, 2:2, 3:3, 4:4, 5:5, 6:6, 7:7, 8:16, 9: 9, 10:10, 11:11, 12:12, 13:13, 14:14, 15:15, 16:16, 17:17, 18:17, 19:19, 20:20, 21:21, 22:22, 23:23, 24:24, 25:25, 26:26, 27:26, 28:28, 29:29, 30:30, 31:31, 32:32, 33:33, 34:34, 35:35, 36: 36, 37:37, 38:8, 39:8, 42: 18, 43: 27, 44: 12}
 
-class custom_Yolov10:
+class HSR_Yolov10:
     def __init__(self):
+        self.node_name = 'yolo_node'
+        rospy.init_node(self.node_name, anonymous=True)
+
         # for hsr topic
         self.rgb_img = None
-        self.pc = None
-        self.object_len = 0
-        self.yolo_bbox = []
         self.bridge = CvBridge()
 
-        self._rgb_sub = rospy.Subscriber(RGB_TOPIC, Image, self._rgb_callback)
-        self._pc_sub = rospy.Subscriber(PC_TOPIC, PointCloud2, self._pc_callback, queue_size=1)
+        rgb_topic = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
+        self._rgb_sub = rospy.Subscriber(rgb_topic, Image, self._rgb_callback)
         self.yolo_pub = rospy.Publisher('/snu/yolo', Int16MultiArray, queue_size=10)
-
-        #shlim /snu/yolo for carry my luggage bag detection; add confidence score
+        # shlim /snu/yolo for carry my luggage bag detection; add confidence score
         self.yolo_with_conf_pub = rospy.Publisher('/snu/yolo_conf', Int16MultiArray, queue_size=10)
         self.yolo_img_pub = rospy.Publisher('/snu/yolo_img', Image, queue_size=10)
+
         self.ready()
 
     def _rgb_callback(self, img_msg):
-        self.rgb_img = self.bridge.imgmsg_to_cv2(img_msg, 'bgr8')
-        rospy.loginfo('Received rgb callback')
+        try:
+            self.rgb_img = self.bridge.imgmsg_to_cv2(img_msg, 'bgr8')
+        except CvBridgeError as e:
+            rospy.logerr("CvBridge Error: {0}".format(e))
+            return
 
+        bbox_list, bag_bbox_list, img = self.detect()  # bag bbox list is the version added confidence scores
+        if bbox_list is not None:
+            self.yolo_publish(bbox_list)
+            self.yolo_with_conf_publish(bag_bbox_list)
+            self.yolo_img_publish(img)
 
     def ready(self):
-        self.model = YOLOv10(yolo_weight_path)
-        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in obj_mapping]
+        self.model = YOLOv10(yolo_weight_path)  # path for weight file
+        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in OBJECT_LIST]
 
     def detect(self):
         if self.rgb_img is None:
             return None, None, None
-        
-        img = self.rgb_img
 
+        img = self.rgb_img
         model = self.model
 
-        with torch.no_grad():   # Calculating gradients would cause a GPU memory leak
+        with torch.no_grad():  # Calculating gradients would cause a GPU memory leak
             results = model(img)[0]
             detections = sv.Detections.from_ultralytics(results)
 
         bbox_list = []
         bbox_with_conf_list = []
 
-
         colors = self.colors
 
+        # Process detections
         if len(results):
             for box, cls, conf in zip(detections.xyxy, detections.class_id, detections.confidence):
                 if int(cls) == 40 or int(cls) == 41:
                     continue
                 else:
                     cls = obj_mapping[int(cls)]
-
-                class_name = OBJECT_LIST[cls][0] #OBJECT_ LIST를 참조함.
+                    
+                class_name = OBJECT_LIST[int(cls)][0]
                 label = f'{class_name} {conf:.2f}'
                 c1, c2 = (int(box[0]), int(box[1])), (int(box[2]), int(box[3]))
                 cent_x, cent_y = (c2[0] + c1[0]) // 2, (c2[1] + c1[1]) // 2
                 width = c2[0] - c1[0]
                 height = c2[1] - c1[1]
 
-                tl = 1
-                color =colors[int(cls)] 
-
                 bbox_list.append([cent_x, cent_y, width, height, int(cls)])
-                bbox_with_conf_list.append([cent_x, cent_y, width, height, int(cls), int(conf * 100)]) #conf: bbox score
+                bbox_with_conf_list.append([cent_x, cent_y, width, height, int(cls), int(conf * 100)])  # conf: bbox score
 
-                cv2.rectangle(img, c1, c2, color, Thickness = tl, lineType = cv2.LINE_AA)
-                
-                tf = max(tl - 1, 1)  # font thickness
-                t_size = cv2.getTextSize(label, 0, fontScale=tl / 3, thickness=tf)[0]
-                c2 = c1[0] + t_size[0], c1[1] - t_size[1] - 3
-                cv2.rectangle(img, c1, c2, color, -1, cv2.LINE_AA)  # filled
-                cv2.putText(img, label, (c1[0], c1[1] - 2), 0, tl / 3, [225, 255, 255], thickness=tf, lineType=cv2.LINE_AA)
+                cv2.rectangle(img, (int(box[0]), int(box[1])), (int(box[2]), int(box[3])), colors[int(cls)], 2)
+                cv2.putText(img, label, (int(box[0]), int(box[1] - 10)),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 0, 0), 2)
+
         return bbox_list, bbox_with_conf_list, img
 
     def yolo_publish(self, bbox_list):
@@ -103,21 +105,22 @@ class custom_Yolov10:
         self.yolo_with_conf_pub.publish(coord_list_msg)
 
     def yolo_img_publish(self, img):
-        yolo_img_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
-        self.yolo_img_pub.publish(yolo_img_msg)
+        try:
+            yolo_img_msg = self.bridge.cv2_to_imgmsg(img, encoding='bgr8')
+            self.yolo_img_pub.publish(yolo_img_msg)
+        except CvBridgeError as e:
+            rospy.logerr("CvBridge Error: {0}".format(e))
 
+def main():
+    yolov10_controller = HSR_Yolov10()
+
+    with torch.no_grad():
+        try:
+            rospy.spin()
+        except rospy.ROSInterruptException:
+            pass
+        finally:
+            cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    rospy.init_node('hsr_yolov10', anonymous=True)
-    yolov10_controller = custom_Yolov10()
-    image_resolution = (480, 640, 3)
-    r = rospy.Rate(5)
-    with torch.no_grad():
-        while not rospy.is_shutdown():
-            bbox_list, bag_bbox_list, img = yolov10_controller.detect() # bag bbox list is the version added confidence scores
-            if bbox_list is None:
-                continue
-            yolov10_controller.yolo_publish(bbox_list)
-            yolov10_controller.yolo_with_conf_publish(bag_bbox_list)
-            yolov10_controller.yolo_img_publish(img)
-            r.sleep()
+    main()

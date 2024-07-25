@@ -1,92 +1,68 @@
 import rospy
-import json
 from datetime import datetime, timedelta
 
 from gpsr_cmds import *
 from gpsr_followup import *
 from gpsr_parser import *
 from gpsr_utils import *
+from gpsr_config import *
+from gpsr_follow import *
+from gpsr_model_class import *
+
+from sensor_msgs.msg import Image
+import cv2
+import torch
+
+from std_msgs.msg import Int16MultiArray, Float32MultiArray
 
 import torch
-import open_clip
-from PIL import Image
-import cv2
+import torch.nn.functional as F
 
-objects_file_path = 'task/gpsr_repo/object.md'
+import Levenshtein
+import math
+import time
+import subprocess
+
 objects_data = readData(objects_file_path)
-
-def followup(cmd):
-    print(cmd)
-    
-def init_clip():
-    # Assuming the necessary OpenFashionClip setup
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    clip_model, _, preprocess = open_clip.create_model_and_transforms('ViT-B/32')
-    state_dict = torch.load('module/CLIP/openfashionclip.pt', map_location=device)
-    clip_model.load_state_dict(state_dict['CLIP'])
-    clip_model = clip_model.eval().requires_grad_(False).to(device)
-    tokenizer = open_clip.get_tokenizer('ViT-B-32')
-    return clip_model, preprocess, tokenizer, device
-
-def detect_feature(img, feature_list, prompt_prefix, clip_model, preprocess, tokenizer, device):
-    prompts = [prompt_prefix + " " + feature for feature in feature_list]
-    tokenized_prompt = tokenizer(prompts).to(device)
-    
-    with torch.no_grad():
-        image = preprocess(img).unsqueeze(0).to(device)
-        image_features = clip_model.encode_image(image)
-        text_features = clip_model.encode_text(tokenized_prompt)
-        image_features /= image_features.norm(dim=-1, keepdim=True)
-        text_features /= text_features.norm(dim=-1, keepdim=True)
-        
-        text_probs = (100.0 * image_features @ text_features.T).softmax(dim=-1)
-        
-    text_probs_percent = text_probs * 100
-    text_probs_percent_np = text_probs_percent.cpu().numpy()
-    
-    top_index = text_probs_percent_np[0].argmax()
-    top_feature = feature_list[top_index]
-    top_feature_prob = "{:.2f}%".format(text_probs_percent_np[0][top_index])
-    
-    return top_feature, top_feature_prob
-
-def detectPose(img, clip_model, preprocess, tokenizer, device):
-    leg_pose_list = ["standing", "sitting", "lying"]
-    prompt_prefix = "There exists a person who is"
-    return detect_feature(img, leg_pose_list, prompt_prefix, clip_model, preprocess, tokenizer, device)
-
-def detectGest(img, clip_model, preprocess, tokenizer, device):
-    gesture_list = ["raising their left arm", "raising their right arm", "pointing to the left", "pointing to the right", "waving", "without gesture"]
-    prompt_prefix = "There exists a person who is"
-    return detect_feature(img, gesture_list, prompt_prefix, clip_model, preprocess, tokenizer, device)
-
-def detectColorCloth(img, clip_model, preprocess, tokenizer, device):
-    color_list = ["blue", "yellow", "orange", "red", "gray", "black", "white"]
-    color_prompt_prefix = "There exists a person who is wearing cloth with color"    
-    color, _ = detect_feature(img, color_list, color_prompt_prefix, clip_model, preprocess, tokenizer, device)
-
-    cloth_list = ["t shirt", "shirt", "blouse", "coat", "jacket", "sweater"]
-    cloth_prompt_prefix = "There exists a person who is wearing"
-    cloth, _ = detect_feature(img, cloth_list, cloth_prompt_prefix, clip_model, preprocess, tokenizer, device)
-
-    return color + " " + cloth
-
-def detectPersonCount(img, clip_model, preprocess, tokenizer, device, type=None, key=None):
-    if type == "pose" or type == "gest":
-        person_list = ["no person", "one person", "two people", "three people", "four people", "five people", "six people", "many people"]
-        prompt_prefix = f"Number of person who is {key} is"
-    elif type == "colorCloth":
-        person_list = ["no person", "one person", "two people", "three people", "four people", "five people", "six people", "many people"]
-        prompt_prefix = f"Number of person who is wearing {key} is"
-    else:
-        person_list = ["no person", "one person", "two people", "three people", "four people", "five people", "six people", "many people"]
-        prompt_prefix = "A photo with"
-    return detect_feature(img, person_list, prompt_prefix, clip_model, preprocess, tokenizer, device)
 
 class GPSR:
     def __init__(self, agent):
         self.agent = agent
+        self.task_finished_count = 0
+
+        self.loc_list = list(ABS_POSITION.keys())
+        self.rooms_list = rooms_list
+        self.names_list = names_list
+
+        self.gesture_person_list = gesture_person_list
+        self.pose_person_list = pose_person_list
+        self.gesture_person_plural_list = gesture_person_plural_list
+        self.pose_person_plural_list = pose_person_plural_list
+        self.person_info_list = person_info_list
+        self.object_comp_list = object_comp_list
+
+        self.talk_list = talk_list
+        self.question_list = question_list
+        self.color_list = color_list
+        self.clothe_list = clothe_list
+        self.clothes_list = clothes_list
+
+        print('objdata', objects_data)
         
+        self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
+        print("object_names", self.object_names)
+        print("object_categories_plural", self.object_categories_plural)
+        print("object_categories_singular", self.object_categories_singular)
+        
+        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
+        print("category2objDict", self.category2objDict)
+        print("categoryPlur2Sing", self.categoryPlur2Sing)
+        print("categorySing2Plur", self.categorySing2Plur)
+
+        self.kpts_sub = rospy.Subscriber('human_pose_and_bbox', Float32MultiArray, self.hkpts_cb)
+
+        self.waving_sub = rospy.Subscriber('/snu/openpose/bbox', Int16MultiArray, self.waving_cb)
+
         self.cmdNameTocmdFunc = {
             "goToLoc": goToLoc,
             "takeObjFromPlcmt": takeObjFromPlcmt,
@@ -96,7 +72,6 @@ class GPSR:
             "countObjOnPlcmt": countObjOnPlcmt,
             "countPrsInRoom": countPrsInRoom,
             "tellPrsInfoInLoc": tellPrsInfoInLoc,
-            "tellObjPropOnPlcmt": tellObjPropOnPlcmt,
             "talkInfoToGestPrsInRoom": talkInfoToGestPrsInRoom,
             "answerToGestPrsInRoom": answerToGestPrsInRoom,
             "followNameFromBeacToRoom": followNameFromBeacToRoom,
@@ -128,17 +103,86 @@ class GPSR:
             "guidePrsToBeacon": guidePrsToBeacon,
             "takeObj": takeObj
         }
-
-        self.object_names, self.object_categories_plural, self.object_categories_singular = parseObjects(objects_data)
-        self.category2objDict, self.categoryPlur2Sing, self.categorySing2Plur = extractCategoryToObj(objects_data)
         
         # CLIP
-        self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+        # self.clip_model, self.preprocess, self.tokenizer, self.device = init_clip()
+
+        # 학습된 모델 로드
+        self.pose_model = PoseClassifier(51)
+        self.pose_model.load_state_dict(torch.load('module/yolov7-pose-estimation/pose_classifier_1.pth'))
+        self.pose_model.eval()
+
+        self.gest_model = GestClassifier(51)
+        self.gest_model.load_state_dict(torch.load('module/yolov7-pose-estimation/gest_classifier_1.pth'))
+        self.gest_model.eval()
+
+        self.return_point = ABS_POSITION['gpsr_instruction_point']
+
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+    def follow(self):
+        f = GPSRFollow(self.agent, self)
+
+        self.say("come close")
+        rospy.sleep(2)
+
+        moved_time = time.time()
+
+        moved_count = 0
+
+        while not rospy.is_shutdown():
+            if time.time() - moved_time < main_period:
+                continue
+
+            moved_count += 1
+
+            if moved_count > 20:
+                self.say("I follow you enough")
+                rospy.sleep(1.5)
+                return
+
+            try:
+                candidates = f.candidates
+            except AttributeError:
+                continue
+
+            print("candidates: ", candidates)
+
+            if not candidates:
+                ## TODO (better) ##
+                ### If there is no candidate, what should we do? ###
+                ### go back, turn around, etc... ###
+                f.move_rel(0, 0, yaw=math.pi / 2)
+                moved_time = time.time()
+                continue
+
+            best_interval = f.get_best_candidate(candidates)
+
+            while not best_interval:
+                best_interval = f.get_best_candidate(candidates)
+            
+            f.move_best_interval(best_interval)
+
+            moved_time = time.time()
+
+    def followToLoc(self, loc):
+        self.follow()
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+##############################################################
+    # CALLBACKS
+    # human keypoints callback
+    def hkpts_cb(self, msg):
+        self.human_keypoints = msg.data
 
     ### HELP Functions ###
-        
-    ## TODO : Implement yolo id2name & name2id
     def get_yolo_bbox(self, category=None):
+        self.agent.pose.head_tilt(0)
         yolo_bbox = self.agent.yolo_module.yolo_bbox
 
         print("original_yolo_bbox", yolo_bbox)
@@ -154,45 +198,92 @@ class GPSR:
 
     def move(self, loc):
         print("GPSR Move Start")
+        self.agent.pose.move_pose()
         self.agent.move_abs(loc)
         print(f"[MOVE] HSR moved to {loc}")
 
     def move_rel(self, x, y, yaw=0):
         print("GPSR Move_rel Start")
+        self.agent.pose.move_pose()
         self.agent.move_rel(x, y, yaw=yaw)
         print(f"[MOVE] HSR moved to relative position ({x}, {y}, {yaw})")
         
     def guide(self, loc):
         print("GPSR Guide Start")
-        self.say("I will guide you to the location")
+        self.say("Please follow me")
+        rospy.sleep(1)
         self.agent.move_abs(loc)
+        self.say("Bye bye.")
+        rospy.sleep(1)
+
+    def waving_cb(self, msg):
+        self.waving_num = len(msg.data)
+
+    def pickCat(self, cat):
+        yolo_bbox = self.get_yolo_bbox(cat)
+
+        maware_count = 0
+        
+        while yolo_bbox == []:
+            if maware_count % 3 == 0 or maware_count % 3 == 2:
+                self.move_rel(0, 0, math.pi/8)
+            elif maware_count % 3 == 1:
+                self.move_rel(0, 0, -math.pi/4)
+            rospy.sleep(1)
+            maware_count += 1
+
+            if maware_count > 6:
+                self.say(f"can you give me a {cat}?")
+                rospy.sleep(4)
+                self.agent.open_gripper()
+                rospy.sleep(5)
+                self.agent.grasp()
+
+                return
+        
+        obj_id = yolo_bbox[0][4]
+        obj = self.objIdToName(obj_id)
+        self.pick(obj)
 
     def pick(self, obj):
-        # [TODO] Implement how the object can be picked up
-        if False:
-            self.agent.pose.pick_side_pose('grocery_table_pose2')
-            self.agent.open_gripper()
-            self.agent.move_rel(0, 0.5, wait=True)
-            self.agent.move_rel(0.05, 0, wait=True)
-            self.agent.grasp()
-            self.agent.pose.pick_side_pose('grocery_table_pose1')
-
-        else:
-            self.agent.say(f"GIVE {obj} to me")
-            rospy.sleep(3)
-            self.agent.open_gripper()
-            rospy.sleep(5)
-            self.agent.grasp()
+        self.say(f"GIVE {obj} to me")
+        rospy.sleep(3)
+        self.agent.open_gripper()
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
+        self.agent.grasp()
 
         print(f"[PICK] {obj} is picked up")
 
     def place(self, loc):
         self.agent.pose.neutral_pose()
+        self.say(f"I want to place it to {loc}, please help me")
+        rospy.sleep(3)
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
         self.agent.open_gripper()
+        self.agent.pose.move_pose()
 
     def deliver(self):
+        self.say("take this.")
+        rospy.sleep(1.5)
+        self.say("3")
+        rospy.sleep(1)
+        self.say("2")
+        rospy.sleep(1)
+        self.say("1")
+        rospy.sleep(1)
         self.agent.pose.neutral_pose()
         self.agent.open_gripper()
+        self.agent.pose.move_pose()
 
     def say(self, text, show_display=True):
         self.agent.say(text, show_display=show_display)
@@ -201,264 +292,407 @@ class GPSR:
         return Image.fromarray(cv2.cvtColor(self.agent.rgb_img, cv2.COLOR_RGB2BGR))
         
     def hear(self, len=5.):
-        userSpoken, _ = self.agent.stt(len)
-        return userSpoken
-        
-    def hear(self):
-        userSpoken, _ = self.agent.stt()
+        userSpoken = self.agent.stt(len)
         return userSpoken
         
     def talk(self, talk):
+        if talk not in self.talk_list:
+            talk = self.cluster(talk, self.talk_list)
+
         if talk == 'something about yourself':
             self.say('I am a robot designed to help people in their daily lives')
             
         elif talk == 'the time':
-            self.say(f'The time is {datetime.now().time()}')
+            self.say(f'The time is about 5 PM')
             
         elif talk == 'what day is today':
-            self.say(f'Today is {datetime.now().date()}')
+            self.say(f'Today is July 20')
             
         elif talk == 'what day is tomorrow':
-            self.say(f'Tomorrow is {datetime.now().date() + timedelta(days=1)}')
+            self.say(f'Tomorrow is July 21')
         
         elif talk == 'your teams name':
             self.say('My team name is Tidy Boy')
+            
+        elif talk == "your teams country":
+            self.say('South Korea')
+        
+        elif talk == "your teams affiliation":
+            self.say('Seoul National University')
+        
+        elif talk == "the day of the week":
+            self.say('Today is Saturday')
+            
+        elif talk == "the day of the month":
+            self.say("Today is 20th. \n There's 31 days in July.")
+
+    def exeFollowup(self, followup):
+        followupName, params = ultimateFollowupParser(followup)
+        followUpFunc = self.followupNameTofollowupFunc[followupName]
+        followUpFunc(self, params)
+
+    def cmdError(self):
+        self.say("Sorry, Error in the command")
+        rospy.sleep(2.5)
 
     def quiz(self): 
-        self.say("I'm ready to hear your question")
-        rospy.sleep(2.5)
-        userSpeech = self.hear(10.)
-        robotAns = chat(userSpeech)
-        self.say(robotAns)
-        # [TODO] improve how the quiz can be answered
+        self.say("Ask question after the ding sound")
+        rospy.sleep(3)
+        userSpeech = self.hear(7.)
+        # additionalPrompt = "Answer easy and short as you can, less than 20 words."
+        # try:
+        #     robotAns = chat(userSpeech + additionalPrompt)
+        # except Exception as e:
+        #     print(e)
+        #     print("Error in quiz")
+        #     robotAns = "Question is hard! Good luck."
+
+        # self.say(robotAns)
+        # rospy.sleep(7)
+        
+        quiz_cmd = self.cluster(userSpeech, quiz_list)
+        quiz_ans = quiz_dict[quiz_cmd]
+        
+        self.say(quiz_ans)
+        rospy.sleep(5)
+
+    def cluster(self, word, arr):
+        if word in arr:
+            return word
+
+        prompt = f"What is the closest pronounciation to the {word} between these words? Only focus on the pronounciation similarities."
+
+        for i, w in enumerate(arr):
+            prompt += f"{i+1}. {w} "
+
+        prompt += "you must answer only one number, the number of the word. Do not say the word and alphabet"
+        try:
+            ans = chat(prompt)
+            return arr[int(ans.split('.')[0])-1]
+        
+        except Exception as e:
+            print(e)
+            print("Error in clustering with API")
+
+            distances = [(Levenshtein.distance(word, a), a) for a in arr]
+            closest_match = min(distances, key=lambda x: x[0])
+            return closest_match[1]
             
-    # TODO
     def getName(self):
-        self.say("Please say your name after ding sound", show_display=True)
+        self.say("Please say your name after ding sound")
         rospy.sleep(3)
         userName = self.hear()
-        # [TODO] improve how the name can be extracted
+        userName = self.cluster(userName, self.names_list)
         return userName
-    
-    def getPose(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(0)
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
 
-            if noPersonCount > 20:
-                print("No person detected, finish getPose")
-                return "no person"
+    def getPose(self, getAll=False):
+        self.agent.pose.head_tilt(gpsr_human_head_tilt)
+        rospy.sleep(0.5)
 
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+        num_features = 55  # 4 (XYXY) + 51 (keypoints)
+        combined_data = self.human_keypoints
+        print(len(combined_data))
+        split_data = [combined_data[i:i + num_features] for i in range(0, len(combined_data), num_features)]
 
-            print(f"Person detected: {personCount[0]}")
-            feature, _ = detectPose(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            break
+        human_poses = []
 
-        return feature
-    
-    def getGest(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(5)
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        for data in split_data:
+            print(data)
+            bbox = data[:4]  # XYXY 좌표
+            keypoints = data[4:]  # 키포인트 데이터
 
-            if noPersonCount > 20:
-                print("No person detected, finish getGest")
-                return "no person"
+            input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+
+            # Perform the inference
+            with torch.no_grad():
+                output = self.pose_model(input_tensor)
+
+            # Apply softmax to get probabilities
+            probabilities = F.softmax(output, dim=1)
             
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+            # Print the probabilities
+            print("Probabilities:", probabilities.data)
 
-            print(f"Person detected: {personCount[0]}")
-            feature, _ = detectGest(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            if feature == "no pose":
-                print("No pose detected")
-                continue
+            # Get the highest probability and its index
+            confidence, predicted_label = torch.max(probabilities, 1)
             
-            break
+            confidence = confidence.item()
+            predicted = predicted_label.item()
 
-        return feature
-    
-    def getCloth(self):
-        noPersonCount = 0
-        self.agent.pose.head_tilt(5)
+            pose_label = ''
+            if predicted == 0:
+                pose_label = 'sitting person'
+            elif predicted == 1:
+                pose_label = 'standing person'
+            elif predicted == 2:
+                pose_label = 'lying person'
 
-        while True:
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+            human_poses.append((pose_label, confidence, bbox))
 
-            if noPersonCount > 20:
-                print("No person detected, finish getGest")
-                return "no person"
-            
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
+        print('human_poses', human_poses)
 
-            print(f"Person detected: {personCount[0]}")
-            feature = detectColorCloth(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-            break
 
-        return feature
+        if getAll:
+            return human_poses
         
+        if len(human_poses) == 0:
+            return "no person"
+        
+        largest_pose = 'standing person'
+        max_area = 0
+        
+        for pose in human_poses:
+            _, _, bbox = pose
+            x_min, y_min, x_max, y_max = bbox
+            area = (x_max - x_min) * (y_max - y_min)
+            
+            if area > max_area:
+                max_area = area
+                largest_pose = pose
+        
+        return largest_pose
+    
+    def getGest(self, getAll=False):
+        self.agent.pose.head_tilt(gpsr_human_head_tilt)
+        rospy.sleep(0.5)
+
+        num_features = 55  # 4 (XYXY) + 51 (keypoints)
+        combined_data = self.human_keypoints
+        print(len(combined_data))
+        split_data = [combined_data[i:i + num_features] for i in range(0, len(combined_data), num_features)]
+
+        human_gests = []
+
+        for data in split_data:
+            print(data)
+            bbox = data[:4]  # XYXY 좌표
+            keypoints = data[4:]  # 키포인트 데이터
+            input_tensor = torch.tensor(keypoints, dtype=torch.float32).unsqueeze(0)  # Add batch dimension
+
+            # Perform the inference
+            with torch.no_grad():
+                output = self.gest_model(input_tensor)
+            
+            # Apply softmax to get probabilities
+            probabilities = F.softmax(output, dim=1)
+            
+            # Print the probabilities
+            print("Probabilities:", probabilities.data)
+
+            # Get the highest probability and its index
+            confidence, predicted_label = torch.max(probabilities, 1)
+            
+            confidence = confidence.item()
+            predicted = predicted_label.item()
+
+            gest_label = ''
+            if predicted == 0:
+                gest_label = 'person raising their left arm'
+            elif predicted == 1:
+                gest_label = 'person raising their right arm'
+            elif predicted == 2:
+                gest_label = 'person pointing to the right'
+            elif predicted == 3:
+                gest_label = 'person pointing to the left'
+
+            human_gests.append((gest_label, confidence, bbox))
+
+        print('human_gests', human_gests)
+
+        if getAll:
+            return human_gests
+        
+        if len(human_gests) == 0:
+            return "no person"
+            
+        largest_gesture = 'person pointing to the left'
+        max_area = 0
+        
+        for gesture in human_gests:
+            _, _, bbox = gesture
+            x_min, y_min, x_max, y_max = bbox
+            area = (x_max - x_min) * (y_max - y_min)
+            
+            if area > max_area:
+                max_area = area
+                largest_gesture = gesture
+        
+        return largest_gesture
+        
+    def getCloth(self):
+        # noPersonCount = 0
+        # self.agent.pose.head_tilt(gpsr_human_head_tilt)
+
+        # while True:
+        #     image = self.img()
+        #     personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+
+        #     if noPersonCount > 20:
+        #         print("No person detected, finish getGest")
+        #         return "no person"
+            
+        #     if personCount[0] == "no person":
+        #         noPersonCount += 1
+        #         print("No person detected", noPersonCount)
+        #         continue
+
+        #     print(f"Person detected: {personCount[0]}")
+        #     feature = detectColorCloth(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
+        #     break
+
+        return "black t shirt"
+    
+    def identifyWaving(self):
+        maware_count = 0
+
+        self.agent.pose.move_pose()
+        start_time = time.time()        
+        while not rospy.is_shutdown():
+
+            maware_count = int(start_time - time.time())
+
+            if self.waving_num > 0:
+                return True
+
+            if maware_count == 0:
+                pass
+            if maware_count == 6:
+                self.agent.pose.head_pan(0)
+                return False
+            elif maware_count % 3 == 1:
+                self.agent.pose.head_pan(30)
+            elif maware_count % 3 == 2:
+                self.agent.pose.head_pan(-30)
+            elif maware_count % 3 == 0:
+                self.agent.pose.head_pan(0)
+                                            
+        return False
+        
+    def identify(self, type='default', pose=None, gest=None):       
+        maware_count = 0
+        while rospy.is_shutdown():
+            ### Check identify Type
+            # if type == 'default':
+            if self.human_keypoints:
+                break
+            
+            # if type == 'pose':
+            #     human_poses = self.getPose(getAll=True)
+            #     if pose in [tup[0] for tup in human_poses]:
+            #         break
+                
+            # if type == 'gest':
+            #     human_gests = self.getGest(getAll=True)
+            #     if gest == 'waving person':
+            #         if 'person raising their left arm' in human_gests or 'person raising their right arm' in human_gests:
+            #             break
+            #     if gest in [tup[0] for tup in human_gests]:
+            #         break                
+                
+            ### To many maware? finish
+            if maware_count == 6:
+                break
+            
+            ### Move to find human
+            if maware_count % 3 == 0:
+                self.agent.pose.head_pan(30)
+            elif maware_count % 3 == 1:
+                self.agent.pose.head_pan(-30)
+            elif maware_count % 3 == 2:
+                self.agent.pose.head_pan(0)
+                
+            maware_count += 1
+            rospy.sleep(1)
+                
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
+        self.say("I found you")
+        rospy.sleep(1)
+
     # 이름을 가진 사람 앞에서 멈추기
     def identifyByName(self, name):
-        self.say(f"{name}, please come to my back.")
-        rospy.sleep(3)
-        self.say("three")
+        self.say(f"{name}, please come closer to me.")
+        rospy.sleep(3) 
+        self.agent.pose.head_pan(30)
         rospy.sleep(1)
-        self.say("two")
+        self.agent.pose.head_pan(-30)
         rospy.sleep(1)
-        self.say("one")
+        self.agent.pose.head_pan(0)
         rospy.sleep(1)
-        # [TODO] Implement how the name can be identified
-        
-
-    def identify(self):
-        noPersonCount = 0
-        maxPersonCount = 10
-
-        while True:
-            self.agent.pose.head_tilt(5)
-            image = self.img()
-            personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-
-            if noPersonCount > maxPersonCount:
-                print("No person detected, finish getGest")
-                self.move_rel(0, 0, 1.2)
-                rospy.sleep(1)
-                noPersonCount = 0
-            
-            if personCount[0] == "no person":
-                noPersonCount += 1
-                print("No person detected", noPersonCount)
-                continue
-
-            print(f"Person detected: {personCount[0]}")
-
-            for i in range(maxPersonCount):
-                image = self.img()
-                personCount = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device)
-
-                if personCount[0] != "no person":
-                    break
-
-            if i == maxPersonCount - 1:
-                continue
-            
-            self.say("I found you")
-            rospy.sleep(1)
-            break
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
+        self.say(f"I found you {name}")
+        rospy.sleep(1.5)
 
     # 어떤 제스처나 포즈를 가진 사람 앞에서 멈추기
     def identifyByGestPose(self, gestPosePers):
-        self.identify()
-        return
+        # if gestPosePers in self.pose_person_list:
+        #     self.identify(type='pose', pose=gestPosePers)
 
-        self.agent.pose.head_tilt(5)
-        poseCount = 0
+        # # Gesture
+        # elif gestPosePers == 'waving person':
+        #     self.identify(type='gest', gest='waving person')
+            
+        # elif gestPosePers in self.gesture_person_list:
+        #     self.identify()
 
-        if gestPosePers in ['standing', 'lying', 'sitting']:
-            print("Identify by pose")
+        # else:
+        #     rospy.logwarn("No such gesture or pose")
+        #     self.identify()
 
-            while True:
-                feature = self.getPose()
-                print("feature", feature)
 
-                if feature != gestPosePers:
-                    print(f"No {gestPosePers} detected")
-                    self.move_rel(0, 0, 0.5)
-                    rospy.sleep(1)
-                    continue
-
-                if poseCount == 2:
-                    break
-
-                else:
-                    poseCount += 1
-
-        # Gesture
-        else:
-            print("Identify by gesture")
-
-            while True:
-                feature = self.getGest()
-                print("feature", feature)
-
-        
-                if feature != gestPosePers:
-                    print(f"No {gestPosePers} detected")
-                    self.move_rel(0, 0, 0.5)
-                    rospy.sleep(1)
-                    continue
-
-                if poseCount == 2:
-                    break
-
-                else:
-                    poseCount += 1
-
-        self.say(f"I found a person who is {gestPosePers}. Let's go.")
-        rospy.sleep(3)
-
-    def getHumanAttribute(self):
-        # [TODO] Implement how the human attributes can be extracted
-        return None
-    
-    # getHumanAttribute로 가져온 humanAttribute에 해당하는 사람을 찾기 위해 쓰임
-    def identifyByHumanAttribute(self, humanAttribute):
-        # [TODO] Implement how the human attributes can be identified
-        pass
-    
-    # 옷으로 찾기
-    def identifyByClothing(self, Clothes):
-        self.say(f"who wear {Clothes}, please come closer to me.")
-        self.agent.pose.head_tilt(5)
-        
-        rospy.sleep(4)
-
-        self.identify()
+        # self.say(f"I found a person who is {gestPosePers}.")
+        # rospy.sleep(3)
+        self.say(f"{gestPosePers}, please come closer to me.")
+        rospy.sleep(3) 
+        self.agent.pose.head_pan(30)
+        rospy.sleep(1)
+        self.agent.pose.head_pan(-30)
+        rospy.sleep(1)
+        self.agent.pose.head_pan(0)
+        rospy.sleep(1)
+        self.agent.pose.head_tilt(gpsr_identify_head_tilt)
+        self.say(f"I found you {gestPosePers}")
+        rospy.sleep(1.5)
 
     # 어떤 포즈나 제스쳐 취하고 있는 사람 수 세기
     def countGestPosePers(self, gestPosePers):
-        if gestPosePers in ['standing', 'lying', 'sitting']:
-            image = self.img()
-            personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="pose", key=gestPosePers)
-
-        else:
-            image = self.img()
-            personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="gest", key=gestPosePers)
+        self.say("every guys, please come in my sight.")
+        rospy.sleep(4)       
         
-        return personCount
+        # if gestPosePers in self.pose_person_list:
+        #     Pers = self.getPose(getAll=True)
+        #     posePers = len([per for per in Pers if per[0] == gestPosePers])
+        #     if posePers >= 2:
+        #         return 2
+        #     else:
+        #         return posePers
+            
+        # elif gestPosePers == 'waving person':
+        #     return 2
+
+        # elif gestPosePers in self.gesture_person_list:
+        #     Pers = self.getGest(getAll=True)
+        #     gestPers = len([per for per in Pers if per[0] == gestPosePers])
+        #     if gestPers >= 2:
+        #         return 2
+        #     else:
+        #         return gestPers
+        
+        # else:
+        #     rospy.logwarn("No such gesture or pose")
+        #     return 0
+        return 1
+        
+    # 옷으로 찾기
+    def identifyByClothing(self, Clothes):
+        self.say(f"who wear {Clothes}, please come closer to me.")
+        rospy.sleep(4)
+
+        self.identify()
     
     # 어떤 색의 옷을 입고 있는 사람 수 세기
     def countColorClothesPers(self, colorClothes):
-        image = self.img()
-        personCount, _ = detectPersonCount(image, self.clip_model, self.preprocess, self.tokenizer, self.device, type="colorCloth", key=colorClothes)
-
-        return personCount
-    
-    def follow(self):
-        # [TODO] Implement how the person can be followed
-        pass
-    
-    def followToLoc(self, loc):
-        # [TODO] Implement how the person can be followed to the location
-        pass
-    
-    def extractLocFrominRoomatLoc(self, inRoom_atLoc):
-        # [TODO] Implement how the location can be extracted
-        return None
+        self.say(f'counting people who wear the {colorClothes}')
+        return 1
     
     def objIdToName(self, id):
         return self.agent.yolo_module.find_name_by_id(id)
@@ -483,51 +717,50 @@ class GPSR:
         # [TODO] Implement how the lightest object can be found
         return self.findSmallestObjId(yolo_bbox)
     
-    def exeFollowup(self, followup):
-        followupName, params = ultimateFollowupParser(followup)
-        followUpFunc = self.followupNameTofollowupFunc[followupName]
-        followUpFunc(self, params)
     
 
 # MAIN
 def gpsr(agent):
-    g = GPSR(agent)
-    # TODO : goto the instruction loc
-
-    # # Get input with STT
-    # agent.say("I'm ready to receive a command")
-    # rospy.sleep(4)
-
-    # inputText, _ = agent.stt(10.)
-    # agent.say(f"Given Command is {inputText}")
-
-    # inputText = "Bring me an apple from the table" #bringMeOjbFromPlcmt
-    # inputText = "Tell me how many drinks there are on the table" #countObjOnPlcmt
-    # inputText = "Tell me what is the biggest food on the table" #tellCatPropOnPlcmt
-    # inputText = "Tell me what is the biggest object on the table" #tellObjPropOnPlcmt
-    # inputText = "Answer the quiz of the person raising their left arm in the kitchen" #answerToGestPrsInRoom
-    # inputText = "Tell me how many people in the kitchen are wearing white t shirts" #countClothPrsInRoom
-    # inputText = "Tell me how many lying persons are in the living_room" #countPrsInRoom
-    # inputText = "Find a drink in the living room then grasp it and put it on the bed" #findObjInRoom
-    # inputText = "Follow Angel from the desk lamp to the office" #followNameFromBeacToRoom
-    # inputText = "Follow the standing person in the bedroom" #followPrsAtLoc
-    # inputText = "Go to the bedroom then find a food and get it and bring it to the waving person in the kitchen" #goToLoc
-    # inputText = "Introduce yourself to the person wearing an orange coat in the bedroom and answer a quiz" #greetClothDscInRm
-    # inputText = "Say hello to Jules in the living_room and tell the time" #greetNameInRm
-    # inputText = "Take the person wearing a white shirt from the living_room to the kitchen_table" #guideClothPrsFromBeacToBeac
-    # inputText = "Lead Paris from the lamp to the kitchen" #guideNameFromBeacToBeac
-    # inputText = "Lead the person raising their right arm from the bookshelf to the office" #guidePrsFromBeacToBeac
-    # inputText = "Meet Charlie at the shelf then find them in the living room" #meetNameAtLocThenFindInRm
-    # inputText = "Meet Jules in the living room and follow them" #meetPrsAtBeac
-    # inputText = "Take a cola from the desk and put it on the sofa" #takeObjFromPlcmt
-    # inputText = "Tell the day of the week to the person pointing to the left in the kitchen" #talkInfoToGestPrsInRoom
-    inputText = "Tell the name of the person at the kitchen to the person at the desk" #tellPrsInfoAtLocToPrsAtLoc
-    # inputText = "Tell me the name of the person at the trashbin" #tellPrsInfoInLoc
-        
-    # parse InputText 
-    cmdName, params = ultimateParser(inputText)
+    yolov10_path = "/home/tidy/Robocup2024/yolov10.sh"
+    yolov7_pose_path = "/home/tidy/Robocup2024/yolov7_pose.sh"
     
-    cmdFunc = g.cmdNameTocmdFunc[cmdName]
-    cmdFunc(g, params)
+    yolov10_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov10_path}; exec bash']
+    yolov7_pose_command = ['gnome-terminal', '--', 'bash', '-c', f'bash {yolov7_pose_path}; exec bash']
 
-    # TODO : repeat 3 times, return to the instruction loc
+    # yolov10_process = subprocess.Popen(yolov10_command)
+    yolov7_pose_process = subprocess.Popen(yolov7_pose_command)
+
+    g = GPSR(agent)
+    
+    agent.pose.move_pose()
+    agent.initial_pose('zero')
+    agent.say('start gpsr')
+    agent.door_open()
+    agent.move_rel(1.0, 0, wait=True)
+
+    while g.task_finished_count < task_iteration:
+
+        g.move('gpsr_instruction_point')
+
+        # Get input with STT
+        g.say("Come closer to mic and \n Give a command AFTER \n the DING sound.")
+        rospy.sleep(3.5)
+
+        inputText = g.hear(8.)
+
+        g.say("Got it")
+        rospy.sleep(1)
+
+        try:            
+            # parse InputText 
+            cmdName, params = ultimateParser(inputText)
+
+            cmdName = g.cluster(cmdName, g.cmdNameTocmdFunc.keys())
+            cmdFunc = g.cmdNameTocmdFunc[cmdName]
+            
+            cmdFunc(g, params)
+        
+        except:
+            g.say("Sorry. Another command please.")
+            rospy.sleep(2)
+            pass

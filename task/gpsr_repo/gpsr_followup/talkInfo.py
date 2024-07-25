@@ -4,6 +4,7 @@ def talkInfo(g, params):
     
     # [0] Extract the parameters
     talk = params['talk']
+    talk = g.cluster(talk, g.talk_list)
     
     # [1] Talk about the information
     g.talk(talk)

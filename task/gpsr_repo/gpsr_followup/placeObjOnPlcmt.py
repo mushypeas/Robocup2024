@@ -4,6 +4,7 @@ def placeObjOnPlcmt(g, params):
     
     # [0] Extract the parameters
     loc = params['plcmtLoc']
+    loc = g.cluster(loc, g.loc_list)
     
     # [1] move to the location
     g.move(loc)

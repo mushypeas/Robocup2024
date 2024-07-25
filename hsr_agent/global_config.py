@@ -1,18 +1,34 @@
 import os
 import sys
-sys.path.append('../../hsr_agent')
+import json
 sys.path.append('hsr_agent')
 sys.path.append('../../hsr_agent')
 from global_config_utils import make_object_list
 
+sys.path.append('task/gpsr_repo')
+sys.path.append('../../task/gpsr_repo')
+import gpsr_config
+
+is_sim = 'localhost' in os.environ['ROS_MASTER_URI']
+
+# data topic name.
 RGB_TOPIC = '/hsrb/head_rgbd_sensor/rgb/image_rect_color'
 DEPTH_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/image_rect_raw'
 PC_TOPIC = '/hsrb/head_rgbd_sensor/depth_registered/rectified_points'
 
 # YOLO weight 변경 시 경로 변경
-yolo_weight_path = 'weight/0716v3.pt'
-yolo_classnames_path = 'weight/classnames.cn'
+yolo_weight_path = 'weight/gpsr_pnu.pt'
+yolo_classnames_path = 'weight/gpsr_pnu.cn'
 
+try:
+    yolo_weight_path = gpsr_config.yolo_weight_path
+    yolo_classnames_path = gpsr_config.yolo_classnames_path
+except Exception as e:
+    print(e)
+    print('Skip loading gpsr_config yolo_weight_path, yolo_classnames_path')
+    pass
+
+# YOLO classnames load
 try:
     OBJECT_LIST = make_object_list(yolo_classnames_path)
     print('[GLOBAL CONFIG] OBJECT_LIST loaded')

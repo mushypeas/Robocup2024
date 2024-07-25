@@ -5,6 +5,9 @@ def deliverObjToPrsInRoom(g, params):
     # [0] Extract the parameters
     room = params['room']
     gestPosePers = params['gestPers_posePers']
+
+    room = g.cluster(room, g.rooms_list)
+    gestPosePers = g.cluster(gestPosePers, g.gesture_person_list + g.pose_person_list)
     
     # [1] Move to the room
     g.move(room)

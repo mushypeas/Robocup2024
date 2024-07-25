@@ -4,14 +4,15 @@ from object_list_dict import name_to_grasping_type
 def make_object_list(yolo_classname_path, is_yolov10=True):
     # yolo_classname path
     file_path = os.path.join('module', 'yolov10', yolo_classname_path)
-    file_path_bs = os.path.join('..', '..', 'module', 'yolov10', yolo_classname_path)
 
     try:
         with open(file_path, 'r', encoding='utf-8') as f:
             class_names = [line.strip() for line in f.readlines()]
-    except:
-        with open(file_path_bs, 'r', encoding='utf-8') as f:
+    except FileNotFoundError:
+        file_path = os.path.join('..', '..', 'module', 'yolov10', yolo_classname_path)
+        with open(file_path, 'r', encoding='utf-8') as f:
             class_names = [line.strip() for line in f.readlines()]
+
         
     OBJECT_LIST = []
         
@@ -63,9 +64,15 @@ def make_object_list(yolo_classname_path, is_yolov10=True):
             
         OBJECT_LIST.append([class_name, idx, 0, grasping_type])
         
-    print('[Object list]')
-    print(OBJECT_LIST)
+    print('========== Object list ==========')
+
+    for OBJECT in OBJECT_LIST:
+        print(OBJECT)
+
+    print()
+
     return OBJECT_LIST
+    
 
 if __name__ == '__main__':
     OBJECT_LIST = make_object_list('weight/test.cn')

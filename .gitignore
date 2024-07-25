@@ -21,6 +21,7 @@ Tools/xtioncam_capture/image/*
 *.pbmm
 .DS_Store
 Tools/BoundingBox_Tool/Labels/*
+module/yolov10/weights/*
 *.mp3
 Tools/cn_index_mapper/old/*
 Tools/cn_index_mapper/new/*

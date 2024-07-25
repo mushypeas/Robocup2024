@@ -39,6 +39,9 @@ from utils.in_arena_check import InArena
 import time
 from utils.marker_maker import MarkerMaker
 
+from gtts import gTTS
+import subprocess
+
 
 class Agent:
     def __init__(self):
@@ -406,10 +409,9 @@ class Agent:
         self.tts.say(sentence)
         if show_display:
             self.head_show_text(sentence)
-
+            
     # stt
     def stt(self, sec=5., mode=None):
-        # return stt_client_hsr_mic(sec=sec, mode=mode)
         return stt_client(sec=sec)
 
     # gripper
