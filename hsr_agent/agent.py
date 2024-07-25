@@ -94,7 +94,8 @@ class Agent:
         # object
         self.object_type_list = OBJECT_TYPES
         self.object_list = OBJECT_LIST
-        self.location_map = LOCATION_MAP  # for gpsr
+        self.tiny_object_list = TINY_OBJECTS
+        self.heavy_object_list = HEAVY_OBJECTS
         self.table_dimension = TABLE_DIMENSION  # for gpsr
 
         # yolo
@@ -124,9 +125,6 @@ class Agent:
         self.cur_vel = [0.0, 0.0, 0.0] # x,y,yaw
         self.axis_transform = Axis_transform()
 
-        # return if the point is in arena
-        self.arena_check = InArena(ARENA_EDGES)
-        # for carry my luggage (todo)
         rospy.loginfo('HSR agent is ready.')
 
     def _rgb_callback(self, data):
@@ -435,9 +433,9 @@ class Agent:
             rospy.sleep(1.0)
             print('door closed')
         self.say('door open'); rospy.sleep(1)
-        self.say('three'); rospy.sleep(1)
-        self.say('two');   rospy.sleep(1)
-        self.say('one');   rospy.sleep(1)
+        self.say('three'); rospy.sleep(0.5)
+        self.say('two');   rospy.sleep(0.5)
+        self.say('one');   rospy.sleep(0.5)
         return True
 
     def head_show_image(self, file_name='images/snu.png'):
