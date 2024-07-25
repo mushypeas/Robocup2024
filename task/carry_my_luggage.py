@@ -5,21 +5,30 @@ from message_filters import ApproximateTimeSynchronizer
 from message_filters import Subscriber as sub
 
 import sys
-sys.path.append('.')
-from utils.depth_to_pc import Depth2PC
-from utils.axis_transform import Axis_transform
-from hsr_agent.agent import Agent
-from utils.marker_maker import MarkerMaker
-from module.person_following_bot.follow import HumanReidAndFollower
 import time
-from std_srvs.srv import Empty, EmptyRequest
-from sensor_msgs.msg import Image
 import copy
-import dynamic_reconfigure.client
+import subprocess
 import cv2
 import mediapipe as mp
 import numpy as np
 from collections import deque
+from sklearn.preprocessing import StandardScaler
+import random
+
+from utils.axis_transform import Axis_transform
+from utils.depth_to_pc import Depth2PC
+from utils.marker_maker import MarkerMaker
+import dynamic_reconfigure.client
+from std_srvs.srv import Empty, EmptyRequest
+from module.person_following_bot.follow import HumanReidAndFollower
+from hsr_agent.agent import Agent
+
+import rospy
+from std_msgs.msg import Int16MultiArray, String, ColorRGBA
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+from message_filters import ApproximateTimeSynchronizer
+from message_filters import Subscriber as sub
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
 from std_msgs.msg import ColorRGBA
@@ -101,7 +110,7 @@ class HumanFollowing:
         #                                                 "obstacle_radius": 0.25,
         #                                                 "obstacle_occupancy": 80
         #                                                 })
-        stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty)
+        stop_client = rospy.ServiceProxy('/viewpoint_controller/stop', Empty) ## 주행 시 head 고정, 어차피 말 안들으니 head pan 쓰지 않음
         stop_client.call(EmptyRequest())
 
     def _byte_cb(self, data):
@@ -115,6 +124,11 @@ class HumanFollowing:
             img[:, :bar_width] = 0
             img[:, -bar_width:] = 0
             self.agent.head_display_image_pubish(img)
+
+
+ 
+
+        
 
     def head_circle_cb(self, config):
         rospy.loginfo(config)
@@ -168,8 +182,10 @@ class HumanFollowing:
 
         else:
             self.human_box_list = [data_list[0], #[human_id, target_tlwh, target_score]
-                                  np.asarray([data_list[1], data_list[2], data_list[3], data_list[4]], dtype=np.int64),
+                                  np.asarray(data_list[1:5], dtype=np.int64),
                                   data_list[5]]
+            
+            
 
 
     def _rgb_callback(self, data): ## tiny_object_edge 검출 용
@@ -223,12 +239,64 @@ class HumanFollowing:
         data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
         self.seg_img = data_img
 
+        
+
+
+    def _rgb_callback(self, data): ## jnpahk tiny_object_edge 검출 용
+        frame = cv2.cvtColor(np.frombuffer(data.data, dtype=np.uint8).reshape(data.height, data.width, -1), cv2.COLOR_RGB2BGR)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 250, 350)
+        rows, cols = edges.shape
+        f = np.fft.fft2(edges)
+        fshift = np.fft.fftshift(f)
+
+        crow, ccol = rows // 2, cols // 2
+        mask = np.zeros((rows, cols), np.float32)
+        sigma = 50  # Standard deviation for Gaussian filter
+        x, y = np.ogrid[:rows, :cols]
+        mask = np.exp(-((x - crow) ** 2 + (y - ccol) ** 2) / (2 * sigma ** 2))
+
+        fshift = fshift * mask
+        f_ishift = np.fft.ifftshift(fshift)
+        img_back = np.fft.ifft2(f_ishift)
+        img_back = np.abs(img_back)
+        
+        img_back = (img_back - np.min(img_back)) / (np.max(img_back) - np.min(img_back)) * 255
+        img_back = np.uint8(img_back)
+
+        kernel = np.ones((1, 1), np.uint8)
+        img_back = cv2.dilate(img_back, kernel, iterations=1)
+        img_back = cv2.erode(img_back, kernel, iterations=1)
+
+        morph = img_back
+
+        contours, _ = cv2.findContours(morph, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        tiny_exist = False
+        tiny_loc = None
+
+        self.contours = contours
+
+        ###########확인용 publish#########
+        # morph = cv2.bitwise_not(morph)
+
+
+        # morph = np.uint8(morph)
+        # canny_img_msg = self.bridge.cv2_to_imgmsg(morph, 'mono8')
+        # self.image_pub.publish(canny_img_msg)
+
+
+    def _segment_cb(self, data): #jnpahk
+
+        #######################seg는 back때만 사용
+        depth = np.asarray(self.agent.depth_image)
+
+        data_img = self.bridge.imgmsg_to_cv2(data, 'mono16')
+        self.seg_img = data_img
+
 
     def check_human_pos(self, human_box_list, location=False):
-        x = human_box_list[1][0]
-        y = human_box_list[1][1]
-        w = human_box_list[1][2]
-        h = human_box_list[1][3]
+        x, y, w, h = human_box_list[1]
         center = [y + int(h/2), x + int(w/2)] # (y,x)
 
 
@@ -801,10 +869,13 @@ class HumanFollowing:
                     return True
                 elif 'no' in answer:
                     self.agent.say('Okay! I will follow you', show_display=True)
-                    print('Okay! I will follow you')
-                    rospy.sleep(1)
+                    print('Okay! Please wait, I will follow you')
                     self.show_byte_track_image = True
                     self.agent.last_moved_time = time.time()
+                    cur_track = self.track_queue[len(self.track_queue)-1]
+                    self.agent.move_abs_coordinate(cur_track, wait=True)
+                    self.agent.move_rel(0, 0.5, 0, wait=False)
+                    rospy.sleep(2)
                     return False
             else:
                 # '''
@@ -833,6 +904,11 @@ class HumanFollowing:
             #     self.last_say = time.time()
             #     rospy.sleep(1)
             #     print("seven seconds")
+
+
+
+
+
             self.escape_barrier(calc_z)
             # self.escape_tiny()
             self.escape_tiny_canny()
@@ -917,6 +993,70 @@ class HumanFollowing:
             return False
         else:
 
+        #########
+        # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
+            # change angular.z
+            # loc = self.check_human_pos(human_info_ary, location=True)
+            # if loc == 'lll':
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     print("left!!!!!!")
+            #     # twist.angular.z = -self.stop_rotate_velocity
+            #     # +가 왼쪽으로 돌림
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity, wait=False)
+            #     rospy.sleep(.5)
+            # if loc == 'll':
+            #     print("left")
+            #     # twist.angular.z = -self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/2, wait=False)
+            #     rospy.sleep(.5)
+            # # if loc == 'l':
+            # #     print("left")
+            # #     # twist.angular.z = -self.stop_rotate_velocity
+            # #     self.agent.move_rel(0, 0, self.stop_rotate_velocity/4, wait=False)
+            # #     rospy.sleep(.5)
+            # # if loc == 'r':
+            # #     print("right")
+            # #     # twist.angular.z = +self.stop_rotate_velocity
+            # #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/4, wait=False)
+            # #     rospy.sleep(.5)
+            # if loc == 'rr':
+            #     print("right")
+            #     # twist.angular.z = +self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity/2, wait=False)
+            #     rospy.sleep(.5)
+            # if loc == 'rrr':
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     print("right")
+            #     # twist.angular.z = +self.stop_rotate_velocity
+            #     self.agent.move_rel(0, 0, -self.stop_rotate_velocity, wait=False)
+            #     rospy.sleep(.5)
+            # if twist.linear.x == 0 and twist.angular.z == 0:
+
+            #     if self.stt_destination(self.stt_option, calc_z):
+            #         return True
+
+            #     return False
+    
+            # target_xyyaw = self.calculate_twist_to_human(twist, calc_z)
+            # self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+            #     # 2.4 move to human
+            # self.last_human_pos = target_xyyaw
+            # # if calc_z > 1000:
+            # #     tmp_calc_z = calc_z + 1000 #TODO : calc_z 과장할 정도 결정
+            # #     target_xyyaw = self.calculate_twist_to_human(twist, tmp_calc_z)
+            # #     self.marker_maker.pub_marker([target_xyyaw[0], target_xyyaw[1], 1], 'base_link')
+            # #     # 2.4 move to human
+            # # target_yaw = target_xyyaw[2]
 
         #########
         # print("2.2 linear x", twist.linear.x, "angular", twist.angular.z)
